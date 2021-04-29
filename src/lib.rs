@@ -8,6 +8,7 @@ mod vector;
 
 pub use point::Point;
 pub use vector::Vector;
+pub use array::Turn;
 
 pub struct Polygon<T, P = ()> {
   pub points: Vec<Point<T, 2>>,
