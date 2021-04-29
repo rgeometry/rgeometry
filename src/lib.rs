@@ -1,17 +1,11 @@
-use num_traits::Num;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
-use std::cmp::Ordering;
 use std::collections::BTreeSet;
-use std::ops::Mul;
-use std::ops::Neg;
-use std::ops::Sub;
 
 mod array;
 mod point;
 mod vector;
 
-use array::*;
 pub use point::Point;
 pub use vector::Vector;
 
@@ -78,15 +72,15 @@ pub enum PointLocation {
 
 impl<T, P> ConvexPolygon<T, P> {
   // data PointLocationResult = Inside | OnBoundary | Outside deriving (Show,Read,Eq)
-  pub fn locate(self, pt: &Point<T, 2>) -> PointLocation {
-    let ConvexPolygon(p) = self;
+  pub fn locate(self, _pt: &Point<T, 2>) -> PointLocation {
+    let ConvexPolygon(_p) = self;
     unimplemented!();
   }
   pub fn random<R>(n: usize, max: usize, rng: &mut R) -> ConvexPolygon<isize>
   where
     R: Rng + ?Sized,
   {
-    let vs = {
+    let _vs = {
       let mut vs = random_vectors(n, max, rng);
       Vector::sort_around(&mut vs);
       vs
