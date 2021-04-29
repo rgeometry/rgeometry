@@ -32,9 +32,9 @@ where
 }
 
 // Methods on N-dimensional points.
-impl<T, const N: usize> Point<T, N> {
-  pub fn as_vector(self) -> Vector<T, N> {
-    Vector(self.0)
+impl<T: Clone, const N: usize> Point<T, N> {
+  pub fn as_vector(&self) -> Vector<T, N> {
+    Vector(self.clone().0)
   }
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
