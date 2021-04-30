@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  rgeometry-server:
+    image: rgeometry/server
+    ports:
+      - "20161:20161"
+    volumes:
+      - .cache:/root/.cache
+  rgeometry-nginx:
+    image: rgeometry/nginx
+    ports:
+      - "20443:443"
+    volumes:
+      - .cache/rgeometry:/var/www/html
+      - ./certbot/conf:/etc/nginx/ssl
+      - ./certbot/data:/var/www/certbot
