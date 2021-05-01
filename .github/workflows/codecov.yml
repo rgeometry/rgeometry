@@ -1,0 +1,29 @@
+on: [push]
+
+name: Continuous integration
+
+jobs:
+  codecov:
+    name: CodeCov.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-tarpaulin
+      - uses: actions-rs/cargo@v1
+        with:
+          command: tarpaulin
+          args: --verbose --all-features --workspace --timeout 120 --out Xml
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v1
+        with:
+          # token:                ${{secrets.CODECOV_TOKEN}} # not required for public repos
+          fail_ci_if_error:     true
