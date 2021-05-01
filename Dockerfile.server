@@ -1,0 +1,15 @@
+FROM rust
+
+EXPOSE 20162/tcp
+
+WORKDIR /src
+
+# Build all dependencies for the playground server.
+ADD playground/server/Cargo.toml playground/server/Cargo.toml
+RUN mkdir playground/server/src && echo "fn main() {}" > playground/server/src/main.rs
+RUN (cd playground/server && cargo build --release)
+
+ADD . .
+RUN (cd playground/server && cargo build --release)
+
+ENTRYPOINT playground/server/target/release/server
