@@ -3,11 +3,13 @@ services:
   rgeometry-server:
     image: rgeometry/server
     ports:
-      - "20161:20161"
+      - "20162:20162"
     volumes:
       - .cache:/root/.cache
   rgeometry-nginx:
     image: rgeometry/nginx
+    depends_on:
+      - "rgeometry-server"
     ports:
       - "20443:443"
     volumes:
