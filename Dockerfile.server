@@ -4,6 +4,9 @@ EXPOSE 20162/tcp
 
 WORKDIR /src
 
+RUN cargo install wasm-pack
+RUN rustup target add wasm32-unknown-unknown
+
 # Build all dependencies for the playground server.
 ADD playground/server/Cargo.toml playground/server/Cargo.toml
 RUN mkdir playground/server/src && echo "fn main() {}" > playground/server/src/main.rs
@@ -11,5 +14,7 @@ RUN (cd playground/server && cargo build --release --color never)
 
 ADD . .
 RUN (cd playground/server && cargo build --release --color never)
+
+RUN (cd playground/wasm && wasm-pack build --target=web)
 
 ENTRYPOINT playground/server/target/release/server
