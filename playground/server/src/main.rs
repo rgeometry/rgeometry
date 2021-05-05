@@ -1,40 +1,36 @@
-//! A chat server that broadcasts a message to all connections.
-//!
-//! This is a simple line-based server which accepts WebSocket connections,
-//! reads lines from those connections, and broadcasts the lines to all other
-//! connected clients.
-//!
-//! You can test this out by running:
-//!
-//!     cargo run --example server 127.0.0.1:12345
-//!
-//! And then in another window run:
-//!
-//!     cargo run --example client ws://127.0.0.1:12345/
-//!
-//! You can run the second command in multiple windows and then chat between the
-//! two, seeing the messages from the other client as they're received. For all
-//! connected clients they'll all join the same room and see everyone else's
-//! messages.
+// accept ws connection
+// read program source
+// iff has wasm, return wasm hash code
+// else:
+// aquire lock
+// write program to playground/wasm/lib/user.rs
+// compile
+// copy wasm file to ~/.cache/rgeometry/[hash].wasm
+// release lock
+// send response with the hash of the file.
 
-use std::{
-  collections::HashMap,
-  env,
-  io::Error as IoError,
-  net::SocketAddr,
-  sync::{Arc, Mutex},
-};
+use std::error::Error;
+use std::{env, io::Error as IoError, net::SocketAddr, path::PathBuf, sync::Arc};
 
-use futures_channel::mpsc::{unbounded, UnboundedSender};
-use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
+use futures_util::{SinkExt, StreamExt};
 
 use tokio::net::{TcpListener, TcpStream};
+use tungstenite;
 use tungstenite::protocol::Message;
 
-type Tx = UnboundedSender<Message>;
-type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
+mod manager;
+use manager::Manager;
 
-async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: SocketAddr) {
+mod compile;
+use compile::compile;
+
+type Compiler = Manager<String, Result<PathBuf, Box<dyn Error + Send + Sync>>>;
+
+async fn handle_connection(
+  compiler: Arc<Compiler>,
+  raw_stream: TcpStream,
+  addr: SocketAddr,
+) -> tungstenite::Result<()> {
   println!("Incoming TCP connection from: {}", addr);
 
   let ws_stream = tokio_tungstenite::accept_async(raw_stream)
@@ -42,49 +38,40 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
     .expect("Error during the websocket handshake occurred");
   println!("WebSocket connection established: {}", addr);
 
-  // Insert the write part of this peer to the peer map.
-  let (tx, rx) = unbounded();
-  peer_map.lock().unwrap().insert(addr, tx);
+  let (mut outgoing, mut incoming) = ws_stream.split();
 
-  let (outgoing, incoming) = ws_stream.split();
-
-  let broadcast_incoming = incoming.try_for_each(|msg| {
-    println!(
-      "Received a message from {}: {}",
-      addr,
-      msg.to_text().unwrap()
-    );
-    let peers = peer_map.lock().unwrap();
-
-    // We want to broadcast the message to everyone except ourselves.
-    let broadcast_recipients = peers
-      .iter()
-      .filter(|(peer_addr, _)| peer_addr != &&addr)
-      .map(|(_, ws_sink)| ws_sink);
-
-    for recp in broadcast_recipients {
-      recp.unbounded_send(msg.clone()).unwrap();
+  loop {
+    match incoming.next().await {
+      Some(msg) => {
+        let msg = msg?;
+        if msg.is_close() {
+          break;
+        }
+        match compiler.query(String::from(msg.to_text().unwrap())).await {
+          Ok(path) => {
+            outgoing
+              .send(Message::text(format!("Success: {:?}", path)))
+              .await?
+          }
+          Err(fail) => {
+            outgoing
+              .send(Message::text(format!("Failed!\n{}", fail)))
+              .await?
+          }
+        }
+      }
+      None => break,
     }
-
-    future::ok(())
-  });
-
-  let receive_from_others = rx.map(Ok).forward(outgoing);
-
-  pin_mut!(broadcast_incoming, receive_from_others);
-  future::select(broadcast_incoming, receive_from_others).await;
-
-  println!("{} disconnected", &addr);
-  peer_map.lock().unwrap().remove(&addr);
+  }
+  Ok(())
 }
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), IoError> {
+  let compiler = Arc::new(Manager::new(compile).await);
   let addr = env::args()
     .nth(1)
     .unwrap_or_else(|| "0.0.0.0:20162".to_string());
-
-  let state = PeerMap::new(Mutex::new(HashMap::new()));
 
   // Create the event loop and TCP listener we'll accept connections on.
   let try_socket = TcpListener::bind(&addr).await;
@@ -93,7 +80,7 @@ async fn main() -> Result<(), IoError> {
 
   // Let's spawn the handling of each connection in a separate task.
   while let Ok((stream, addr)) = listener.accept().await {
-    tokio::spawn(handle_connection(state.clone(), stream, addr));
+    tokio::spawn(handle_connection(compiler.clone(), stream, addr));
   }
 
   Ok(())
