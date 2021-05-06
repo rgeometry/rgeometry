@@ -13,6 +13,7 @@ RUN mkdir playground/server/src && echo "fn main() {}" > playground/server/src/m
 RUN (cd playground/server && cargo build --release --color never)
 
 ADD . .
+RUN touch playground/server/src/main.rs
 RUN (cd playground/server && cargo build --release --color never)
 
 RUN echo "" > playground/wasm/src/user.rs
