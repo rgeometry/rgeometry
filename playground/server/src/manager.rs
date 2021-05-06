@@ -29,7 +29,7 @@ where
     Manager { sender: cmd_tx }
   }
 
-  pub async fn query(&self, arg: I) -> O {
+  pub async fn run(&self, arg: I) -> O {
     let (resp_tx, resp_rx) = oneshot::channel();
 
     self.sender.send((arg, resp_tx)).await.ok().unwrap();

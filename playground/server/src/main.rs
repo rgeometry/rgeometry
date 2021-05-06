@@ -47,7 +47,7 @@ async fn handle_connection(
         if msg.is_close() {
           break;
         }
-        match compiler.query(String::from(msg.to_text().unwrap())).await {
+        match compiler.run(String::from(msg.to_text().unwrap())).await {
           Ok(path) => {
             outgoing
               .send(Message::text(format!("Success: {:?}", path)))

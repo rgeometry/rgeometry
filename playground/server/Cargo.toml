@@ -7,8 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+base64 = "0.13"
+lazy_static = "*"
 futures-channel = "*"
 futures-util = "*"
-tokio = { version = "*", features = ["macros", "rt"] }
+tokio = { version = "*", features = ["macros", "rt", "process", "sync"] }
 tungstenite = "*"
 tokio-tungstenite = "*"
+directories = "*"
