@@ -15,6 +15,7 @@ RUN (cd playground/server && cargo build --release --color never)
 ADD . .
 RUN (cd playground/server && cargo build --release --color never)
 
+RUN echo "" > playground/wasm/src/user.rs
 RUN (cd playground/wasm && wasm-pack build --target=web)
 
 ENTRYPOINT playground/server/target/release/server
