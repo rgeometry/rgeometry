@@ -3,7 +3,7 @@ use directories::ProjectDirs;
 use std::collections::hash_map::DefaultHasher;
 use std::error::Error;
 use std::hash::{Hash, Hasher};
-use std::{fmt, fs, path::PathBuf, str};
+use std::{fmt, fs, str};
 
 use tokio::process::Command;
 
@@ -34,14 +34,14 @@ fn hash_code(code: &String) -> String {
   base64::encode_config(s.finish().to_le_bytes(), base64::URL_SAFE)
 }
 
-pub async fn compile(code: String) -> Result<PathBuf, Box<dyn Error + Send + Sync>> {
+pub async fn compile(code: String) -> Result<String, Box<dyn Error + Send + Sync>> {
   let proj_dirs = ProjectDirs::from("com", "rgeometry", "rgeometry").unwrap();
   let cache_dir = proj_dirs.cache_dir();
   let hash = hash_code(&code);
-  let target_file = cache_dir.join(hash).with_extension("wasm");
+  let target_file = cache_dir.join(&hash).with_extension("wasm");
   fs::create_dir_all(cache_dir)?;
   if target_file.exists() {
-    return Ok(target_file);
+    return Ok(hash);
   }
 
   fs::write("playground/wasm/src/user.rs", &code)?;
@@ -57,7 +57,7 @@ pub async fn compile(code: String) -> Result<PathBuf, Box<dyn Error + Send + Syn
   // Await until the command completes
   if output.status.success() {
     fs::copy("playground/wasm/pkg/wasm_bg.wasm", &target_file)?;
-    Ok(target_file)
+    Ok(hash)
   } else {
     let stderr = str::from_utf8(&output.stderr)?;
     Err(Box::new(CompileError::new(stderr)))

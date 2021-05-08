@@ -10,7 +10,7 @@
 // send response with the hash of the file.
 
 use std::error::Error;
-use std::{env, io::Error as IoError, net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{env, io::Error as IoError, net::SocketAddr, sync::Arc};
 
 use futures_util::{SinkExt, StreamExt};
 
@@ -24,7 +24,7 @@ use manager::Manager;
 mod compile;
 use compile::compile;
 
-type Compiler = Manager<String, Result<PathBuf, Box<dyn Error + Send + Sync>>>;
+type Compiler = Manager<String, Result<String, Box<dyn Error + Send + Sync>>>;
 
 async fn handle_connection(
   compiler: Arc<Compiler>,
