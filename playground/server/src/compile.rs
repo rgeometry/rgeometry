@@ -38,9 +38,10 @@ pub async fn compile(code: String) -> Result<String, Box<dyn Error + Send + Sync
   let proj_dirs = ProjectDirs::from("com", "rgeometry", "rgeometry").unwrap();
   let cache_dir = proj_dirs.cache_dir();
   let hash = hash_code(&code);
-  let target_file = cache_dir.join(&hash).with_extension("wasm");
+  let wasm_file = cache_dir.join(&hash).with_extension("wasm");
+  let js_file = cache_dir.join(&hash).with_extension("js");
   fs::create_dir_all(cache_dir)?;
-  if target_file.exists() {
+  if wasm_file.exists() && js_file.exists() {
     return Ok(hash);
   }
 
@@ -56,7 +57,8 @@ pub async fn compile(code: String) -> Result<String, Box<dyn Error + Send + Sync
 
   // Await until the command completes
   if output.status.success() {
-    fs::copy("playground/wasm/pkg/wasm_bg.wasm", &target_file)?;
+    fs::copy("playground/wasm/pkg/wasm_bg.wasm", &wasm_file)?;
+    fs::copy("playground/wasm/pkg/wasm.js", &js_file)?;
     Ok(hash)
   } else {
     let stderr = str::from_utf8(&output.stderr)?;

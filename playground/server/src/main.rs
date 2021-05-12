@@ -50,12 +50,12 @@ async fn handle_connection(
         match compiler.run(String::from(msg.to_text().unwrap())).await {
           Ok(path) => {
             outgoing
-              .send(Message::text(format!("Success: {:?}", path)))
+              .send(Message::text(format!("success\n{}", path)))
               .await?
           }
           Err(fail) => {
             outgoing
-              .send(Message::text(format!("Failed!\n{}", fail)))
+              .send(Message::text(format!("error\n{}", fail)))
               .await?
           }
         }
