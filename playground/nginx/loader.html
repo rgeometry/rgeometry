@@ -20,7 +20,7 @@
     async function run() {
       const params = new URLSearchParams(window.location.search);
       const hash = params.get('hash');
-      let mod = await import('./' + hash + '.js');
+      let mod = await import('./wasm/' + hash + '.js');
       let init = mod.default;
       // options:
       //   * hash
@@ -53,7 +53,7 @@
       // Also note that the promise, when resolved, yields the wasm module's
       // exports which is the same as importing the `*_bg` module in other
       // modes
-      await init('./' + hash + '.wasm');
+      await init('./wasm/' + hash + '.wasm');
 
       // And afterwards we can use all the functionality defined in wasm.
       //greet();

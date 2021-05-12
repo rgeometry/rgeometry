@@ -13,6 +13,6 @@ services:
     ports:
       - "20443:443"
     volumes:
-      - .cache/rgeometry:/var/www/html
+      - .cache/rgeometry:/var/www/html/wasm/
       - ./certbot/conf:/etc/nginx/ssl
       - ./certbot/data:/var/www/certbot
