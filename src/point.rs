@@ -1,9 +1,9 @@
+use array_init::array_init;
 use num_traits::Num;
 use num_traits::Zero;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
-use std::mem::MaybeUninit;
 use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
@@ -21,21 +21,12 @@ where
 {
   // FIXME: Unify with code for Vector.
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Point<T, N> {
-    unsafe {
-      let mut arr = MaybeUninit::uninit();
-      for i in 0..N {
-        (arr.as_mut_ptr() as *mut T).add(i).write(rng.gen());
-      }
-      Point(arr.assume_init())
-    }
+    Point(array_init(|_| rng.gen()))
   }
 }
 
 // Methods on N-dimensional points.
 impl<T: Clone, const N: usize> Point<T, N> {
-  pub fn as_vector(&self) -> Vector<T, N> {
-    Vector(self.clone().0)
-  }
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
     T: Zero + PartialOrd,
@@ -59,6 +50,27 @@ impl<T: Clone, const N: usize> Point<T, N> {
         let diff = a - b;
         sum + &diff * &diff
       })
+  }
+
+  // Similar to num_traits::identities::Zero but doesn't require an Add impl.
+  pub fn zero() -> Self
+  where
+    T: Zero,
+  {
+    Point(array_init(|_| Zero::zero()))
+  }
+
+  pub fn cast<U>(&self) -> Point<U, N>
+  where
+    U: From<T>,
+  {
+    Point(array_init(|i| self.0[i].clone().into()))
+  }
+}
+
+impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
+  fn from(vector: Vector<T, N>) -> Point<T, N> {
+    Point(vector.0)
   }
 }
 
@@ -90,3 +102,16 @@ impl<T> Point<T, 2> {
 
 mod add;
 mod sub;
+
+// // Sigh, should relax Copy to Clone.
+// impl<T, const N: usize> Zero for Point<T, N>
+// where
+//   T: Zero + Copy + Add + Add<Output = T>,
+// {
+//   fn zero() -> Point<T, N> {
+//     Point([Zero::zero(); N])
+//   }
+//   fn is_zero(&self) -> bool {
+//     self.0.iter().all(Zero::is_zero)
+//   }
+// }

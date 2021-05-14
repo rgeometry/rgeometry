@@ -1,42 +1,16 @@
+use array_init::array_init;
 use num_traits::Num;
 use std::cmp::Ordering;
-use std::mem::MaybeUninit;
 use std::ops::Index;
 use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
 
-pub fn raw_arr_zipwith<T, R, const N: usize>(lhs: &[T; N], rhs: &[T; N], cb: R) -> [T; N]
-where
-  R: Fn(&T, &T) -> T,
-{
-  return unsafe {
-    let mut arr = MaybeUninit::uninit();
-    for i in 0..N {
-      (arr.as_mut_ptr() as *mut T)
-        .add(i)
-        .write(cb(lhs.index(i), rhs.index(i)));
-    }
-    arr.assume_init()
-  };
-}
-
-// pub fn raw_arr_zipwith_inplace<T, R, const N: usize>(mut lhs: [T; N], rhs: &[T; N], cb: R) -> [T; N]
-// where
-//   R: Fn(&T, &T) -> T,
-// {
-//   for i in 0..N {
-//     lhs[i] = cb(lhs.index(i), rhs.index(i))
-//   }
-//   lhs
-// }
-
 pub fn raw_arr_sub<T, const N: usize>(lhs: &[T; N], rhs: &[T; N]) -> [T; N]
 where
-  T: Sub<Output = T>,
   for<'a> &'a T: Sub<Output = T>,
 {
-  raw_arr_zipwith(lhs, rhs, |a, b| a - b)
+  array_init(|i| lhs.index(i) - rhs.index(i))
 }
 
 #[derive(PartialEq, Debug)]

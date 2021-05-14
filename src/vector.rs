@@ -1,8 +1,10 @@
+use array_init::array_init;
+use num_traits::identities::Zero;
 use num_traits::Num;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
-use std::mem::MaybeUninit;
+use std::ops::Add;
 use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
@@ -18,13 +20,7 @@ where
   Standard: Distribution<T>,
 {
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vector<T, N> {
-    unsafe {
-      let mut arr = MaybeUninit::uninit();
-      for i in 0..N {
-        (arr.as_mut_ptr() as *mut T).add(i).write(rng.gen());
-      }
-      Vector(arr.assume_init())
-    }
+    Vector(array_init(|_| rng.gen()))
   }
 }
 
@@ -37,6 +33,12 @@ where
   }
   pub fn qda(&self) -> T {
     unimplemented!();
+  }
+}
+
+impl<T, const N: usize> From<Point<T, N>> for Vector<T, N> {
+  fn from(point: Point<T, N>) -> Vector<T, N> {
+    Vector(point.0)
   }
 }
 
@@ -74,3 +76,15 @@ impl<T> Vector<T, 2> {
 
 mod add;
 mod sub;
+
+impl<T, const N: usize> Zero for Vector<T, N>
+where
+  T: Zero + Clone + Add + Add<Output = T>,
+{
+  fn zero() -> Vector<T, N> {
+    Vector(array_init(|_| Zero::zero()))
+  }
+  fn is_zero(&self) -> bool {
+    self.0.iter().all(Zero::is_zero)
+  }
+}

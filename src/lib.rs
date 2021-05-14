@@ -1,3 +1,5 @@
+use num_bigint::BigInt;
+use num_rational::BigRational;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::collections::BTreeSet;
@@ -10,13 +12,15 @@ pub use array::Turn;
 pub use point::Point;
 pub use vector::Vector;
 
+#[derive(Debug)]
 pub struct Polygon<T, P = ()> {
   pub points: Vec<Point<T, 2>>,
-  pub boundary: u32,
-  pub holes: Vec<u32>,
+  pub boundary: usize,
+  pub holes: Vec<usize>,
   pub meta: Vec<P>,
 }
 
+#[derive(Debug)]
 pub struct ConvexPolygon<T, P = ()>(Polygon<T, P>);
 
 // Property: random_between(n, max, &mut rng).iter().sum::<usize>() == max
@@ -42,26 +46,27 @@ where
 }
 
 // Property: random_between_zero(10, 100, &mut rng).iter().sum::<isize>() == 0
-pub fn random_between_zero<R>(n: usize, max: usize, rng: &mut R) -> Vec<isize>
+pub fn random_between_zero<R>(n: usize, max: usize, rng: &mut R) -> Vec<BigInt>
 where
   R: Rng + ?Sized,
 {
   random_between(n, max, rng)
-    .iter()
-    .zip(random_between(n, max, rng).iter())
-    .map(|(a, b)| *a as isize - *b as isize)
+    .into_iter()
+    .map(BigInt::from)
+    .zip(random_between(n, max, rng).into_iter().map(BigInt::from))
+    .map(|(a, b)| a - b)
     .collect()
 }
 
 // Random vectors that sum to zero.
-pub fn random_vectors<R>(n: usize, max: usize, rng: &mut R) -> Vec<Vector<isize, 2>>
+pub fn random_vectors<R>(n: usize, max: usize, rng: &mut R) -> Vec<Vector<BigRational, 2>>
 where
   R: Rng + ?Sized,
 {
   random_between_zero(n, max, rng)
-    .iter()
-    .zip(random_between_zero(n, max, rng).iter())
-    .map(|(a, b)| Vector([*a, *b]))
+    .into_iter()
+    .zip(random_between_zero(n, max, rng).into_iter())
+    .map(|(a, b)| Vector([BigRational::from_integer(a), BigRational::from_integer(b)]))
     .collect()
 }
 
@@ -77,28 +82,36 @@ impl<T, P> ConvexPolygon<T, P> {
     let ConvexPolygon(_p) = self;
     unimplemented!();
   }
-  pub fn random<R>(n: usize, max: usize, rng: &mut R) -> ConvexPolygon<isize>
-  where
-    R: Rng + ?Sized,
-  {
-    let _vs = {
-      let mut vs = random_vectors(n, max, rng);
-      Vector::sort_around(&mut vs);
-      vs
-    };
-    unimplemented!();
-    // ~(v:vs) <- coerce . sortAround origin . coerce <$> randomEdges n vMax
-    // let vertices = fmap ((/ realToFrac vMax) . realToFrac) <$> scanl (.+^) (Point v) vs
-    //     pRational = unsafeFromPoints $ map ext vertices
-    //     Point c = centroid pRational
-    //     pFinal = pRational & unsafeOuterBoundaryVector %~ CV.map (over core (.-^ c))
-    // pure $ ConvexPolygon pFinal
-  }
 }
 
-impl Distribution<ConvexPolygon<isize>> for Standard {
-  fn sample<R: Rng + ?Sized>(&self, _rng: &mut R) -> ConvexPolygon<isize> {
-    unimplemented!();
+pub fn random<R>(n: usize, max: usize, rng: &mut R) -> ConvexPolygon<BigRational>
+where
+  R: Rng + ?Sized,
+{
+  let vs = {
+    let mut vs = random_vectors(n, max, rng);
+    Vector::sort_around(&mut vs);
+    vs
+  };
+  let vertices: Vec<point::Point<BigRational, 2>> = vs
+    .into_iter()
+    .scan(Point::zero(), |st, pt| {
+      *st += pt;
+      Some(st.clone())
+    })
+    .collect();
+  let len = (&vertices).len();
+  ConvexPolygon(Polygon {
+    points: vertices,
+    boundary: len,
+    holes: vec![],
+    meta: vec![],
+  })
+}
+
+impl Distribution<ConvexPolygon<BigRational>> for Standard {
+  fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ConvexPolygon<BigRational> {
+    random(100, usize::MAX, rng)
   }
 }
 
