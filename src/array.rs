@@ -52,12 +52,12 @@ where
 // Sort 'p' and 'q' counterclockwise around (0,0) along the 'z' axis.
 pub fn ccw_cmp_around_origin_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Ordering
 where
-  T: Num + Clone + PartialOrd,
-  for<'a> &'a T: Neg<Output = T>,
+  T: Num + Clone + PartialOrd + Neg<Output = T>,
+  // for<'a> &'a T: Neg<Output = T>,
   for<'a> &'a T: Sub<Output = T> + Mul<Output = T>,
 {
   let [zx, zy] = z;
-  let b = &[zy.neg(), zx.clone()];
+  let b: &[T; 2] = &[zy.clone().neg(), zx.clone()];
   let ap = raw_arr_turn_origin(z, p);
   let aq = raw_arr_turn_origin(z, q);
   let on_zero = |d: &[T; 2]| match raw_arr_turn_origin(b, d) {

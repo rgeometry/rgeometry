@@ -4,15 +4,19 @@ use num_traits::Zero;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
+// use std::ops::Add;
+use std::ops::Index;
 use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
 
 use super::array::*;
-use super::vector::Vector;
+use super::vector::{Vector, VectorView};
 
 #[derive(Debug, Clone, Copy)]
-pub struct Point<T, const N: usize>(pub [T; N]);
+pub struct Point<T, const N: usize> {
+  pub array: [T; N],
+}
 
 // Random sampling.
 impl<T, const N: usize> Distribution<Point<T, N>> for Standard
@@ -21,12 +25,17 @@ where
 {
   // FIXME: Unify with code for Vector.
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Point<T, N> {
-    Point(array_init(|_| rng.gen()))
+    Point {
+      array: array_init(|_| rng.gen()),
+    }
   }
 }
 
 // Methods on N-dimensional points.
 impl<T: Clone, const N: usize> Point<T, N> {
+  pub fn new(array: [T; N]) -> Point<T, N> {
+    Point { array: array }
+  }
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
     T: Zero + PartialOrd,
@@ -43,9 +52,9 @@ impl<T: Clone, const N: usize> Point<T, N> {
     for<'a> &'a T: Sub<&'a T, Output = T> + Mul<&'a T, Output = T>,
   {
     self
-      .0
+      .array
       .iter()
-      .zip(rhs.0.iter())
+      .zip(rhs.array.iter())
       .fold(T::zero(), |sum, (a, b)| {
         let diff = a - b;
         sum + &diff * &diff
@@ -57,20 +66,31 @@ impl<T: Clone, const N: usize> Point<T, N> {
   where
     T: Zero,
   {
-    Point(array_init(|_| Zero::zero()))
+    Point {
+      array: array_init(|_| Zero::zero()),
+    }
   }
 
   pub fn cast<U>(&self) -> Point<U, N>
   where
     U: From<T>,
   {
-    Point(array_init(|i| self.0[i].clone().into()))
+    Point {
+      array: array_init(|i| self.array[i].clone().into()),
+    }
+  }
+}
+
+impl<T, const N: usize> Index<usize> for Point<T, N> {
+  type Output = T;
+  fn index(&self, key: usize) -> &T {
+    self.array.index(key)
   }
 }
 
 impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
   fn from(vector: Vector<T, N>) -> Point<T, N> {
-    Point(vector.0)
+    Point { array: vector.0 }
   }
 }
 
@@ -81,19 +101,19 @@ impl<T> Point<T, 2> {
     T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + PartialOrd,
     for<'a> &'a T: Sub<Output = T>,
   {
-    raw_arr_turn(&self.0, &q.0, &r.0)
+    raw_arr_turn(&self.array, &q.array, &r.array)
   }
   /// Docs?
   pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Num + Clone + PartialOrd,
+    T: Num + Clone + PartialOrd + Neg<Output = T>,
     for<'a> &'a T: Neg<Output = T> + Sub<Output = T> + Mul<Output = T>,
   {
     self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
   }
   pub fn ccw_cmp_around_with(&self, z: &Vector<T, 2>, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Num + Clone + PartialOrd,
+    T: Num + Clone + PartialOrd + Neg<Output = T>,
     for<'a> &'a T: Sub<Output = T> + Mul<Output = T> + Neg<Output = T>,
   {
     ccw_cmp_around_origin_with(&z.0, &(p - self).0, &(q - self).0)

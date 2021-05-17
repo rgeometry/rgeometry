@@ -16,6 +16,8 @@ where
   type Output = Vector<T, N>;
 
   fn sub(self: &'b Point<T, N>, other: &'a Point<T, N>) -> Self::Output {
-    Vector(array_init(|i| self.0[i].clone() - other.0[i].clone()))
+    Vector(array_init(|i| {
+      self.array[i].clone() - other.array[i].clone()
+    }))
   }
 }

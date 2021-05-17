@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 // use rand::Rng;
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -17,7 +18,12 @@ fn main() {
     .iter()
     .sum::<BigInt>());
 
-  // dbg!(random(10, 1000, &mut rng));
-  let val: ConvexPolygon<BigRational> = rng.sample(Standard);
-  dbg!(val);
+  let p: Polygon<BigRational> = ConvexPolygon::random(3, 1000, &mut rng).into();
+  // for view in p.iter_boundary_edges() {
+  //   dbg!(view);
+  // }
+  dbg!(&p);
+  dbg!(p.centroid());
+  // let val: ConvexPolygon<BigRational> = rng.sample(Standard);
+  // dbg!(val);
 }

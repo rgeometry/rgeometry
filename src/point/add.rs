@@ -13,7 +13,9 @@ where
   type Output = Point<T, N>;
 
   fn add(self: &'b Point<T, N>, other: &'a Vector<T, N>) -> Self::Output {
-    Point(array_init(|i| self.0.index(i) + other.0.index(i)))
+    Point {
+      array: array_init(|i| self.array.index(i) + other.0.index(i)),
+    }
   }
 }
 
@@ -25,7 +27,9 @@ where
   type Output = Point<T, N>;
 
   fn add(self: Point<T, N>, other: Vector<T, N>) -> Self::Output {
-    Point(array_init(|i| self.0.index(i) + other.0.index(i)))
+    Point {
+      array: array_init(|i| self.array.index(i) + other.0.index(i)),
+    }
   }
 }
 
@@ -37,7 +41,9 @@ where
   type Output = Point<T, N>;
 
   fn add(self: Point<T, N>, other: &Vector<T, N>) -> Self::Output {
-    Point(array_init(|i| self.0.index(i) + other.0.index(i)))
+    Point {
+      array: array_init(|i| self.array.index(i) + other.0.index(i)),
+    }
   }
 }
 
@@ -48,10 +54,11 @@ where
 {
   fn add_assign(&mut self, other: &Vector<T, N>) {
     for i in 0..N {
-      self.0[i] += other.0.index(i)
+      self.array[i] += other.0.index(i)
     }
   }
 }
+
 // point += vector
 impl<T, const N: usize> AddAssign<Vector<T, N>> for Point<T, N>
 where
@@ -59,7 +66,7 @@ where
 {
   fn add_assign(&mut self, other: Vector<T, N>) {
     for i in 0..N {
-      self.0[i] += other.0.index(i)
+      self.array[i] += other.0.index(i)
     }
   }
 }
