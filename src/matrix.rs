@@ -26,8 +26,8 @@ impl<T> Matrix<T> {
       vec.push(T::zero())
     }
     Matrix {
-      nrows: nrows,
-      ncols: ncols,
+      nrows,
+      ncols,
       elements: vec,
     }
   }

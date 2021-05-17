@@ -51,10 +51,10 @@ impl<T> Polygon<T> {
     let mut meta = Vec::with_capacity(len);
     meta.resize(len, ());
     Polygon {
-      points: points,
+      points,
       boundary: len,
       holes: vec![],
-      meta: meta,
+      meta,
     }
   }
 }
@@ -121,7 +121,7 @@ impl<T, P> Polygon<T, P> {
     }
   }
 
-  pub fn iter<'a>(&'a self) -> Zip<std::slice::Iter<'a, Point<T, 2>>, std::slice::Iter<'a, P>> {
+  pub fn iter(&self) -> Zip<std::slice::Iter<'_, Point<T, 2>>, std::slice::Iter<'_, P>> {
     self.points.iter().zip(self.meta.iter())
   }
 

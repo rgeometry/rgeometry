@@ -34,7 +34,7 @@ where
 // Methods on N-dimensional points.
 impl<T: Clone, const N: usize> Point<T, N> {
   pub fn new(array: [T; N]) -> Point<T, N> {
-    Point { array: array }
+    Point { array }
   }
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
