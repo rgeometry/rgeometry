@@ -67,10 +67,9 @@ impl<T, P> Polygon<T, P> {
     let xs: Vector<T, 2> = self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = edge.0.inner().0;
-        let q = edge.1.inner().0;
-        (VectorView::from(p) + VectorView::from(q))
-          * (p.array[0].clone() * q.array[1].clone() - q.array[0].clone() * p.array[1].clone())
+        let p = edge.0.inner().0.as_vec_ref();
+        let q = edge.1.inner().0.as_vec_ref();
+        (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
     let three = T::from_usize(3).unwrap();

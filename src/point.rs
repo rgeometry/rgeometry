@@ -14,6 +14,7 @@ use super::array::*;
 use super::vector::{Vector, VectorView};
 
 #[derive(Debug, Clone, Copy)]
+#[repr(transparent)]
 pub struct Point<T, const N: usize> {
   pub array: [T; N],
 }
@@ -36,6 +37,15 @@ impl<T: Clone, const N: usize> Point<T, N> {
   pub fn new(array: [T; N]) -> Point<T, N> {
     Point { array }
   }
+
+  pub fn as_vec(self) -> Vector<T, N> {
+    self.into()
+  }
+
+  pub fn as_vec_ref(&self) -> &Vector<T, N> {
+    self.into()
+  }
+
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
     T: Zero + PartialOrd,
@@ -46,6 +56,7 @@ impl<T: Clone, const N: usize> Point<T, N> {
       .partial_cmp(&self.squared_euclidean_distance(q))
       .unwrap_or(Ordering::Equal)
   }
+
   pub fn squared_euclidean_distance(&self, rhs: &Point<T, N>) -> T
   where
     T: Zero,

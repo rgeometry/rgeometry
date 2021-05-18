@@ -16,6 +16,7 @@ use super::array::*;
 use super::point::Point;
 
 #[derive(Debug, Clone)]
+#[repr(transparent)]
 pub struct Vector<T, const N: usize>(pub [T; N]);
 
 #[derive(Debug, Clone, Copy)]
@@ -49,6 +50,12 @@ impl<T, const N: usize> Index<usize> for Vector<T, N> {
 impl<T, const N: usize> From<Point<T, N>> for Vector<T, N> {
   fn from(point: Point<T, N>) -> Vector<T, N> {
     Vector(point.array)
+  }
+}
+
+impl<'a, T, const N: usize> From<&'a Point<T, N>> for &'a Vector<T, N> {
+  fn from(point: &Point<T, N>) -> &Vector<T, N> {
+    unsafe { &*(point as *const Point<T, N> as *const Vector<T, N>) }
   }
 }
 

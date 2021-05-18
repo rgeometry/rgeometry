@@ -18,6 +18,17 @@ where
   }
 }
 
+impl<'a, 'b, T, const N: usize> Add<&'b Vector<T, N>> for &'a Vector<T, N>
+where
+  T: Num + Clone,
+{
+  type Output = Vector<T, N>;
+
+  fn add(self, other: &Vector<T, N>) -> Self::Output {
+    Vector(array_init(|i| self.0[i].clone() + other.0[i].clone()))
+  }
+}
+
 impl<T, const N: usize> AddAssign<Vector<T, N>> for Vector<T, N>
 where
   T: Num + Clone + AddAssign,
