@@ -38,11 +38,7 @@ impl<T: Clone, const N: usize> Point<T, N> {
     Point { array }
   }
 
-  pub fn as_vec(self) -> Vector<T, N> {
-    self.into()
-  }
-
-  pub fn as_vec_ref(&self) -> &Vector<T, N> {
+  pub fn as_vec(&self) -> &Vector<T, N> {
     self.into()
   }
 

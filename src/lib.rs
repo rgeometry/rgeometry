@@ -67,8 +67,8 @@ impl<T, P> Polygon<T, P> {
     let xs: Vector<T, 2> = self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = edge.0.inner().0.as_vec_ref();
-        let q = edge.1.inner().0.as_vec_ref();
+        let p = edge.0.inner().0.as_vec();
+        let q = edge.1.inner().0.as_vec();
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
