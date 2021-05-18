@@ -1,6 +1,8 @@
 #![allow(unused_imports)]
 use num_bigint::BigInt;
 use num_rational::BigRational;
+use num_traits::cast::FromPrimitive;
+// use num_rational::BigRational;
 // use num_traits::Num;
 // use num_traits::Zero;
 // use rand::distributions::Standard;
@@ -28,12 +30,13 @@ fn main() {
   // dbg!(&t2 * &v);
   // dbg!((&t2 * &t1) * &v);
   let p = Polygon::new(vec![
-    Point::new([0., 0.]),
-    Point::new([1., 0.]),
-    Point::new([3., 3.]),
+    Point::new([0, 0]),
+    Point::new([1, 0]),
+    Point::new([3, 3]),
     // Point::new([0, 1]),
   ]);
-  dbg!(p.centroid());
+  let p2 = p.cast(|v| BigRational::from_i32(v).unwrap());
+  dbg!(p2.centroid());
   // let a: Array2<BigRational> = unimplemented!();
   // let b = array![7, 8, 9];
   // // let c: Array2<i32> = arr1(&b);

@@ -78,12 +78,12 @@ impl<T: Clone, const N: usize> Point<T, N> {
     }
   }
 
-  pub fn cast<U>(&self) -> Point<U, N>
+  pub fn cast<U, F>(self, f: F) -> Point<U, N>
   where
-    U: From<T>,
+    F: Fn(T) -> U,
   {
     Point {
-      array: array_init(|i| self.array[i].clone().into()),
+      array: array_init(|i| f(self.array[i].clone())),
     }
   }
 }

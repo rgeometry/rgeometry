@@ -130,6 +130,20 @@ impl<T, P> Polygon<T, P> {
       meta: self.meta.iter_mut(),
     }
   }
+
+  pub fn cast<U, F>(self, f: F) -> Polygon<U, P>
+  where
+    T: PolygonScalar,
+    F: Fn(T) -> U + Clone,
+  {
+    let pts = self.points.into_iter().map(|p| p.cast(f.clone())).collect();
+    Polygon {
+      points: pts,
+      boundary: self.boundary,
+      holes: self.holes,
+      meta: self.meta,
+    }
+  }
 }
 
 pub struct EdgeIter<'a, T: 'a, P: 'a, const N: usize> {
