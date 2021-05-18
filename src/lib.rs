@@ -146,6 +146,53 @@ impl<T, P> Polygon<T, P> {
   }
 }
 
+impl<P> From<Polygon<BigRational, P>> for Polygon<f64, P> {
+  fn from(p: Polygon<BigRational, P>) -> Polygon<f64, P> {
+    let pts = p.points.into_iter().map(|p| Point::from(&p)).collect();
+    Polygon {
+      points: pts,
+      boundary: p.boundary,
+      holes: p.holes,
+      meta: p.meta,
+    }
+  }
+}
+impl<'a, P: Clone> From<&'a Polygon<BigRational, P>> for Polygon<f64, P> {
+  fn from(p: &Polygon<BigRational, P>) -> Polygon<f64, P> {
+    let pts = p.points.iter().map(Point::from).collect();
+    Polygon {
+      points: pts,
+      boundary: p.boundary,
+      holes: p.holes.clone(),
+      meta: p.meta.clone(),
+    }
+  }
+}
+
+impl<P> From<Polygon<f64, P>> for Polygon<BigRational, P> {
+  fn from(p: Polygon<f64, P>) -> Polygon<BigRational, P> {
+    let pts = p.points.into_iter().map(|p| Point::from(&p)).collect();
+    Polygon {
+      points: pts,
+      boundary: p.boundary,
+      holes: p.holes,
+      meta: p.meta,
+    }
+  }
+}
+
+impl<'a, P: Clone> From<&'a Polygon<f64, P>> for Polygon<BigRational, P> {
+  fn from(p: &Polygon<f64, P>) -> Polygon<BigRational, P> {
+    let pts = p.points.iter().map(Point::from).collect();
+    Polygon {
+      points: pts,
+      boundary: p.boundary,
+      holes: p.holes.clone(),
+      meta: p.meta.clone(),
+    }
+  }
+}
+
 pub struct EdgeIter<'a, T: 'a, P: 'a, const N: usize> {
   at: usize,
   points: &'a [Point<T, N>],

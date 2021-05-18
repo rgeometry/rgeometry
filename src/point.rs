@@ -1,5 +1,8 @@
 use array_init::array_init;
+use num_rational::BigRational;
+use num_traits::FromPrimitive;
 use num_traits::Num;
+use num_traits::ToPrimitive;
 use num_traits::Zero;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
@@ -92,6 +95,22 @@ impl<T, const N: usize> Index<usize> for Point<T, N> {
   type Output = T;
   fn index(&self, key: usize) -> &T {
     self.array.index(key)
+  }
+}
+
+impl<'a, const N: usize> From<&'a Point<BigRational, N>> for Point<f64, N> {
+  fn from(point: &Point<BigRational, N>) -> Point<f64, N> {
+    Point {
+      array: array_init(|i| point.array[i].to_f64().unwrap()),
+    }
+  }
+}
+
+impl<'a, const N: usize> From<&'a Point<f64, N>> for Point<BigRational, N> {
+  fn from(point: &Point<f64, N>) -> Point<BigRational, N> {
+    Point {
+      array: array_init(|i| BigRational::from_f64(point.array[i]).unwrap()),
+    }
   }
 }
 
