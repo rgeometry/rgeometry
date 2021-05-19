@@ -2,10 +2,37 @@
 
 <head>
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <style type="text/css">
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      z-index: -1;
+    }
+
+    #ui-overlay input[type="range"] {
+      width: 100%;
+    }
+  </style>
 </head>
 
 <body>
-  <canvas style="width: 100%; height:100%;" id="canvas"></canvas>
+  <canvas id="canvas"></canvas>
+  <div id="ui-overlay">
+  </div>
+  <script>
+    const htmlCanvas = document.getElementById('canvas');
+    function resizeCanvas() {
+      htmlCanvas.width = window.innerWidth;
+      htmlCanvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas, false);
+  </script>
   <!-- Note the usage of `type=module` here as this is an ES6 module -->
   <script type="module">
     // Use ES module import syntax to import functionality from the module
@@ -18,9 +45,15 @@
     // import init, { greet } from './wasm.js';
 
     async function run() {
+      const is_local = false;
       const params = new URLSearchParams(window.location.search);
       const hash = params.get('hash');
-      let mod = await import('./wasm/' + hash + '.js');
+      let mod;
+      if (is_local) {
+        mod = await import('./pkg/wasm.js');
+      } else {
+        mod = await import('./wasm/' + hash + '.js');
+      }
       let init = mod.default;
       // options:
       //   * hash
@@ -53,7 +86,15 @@
       // Also note that the promise, when resolved, yields the wasm module's
       // exports which is the same as importing the `*_bg` module in other
       // modes
-      await init('./wasm/' + hash + '.wasm');
+      if (is_local)
+        await init();
+      else
+        await init('./wasm/' + hash + '.wasm');
+
+      // function redrawCanvas() {
+      //   await init();
+      // }
+      // window.addEventListener('resize', redrawCanvas, false);
 
       // And afterwards we can use all the functionality defined in wasm.
       //greet();
