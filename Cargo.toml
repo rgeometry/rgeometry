@@ -1,15 +1,22 @@
 [package]
-name = "rgeometry"
-version = "0.1.0"
-authors = ["David Himmelstrup <lemmih@gmail.com>"]
-edition = "2018"
+authors      = ["David Himmelstrup <lemmih@gmail.com>"]
+categories   = ["algorithms", "data-structures", "mathematics", "graphics"]
+description  = "High-Level Computational Geometry"
+edition      = "2018"
+homepage     = "https://rgeometry.org/"
+license      = "Unlicense OR BSD-2-Clause"
+license-file = "LICENSE"
+name         = "rgeometry"
+readme       = "README.md"
+repository   = "https://github.com/rgeometry/rgeometry"
+version      = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8"
-getrandom = { version = "^0.2.2", features = ["js"] }
-num-traits = "0.1"
+array-init   = "*"
+getrandom    = { version = "^0.2.2", features = ["js"] }
+num-bigint   = "*"
 num-rational = "0.4"
-num-bigint = "*"
-array-init = "*"
+num-traits   = "0.1"
+rand         = "0.8"
