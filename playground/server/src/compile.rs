@@ -7,6 +7,8 @@ use std::{fmt, fs, str};
 
 use tokio::process::Command;
 
+const GIT_VERSION: &str = git_version::git_version!();
+
 #[derive(Debug)]
 struct CompileError(String);
 
@@ -31,6 +33,7 @@ impl Error for CompileError {
 fn hash_code(code: &String) -> String {
   let mut s = DefaultHasher::new();
   code.hash(&mut s);
+  GIT_VERSION.hash(&mut s);
   base64::encode_config(s.finish().to_le_bytes(), base64::URL_SAFE)
 }
 
