@@ -1,6 +1,8 @@
 use array_init::array_init;
+use num_traits::identities::One;
 use num_traits::identities::Zero;
-use num_traits::Num;
+use num_traits::NumOps;
+use num_traits::NumRef;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
@@ -38,6 +40,18 @@ where
   pub fn qda(&self) -> T {
     unimplemented!();
   }
+
+  pub fn squared_magnitude(&self) -> T
+  where
+    T: Zero + AddAssign,
+    for<'a> &'a T: Sub<&'a T, Output = T> + Mul<&'a T, Output = T>,
+  {
+    let mut total = T::zero();
+    for elt in self.0.iter() {
+      total += elt * elt;
+    }
+    total
+  }
 }
 
 impl<T, const N: usize> Index<usize> for Vector<T, N> {
@@ -68,8 +82,8 @@ impl<'a, T, const N: usize> From<&'a Point<T, N>> for VectorView<'a, T, N> {
 impl<T> Vector<T, 2> {
   pub fn ccw_cmp_around(&self, p: &Vector<T, 2>, q: &Vector<T, 2>) -> Ordering
   where
-    T: Num + Clone + PartialOrd + Neg<Output = T>,
-    for<'a> &'a T: Neg<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: NumRef + Clone + PartialOrd + Neg<Output = T> + Zero + One,
+    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
   {
     self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
   }
@@ -80,16 +94,18 @@ impl<T> Vector<T, 2> {
     q: &Vector<T, 2>,
   ) -> Ordering
   where
-    T: Num + Clone + PartialOrd + Neg<Output = T>,
-    for<'a> &'a T: Sub<Output = T> + Mul<Output = T>,
+    T: NumRef + Clone + PartialOrd + Neg<Output = T>,
+    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
   {
     ccw_cmp_around_origin_with(&z.0, &(p - self).0, &(q - self).0)
   }
 
+  // FIXME: rename to sort_around_origin
+  // FIXME: sort by magnitude if two vectors have the same angle.
   pub fn sort_around(pts: &mut Vec<Vector<T, 2>>)
   where
-    T: Num + PartialOrd + Clone + Neg<Output = T>,
-    for<'a> &'a T: Sub<&'a T, Output = T> + Mul<&'a T, Output = T>,
+    T: NumRef + PartialOrd + Clone + Neg<Output = T> + Zero + One,
+    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
   {
     pts.sort_unstable_by(|a, b| ccw_cmp_around_origin_with(&[T::one(), T::zero()], &a.0, &b.0))
     // unimplemented!();
@@ -104,7 +120,8 @@ mod sub;
 
 impl<T, const N: usize> Zero for Vector<T, N>
 where
-  T: Num + Clone,
+  T: NumOps + Zero + Clone,
+  for<'c> &'c T: Add<&'c T, Output = T>,
 {
   fn zero() -> Vector<T, N> {
     Vector(array_init(|_| Zero::zero()))
@@ -116,7 +133,8 @@ where
 
 impl<T, const N: usize> Sum for Vector<T, N>
 where
-  T: Num + AddAssign + Clone,
+  T: NumOps + Zero + AddAssign + Clone,
+  for<'c> &'c T: Add<&'c T, Output = T>,
 {
   fn sum<I>(iter: I) -> Vector<T, N>
   where
@@ -132,7 +150,7 @@ where
 
 impl<T, const N: usize> Neg for Vector<T, N>
 where
-  T: Num + Neg<Output = T> + Clone,
+  T: NumOps + Neg<Output = T> + Clone,
 {
   type Output = Self;
   fn neg(self) -> Self {

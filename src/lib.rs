@@ -6,8 +6,12 @@
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::identities::One;
+use num_traits::identities::Zero;
 use num_traits::FromPrimitive;
 use num_traits::Num;
+use num_traits::NumOps;
+use num_traits::NumRef;
+use num_traits::RefNum;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::borrow::Borrow;
@@ -19,14 +23,19 @@ use std::ops::AddAssign;
 use std::ops::Div;
 use std::ops::Index;
 use std::ops::Mul;
+use std::ops::MulAssign;
+use std::ops::Neg;
 use std::ops::Sub;
 
 mod array;
+mod intersection;
 mod linesegment;
 mod matrix;
 mod point;
 mod transformation;
 mod vector;
+
+pub mod convexhull;
 
 pub use array::Turn;
 pub use linesegment::*;
@@ -34,8 +43,33 @@ pub use point::Point;
 pub use transformation::*;
 pub use vector::{Vector, VectorView};
 
-pub trait PolygonScalar: Clone + Num + Sum + AddAssign + FromPrimitive {}
-impl<T> PolygonScalar for T where T: Clone + Num + Sum + AddAssign + FromPrimitive {}
+#[derive(Debug, Clone, Copy)]
+pub enum Error {
+  InsufficientInput,
+  SelfIntersections,
+}
+pub trait PolygonScalar<T = Self, Output = Self>:
+  PolygonScalarRef<T, Output> + AddAssign<Output> + MulAssign<Output> + FromPrimitive + One + Zero
+{
+}
+impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
+  T: PolygonScalarRef<Rhs, Output>
+    + AddAssign<Output>
+    + MulAssign<Output>
+    + FromPrimitive
+    + One
+    + Zero
+{
+}
+
+pub trait PolygonScalarRef<T = Self, Output = Self>:
+  Clone + PartialOrd<T> + NumOps<T, Output> + Neg<Output = Output>
+{
+}
+impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where
+  T: Clone + PartialOrd<Rhs> + NumOps<Rhs, Output> + Neg<Output = Output>
+{
+}
 
 #[derive(Debug, Clone)]
 pub struct Polygon<T, P = ()> {
@@ -59,10 +93,24 @@ impl<T> Polygon<T> {
   }
 }
 
+// fn test<T>(p: Polygon<T>)
+// where
+//   // T: PolygonScalar,
+//   for<'a> &'a T: PolygonScalarRef<&'a T, T>,
+// {
+// }
+
+// fn run_test() {
+//   let x: Polygon<BigRational> = todo!();
+//   let y: Polygon<f32> = todo!();
+//   test(x);
+// }
+
 impl<T, P> Polygon<T, P> {
   pub fn centroid(&self) -> Point<T, 2>
   where
-    T: PolygonScalar,
+    T: PolygonScalar + Zero + Sum,
+    for<'a> &'a T: Add<&'a T, Output = T>,
   {
     let xs: Vector<T, 2> = self
       .iter_boundary_edges()
@@ -78,14 +126,14 @@ impl<T, P> Polygon<T, P> {
 
   pub fn signed_area(&self) -> T
   where
-    T: PolygonScalar,
+    T: PolygonScalar + Zero + Sum,
   {
     self.signed_area_2x() / T::from_usize(2).unwrap()
   }
 
   pub fn signed_area_2x(&self) -> T
   where
-    T: PolygonScalar,
+    T: PolygonScalar + Zero + Sum,
   {
     self
       .iter_boundary_edges()

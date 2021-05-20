@@ -1,5 +1,6 @@
 use array_init::array_init;
-use num_traits::Num;
+use num_traits::NumOps;
+use num_traits::NumRef;
 use std::cmp::Ordering;
 use std::ops::Index;
 use std::ops::Mul;
@@ -10,7 +11,7 @@ pub fn raw_arr_sub<T, const N: usize>(lhs: &[T; N], rhs: &[T; N]) -> [T; N]
 where
   for<'a> &'a T: Sub<Output = T>,
 {
-  array_init(|i| lhs.index(i) - rhs.index(i))
+  array_init(|i| (lhs.index(i) - rhs.index(i)))
 }
 
 #[derive(PartialEq, Debug)]
@@ -23,8 +24,8 @@ pub enum Turn {
 // How does the line from (0,0) to q to r turn?
 pub fn raw_arr_turn_origin<T>(q: &[T; 2], r: &[T; 2]) -> Turn
 where
-  T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + PartialOrd,
-  for<'a> &'a T: Sub<Output = T> + Mul<Output = T>,
+  T: PartialOrd,
+  for<'a> &'a T: Mul<Output = T>,
 {
   let [ux, uy] = q;
   let [vx, vy] = r;
@@ -37,7 +38,7 @@ where
 
 pub fn raw_arr_turn<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Turn
 where
-  T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + PartialOrd,
+  T: Mul<T, Output = T> + PartialOrd,
   for<'a> &'a T: Sub<Output = T>,
 {
   let [ux, uy] = raw_arr_sub(q, p);
@@ -52,12 +53,11 @@ where
 // Sort 'p' and 'q' counterclockwise around (0,0) along the 'z' axis.
 pub fn ccw_cmp_around_origin_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Ordering
 where
-  T: Num + Clone + PartialOrd + Neg<Output = T>,
-  // for<'a> &'a T: Neg<Output = T>,
-  for<'a> &'a T: Sub<Output = T> + Mul<Output = T>,
+  T: Clone + PartialOrd,
+  for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
 {
   let [zx, zy] = z;
-  let b: &[T; 2] = &[zy.clone().neg(), zx.clone()];
+  let b: &[T; 2] = &[zy.neg(), zx.clone()];
   let ap = raw_arr_turn_origin(z, p);
   let aq = raw_arr_turn_origin(z, q);
   let on_zero = |d: &[T; 2]| match raw_arr_turn_origin(b, d) {

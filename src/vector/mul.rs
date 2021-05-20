@@ -1,5 +1,5 @@
 use array_init::array_init;
-use num_traits::Num;
+use num_traits::NumOps;
 use std::ops::Add;
 use std::ops::Mul;
 
@@ -8,7 +8,7 @@ use crate::vector::VectorView;
 
 impl<T, const N: usize> Mul<T> for Vector<T, N>
 where
-  T: Num + Clone,
+  T: NumOps + Clone,
 {
   type Output = Vector<T, N>;
 
@@ -19,7 +19,7 @@ where
 
 impl<'a, T, const N: usize> Mul<T> for VectorView<'a, T, N>
 where
-  T: Num + Clone,
+  T: NumOps + Clone,
 {
   type Output = Vector<T, N>;
   fn mul(self, other: T) -> Vector<T, N> {

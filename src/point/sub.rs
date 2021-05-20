@@ -1,6 +1,9 @@
 use array_init::array_init;
+use num_traits::RefNum;
+use std::ops::Index;
 use std::ops::Sub;
 
+use super::super::array::*;
 use crate::point::Point;
 use crate::vector::Vector;
 
@@ -12,12 +15,26 @@ where
   // T: Sub<T, Output = T> + Clone,
   T: Sub<T, Output = T> + Clone,
   // for<'c> &'c T: Sub<&'c T, Output = T> + Clone,
+  // for<'c> &'c T: RefNum<T>,
 {
   type Output = Vector<T, N>;
 
   fn sub(self: &'b Point<T, N>, other: &'a Point<T, N>) -> Self::Output {
+    // Vector(raw_arr_sub(&self.array, &other.array))
     Vector(array_init(|i| {
-      self.array[i].clone() - other.array[i].clone()
+      self.array.index(i).clone() - other.array.index(i).clone()
     }))
+  }
+}
+
+impl<T, const N: usize> Sub<Point<T, N>> for Point<T, N>
+where
+  // T: Sub<T, Output = T> + Clone,
+  T: Sub<T, Output = T> + Clone,
+{
+  type Output = Vector<T, N>;
+
+  fn sub(self: Point<T, N>, other: Point<T, N>) -> Self::Output {
+    Sub::sub(&self, &other)
   }
 }

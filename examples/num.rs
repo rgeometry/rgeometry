@@ -22,6 +22,8 @@ use rgeometry::*;
 // }
 
 fn main() {
+  let pt = Point::new([1, 2]);
+  dbg!(pt.y_coord());
   // let t1 = Transform::translate(Vector([BigInt::from(1), BigInt::from(2), BigInt::from(3)]));
   // let t2 = Transform::scale(Vector([BigInt::from(-1), BigInt::from(1), BigInt::from(2)]));
   // let v = Vector([BigInt::from(4), BigInt::from(5), BigInt::from(6)]);

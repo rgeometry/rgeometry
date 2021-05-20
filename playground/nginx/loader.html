@@ -3,6 +3,10 @@
 <head>
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
   <style type="text/css">
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
     }
@@ -16,6 +20,8 @@
 
     #ui-overlay input[type="range"] {
       width: 100%;
+      margin: 0;
+      padding: 5px;
     }
   </style>
 </head>
@@ -45,7 +51,7 @@
     // import init, { greet } from './wasm.js';
 
     async function run() {
-      const is_local = false;
+      const is_local = true;
       const params = new URLSearchParams(window.location.search);
       const hash = params.get('hash');
       let mod;

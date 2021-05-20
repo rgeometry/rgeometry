@@ -1,15 +1,20 @@
 use array_init::array_init;
 use num_rational::BigRational;
+use num_traits::identities::One;
+use num_traits::identities::Zero;
 use num_traits::FromPrimitive;
 use num_traits::Num;
+use num_traits::NumOps;
+use num_traits::NumRef;
+use num_traits::RefNum;
 use num_traits::ToPrimitive;
-use num_traits::Zero;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
 // use std::ops::Add;
 use std::ops::Index;
 use std::ops::Mul;
+use std::ops::MulAssign;
 use std::ops::Neg;
 use std::ops::Sub;
 
@@ -47,8 +52,8 @@ impl<T: Clone, const N: usize> Point<T, N> {
 
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
-    T: Zero + PartialOrd,
-    for<'a> &'a T: Sub<&'a T, Output = T> + Mul<&'a T, Output = T>,
+    T: Zero + PartialOrd + MulAssign,
+    for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
   {
     self
       .squared_euclidean_distance(p)
@@ -58,16 +63,17 @@ impl<T: Clone, const N: usize> Point<T, N> {
 
   pub fn squared_euclidean_distance(&self, rhs: &Point<T, N>) -> T
   where
-    T: Zero,
-    for<'a> &'a T: Sub<&'a T, Output = T> + Mul<&'a T, Output = T>,
+    T: Zero + MulAssign,
+    for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
   {
     self
       .array
       .iter()
       .zip(rhs.array.iter())
       .fold(T::zero(), |sum, (a, b)| {
-        let diff = a - b;
-        sum + &diff * &diff
+        let mut diff: T = a - b;
+        diff *= diff.clone();
+        sum + diff
       })
   }
 
@@ -120,6 +126,12 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
   }
 }
 
+// impl<T, const N: usize> AsRef<Vector<T, N>> for Point<T, N> {
+//   fn as_ref(&self) -> &Vector<T, N> {
+//     self.into()
+//   }
+// }
+
 // Methods on two-dimensional points.
 impl<T> Point<T, 2> {
   pub fn turn(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Turn
@@ -129,20 +141,48 @@ impl<T> Point<T, 2> {
   {
     raw_arr_turn(&self.array, &q.array, &r.array)
   }
+
   /// Docs?
   pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Num + Clone + PartialOrd + Neg<Output = T>,
-    for<'a> &'a T: Neg<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Clone + PartialOrd + NumOps + Zero + One,
+    for<'a> &'a T: Mul<&'a T, Output = T> + Neg<Output = T>,
   {
     self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
   }
+
   pub fn ccw_cmp_around_with(&self, z: &Vector<T, 2>, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Num + Clone + PartialOrd + Neg<Output = T>,
-    for<'a> &'a T: Sub<Output = T> + Mul<Output = T> + Neg<Output = T>,
+    T: Clone + PartialOrd + NumOps,
+    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
   {
     ccw_cmp_around_origin_with(&z.0, &(p - self).0, &(q - self).0)
+  }
+}
+
+// FIXME: Use a macro
+impl<T> Point<T, 1> {
+  pub fn x_coord(&self) -> &T {
+    &self.array[0]
+  }
+}
+impl<T> Point<T, 2> {
+  pub fn x_coord(&self) -> &T {
+    &self.array[0]
+  }
+  pub fn y_coord(&self) -> &T {
+    &self.array[1]
+  }
+}
+impl<T> Point<T, 3> {
+  pub fn x_coord(&self) -> &T {
+    &self.array[0]
+  }
+  pub fn y_coord(&self) -> &T {
+    &self.array[1]
+  }
+  pub fn z_coord(&self) -> &T {
+    &self.array[2]
   }
 }
 
