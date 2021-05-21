@@ -18,6 +18,7 @@ use std::ops::*;
 
 mod array;
 pub mod convexhull;
+pub mod data;
 mod intersection;
 mod linesegment;
 mod matrix;
@@ -347,10 +348,24 @@ where
   for<'a> &'a T: PolygonScalarRef<&'a T, T>,
 {
   // data PointLocationResult = Inside | OnBoundary | Outside deriving (Show,Read,Eq)
-  pub fn locate(self, _pt: &Point<T, 2>) -> PointLocation {
+  pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     debug_assert_ok!(self.validate());
-    let ConvexPolygon(_p) = self;
-    unimplemented!();
+    let poly = &self.0;
+    let p0 = poly.vertex(0);
+    let mut lower = 1;
+    let mut upper = poly.points.len() as isize - 1;
+    while lower + 1 < upper {
+      let middle = (lower + upper) / 2;
+      if p0.orientation(poly.vertex(middle), pt) == Orientation::CounterClockWise {
+        lower = middle;
+      } else {
+        upper = middle;
+      }
+    }
+    let p1 = poly.vertex(lower);
+    let p2 = poly.vertex(upper);
+    let triangle = data::TriangleView::new([p0, p1, p2]);
+    triangle.locate(pt)
   }
 
   pub fn validate(&self) -> Result<(), Error> {
