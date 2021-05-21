@@ -2,6 +2,7 @@
 // #![allow(incomplete_features)]
 // #![feature(const_generics)]
 // #![feature(const_evaluatable_checked)]
+#![doc(html_playground_url = "https://rgeometry.org/rgeometry-playground/")]
 // use nalgebra::geometry::Point;
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -333,15 +334,44 @@ pub enum PointLocation {
   Outside,
 }
 
-impl<T, P> ConvexPolygon<T, P> {
+impl<T, P> ConvexPolygon<T, P>
+where
+  T: PolygonScalar,
+  for<'a> &'a T: PolygonScalarRef<&'a T, T>,
+{
   // data PointLocationResult = Inside | OnBoundary | Outside deriving (Show,Read,Eq)
   pub fn locate(self, _pt: &Point<T, 2>) -> PointLocation {
+    debug_assert!(self.validate());
     let ConvexPolygon(_p) = self;
     unimplemented!();
+  }
+
+  pub fn validate(&self) -> bool {
+    let len = self.0.points.len();
+    for i in 0..len {
+      let p1 = &self.0.points[i];
+      let p2 = &self.0.points[(i + 1) % len];
+      let p3 = &self.0.points[(i + 2) % len];
+      if p1.turn(p2, p3) != Turn::CounterClockWise {
+        return false;
+      }
+    }
+    true
   }
 }
 
 impl ConvexPolygon<BigRational> {
+  /// ```rust
+  /// # use rgeometry::*;
+  /// # let convex = {
+  /// let mut rng = rand::thread_rng();
+  /// ConvexPolygon::random(3, 1000, &mut rng)
+  /// # };
+  /// # #[cfg(feature = "wasm")]
+  /// # render_convex_polygon(convex);
+  /// # return ()
+  /// ```
+  /// <iframe src="https://reanimate.clozecards.com:20443/loader.html?hash=36XCQBE0Yok="></iframe>
   pub fn random<R>(n: usize, max: usize, rng: &mut R) -> ConvexPolygon<BigRational>
   where
     R: Rng + ?Sized,

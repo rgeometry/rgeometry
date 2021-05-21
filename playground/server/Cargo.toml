@@ -16,3 +16,7 @@ tungstenite       = "*"
 tokio-tungstenite = "*"
 directories       = "*"
 git-version       = "*"
+
+[dev-dependencies]
+quickcheck        = "1"
+quickcheck_macros = "1"

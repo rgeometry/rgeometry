@@ -7,6 +7,10 @@ use crate::{PolygonScalar, PolygonScalarRef};
 
 // O(n log n)
 // Doesn't allocate.
+// Properties:
+//    No panics.
+//    All Ok results are valid convex polygons.
+//    No points are outside the resulting convex polygon.
 pub fn convex_hull<T>(mut pts: Vec<Point<T, 2>>) -> Result<ConvexPolygon<T>, Error>
 where
   T: PolygonScalar,
