@@ -17,6 +17,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
+      - run: cd playground/wasm/ && cargo check
 
   test:
     name: Test Suite

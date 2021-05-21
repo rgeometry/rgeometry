@@ -96,11 +96,11 @@ pub fn main() {
 
   context.begin_path();
   context.set_line_join("round");
-  let mut iter = p.points.iter();
-  if let Some(origin) = iter.next() {
+  let mut iter = p.iter();
+  if let Some((origin, _)) = iter.next() {
     let [x, y] = origin.array;
     context.move_to(x, y);
-    while let Some(pt) = iter.next() {
+    while let Some((pt, _)) = iter.next() {
       let [x2, y2] = pt.array;
       context.line_to(x2, y2);
     }
