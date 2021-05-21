@@ -347,7 +347,7 @@ where
   T: PolygonScalar,
   for<'a> &'a T: PolygonScalarRef<&'a T, T>,
 {
-  // data PointLocationResult = Inside | OnBoundary | Outside deriving (Show,Read,Eq)
+  // O(log n)
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     debug_assert_ok!(self.validate());
     let poly = &self.0;

@@ -19,6 +19,8 @@ where
   pub fn validate(&self) -> Result<(), Error> {
     self.view().validate()
   }
+
+  // O(1)
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     self.view().locate(pt)
   }
@@ -49,6 +51,8 @@ where
       Ok(())
     }
   }
+
+  // O(1)
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     use Orientation::*;
     debug_assert_ok!(self.validate());
