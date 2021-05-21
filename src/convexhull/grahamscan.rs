@@ -1,4 +1,4 @@
-use crate::array::Turn;
+use crate::array::Orientation;
 use crate::point::Point;
 use crate::{ConvexPolygon, Error, Polygon};
 use crate::{PolygonScalar, PolygonScalarRef};
@@ -32,19 +32,19 @@ where
     let p1 = &pts[known_good];
     let p2 = &pts[known_good - 1];
     let p3 = &pts[known_good - 2];
-    match p3.turn(p2, p1) {
-      Turn::CounterClockWise => {
+    match p3.orientation(p2, p1) {
+      Orientation::CounterClockWise => {
         at += 1;
         known_good += 1;
       }
-      Turn::ClockWise | Turn::CoLinear => {
+      Orientation::ClockWise | Orientation::CoLinear => {
         pts.swap(at, known_good - 1);
         at += 1;
       }
     }
   }
   pts.truncate(known_good);
-  Ok(ConvexPolygon(Polygon::new(pts)))
+  Ok(ConvexPolygon(Polygon::new(pts)?))
 }
 
 // Find the smallest point and remove it from the vector
@@ -63,7 +63,7 @@ where
           .unwrap()
           .then_with(|| a.x_coord().partial_cmp(b.x_coord()).unwrap())
       })
-      .ok_or(Error::InsufficientInput)?
+      .ok_or(Error::InsufficientVertices)?
       .clone(),
   )
 }

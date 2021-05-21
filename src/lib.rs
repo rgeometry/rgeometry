@@ -4,41 +4,29 @@
 // #![feature(const_evaluatable_checked)]
 #![doc(html_playground_url = "https://rgeometry.org/rgeometry-playground/")]
 // use nalgebra::geometry::Point;
+use claim::debug_assert_ok;
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use num_traits::identities::One;
-use num_traits::identities::Zero;
-use num_traits::FromPrimitive;
-use num_traits::Num;
-use num_traits::NumOps;
-use num_traits::NumRef;
-use num_traits::RefNum;
+use num_traits::*;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::borrow::Borrow;
 use std::collections::BTreeSet;
 use std::iter::Sum;
 use std::iter::Zip;
-use std::ops::Add;
-use std::ops::AddAssign;
-use std::ops::Div;
-use std::ops::Index;
-use std::ops::Mul;
-use std::ops::MulAssign;
-use std::ops::Neg;
-use std::ops::Sub;
+use std::ops::*;
 
 mod array;
+pub mod convexhull;
 mod intersection;
 mod linesegment;
 mod matrix;
 mod point;
+pub mod polygon;
 mod transformation;
 mod vector;
 
-pub mod convexhull;
-
-pub use array::Turn;
+pub use array::Orientation;
 pub use linesegment::*;
 pub use point::Point;
 pub use transformation::*;
@@ -46,11 +34,20 @@ pub use vector::{Vector, VectorView};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Error {
-  InsufficientInput,
+  InsufficientVertices,
   SelfIntersections,
+  /// Two consecutive line segments are either colinear or oriented clockwise.
+  ConvexViolation,
+  ClockWiseViolation,
 }
 pub trait PolygonScalar<T = Self, Output = Self>:
-  PolygonScalarRef<T, Output> + AddAssign<Output> + MulAssign<Output> + FromPrimitive + One + Zero
+  PolygonScalarRef<T, Output>
+  + AddAssign<Output>
+  + MulAssign<Output>
+  + FromPrimitive
+  + One
+  + Zero
+  + Sum
 {
 }
 impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
@@ -60,6 +57,7 @@ impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
     + FromPrimitive
     + One
     + Zero
+    + Sum
 {
 }
 
@@ -74,44 +72,69 @@ impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where
 
 #[derive(Debug, Clone)]
 pub struct Polygon<T, P = ()> {
-  pub points: Vec<Point<T, 2>>,
-  pub boundary: usize,
-  pub holes: Vec<usize>,
-  pub meta: Vec<P>,
+  pub(crate) points: Vec<Point<T, 2>>,
+  pub(crate) boundary: usize,
+  pub(crate) holes: Vec<usize>,
+  pub(crate) meta: Vec<P>,
 }
 
 impl<T> Polygon<T> {
-  pub fn new(points: Vec<Point<T, 2>>) -> Polygon<T> {
+  pub fn new(points: Vec<Point<T, 2>>) -> Result<Polygon<T>, Error>
+  where
+    T: PolygonScalar,
+  {
     let len = points.len();
     let mut meta = Vec::with_capacity(len);
     meta.resize(len, ());
-    Polygon {
+    let p = Polygon {
       points,
       boundary: len,
       holes: vec![],
       meta,
-    }
+    };
+    p.validate()?;
+    Ok(p)
   }
 }
 
-// fn test<T>(p: Polygon<T>)
-// where
-//   // T: PolygonScalar,
-//   for<'a> &'a T: PolygonScalarRef<&'a T, T>,
-// {
-// }
-
-// fn run_test() {
-//   let x: Polygon<BigRational> = todo!();
-//   let y: Polygon<f32> = todo!();
-//   test(x);
-// }
-
 impl<T, P> Polygon<T, P> {
+  // Validate that a polygon is simple.
+  // https://en.wikipedia.org/wiki/Simple_polygon
+  pub fn validate(&self) -> Result<(), Error>
+  where
+    T: PolygonScalar,
+  {
+    // Has no duplicate points.
+    // TODO. Hm, finding duplicates is difficult when using IEEE floats.
+    // There are two crates for dealing with this: noisy_float and ordered-float.
+    // Unfortunately, both libraries only implement a subset of the traits that
+    // are implemented by f64 and are required by rgeometry.
+    // For now, we'll just not look for duplicate points. :(
+
+    self.validate_weakly()
+  }
+
+  pub fn validate_weakly(&self) -> Result<(), Error>
+  where
+    T: PolygonScalar,
+  {
+    // Has at least three points.
+    if self.points.len() < 3 {
+      return Err(Error::InsufficientVertices);
+    }
+    // Is counter-clockwise
+    if self.signed_area_2x() < T::zero() {
+      return Err(Error::ClockWiseViolation);
+    }
+    // Has no self intersections.
+    // TODO. Only check line intersections. Overlapping vertices are OK.
+    Ok(())
+  }
+
   pub fn centroid(&self) -> Point<T, 2>
   where
-    T: PolygonScalar + Zero + Sum,
-    for<'a> &'a T: Add<&'a T, Output = T>,
+    T: PolygonScalar,
+    for<'a> &'a T: PolygonScalarRef<&'a T, T>,
   {
     let xs: Vector<T, 2> = self
       .iter_boundary_edges()
@@ -127,14 +150,14 @@ impl<T, P> Polygon<T, P> {
 
   pub fn signed_area(&self) -> T
   where
-    T: PolygonScalar + Zero + Sum,
+    T: PolygonScalar,
   {
     self.signed_area_2x() / T::from_usize(2).unwrap()
   }
 
   pub fn signed_area_2x(&self) -> T
   where
-    T: PolygonScalar + Zero + Sum,
+    T: PolygonScalar,
   {
     self
       .iter_boundary_edges()
@@ -146,10 +169,28 @@ impl<T, P> Polygon<T, P> {
       .sum()
   }
 
-  pub fn iter_boundary_edges(&self) -> EdgeIter<'_, T, P, 2> {
+  pub fn vertex(&self, idx: isize) -> &Point<T, 2> {
+    self
+      .points
+      .index(idx.rem_euclid(self.points.len() as isize) as usize)
+  }
+
+  pub fn vertex_orientation(&self, idx: isize) -> Orientation
+  where
+    T: PolygonScalar,
+    for<'a> &'a T: PolygonScalarRef<&'a T, T>,
+  {
+    debug_assert_ok!(self.validate());
+    let p1 = self.vertex(idx - 1);
+    let p2 = self.vertex(idx);
+    let p3 = self.vertex(idx + 1);
+    p1.orientation(p2, p3)
+  }
+
+  pub fn iter_boundary_edges(&self) -> polygon::EdgeIter<'_, T, P, 2> {
     // let mut iter = self.iter();
     // let (this_point, this_meta) = iter.next().unwrap();
-    EdgeIter {
+    polygon::EdgeIter {
       at: 0,
       points: self.points.borrow(),
       meta: self.meta.borrow(),
@@ -169,12 +210,14 @@ impl<T, P> Polygon<T, P> {
     }
   }
 
-  pub fn iter(&self) -> Zip<std::slice::Iter<'_, Point<T, 2>>, std::slice::Iter<'_, P>> {
-    self.points.iter().zip(self.meta.iter())
+  pub fn iter(&self) -> polygon::Iter<'_, T, P> {
+    polygon::Iter {
+      iter: self.points.iter().zip(self.meta.iter()),
+    }
   }
 
-  pub fn iter_mut(&mut self) -> IterMut<'_, T, P> {
-    IterMut {
+  pub fn iter_mut(&mut self) -> polygon::IterMut<'_, T, P> {
+    polygon::IterMut {
       points: self.points.iter_mut(),
       meta: self.meta.iter_mut(),
     }
@@ -242,42 +285,6 @@ impl<'a, P: Clone> From<&'a Polygon<f64, P>> for Polygon<BigRational, P> {
   }
 }
 
-pub struct EdgeIter<'a, T: 'a, P: 'a, const N: usize> {
-  at: usize,
-  points: &'a [Point<T, N>],
-  meta: &'a [P],
-}
-
-impl<'a, T, P, const N: usize> Iterator for EdgeIter<'a, T, P, N> {
-  type Item = LineSegmentView<'a, T, P, N>;
-  fn next(&mut self) -> Option<LineSegmentView<'a, T, P, N>> {
-    if self.at >= self.points.len() {
-      return None;
-    }
-    let this_point = self.points.index(self.at);
-    let this_meta = self.meta.index(self.at);
-    let next_point = self.points.index((self.at + 1) % self.points.len());
-    let next_meta = self.meta.index((self.at + 1) % self.points.len());
-    self.at += 1;
-    Some(LineSegmentView(
-      EndPoint::Open((this_point, this_meta)),
-      EndPoint::Closed((next_point, next_meta)),
-    ))
-  }
-}
-
-pub struct IterMut<'a, T: 'a, P: 'a> {
-  points: std::slice::IterMut<'a, Point<T, 2>>,
-  meta: std::slice::IterMut<'a, P>,
-}
-
-impl<'a, T, P> Iterator for IterMut<'a, T, P> {
-  type Item = (&'a mut Point<T, 2>, &'a mut P);
-  fn next(&mut self) -> Option<(&'a mut Point<T, 2>, &'a mut P)> {
-    Some((self.points.next()?, self.meta.next()?))
-  }
-}
-
 #[derive(Debug)]
 pub struct ConvexPolygon<T, P = ()>(Polygon<T, P>);
 
@@ -341,22 +348,23 @@ where
 {
   // data PointLocationResult = Inside | OnBoundary | Outside deriving (Show,Read,Eq)
   pub fn locate(self, _pt: &Point<T, 2>) -> PointLocation {
-    debug_assert!(self.validate());
+    debug_assert_ok!(self.validate());
     let ConvexPolygon(_p) = self;
     unimplemented!();
   }
 
-  pub fn validate(&self) -> bool {
-    let len = self.0.points.len();
+  pub fn validate(&self) -> Result<(), Error> {
+    let len = self.0.points.len() as isize;
     for i in 0..len {
-      let p1 = &self.0.points[i];
-      let p2 = &self.0.points[(i + 1) % len];
-      let p3 = &self.0.points[(i + 2) % len];
-      if p1.turn(p2, p3) != Turn::CounterClockWise {
-        return false;
+      if self.0.vertex_orientation(i) != Orientation::CounterClockWise {
+        return Err(Error::ConvexViolation);
       }
     }
-    true
+    self.0.validate()
+  }
+
+  pub fn polygon(&self) -> &Polygon<T, P> {
+    self.into()
   }
 }
 
@@ -376,6 +384,10 @@ impl ConvexPolygon<BigRational> {
   where
     R: Rng + ?Sized,
   {
+    if n < 3 {
+      // Return Result<P, Error> instead?
+      return ConvexPolygon::random(3, max, rng);
+    }
     let vs = {
       let mut vs = random_vectors(n, max, rng);
       Vector::sort_around(&mut vs);
@@ -388,7 +400,7 @@ impl ConvexPolygon<BigRational> {
         Some(st.clone())
       })
       .collect();
-    let p = Polygon::new(vertices);
+    let p = Polygon::new(vertices).unwrap();
     let centroid = p.centroid();
     let t = Transform::translate(-Vector::from(centroid));
     let s = Transform::uniform_scale(BigRational::new(

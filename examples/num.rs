@@ -36,7 +36,8 @@ fn main() {
     Point::new([1, 0]),
     Point::new([3, 3]),
     // Point::new([0, 1]),
-  ]);
+  ])
+  .unwrap();
   let p2 = p.cast(|v| BigRational::from_i32(v).unwrap());
   dbg!(p2.centroid());
   // let a: Array2<BigRational> = unimplemented!();

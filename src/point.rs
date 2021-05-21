@@ -134,7 +134,7 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 
 // Methods on two-dimensional points.
 impl<T> Point<T, 2> {
-  pub fn turn(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Turn
+  pub fn orientation(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
   where
     T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + PartialOrd,
     for<'a> &'a T: Sub<Output = T>,
