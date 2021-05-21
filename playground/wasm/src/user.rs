@@ -12,6 +12,7 @@ use num_rational::BigRational;
 use num_traits::cast::ToPrimitive;
 use rand::distributions::Standard;
 use rand::Rng;
+use rgeometry::data::*;
 use rgeometry::*;
 
 #[wasm_bindgen]
