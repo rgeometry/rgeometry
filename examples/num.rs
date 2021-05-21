@@ -8,6 +8,7 @@ use num_traits::cast::FromPrimitive;
 // use rand::distributions::Standard;
 // use rand::Rng;
 // use rgeometry::transformation::*;
+use rgeometry::data::*;
 use rgeometry::*;
 // use std::ops::Mul;
 // use std::ops::Neg;

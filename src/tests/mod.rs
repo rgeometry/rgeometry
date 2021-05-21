@@ -2,6 +2,7 @@
 mod tests {
   use crate::Orientation::*;
   use crate::*;
+
   #[test]
   fn test_turns() {
     assert_eq!(

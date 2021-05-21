@@ -1,8 +1,8 @@
 use std::iter::Zip;
 use std::ops::*;
 
-use super::linesegment::*;
-use super::point::Point;
+use crate::data::line_segment::*;
+use crate::point::Point;
 
 pub struct Iter<'a, T: 'a, P: 'a> {
   pub(crate) iter: Zip<std::slice::Iter<'a, Point<T, 2>>, std::slice::Iter<'a, P>>,

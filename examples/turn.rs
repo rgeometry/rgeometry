@@ -1,4 +1,4 @@
-use rgeometry::*;
+use rgeometry::data::*;
 
 fn main() {
   dbg!(Point::new([0, 0]).orientation(&Point::new([1, 1]), &Point::new([2, 2])));

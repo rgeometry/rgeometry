@@ -16,22 +16,21 @@ use std::iter::Sum;
 use std::iter::Zip;
 use std::ops::*;
 
+pub mod algorithms;
 mod array;
-pub mod convexhull;
 pub mod data;
 mod intersection;
-mod linesegment;
 mod matrix;
 mod point;
-pub mod polygon;
 mod transformation;
 mod vector;
 
 pub use array::Orientation;
-pub use linesegment::*;
-pub use point::Point;
-pub use transformation::*;
-pub use vector::{Vector, VectorView};
+use data::polygon;
+use data::*;
+use point::Point;
+use transformation::*;
+use vector::{Vector, VectorView};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Error {
