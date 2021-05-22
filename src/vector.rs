@@ -82,7 +82,7 @@ impl<'a, T, const N: usize> From<&'a Point<T, N>> for VectorView<'a, T, N> {
 impl<T> Vector<T, 2> {
   pub fn ccw_cmp_around(&self, p: &Vector<T, 2>, q: &Vector<T, 2>) -> Ordering
   where
-    T: NumRef + Clone + PartialOrd + Neg<Output = T> + Zero + One,
+    T: NumRef + Clone + Ord + Neg<Output = T> + Zero + One,
     for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
   {
     self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
@@ -94,7 +94,7 @@ impl<T> Vector<T, 2> {
     q: &Vector<T, 2>,
   ) -> Ordering
   where
-    T: NumRef + Clone + PartialOrd + Neg<Output = T>,
+    T: NumRef + Clone + Ord + Neg<Output = T>,
     for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
   {
     ccw_cmp_around_origin_with(&z.0, &(p - self).0, &(q - self).0)
@@ -104,8 +104,8 @@ impl<T> Vector<T, 2> {
   // FIXME: sort by magnitude if two vectors have the same angle.
   pub fn sort_around(pts: &mut Vec<Vector<T, 2>>)
   where
-    T: NumRef + PartialOrd + Clone + Neg<Output = T> + Zero + One,
-    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
+    T: NumRef + Ord + Clone + Neg<Output = T> + Zero + One,
+    // for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
   {
     pts.sort_unstable_by(|a, b| ccw_cmp_around_origin_with(&[T::one(), T::zero()], &a.0, &b.0))
     // unimplemented!();

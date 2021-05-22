@@ -35,14 +35,16 @@ pub struct TriangleView<'a, T>([&'a Point<T, 2>; 3]);
 impl<'a, T> TriangleView<'a, T>
 where
   T: PolygonScalar,
-  for<'x> &'x T: PolygonScalarRef<&'x T, T>,
+  // for<'x> &'x T: PolygonScalarRef<&'x T, T>,
 {
+  // O(1)
   pub fn new(pts: [&'a Point<T, 2>; 3]) -> TriangleView<'a, T> {
     let triangle = TriangleView(pts);
     debug_assert_ok!(triangle.validate());
     triangle
   }
 
+  // O(1)
   pub fn validate(&self) -> Result<(), Error> {
     let arr = &self.0;
     if arr.index(0).orientation(&arr[1], &arr[2]) != Orientation::CounterClockWise {

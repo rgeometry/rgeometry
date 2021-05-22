@@ -48,6 +48,8 @@ pub trait PolygonScalar<T = Self, Output = Self>:
   + One
   + Zero
   + Sum
+  + Ord
+  + Neg<Output = Output>
 {
 }
 impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
@@ -58,17 +60,13 @@ impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
     + One
     + Zero
     + Sum
+    + Ord
+    + Neg<Output = Output>
 {
 }
 
-pub trait PolygonScalarRef<T = Self, Output = Self>:
-  Clone + PartialOrd<T> + NumOps<T, Output> + Neg<Output = Output>
-{
-}
-impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where
-  T: Clone + PartialOrd<Rhs> + NumOps<Rhs, Output> + Neg<Output = Output>
-{
-}
+pub trait PolygonScalarRef<T = Self, Output = Self>: Clone + NumOps<T, Output> {}
+impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where T: Clone + NumOps<Rhs, Output> {}
 
 #[derive(Debug, Clone)]
 pub struct Polygon<T, P = ()> {
@@ -285,7 +283,7 @@ impl<'a, P: Clone> From<&'a Polygon<f64, P>> for Polygon<BigRational, P> {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConvexPolygon<T, P = ()>(Polygon<T, P>);
 
 // Property: random_between(n, max, &mut rng).iter().sum::<usize>() == max

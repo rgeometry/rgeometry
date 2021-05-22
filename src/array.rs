@@ -9,9 +9,9 @@ use std::ops::Sub;
 
 pub fn raw_arr_sub<T, const N: usize>(lhs: &[T; N], rhs: &[T; N]) -> [T; N]
 where
-  for<'a> &'a T: Sub<Output = T>,
+  T: Sub<Output = T> + Clone,
 {
-  array_init(|i| (lhs.index(i) - rhs.index(i)))
+  array_init(|i| (lhs.index(i).clone() - rhs.index(i).clone()))
 }
 
 #[derive(PartialEq, Debug)]
@@ -25,12 +25,12 @@ use Orientation::*;
 // How does the line from (0,0) to q to r turn?
 pub fn raw_arr_turn_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
 where
-  T: PartialOrd,
-  for<'a> &'a T: Mul<Output = T>,
+  T: Ord + Mul<Output = T> + Clone,
+  // for<'a> &'a T: Mul<Output = T>,
 {
-  let [ux, uy] = q;
-  let [vx, vy] = r;
-  match (ux * vy).partial_cmp(&(uy * vx)).unwrap_or(Ordering::Equal) {
+  let [ux, uy] = q.clone();
+  let [vx, vy] = r.clone();
+  match (ux * vy).cmp(&(uy * vx)) {
     Ordering::Less => ClockWise,
     Ordering::Greater => CounterClockWise,
     Ordering::Equal => CoLinear,
@@ -39,12 +39,12 @@ where
 
 pub fn raw_arr_turn<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Orientation
 where
-  T: Mul<T, Output = T> + PartialOrd,
-  for<'a> &'a T: Sub<Output = T>,
+  T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord,
+  // for<'a> &'a T: Sub<Output = T>,
 {
   let [ux, uy] = raw_arr_sub(q, p);
   let [vx, vy] = raw_arr_sub(r, p);
-  match (ux * vy).partial_cmp(&(uy * vx)).unwrap_or(Ordering::Equal) {
+  match (ux * vy).cmp(&(uy * vx)) {
     Ordering::Less => ClockWise,
     Ordering::Greater => CounterClockWise,
     Ordering::Equal => CoLinear,
@@ -54,11 +54,10 @@ where
 // Sort 'p' and 'q' counterclockwise around (0,0) along the 'z' axis.
 pub fn ccw_cmp_around_origin_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Ordering
 where
-  T: Clone + PartialOrd,
-  for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
+  T: Clone + Ord + Mul<Output = T> + Neg<Output = T>,
 {
   let [zx, zy] = z;
-  let b: &[T; 2] = &[zy.neg(), zx.clone()];
+  let b: &[T; 2] = &[zy.clone().neg(), zx.clone()];
   let ap = raw_arr_turn_origin(z, p);
   let aq = raw_arr_turn_origin(z, q);
   let on_zero = |d: &[T; 2]| match raw_arr_turn_origin(b, d) {

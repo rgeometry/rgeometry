@@ -52,26 +52,25 @@ impl<T: Clone, const N: usize> Point<T, N> {
 
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
-    T: Zero + PartialOrd + MulAssign,
-    for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
+    T: Clone + Sub<Output = T> + Zero + Ord + MulAssign,
+    // for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
   {
     self
       .squared_euclidean_distance(p)
-      .partial_cmp(&self.squared_euclidean_distance(q))
-      .unwrap_or(Ordering::Equal)
+      .cmp(&self.squared_euclidean_distance(q))
   }
 
   pub fn squared_euclidean_distance(&self, rhs: &Point<T, N>) -> T
   where
-    T: Zero + MulAssign,
-    for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
+    T: Clone + Zero + Sub<Output = T> + MulAssign,
+    // for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
   {
     self
       .array
       .iter()
       .zip(rhs.array.iter())
       .fold(T::zero(), |sum, (a, b)| {
-        let mut diff: T = a - b;
+        let mut diff: T = a.clone() - b.clone();
         diff *= diff.clone();
         sum + diff
       })
@@ -132,12 +131,20 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 //   }
 // }
 
+// pub fn orientation<T>(p: &Point<T, 2>, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
+// where
+//   T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + Ord,
+//   // for<'a> &'a T: Sub<Output = T>,
+// {
+//   raw_arr_turn(&p.array, &q.array, &r.array)
+// }
+
 // Methods on two-dimensional points.
 impl<T> Point<T, 2> {
   pub fn orientation(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
   where
-    T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + PartialOrd,
-    for<'a> &'a T: Sub<Output = T>,
+    T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + Ord,
+    // for<'a> &'a T: Sub<Output = T>,
   {
     raw_arr_turn(&self.array, &q.array, &r.array)
   }
@@ -145,16 +152,16 @@ impl<T> Point<T, 2> {
   /// Docs?
   pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Clone + PartialOrd + NumOps + Zero + One,
-    for<'a> &'a T: Mul<&'a T, Output = T> + Neg<Output = T>,
+    T: Clone + Ord + NumOps + Zero + One + Neg<Output = T>,
+    // for<'a> &'a T: Mul<&'a T, Output = T>,
   {
     self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
   }
 
   pub fn ccw_cmp_around_with(&self, z: &Vector<T, 2>, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Clone + PartialOrd + NumOps,
-    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
+    T: Clone + Ord + NumOps + Neg<Output = T>,
+    // for<'a> &'a T: Mul<Output = T>,
   {
     ccw_cmp_around_origin_with(&z.0, &(p - self).0, &(q - self).0)
   }
