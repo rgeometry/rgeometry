@@ -17,7 +17,7 @@ use std::ops::Sub;
 use super::array::*;
 use super::point::Point;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct Vector<T, const N: usize>(pub [T; N]);
 
@@ -121,7 +121,7 @@ mod sub;
 impl<T, const N: usize> Zero for Vector<T, N>
 where
   T: NumOps + Zero + Clone,
-  for<'c> &'c T: Add<&'c T, Output = T>,
+  // for<'c> &'c T: Add<&'c T, Output = T>,
 {
   fn zero() -> Vector<T, N> {
     Vector(array_init(|_| Zero::zero()))
@@ -134,7 +134,7 @@ where
 impl<T, const N: usize> Sum for Vector<T, N>
 where
   T: NumOps + Zero + AddAssign + Clone,
-  for<'c> &'c T: Add<&'c T, Output = T>,
+  // for<'c> &'c T: Add<&'c T, Output = T>,
 {
   fn sum<I>(iter: I) -> Vector<T, N>
   where

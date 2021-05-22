@@ -9,13 +9,15 @@ use crate::vector::VectorView;
 
 impl<T, const N: usize> Add<Vector<T, N>> for Vector<T, N>
 where
-  // T: NumOps + Clone,
-  for<'c> &'c T: Add<&'c T, Output = T>,
+  T: NumOps + Clone,
+  // for<'c> &'c T: Add<&'c T, Output = T>,
 {
   type Output = Vector<T, N>;
 
   fn add(self: Vector<T, N>, other: Vector<T, N>) -> Self::Output {
-    Vector(array_init(|i| self.0.index(i) + other.0.index(i)))
+    Vector(array_init(|i| {
+      self.0.index(i).clone() + other.0.index(i).clone()
+    }))
   }
 }
 

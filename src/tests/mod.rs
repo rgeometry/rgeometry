@@ -17,15 +17,43 @@ mod tests {
     }
     fn arbitrary() -> Self::Strategy {
       let mut rng = rand::thread_rng();
-      let p = ConvexPolygon::random(10, 1000, &mut rng);
+      let n = rng.gen_range(3..=100);
+      let max = rng.gen_range(n..=1_000_000_000);
+      let p = ConvexPolygon::random(n, max, &mut rng);
       Just(p)
     }
   }
 
   proptest! {
     #[test]
-    fn prop1(poly: ConvexPolygon<BigRational>) {
-      prop_assert!(poly.validate().is_ok())
+    fn all_random_convex_polygons_are_valid(poly: ConvexPolygon<BigRational>) {
+      prop_assert_eq!(poly.validate(), Ok(()))
+    }
+
+    #[test]
+    fn sum_to_max(n in 1..1000, max in 0..1_000_000) {
+      let mut rng = rand::thread_rng();
+      let max = std::cmp::max(max, n);
+      let vecs = random_between(n as usize, max as usize, &mut rng);
+      prop_assert_eq!(vecs.iter().sum::<usize>(), max as usize)
+    }
+
+    #[test]
+    fn random_between_zero_properties(n in 2..1000, max in 0..1_000_000) {
+      let mut rng = rand::thread_rng();
+      let max = std::cmp::max(max, n);
+      let vecs = random_between_zero(n as usize, max as usize, &mut rng);
+      prop_assert_eq!(vecs.iter().sum::<BigInt>(), BigInt::from(0));
+      prop_assert!(vecs.iter().all(|v| !v.is_zero()));
+      prop_assert_eq!(vecs.len(), n as usize);
+    }
+
+    #[test]
+    fn sum_to_zero_vector(n in 2..1000, max in 0..1_000_000) {
+      let mut rng = rand::thread_rng();
+      let max = std::cmp::max(max, n);
+      let vecs = random_vectors(n as usize, max as usize, &mut rng);
+      prop_assert_eq!(vecs.into_iter().sum::<Vector<BigRational,2>>(), Vector::zero())
     }
   }
 

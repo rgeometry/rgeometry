@@ -9,6 +9,7 @@ use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
 use rand::distributions::{Distribution, Standard};
+use rand::seq::SliceRandom;
 use rand::Rng;
 use std::borrow::Borrow;
 use std::collections::BTreeSet;
@@ -32,7 +33,7 @@ use point::Point;
 use transformation::*;
 use vector::{Vector, VectorView};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
   InsufficientVertices,
   SelfIntersections,
@@ -178,7 +179,7 @@ impl<T, P> Polygon<T, P> {
     T: PolygonScalar,
     for<'a> &'a T: PolygonScalarRef<&'a T, T>,
   {
-    debug_assert_ok!(self.validate());
+    // debug_assert_ok!(self.validate());
     let p1 = self.vertex(idx - 1);
     let p2 = self.vertex(idx);
     let p3 = self.vertex(idx + 1);
@@ -291,8 +292,10 @@ pub fn random_between<R>(n: usize, max: usize, rng: &mut R) -> Vec<usize>
 where
   R: Rng + ?Sized,
 {
-  if max < n + 1 {
-    return vec![1; max];
+  debug_assert!(n > 0);
+  assert!(n <= max);
+  if max == n {
+    return vec![1; n];
   }
   let mut pts = BTreeSet::new();
   while pts.len() < n - 1 {
@@ -309,16 +312,33 @@ where
 }
 
 // Property: random_between_zero(10, 100, &mut rng).iter().sum::<isize>() == 0
+// Property: random_between_zero(10, 100, &mut rng).iter().all(|v| !v.is_zero())
 pub fn random_between_zero<R>(n: usize, max: usize, rng: &mut R) -> Vec<BigInt>
 where
   R: Rng + ?Sized,
 {
-  random_between(n, max, rng)
+  assert!(n >= 2);
+  let n_positive = rng.gen_range(1..n); // [1;n[
+  dbg!(n_positive);
+  let positive = random_between(n_positive, max, rng)
     .into_iter()
     .map(BigInt::from)
-    .zip(random_between(n, max, rng).into_iter().map(BigInt::from))
-    .map(|(a, b)| a - b)
-    .collect()
+    .collect();
+  let n_negative = n - n_positive;
+  let negative: Vec<BigInt> = random_between(n_negative, max, rng)
+    .into_iter()
+    .map(BigInt::from)
+    .map(Neg::neg)
+    .collect();
+  let mut result = [positive, negative].concat();
+  result.shuffle(rng);
+  result
+  // random_between(n, max, rng)
+  //   .into_iter()
+  //   .map(BigInt::from)
+  //   .zip(random_between(n, max, rng).into_iter().map(BigInt::from))
+  //   .map(|(a, b)| a - b)
+  //   .collect()
 }
 
 // Random vectors that sum to zero.
@@ -407,12 +427,19 @@ impl ConvexPolygon<BigRational> {
     };
     let vertices: Vec<point::Point<BigRational, 2>> = vs
       .into_iter()
-      .scan(Point::zero(), |st, pt| {
-        *st += pt;
+      .scan(Point::zero(), |st, vec| {
+        *st += vec;
         Some(st.clone())
       })
       .collect();
+    let n_vertices = (*vertices).len();
+    debug_assert_eq!(n_vertices, n);
     let p = Polygon::new(vertices).unwrap();
+    for i in 0..n {
+      if p.vertex_orientation(i as isize) != Orientation::CounterClockWise {
+        return Self::random(n, max, rng);
+      }
+    }
     let centroid = p.centroid();
     let t = Transform::translate(-Vector::from(centroid));
     let s = Transform::uniform_scale(BigRational::new(
