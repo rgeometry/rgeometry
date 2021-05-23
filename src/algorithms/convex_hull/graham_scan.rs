@@ -1,6 +1,6 @@
 use crate::array::Orientation;
 use crate::data::{ConvexPolygon, Point, Polygon};
-use crate::{Error, PolygonScalar, PolygonScalarRef};
+use crate::{Error, PolygonScalar};
 
 // https://en.wikipedia.org/wiki/Graham_scan
 

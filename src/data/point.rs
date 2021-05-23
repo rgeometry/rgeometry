@@ -1,26 +1,14 @@
 use array_init::array_init;
 use num_rational::BigRational;
-use num_traits::identities::One;
-use num_traits::identities::Zero;
-use num_traits::Float;
-use num_traits::FromPrimitive;
-use num_traits::Num;
-use num_traits::NumOps;
-use num_traits::NumRef;
-use num_traits::RefNum;
-use num_traits::ToPrimitive;
+use num_traits::*;
+use ordered_float::NotNan;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
-// use std::ops::Add;
-use ordered_float::NotNan;
 use std::ops::Index;
-use std::ops::Mul;
-use std::ops::MulAssign;
 use std::ops::Neg;
-use std::ops::Sub;
 
-use super::{Vector, VectorView};
+use super::Vector;
 use crate::array::*;
 
 #[derive(Debug, Clone, Copy)]

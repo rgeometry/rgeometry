@@ -3,18 +3,8 @@
 // #![feature(const_generics)]
 // #![feature(const_evaluatable_checked)]
 #![doc(html_playground_url = "https://rgeometry.org/rgeometry-playground/")]
-// use nalgebra::geometry::Point;
-use claim::debug_assert_ok;
-use num_bigint::BigInt;
-use num_rational::BigRational;
 use num_traits::*;
-use rand::distributions::{Distribution, Standard};
-use rand::seq::SliceRandom;
-use rand::Rng;
-use std::borrow::Borrow;
-use std::collections::BTreeSet;
 use std::iter::Sum;
-use std::iter::Zip;
 use std::ops::*;
 
 pub mod algorithms;

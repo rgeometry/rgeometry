@@ -7,7 +7,6 @@ use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
 use std::iter::Sum;
-use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Index;
 use std::ops::Mul;

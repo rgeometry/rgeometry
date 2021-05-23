@@ -1,8 +1,6 @@
 use array_init::array_init;
 use num_traits::NumOps;
-use std::ops::Add;
 use std::ops::Div;
-use std::ops::Mul;
 
 use super::Vector;
 use super::VectorView;

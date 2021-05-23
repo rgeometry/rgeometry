@@ -1,23 +1,13 @@
-use claim::debug_assert_ok;
-use num_bigint::BigInt;
+// use claim::debug_assert_ok;
 use num_rational::BigRational;
-use num_traits::*;
-use rand::distributions::{Distribution, Standard};
-use rand::seq::SliceRandom;
-use rand::Rng;
 use std::borrow::Borrow;
-use std::collections::BTreeSet;
-use std::iter::Zip;
 use std::ops::*;
 
 use crate::array::Orientation;
-use crate::data;
-use crate::data::line_segment::*;
 use crate::data::Point;
-use crate::data::PointLocation;
-use crate::data::{Vector, VectorView};
-use crate::transformation::*;
-use crate::{Error, PolygonScalar, PolygonScalarRef};
+use crate::data::Vector;
+use crate::Error;
+use crate::PolygonScalar;
 
 mod iter;
 pub use iter::*;

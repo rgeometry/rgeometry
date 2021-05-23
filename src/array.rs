@@ -1,6 +1,4 @@
 use array_init::array_init;
-use num_traits::NumOps;
-use num_traits::NumRef;
 use std::cmp::Ordering;
 use std::ops::Index;
 use std::ops::Mul;

@@ -1,4 +1,3 @@
-use array_init::array_init;
 use num_traits::Zero;
 use std::ops::AddAssign;
 use std::ops::Index;

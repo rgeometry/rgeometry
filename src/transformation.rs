@@ -2,10 +2,8 @@
 use array_init::array_init;
 use num_traits::identities::One;
 use num_traits::identities::Zero;
-use std::ops::AddAssign;
 use std::ops::Div;
 use std::ops::Mul;
-// use std::assert;
 
 use crate::data::Point;
 use crate::data::Polygon;
