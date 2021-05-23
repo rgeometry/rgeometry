@@ -2,6 +2,7 @@ use array_init::array_init;
 use num_rational::BigRational;
 use num_traits::identities::One;
 use num_traits::identities::Zero;
+use num_traits::Float;
 use num_traits::FromPrimitive;
 use num_traits::Num;
 use num_traits::NumOps;
@@ -12,6 +13,7 @@ use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
 // use std::ops::Add;
+use ordered_float::NotNan;
 use std::ops::Index;
 use std::ops::Mul;
 use std::ops::MulAssign;
@@ -44,6 +46,16 @@ where
 impl<T: Clone, const N: usize> Point<T, N> {
   pub fn new(array: [T; N]) -> Point<T, N> {
     Point { array }
+  }
+
+  /// # Panics
+  ///
+  /// Panics if any of the inputs are NaN.
+  pub fn new_nn(array: [T; N]) -> Point<NotNan<T>, N>
+  where
+    T: Float,
+  {
+    Point::new(array_init(|i| NotNan::new(array[i]).unwrap()))
   }
 
   pub fn as_vec(&self) -> &Vector<T, N> {
@@ -215,10 +227,6 @@ mod tests {
 
   use ordered_float::NotNan;
 
-  fn n(f: f64) -> NotNan<f64> {
-    NotNan::new(f).unwrap()
-  }
-
   #[test]
   fn test_turns() {
     assert_eq!(
@@ -226,8 +234,7 @@ mod tests {
       CoLinear
     );
     assert_eq!(
-      Point::new([n(0.0), n(0.0)])
-        .orientation(&Point::new([n(1.0), n(1.0)]), &Point::new([n(2.0), n(2.0)])),
+      Point::new_nn([0.0, 0.0]).orientation(&Point::new_nn([1.0, 1.0]), &Point::new_nn([2.0, 2.0])),
       CoLinear
     );
 
@@ -236,8 +243,7 @@ mod tests {
       ClockWise
     );
     assert_eq!(
-      Point::new([n(0.0), n(0.0)])
-        .orientation(&Point::new([n(0.0), n(1.0)]), &Point::new([n(2.0), n(2.0)])),
+      Point::new_nn([0.0, 0.0]).orientation(&Point::new_nn([0.0, 1.0]), &Point::new_nn([2.0, 2.0])),
       ClockWise
     );
 
