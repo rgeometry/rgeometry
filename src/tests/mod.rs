@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
+  use crate::data::*;
   use crate::Orientation::*;
-  use crate::*;
 
   use proptest::prelude::*;
   use proptest::strategy::*;
