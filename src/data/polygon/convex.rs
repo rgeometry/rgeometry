@@ -35,7 +35,8 @@ where
   /// O(1) Assume that a polygon is convex.
   ///
   /// # Safety
-  /// Not safe is the polygon is not strictly convex.
+  /// The input polygon has to be strictly convex, ie. no vertices are allowed to
+  /// be concave or colinear.
   pub unsafe fn new_unchecked(poly: Polygon<T, P>) -> ConvexPolygon<T, P> {
     let convex = ConvexPolygon(poly);
     debug_assert_ok!(convex.validate());
@@ -92,7 +93,7 @@ impl ConvexPolygon<BigRational> {
   /// # render_convex_polygon(convex);
   /// # return ()
   /// ```
-  /// <iframe src="https://reanimate.clozecards.com:20443/loader.html?hash=36XCQBE0Yok="></iframe>
+  /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=36XCQBE0Yok="></iframe>
   pub fn random<R>(n: usize, max: usize, rng: &mut R) -> ConvexPolygon<BigRational>
   where
     R: Rng + ?Sized,
