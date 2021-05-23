@@ -88,7 +88,7 @@ impl ConvexPolygon<BigRational> {
   /// let mut rng = rand::thread_rng();
   /// ConvexPolygon::random(3, 1000, &mut rng)
   /// # };
-  /// # #[playground]
+  /// # #[cfg(playground)]
   /// # render_convex_polygon(convex);
   /// # return ()
   /// ```
