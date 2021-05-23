@@ -2,7 +2,7 @@ use array_init::array_init;
 use std::ops::Index;
 use std::ops::Sub;
 
-use crate::vector::Vector;
+use super::Vector;
 
 impl<'a, 'b, T, const N: usize> Sub<&'a Vector<T, N>> for &'b Vector<T, N>
 where

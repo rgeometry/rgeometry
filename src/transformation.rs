@@ -7,10 +7,10 @@ use std::ops::Div;
 use std::ops::Mul;
 // use std::assert;
 
+use crate::data::Point;
+use crate::data::Polygon;
+use crate::data::Vector;
 use crate::matrix::{Matrix, MatrixMul};
-use crate::point::Point;
-use crate::vector::Vector;
-use crate::Polygon;
 
 pub trait TransformScalar: One + Zero + Div<Output = Self> + MatrixMul {}
 impl<T> TransformScalar for T where T: One + Zero + Div<Output = Self> + MatrixMul {}

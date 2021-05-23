@@ -1,5 +1,5 @@
-use crate::point::Point;
-use crate::vector::Vector;
+use super::Point;
+use super::Vector;
 use array_init::array_init;
 use std::ops::Add;
 use std::ops::AddAssign;

@@ -3,8 +3,8 @@ use num_traits::NumOps;
 use std::ops::Add;
 use std::ops::Mul;
 
-use crate::vector::Vector;
-use crate::vector::VectorView;
+use super::Vector;
+use super::VectorView;
 
 impl<T, const N: usize> Mul<T> for Vector<T, N>
 where

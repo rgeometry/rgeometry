@@ -3,9 +3,9 @@ use num_traits::RefNum;
 use std::ops::Index;
 use std::ops::Sub;
 
-use super::super::array::*;
-use crate::point::Point;
-use crate::vector::Vector;
+use super::Point;
+use super::Vector;
+use crate::array::*;
 
 // Compiler bug: https://github.com/rust-lang/rust/issues/39959
 // When the bug has been fixed then we can get rid of the 'Clone' requirement.

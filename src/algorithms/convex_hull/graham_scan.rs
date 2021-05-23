@@ -1,7 +1,6 @@
 use crate::array::Orientation;
-use crate::point::Point;
-use crate::{ConvexPolygon, Error, Polygon};
-use crate::{PolygonScalar, PolygonScalarRef};
+use crate::data::{ConvexPolygon, Point, Polygon};
+use crate::{Error, PolygonScalar, PolygonScalarRef};
 
 // https://en.wikipedia.org/wiki/Graham_scan
 
@@ -46,7 +45,7 @@ where
     }
   }
   pts.truncate(known_good);
-  Ok(ConvexPolygon(Polygon::new(pts)?))
+  unsafe { Ok(ConvexPolygon::new_unchecked(Polygon::new(pts)?)) }
 }
 
 // Find the smallest point and remove it from the vector

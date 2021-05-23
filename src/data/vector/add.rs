@@ -4,8 +4,8 @@ use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Index;
 
-use crate::vector::Vector;
-use crate::vector::VectorView;
+use super::Vector;
+use super::VectorView;
 
 impl<T, const N: usize> Add<Vector<T, N>> for Vector<T, N>
 where

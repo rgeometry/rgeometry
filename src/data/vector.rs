@@ -14,8 +14,8 @@ use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
 
-use super::array::*;
-use super::point::Point;
+use crate::array::*;
+use crate::data::Point;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]

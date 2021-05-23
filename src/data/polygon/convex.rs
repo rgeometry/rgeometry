@@ -13,10 +13,10 @@ use std::ops::*;
 use crate::array::Orientation;
 use crate::data;
 use crate::data::line_segment::*;
+use crate::data::Point;
 use crate::data::PointLocation;
-use crate::point::Point;
+use crate::data::{Vector, VectorView};
 use crate::transformation::*;
-use crate::vector::{Vector, VectorView};
 use crate::{Error, PolygonScalar, PolygonScalarRef};
 
 use super::iter::*;
@@ -32,6 +32,10 @@ impl<T, P> ConvexPolygon<T, P>
 where
   T: PolygonScalar,
 {
+  /// O(1) Assume that a polygon is convex.
+  ///
+  /// # Safety
+  /// Not safe is the polygon is not strictly convex.
   pub unsafe fn new_unchecked(poly: Polygon<T, P>) -> ConvexPolygon<T, P> {
     let convex = ConvexPolygon(poly);
     debug_assert_ok!(convex.validate());
@@ -84,7 +88,7 @@ impl ConvexPolygon<BigRational> {
   /// let mut rng = rand::thread_rng();
   /// ConvexPolygon::random(3, 1000, &mut rng)
   /// # };
-  /// # #[cfg(feature = "wasm")]
+  /// # #[playground]
   /// # render_convex_polygon(convex);
   /// # return ()
   /// ```

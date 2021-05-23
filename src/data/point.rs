@@ -18,8 +18,8 @@ use std::ops::MulAssign;
 use std::ops::Neg;
 use std::ops::Sub;
 
-use super::array::*;
-use super::vector::{Vector, VectorView};
+use super::{Vector, VectorView};
+use crate::array::*;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
@@ -52,7 +52,7 @@ impl<T: Clone, const N: usize> Point<T, N> {
 
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
-    T: Clone + Sub<Output = T> + Zero + Ord + MulAssign,
+    T: Clone + Zero + Ord + NumOps,
     // for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
   {
     self
@@ -62,7 +62,7 @@ impl<T: Clone, const N: usize> Point<T, N> {
 
   pub fn squared_euclidean_distance(&self, rhs: &Point<T, N>) -> T
   where
-    T: Clone + Zero + Sub<Output = T> + MulAssign,
+    T: Clone + Zero + NumOps,
     // for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
   {
     self
@@ -70,9 +70,8 @@ impl<T: Clone, const N: usize> Point<T, N> {
       .iter()
       .zip(rhs.array.iter())
       .fold(T::zero(), |sum, (a, b)| {
-        let mut diff: T = a.clone() - b.clone();
-        diff *= diff.clone();
-        sum + diff
+        let diff: T = a.clone() - b.clone();
+        sum + diff.clone() * diff
       })
   }
 
@@ -143,7 +142,7 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 impl<T> Point<T, 2> {
   pub fn orientation(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
   where
-    T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + Ord,
+    T: Clone + NumOps + Ord,
     // for<'a> &'a T: Sub<Output = T>,
   {
     raw_arr_turn(&self.array, &q.array, &r.array)

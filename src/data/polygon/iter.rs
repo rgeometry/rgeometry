@@ -13,10 +13,10 @@ use std::ops::*;
 use crate::array::Orientation;
 use crate::data;
 use crate::data::line_segment::*;
+use crate::data::Point;
 use crate::data::PointLocation;
-use crate::point::Point;
+use crate::data::{Vector, VectorView};
 use crate::transformation::*;
-use crate::vector::{Vector, VectorView};
 use crate::{Error, PolygonScalar, PolygonScalarRef};
 
 pub struct Iter<'a, T: 'a, P: 'a> {

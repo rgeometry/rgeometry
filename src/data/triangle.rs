@@ -1,4 +1,5 @@
-use crate::{Error, Orientation, Point, PointLocation, PolygonScalar, PolygonScalarRef};
+use super::{Point, PointLocation};
+use crate::{Error, Orientation, PolygonScalar, PolygonScalarRef};
 use claim::debug_assert_ok;
 use std::ops::*;
 

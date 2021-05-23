@@ -1,4 +1,4 @@
-use crate::point::Point;
+use super::Point;
 
 #[derive(Debug, Clone, Copy)]
 pub enum EndPoint<T> {
