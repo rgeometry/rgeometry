@@ -27,9 +27,7 @@ where
   type Output = Point<T, N>;
 
   fn add(self: Point<T, N>, other: Vector<T, N>) -> Self::Output {
-    Point {
-      array: array_init(|i| self.array.index(i) + other.0.index(i)),
-    }
+    self.add(&other)
   }
 }
 
@@ -41,9 +39,7 @@ where
   type Output = Point<T, N>;
 
   fn add(self: Point<T, N>, other: &Vector<T, N>) -> Self::Output {
-    Point {
-      array: array_init(|i| self.array.index(i) + other.0.index(i)),
-    }
+    (&self).add(other)
   }
 }
 
@@ -65,9 +61,7 @@ where
   for<'a> T: AddAssign<&'a T>,
 {
   fn add_assign(&mut self, other: Vector<T, N>) {
-    for i in 0..N {
-      self.array[i] += other.0.index(i)
-    }
+    self.add_assign(&other)
   }
 }
 

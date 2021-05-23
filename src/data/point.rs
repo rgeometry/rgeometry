@@ -12,7 +12,7 @@ use super::Vector;
 use crate::array::*;
 
 #[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
+#[repr(transparent)] // Required for correctness!
 pub struct Point<T, const N: usize> {
   pub array: [T; N],
 }
