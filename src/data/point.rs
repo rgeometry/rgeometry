@@ -207,3 +207,47 @@ mod sub;
 //     self.0.iter().all(Zero::is_zero)
 //   }
 // }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::Orientation::*;
+
+  use ordered_float::NotNan;
+
+  fn n(f: f64) -> NotNan<f64> {
+    NotNan::new(f).unwrap()
+  }
+
+  #[test]
+  fn test_turns() {
+    assert_eq!(
+      Point::new([0, 0]).orientation(&Point::new([1, 1]), &Point::new([2, 2])),
+      CoLinear
+    );
+    assert_eq!(
+      Point::new([n(0.0), n(0.0)])
+        .orientation(&Point::new([n(1.0), n(1.0)]), &Point::new([n(2.0), n(2.0)])),
+      CoLinear
+    );
+
+    assert_eq!(
+      Point::new([0, 0]).orientation(&Point::new([0, 1]), &Point::new([2, 2])),
+      ClockWise
+    );
+    assert_eq!(
+      Point::new([n(0.0), n(0.0)])
+        .orientation(&Point::new([n(0.0), n(1.0)]), &Point::new([n(2.0), n(2.0)])),
+      ClockWise
+    );
+
+    assert_eq!(
+      Point::new([0, 0]).orientation(&Point::new([0, 1]), &Point::new([-2, 2])),
+      CounterClockWise
+    );
+    assert_eq!(
+      Point::new([0, 0]).orientation(&Point::new([0, 0]), &Point::new([0, 0])),
+      CoLinear
+    );
+  }
+}

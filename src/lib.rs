@@ -61,6 +61,3 @@ impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
 
 pub trait PolygonScalarRef<T = Self, Output = Self>: Clone + NumOps<T, Output> {}
 impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where T: Clone + NumOps<Rhs, Output> {}
-
-#[cfg(test)]
-mod tests;
