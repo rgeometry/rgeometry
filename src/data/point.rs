@@ -1,10 +1,12 @@
-use array_init::array_init;
+use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
 use num_traits::*;
-use ordered_float::NotNan;
+use ordered_float::{FloatIsNan, NotNan};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
+use std::convert::TryFrom;
+use std::fmt::Debug;
 use std::ops::Index;
 use std::ops::Neg;
 
@@ -99,6 +101,15 @@ impl<T, const N: usize> Index<usize> for Point<T, N> {
   type Output = T;
   fn index(&self, key: usize) -> &T {
     self.array.index(key)
+  }
+}
+
+impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<NotNan<f64>, N> {
+  type Error = FloatIsNan;
+  fn try_from(point: Point<f64, N>) -> Result<Point<NotNan<f64>, N>, FloatIsNan> {
+    Ok(Point {
+      array: try_array_init(|i| NotNan::try_from(point.array[i]))?,
+    })
   }
 }
 
@@ -213,7 +224,106 @@ mod tests {
   use super::*;
   use crate::Orientation::*;
 
+  use ordered_float::Float;
   use ordered_float::NotNan;
+  use std::convert::TryInto;
+  use std::fmt::Debug;
+  use std::ops::IndexMut;
+
+  use proptest::array::*;
+  use proptest::collection::*;
+  use proptest::num;
+  use proptest::prelude::*;
+  use proptest::strategy::*;
+  use proptest::test_runner::*;
+
+  pub struct PointValueTree<T, const N: usize> {
+    point: Point<T, N>,
+    shrink: usize,
+    prev_shrink: Option<usize>,
+  }
+  impl<T, const N: usize> ValueTree for PointValueTree<T, N>
+  where
+    T: ValueTree,
+  {
+    type Value = Point<<T as ValueTree>::Value, N>;
+    fn current(&self) -> Point<T::Value, N> {
+      Point {
+        array: array_init(|i| self.point.array.index(i).current()),
+      }
+    }
+    fn simplify(&mut self) -> bool {
+      for ix in self.shrink..N {
+        if !self.point.array.index_mut(ix).simplify() {
+          self.shrink = ix + 1;
+        } else {
+          self.prev_shrink = Some(ix);
+          return true;
+        }
+      }
+      false
+    }
+    fn complicate(&mut self) -> bool {
+      match self.prev_shrink {
+        None => false,
+        Some(ix) => {
+          if self.point.array.index_mut(ix).complicate() {
+            true
+          } else {
+            self.prev_shrink = None;
+            false
+          }
+        }
+      }
+    }
+  }
+
+  impl<T, const N: usize> Strategy for Point<T, N>
+  where
+    T: Clone + Debug + Strategy,
+  {
+    type Tree = PointValueTree<T::Tree, N>;
+    type Value = Point<<T as Strategy>::Value, N>;
+    fn new_tree(&self, runner: &mut TestRunner) -> NewTree<Self> {
+      let tree = PointValueTree {
+        point: Point {
+          array: try_array_init(|i| self.array.index(i).new_tree(runner))?,
+        },
+        shrink: 0,
+        prev_shrink: None,
+      };
+
+      Ok(tree)
+    }
+  }
+
+  impl<const N: usize> Arbitrary for Point<f64, N> {
+    type Strategy = Point<num::f64::Any, N>;
+    type Parameters = ();
+    fn arbitrary_with(_params: ()) -> Self::Strategy {
+      use num::f64::*;
+      let strat = POSITIVE | NEGATIVE | NORMAL | SUBNORMAL | ZERO;
+      Point {
+        array: array_init(|_| strat),
+      }
+    }
+  }
+
+  pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> {
+    any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.try_into().ok())
+  }
+
+  proptest! {
+    #[test]
+    fn squared_euclidean_distance_fuzz(pt1: Point<f64,2>, pt2: Point<f64,2>) {
+      let _ = pt1.squared_euclidean_distance(&pt2);
+    }
+
+    #[test]
+    fn cmp_around_fuzz(pt1 in any_nn(), pt2 in any_nn(), pt3 in any_nn()) {
+      let _ = pt1.ccw_cmp_around(&pt2, &pt3);
+    }
+  }
 
   #[test]
   fn test_turns() {
