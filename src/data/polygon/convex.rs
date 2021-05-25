@@ -132,7 +132,7 @@ impl ConvexPolygon<BigRational> {
 // Trait Implementations
 
 impl<T: PolygonScalar, P> Deref for ConvexPolygon<T, P> {
-  type Target = Polygon<T,P>;
+  type Target = Polygon<T, P>;
   fn deref(&self) -> &Self::Target {
     self.polygon()
   }
