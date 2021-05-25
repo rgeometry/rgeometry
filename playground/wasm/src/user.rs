@@ -14,6 +14,7 @@ use rand::distributions::Standard;
 use rand::Rng;
 use rgeometry::data::*;
 use rgeometry::*;
+use rgeometry_wasm::playground::*;
 
 #[wasm_bindgen]
 extern "C" {
@@ -61,68 +62,15 @@ pub fn main() {
   static START: Once = Once::new();
 
   START.call_once(|| {
-    log("This should only happen once.");
+    on_canvas_click(main);
   });
-  //
-  let document = web_sys::window().unwrap().document().unwrap();
-  let canvas = document.get_element_by_id("canvas").unwrap();
-  let canvas: web_sys::HtmlCanvasElement = canvas
-    .dyn_into::<web_sys::HtmlCanvasElement>()
-    .map_err(|_| ())
-    .unwrap();
 
-  let context = canvas
-    .get_context("2d")
-    .unwrap()
-    .unwrap()
-    .dyn_into::<web_sys::CanvasRenderingContext2d>()
-    .unwrap();
+  set_viewport(2., 2.);
 
-  context.save();
-  context.reset_transform().unwrap();
-  context.clear_rect(0., 0., canvas.width() as f64, canvas.height() as f64);
-  context.restore();
+  clear_screen();
 
-  // context.scale(100., 100.);
-  context.set_line_width(3.);
-  context.set_line_join("round");
+  let p: ConvexPolygon<BigRational> =
+    N_CORNERS.with(|n| ConvexPolygon::random(*n.borrow(), 1000, &mut rand::thread_rng()));
 
-  let mut rng = rand::thread_rng();
-
-  let p: Polygon<BigRational> =
-    N_CORNERS.with(|n| ConvexPolygon::random(*n.borrow(), 1000, &mut rng).into());
-  let p = p.cast(|v| BigRational::to_f64(&v).unwrap());
-  let t = Transform::uniform_scale(300.);
-  let p = t * p;
-
-  context.begin_path();
-  context.set_line_join("round");
-  let mut iter = p.iter();
-  if let Some((origin, _)) = iter.next() {
-    let [x, y] = origin.array;
-    context.move_to(x, y);
-    while let Some((pt, _)) = iter.next() {
-      let [x2, y2] = pt.array;
-      context.line_to(x2, y2);
-    }
-  }
-  context.close_path();
-  context.stroke();
+  render_polygon(&p);
 }
-
-/*
-
-
-   /---\
-  /     \
- /       \
- \       /
-  \     /
-   \---/
-
- /-----\
- | /-\ |
- \-/ | |
- /---/ |
- \-----/
-*/

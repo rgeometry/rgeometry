@@ -87,7 +87,7 @@ impl<T: Clone, const N: usize> Point<T, N> {
     }
   }
 
-  pub fn cast<U, F>(self, f: F) -> Point<U, N>
+  pub fn cast<U, F>(&self, f: F) -> Point<U, N>
   where
     F: Fn(T) -> U,
   {
