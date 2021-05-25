@@ -15,6 +15,7 @@ pub use crate::transformation::Transform;
 pub use point::Point;
 pub use vector::{Vector, VectorView};
 
+#[derive(Debug, Clone, Copy)]
 pub enum PointLocation {
   Inside,
   OnBoundary,
