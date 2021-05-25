@@ -1,3 +1,4 @@
+#![doc(test(no_crate_inject))]
 #![allow(unused_imports)]
 // #![allow(incomplete_features)]
 // #![feature(const_generics)]

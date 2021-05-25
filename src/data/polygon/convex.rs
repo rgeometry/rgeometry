@@ -83,11 +83,9 @@ impl ConvexPolygon<BigRational> {
   /// # use rgeometry_wasm::playground::*;
   /// # use rgeometry::data::*;
   /// # let convex = {
-  /// let mut rng = rand::thread_rng();
-  /// ConvexPolygon::random(3, 1000, &mut rng)
+  /// ConvexPolygon::random(3, 1000, &mut rand::thread_rng())
   /// # };
-  /// # render_polygon(convex.into());
-  /// # return ()
+  /// # render_polygon(&convex);
   /// ```
   /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=36XCQBE0Yok="></iframe>
   pub fn random<R>(n: usize, max: usize, rng: &mut R) -> ConvexPolygon<BigRational>
