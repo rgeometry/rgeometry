@@ -79,14 +79,14 @@ where
 // ConvexPolygon<BigRational>
 
 impl ConvexPolygon<BigRational> {
-  /// ```rust
+  /// ```no_run
+  /// # use rgeometry_wasm::playground::*;
   /// # use rgeometry::data::*;
   /// # let convex = {
   /// let mut rng = rand::thread_rng();
   /// ConvexPolygon::random(3, 1000, &mut rng)
   /// # };
-  /// # #[cfg(playground)]
-  /// # render_convex_polygon(convex);
+  /// # render_polygon(convex.into());
   /// # return ()
   /// ```
   /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=36XCQBE0Yok="></iframe>
@@ -130,6 +130,13 @@ impl ConvexPolygon<BigRational> {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Trait Implementations
+
+impl<T: PolygonScalar, P> Deref for ConvexPolygon<T, P> {
+  type Target = Polygon<T,P>;
+  fn deref(&self) -> &Self::Target {
+    self.polygon()
+  }
+}
 
 impl<T, P> From<ConvexPolygon<T, P>> for Polygon<T, P> {
   fn from(convex: ConvexPolygon<T, P>) -> Polygon<T, P> {

@@ -30,3 +30,7 @@ ordered-float = "2.4.0"
 
 [dev-dependencies]
 proptest = "1.0.0"
+rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
+
+[patch.crates-io]
+rgeometry = { path = ".", version = "*" }
