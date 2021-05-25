@@ -8,7 +8,7 @@ license     = "Unlicense OR BSD-2-Clause"
 name        = "rgeometry"
 readme      = "README.md"
 repository  = "https://github.com/rgeometry/rgeometry"
-version     = "0.2.0"
+version     = "0.2.1"
 exclude     = [
   ".dockerignore",
   ".github",
