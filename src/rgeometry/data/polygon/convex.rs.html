@@ -289,6 +289,8 @@
 <span id="286">286</span>
 <span id="287">287</span>
 <span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim</span>::<span class="ident">debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint</span>::<span class="ident">BigInt</span>;
@@ -331,7 +333,9 @@
     <span class="ident">convex</span>
   }
 
-  <span class="comment">// O(log n)</span>
+  <span class="doccomment">/// O(log n)</span>
+  <span class="doccomment">///</span>
+  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU=&quot;&gt;&lt;/iframe&gt;</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span> {
     <span class="macro">debug_assert_ok</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate</span>());
     <span class="kw">let</span> <span class="ident">poly</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
