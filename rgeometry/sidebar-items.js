@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error",""],["Orientation",""]],"mod":[["algorithms",""],["data",""]],"trait":[["PolygonScalar",""],["PolygonScalarRef",""]]});

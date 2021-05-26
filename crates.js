@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["array_init","cfg_if","claim","getrandom","libc","num_bigint","num_integer","num_rational","num_traits","ordered_float","ppv_lite86","rand","rand_chacha","rand_core","rgeometry"];
