@@ -39,7 +39,9 @@ where
     convex
   }
 
-  // O(log n)
+  /// O(log n)
+  ///
+  /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU="></iframe>
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     debug_assert_ok!(self.validate());
     let poly = &self.0;
