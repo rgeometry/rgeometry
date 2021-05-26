@@ -29,8 +29,11 @@ claim         = "0.5.0"
 ordered-float = "2.4.0"
 
 [dev-dependencies]
-proptest = "1.0.0"
+proptest       = "1.0.0"
 rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--html-in-header", "doc-header.html"]
 
 [patch."https://github.com/rgeometry/rgeometry"]
 rgeometry = { path = "." }

@@ -21,6 +21,8 @@ jobs:
       with:
         command: doc
 
+    - run: RUSTDOCFLAGS="--html-in-header doc-header.html" cargo doc --no-deps
+
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
