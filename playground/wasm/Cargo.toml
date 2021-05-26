@@ -11,13 +11,14 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-rand           = "0.8"
-getrandom      = { version = "0.2.2", features = ["js"] }
-num-traits     = "0.1"
-num-rational   = "0.4"
-num-bigint     = "*"
-rgeometry      = { path = "../../" }
+rand         = "0.8"
+getrandom    = { version = "0.2.2", features = ["js"] }
+num-traits   = "0.1"
+num-rational = "0.4"
+num-bigint   = "*"
+rgeometry    = { path = "../../" }
 rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
+#rgeometry-wasm = { path = "../../../rgeometry-wasm" }
 wasm-bindgen   = "0.2.63"
 gloo-events    = "*"
 
@@ -57,5 +58,5 @@ features = [
   'Window',
 ]
 
-[patch.crates-io]
-rgeometry = { path = "../../", version = "*" }
+[patch."https://github.com/rgeometry/rgeometry"]
+rgeometry = { path = "../.." }

@@ -23,41 +23,41 @@ extern "C" {
   fn log(s: &str);
 }
 
-fn ui_range(init: usize, min: usize, max: usize) -> Rc<RefCell<usize>> {
-  let count = Rc::new(RefCell::new(init));
+// fn ui_range(init: usize, min: usize, max: usize) -> Rc<RefCell<usize>> {
+//   let count = Rc::new(RefCell::new(init));
 
-  let document = web_sys::window().unwrap().document().unwrap();
-  let overlay = document.get_element_by_id("ui-overlay").unwrap();
-  let val = document
-    .create_element("input")
-    .unwrap()
-    .dyn_into::<web_sys::HtmlInputElement>()
-    .unwrap();
-  val.set_attribute("type", "range").unwrap();
-  val.set_attribute("value", &init.to_string()).unwrap();
-  val.set_attribute("min", &min.to_string()).unwrap();
-  val.set_attribute("max", &max.to_string()).unwrap();
-  overlay.append_child(&val).unwrap();
+//   let document = web_sys::window().unwrap().document().unwrap();
+//   let overlay = document.get_element_by_id("ui-overlay").unwrap();
+//   let val = document
+//     .create_element("input")
+//     .unwrap()
+//     .dyn_into::<web_sys::HtmlInputElement>()
+//     .unwrap();
+//   val.set_attribute("type", "range").unwrap();
+//   val.set_attribute("value", &init.to_string()).unwrap();
+//   val.set_attribute("min", &min.to_string()).unwrap();
+//   val.set_attribute("max", &max.to_string()).unwrap();
+//   overlay.append_child(&val).unwrap();
 
-  let ret = count.clone();
-  let ev = EventListener::new(&val, "input", move |event| {
-    let target = event.target().unwrap();
-    let target = target.dyn_into::<web_sys::HtmlInputElement>().unwrap();
-    // let event = event.dyn_ref::<web_sys::InputEvent>().unwrap_throw();
-    // log(&event.data().unwrap_or("No data".to_string()));
-    let n = target.value().parse::<usize>().unwrap_or(3);
-    // log(&target.value());
-    *count.borrow_mut() = n;
-    main();
-  });
-  ev.forget();
+//   let ret = count.clone();
+//   let ev = EventListener::new(&val, "input", move |event| {
+//     let target = event.target().unwrap();
+//     let target = target.dyn_into::<web_sys::HtmlInputElement>().unwrap();
+//     // let event = event.dyn_ref::<web_sys::InputEvent>().unwrap_throw();
+//     // log(&event.data().unwrap_or("No data".to_string()));
+//     let n = target.value().parse::<usize>().unwrap_or(3);
+//     // log(&target.value());
+//     *count.borrow_mut() = n;
+//     main();
+//   });
+//   ev.forget();
 
-  ret
-}
+//   ret
+// }
 
-thread_local! {
-  static N_CORNERS: Rc<RefCell<usize>> = ui_range(10, 3, 30);
-}
+// thread_local! {
+//   static N_CORNERS: Rc<RefCell<usize>> = ui_range(10, 3, 30);
+// }
 
 /*
 pub fn main() {
@@ -101,8 +101,8 @@ pub fn main() {
   POLYGON.with(|poly| {
     let canvas = get_canvas();
     let context = get_context_2d(&canvas);
-    let poly = poly.borrow();
-    render_polygon(&poly);
+    let poly: &ConvexPolygon<BigRational> = &poly.borrow();
+    render_polygon(poly);
     let pt = Point::new([
       BigRational::from_f64(x).unwrap(),
       BigRational::from_f64(y).unwrap(),
@@ -113,6 +113,6 @@ pub fn main() {
       PointLocation::Outside => context.set_fill_style(&JsValue::from_str("white")),
     };
     context.fill();
-    render_polygon(&poly);
+    render_polygon(poly);
   });
 }
