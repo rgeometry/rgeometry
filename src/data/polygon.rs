@@ -1,6 +1,9 @@
 // use claim::debug_assert_ok;
 use num_rational::BigRational;
+use num_traits::*;
+use ordered_float::{FloatIsNan, NotNan, OrderedFloat};
 use std::borrow::Borrow;
+use std::iter::Sum;
 use std::ops::*;
 
 use crate::array::Orientation;
@@ -168,7 +171,8 @@ impl<T, P> Polygon<T, P> {
 
   pub fn cast<U, F>(self, f: F) -> Polygon<U, P>
   where
-    T: PolygonScalar,
+    T: Clone,
+    U: Clone,
     F: Fn(T) -> U + Clone,
   {
     let pts = self.points.into_iter().map(|p| p.cast(f.clone())).collect();

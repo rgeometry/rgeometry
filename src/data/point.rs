@@ -1,7 +1,7 @@
 use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
 use num_traits::*;
-use ordered_float::{FloatIsNan, NotNan};
+use ordered_float::{FloatIsNan, NotNan, OrderedFloat};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
@@ -109,6 +109,15 @@ impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<NotNan<f64>, N> {
   fn try_from(point: Point<f64, N>) -> Result<Point<NotNan<f64>, N>, FloatIsNan> {
     Ok(Point {
       array: try_array_init(|i| NotNan::try_from(point.array[i]))?,
+    })
+  }
+}
+
+impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<BigRational, N> {
+  type Error = ();
+  fn try_from(point: Point<f64, N>) -> Result<Point<BigRational, N>, ()> {
+    Ok(Point {
+      array: try_array_init(|i| BigRational::from_float(point.array[i]).ok_or(()))?,
     })
   }
 }

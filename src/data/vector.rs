@@ -1,4 +1,5 @@
-use array_init::array_init;
+use array_init::{array_init, try_array_init};
+use num_rational::BigRational;
 use num_traits::identities::One;
 use num_traits::identities::Zero;
 use num_traits::NumOps;
@@ -6,6 +7,7 @@ use num_traits::NumRef;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
+use std::convert::TryFrom;
 use std::iter::Sum;
 use std::ops::AddAssign;
 use std::ops::Index;
@@ -75,6 +77,15 @@ impl<'a, T, const N: usize> From<&'a Point<T, N>> for &'a Vector<T, N> {
 impl<'a, T, const N: usize> From<&'a Point<T, N>> for VectorView<'a, T, N> {
   fn from(point: &Point<T, N>) -> VectorView<'_, T, N> {
     VectorView(&point.array)
+  }
+}
+
+impl<'a, const N: usize> TryFrom<Vector<f64, N>> for Vector<BigRational, N> {
+  type Error = ();
+  fn try_from(point: Vector<f64, N>) -> Result<Vector<BigRational, N>, ()> {
+    Ok(Vector(try_array_init(|i| {
+      BigRational::from_float(point[i]).ok_or(())
+    })?))
   }
 }
 
