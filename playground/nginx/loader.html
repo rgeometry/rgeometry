@@ -45,6 +45,8 @@
   </script>
   <!-- Note the usage of `type=module` here as this is an ES6 module -->
   <script type="module">
+    const ui = document.getElementById('ui-overlay');
+    ui.innerText = 'Loading...';
     // Use ES module import syntax to import functionality from the module
     // that we have compiled.
     //
@@ -65,6 +67,7 @@
         mod = await import('./wasm/' + hash + '.js');
       }
       let init = mod.default;
+      ui.innerText = '';
       // options:
       //   * hash
       //   * mode: interactive | once
