@@ -379,11 +379,20 @@
 <span id="355">355</span>
 <span id="356">356</span>
 <span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_rational</span>::<span class="ident">BigRational</span>;
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">ordered_float</span>::{<span class="ident">FloatIsNan</span>, <span class="ident">NotNan</span>};
+<span class="kw">use</span> <span class="ident">ordered_float</span>::{<span class="ident">FloatIsNan</span>, <span class="ident">NotNan</span>, <span class="ident">OrderedFloat</span>};
 <span class="kw">use</span> <span class="ident">rand</span>::<span class="ident">distributions</span>::{<span class="ident">Distribution</span>, <span class="ident">Standard</span>};
 <span class="kw">use</span> <span class="ident">rand</span>::<span class="ident">Rng</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
@@ -491,6 +500,15 @@
   <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">point</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">N</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>, <span class="ident">N</span><span class="op">&gt;</span>, <span class="ident">FloatIsNan</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">Point</span> {
       <span class="ident">array</span>: <span class="ident">try_array_init</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">NotNan</span>::<span class="ident">try_from</span>(<span class="ident">point</span>.<span class="ident">array</span>[<span class="ident">i</span>]))<span class="question-mark">?</span>,
+    })
+  }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">BigRational</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+  <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> ();
+  <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">point</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">N</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">BigRational</span>, <span class="ident">N</span><span class="op">&gt;</span>, ()<span class="op">&gt;</span> {
+    <span class="prelude-val">Ok</span>(<span class="ident">Point</span> {
+      <span class="ident">array</span>: <span class="ident">try_array_init</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">BigRational</span>::<span class="ident">from_float</span>(<span class="ident">point</span>.<span class="ident">array</span>[<span class="ident">i</span>]).<span class="ident">ok_or</span>(()))<span class="question-mark">?</span>,
     })
   }
 }
