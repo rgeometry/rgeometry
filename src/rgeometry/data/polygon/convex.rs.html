@@ -312,6 +312,14 @@
 <span id="288">288</span>
 <span id="289">289</span>
 <span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim</span>::<span class="ident">debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint</span>::<span class="ident">BigInt</span>;
@@ -348,7 +356,7 @@
   <span class="doccomment">/// # Safety</span>
   <span class="doccomment">/// The input polygon has to be strictly convex, ie. no vertices are allowed to</span>
   <span class="doccomment">/// be concave or colinear.</span>
-  <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">convex</span> <span class="op">=</span> <span class="ident">ConvexPolygon</span>(<span class="ident">poly</span>);
     <span class="macro">debug_assert_ok</span><span class="macro">!</span>(<span class="ident">convex</span>.<span class="ident">validate</span>());
     <span class="ident">convex</span>
@@ -358,7 +366,7 @@
   <span class="doccomment">///</span>
   <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU=&quot;&gt;&lt;/iframe&gt;</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span> {
-    <span class="macro">debug_assert_ok</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate</span>());
+    <span class="comment">// debug_assert_ok!(self.validate());</span>
     <span class="kw">let</span> <span class="ident">poly</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
     <span class="kw">let</span> <span class="ident">p0</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">vertex</span>(<span class="number">0</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lower</span> <span class="op">=</span> <span class="number">1</span>;
@@ -427,7 +435,7 @@
       .<span class="ident">collect</span>();
     <span class="kw">let</span> <span class="ident">n_vertices</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">vertices</span>).<span class="ident">len</span>();
     <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="ident">n_vertices</span>, <span class="ident">n</span>);
-    <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Polygon</span>::<span class="ident">new</span>(<span class="ident">vertices</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Polygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">vertices</span>);
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
       <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">vertex_orientation</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation</span>::<span class="ident">CounterClockWise</span> {
         <span class="kw">return</span> <span class="self">Self</span>::<span class="ident">random</span>(<span class="ident">n</span>, <span class="ident">max</span>, <span class="ident">rng</span>);
@@ -439,7 +447,7 @@
       <span class="ident">One</span>::<span class="ident">one</span>(),
       <span class="ident">BigInt</span>::<span class="ident">from_usize</span>(<span class="ident">max</span>).<span class="ident">unwrap</span>(),
     ));
-    <span class="ident">ConvexPolygon</span>(<span class="ident">s</span> <span class="op">*</span> <span class="ident">t</span> <span class="op">*</span> <span class="ident">p</span>)
+    <span class="ident">ConvexPolygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">s</span> <span class="op">*</span> <span class="ident">t</span> <span class="op">*</span> <span class="ident">p</span>)
   }
 }
 
@@ -474,29 +482,48 @@
 <span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
 <span class="comment">// Helper functions</span>
 
-<span class="comment">// Property: random_between(n, max, &amp;mut rng).iter().sum::&lt;usize&gt;() == max</span>
-<span class="kw">fn</span> <span class="ident">random_between</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">max</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>
+<span class="comment">// Property: random_between(n, max, &amp;mut rng).sum::&lt;usize&gt;() == max</span>
+<span class="kw">fn</span> <span class="ident">random_between_iter</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">max</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">usize</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
 {
-  <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">n</span> <span class="op">&gt;</span> <span class="number">0</span>);
+  <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span> <span class="op">&gt;</span> <span class="number">0</span>);
   <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">max</span>);
-  <span class="kw">if</span> <span class="ident">max</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n</span> {
-    <span class="kw">return</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>; <span class="ident">n</span>];
-  }
   <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pts</span> <span class="op">=</span> <span class="ident">BTreeSet</span>::<span class="ident">new</span>();
   <span class="kw">while</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> {
     <span class="ident">pts</span>.<span class="ident">insert</span>(<span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">1</span>..<span class="ident">max</span>));
   }
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">from</span> <span class="op">=</span> <span class="number">0</span>;
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-  <span class="kw">for</span> <span class="ident">x</span> <span class="kw">in</span> <span class="ident">pts</span>.<span class="ident">iter</span>() {
-    <span class="ident">out</span>.<span class="ident">push</span>(<span class="ident">x</span> <span class="op">-</span> <span class="ident">from</span>);
-    <span class="ident">from</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">x</span>;
-  }
-  <span class="ident">out</span>.<span class="ident">push</span>(<span class="ident">max</span> <span class="op">-</span> <span class="ident">from</span>);
-  <span class="ident">out</span>
+  <span class="ident">pts</span>.<span class="ident">insert</span>(<span class="ident">max</span>);
+  <span class="ident">pts</span>.<span class="ident">into_iter</span>().<span class="ident">scan</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">from</span>, <span class="ident">x</span><span class="op">|</span> {
+    <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">x</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">from</span>;
+    <span class="kw-2">*</span><span class="ident">from</span> <span class="op">=</span> <span class="ident">x</span>;
+    <span class="prelude-val">Some</span>(<span class="ident">out</span>)
+  })
 }
+
+<span class="comment">// Property: random_between(n, max, &amp;mut rng).iter().sum::&lt;usize&gt;() == max</span>
+<span class="comment">// fn random_between&lt;R&gt;(n: usize, max: usize, rng: &amp;mut R) -&gt; Vec&lt;usize&gt;</span>
+<span class="comment">// where</span>
+<span class="comment">//   R: Rng + ?Sized,</span>
+<span class="comment">// {</span>
+<span class="comment">//   assert!(n &gt; 0);</span>
+<span class="comment">//   assert!(n &lt;= max);</span>
+<span class="comment">//   if max == n {</span>
+<span class="comment">//     return vec![1; n];</span>
+<span class="comment">//   }</span>
+<span class="comment">//   let mut pts = BTreeSet::new();</span>
+<span class="comment">//   while pts.len() &lt; n - 1 {</span>
+<span class="comment">//     pts.insert(rng.gen_range(1..max));</span>
+<span class="comment">//   }</span>
+<span class="comment">//   pts.insert(max);</span>
+<span class="comment">//   let mut from = 0;</span>
+<span class="comment">//   let mut out = Vec::new();</span>
+<span class="comment">//   for x in pts.iter() {</span>
+<span class="comment">//     out.push(x - from);</span>
+<span class="comment">//     from = *x;</span>
+<span class="comment">//   }</span>
+<span class="comment">//   out</span>
+<span class="comment">// }</span>
 
 <span class="comment">// Property: random_between_zero(10, 100, &amp;mut rng).iter().sum::&lt;isize&gt;() == 0</span>
 <span class="comment">// Property: random_between_zero(10, 100, &amp;mut rng).iter().all(|v| !v.is_zero())</span>
@@ -506,26 +533,15 @@
 {
   <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">2</span>);
   <span class="kw">let</span> <span class="ident">n_positive</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">1</span>..<span class="ident">n</span>); <span class="comment">// [1;n[</span>
-  <span class="macro">dbg</span><span class="macro">!</span>(<span class="ident">n_positive</span>);
-  <span class="kw">let</span> <span class="ident">positive</span> <span class="op">=</span> <span class="ident">random_between</span>(<span class="ident">n_positive</span>, <span class="ident">max</span>, <span class="ident">rng</span>)
-    .<span class="ident">into_iter</span>()
-    .<span class="ident">map</span>(<span class="ident">BigInt</span>::<span class="ident">from</span>)
-    .<span class="ident">collect</span>();
   <span class="kw">let</span> <span class="ident">n_negative</span> <span class="op">=</span> <span class="ident">n</span> <span class="op">-</span> <span class="ident">n_positive</span>;
-  <span class="kw">let</span> <span class="ident">negative</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_between</span>(<span class="ident">n_negative</span>, <span class="ident">max</span>, <span class="ident">rng</span>)
-    .<span class="ident">into_iter</span>()
+  <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n_positive</span> <span class="op">+</span> <span class="ident">n_negative</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n</span>);
+  <span class="kw">let</span> <span class="ident">positive</span> <span class="op">=</span> <span class="ident">random_between_iter</span>(<span class="ident">n_positive</span>, <span class="ident">max</span>, <span class="ident">rng</span>).<span class="ident">map</span>(<span class="ident">BigInt</span>::<span class="ident">from</span>);
+  <span class="kw">let</span> <span class="ident">negative</span> <span class="op">=</span> <span class="ident">random_between_iter</span>(<span class="ident">n_negative</span>, <span class="ident">max</span>, <span class="ident">rng</span>)
     .<span class="ident">map</span>(<span class="ident">BigInt</span>::<span class="ident">from</span>)
-    .<span class="ident">map</span>(<span class="ident">Neg</span>::<span class="ident">neg</span>)
-    .<span class="ident">collect</span>();
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> [<span class="ident">positive</span>, <span class="ident">negative</span>].<span class="ident">concat</span>();
+    .<span class="ident">map</span>(<span class="ident">Neg</span>::<span class="ident">neg</span>);
+  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">positive</span>.<span class="ident">chain</span>(<span class="ident">negative</span>).<span class="ident">collect</span>();
   <span class="ident">result</span>.<span class="ident">shuffle</span>(<span class="ident">rng</span>);
   <span class="ident">result</span>
-  <span class="comment">// random_between(n, max, rng)</span>
-  <span class="comment">//   .into_iter()</span>
-  <span class="comment">//   .map(BigInt::from)</span>
-  <span class="comment">//   .zip(random_between(n, max, rng).into_iter().map(BigInt::from))</span>
-  <span class="comment">//   .map(|(a, b)| a - b)</span>
-  <span class="comment">//   .collect()</span>
 }
 
 <span class="comment">// Random vectors that sum to zero.</span>
@@ -580,8 +596,8 @@
     <span class="kw">fn</span> <span class="ident">sum_to_max</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">1</span>..<span class="number">1000</span>, <span class="ident">max</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">1_000_000</span>) {
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand</span>::<span class="ident">thread_rng</span>();
       <span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>(<span class="ident">max</span>, <span class="ident">n</span>);
-      <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">max</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-      <span class="macro">prop_assert_eq</span><span class="macro">!</span>(<span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>(), <span class="ident">max</span> <span class="kw">as</span> <span class="ident">usize</span>)
+      <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between_iter</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">max</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+      <span class="macro">prop_assert_eq</span><span class="macro">!</span>(<span class="ident">vecs</span>.<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>(), <span class="ident">max</span> <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

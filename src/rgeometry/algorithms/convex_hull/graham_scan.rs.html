@@ -130,7 +130,7 @@
     }
   }
   <span class="ident">pts</span>.<span class="ident">truncate</span>(<span class="ident">known_good</span> <span class="op">+</span> <span class="number">1</span>);
-  <span class="kw">unsafe</span> { <span class="prelude-val">Ok</span>(<span class="ident">ConvexPolygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">Polygon</span>::<span class="ident">new</span>(<span class="ident">pts</span>)<span class="question-mark">?</span>)) }
+  <span class="prelude-val">Ok</span>(<span class="ident">ConvexPolygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">Polygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">pts</span>)))
 }
 
 <span class="comment">// Find the smallest point and remove it from the vector</span>

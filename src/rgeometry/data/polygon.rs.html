@@ -255,6 +255,13 @@
 <span id="231">231</span>
 <span id="232">232</span>
 <span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_rational</span>::<span class="ident">BigRational</span>;
@@ -285,19 +292,26 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
   {
     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">points</span>.<span class="ident">len</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">len</span>);
     <span class="ident">meta</span>.<span class="ident">resize</span>(<span class="ident">len</span>, ());
-    <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Polygon</span> {
+    <span class="ident">Polygon</span> {
       <span class="ident">points</span>,
       <span class="ident">boundary</span>: <span class="ident">len</span>,
       <span class="ident">holes</span>: <span class="macro">vec</span><span class="macro">!</span>[],
       <span class="ident">meta</span>,
-    };
+    }
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+  {
+    <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">new_unchecked</span>(<span class="ident">points</span>);
     <span class="ident">p</span>.<span class="ident">validate</span>()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">p</span>)
   }
