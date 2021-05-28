@@ -13,9 +13,11 @@ use num_traits::cast::ToPrimitive;
 use num_traits::*;
 use rand::distributions::Standard;
 use rand::Rng;
+use rgeometry::algorithms::convex_hull;
 use rgeometry::data::*;
 use rgeometry::*;
 use rgeometry_wasm::playground::*;
+use std::convert::*;
 
 #[wasm_bindgen]
 extern "C" {
@@ -78,41 +80,96 @@ pub fn main() {
 }
 */
 
+// pub fn main() {
+//   thread_local! {
+//     static POLYGON: RefCell<ConvexPolygon<BigRational>> = RefCell::new(ConvexPolygon::random(5, 1000, &mut rand::thread_rng()));
+//   }
+//   static START: Once = Once::new();
+
+//   START.call_once(|| {
+//     on_canvas_click(|| {
+//       POLYGON
+//         .with(|poly| *poly.borrow_mut() = ConvexPolygon::random(5, 1000, &mut rand::thread_rng()));
+//       main();
+//     });
+//     on_mousemove(|_event| main());
+//   });
+
+//   set_viewport(2., 2.);
+
+//   let (x, y) = mouse_position();
+//   clear_screen();
+
+//   POLYGON.with(|poly| {
+//     let canvas = get_canvas();
+//     let context = get_context_2d(&canvas);
+//     let poly: &ConvexPolygon<BigRational> = &poly.borrow();
+//     render_polygon(poly);
+//     let pt = Point::new([
+//       BigRational::from_f64(x).unwrap(),
+//       BigRational::from_f64(y).unwrap(),
+//     ]);
+//     match poly.locate(&pt) {
+//       PointLocation::Inside => context.set_fill_style(&JsValue::from_str("red")),
+//       PointLocation::OnBoundary => context.set_fill_style(&JsValue::from_str("black")),
+//       PointLocation::Outside => context.set_fill_style(&JsValue::from_str("white")),
+//     };
+//     context.fill();
+//     render_polygon(poly);
+//   });
+// }
+
 pub fn main() {
-  thread_local! {
-    static POLYGON: RefCell<ConvexPolygon<BigRational>> = RefCell::new(ConvexPolygon::random(5, 1000, &mut rand::thread_rng()));
-  }
   static START: Once = Once::new();
 
-  START.call_once(|| {
-    on_canvas_click(|| {
-      POLYGON
-        .with(|poly| *poly.borrow_mut() = ConvexPolygon::random(5, 1000, &mut rand::thread_rng()));
-      main();
-    });
-    on_mousemove(|_event| main());
-  });
-
+  clear_screen();
   set_viewport(2., 2.);
 
-  let (x, y) = mouse_position();
-  clear_screen();
-
-  POLYGON.with(|poly| {
+  let pts = with_points(7);
+  if let Ok(convex) = convex_hull(pts.clone()) {
     let canvas = get_canvas();
     let context = get_context_2d(&canvas);
-    let poly: &ConvexPolygon<BigRational> = &poly.borrow();
-    render_polygon(poly);
-    let pt = Point::new([
-      BigRational::from_f64(x).unwrap(),
-      BigRational::from_f64(y).unwrap(),
-    ]);
-    match poly.locate(&pt) {
-      PointLocation::Inside => context.set_fill_style(&JsValue::from_str("red")),
-      PointLocation::OnBoundary => context.set_fill_style(&JsValue::from_str("black")),
-      PointLocation::Outside => context.set_fill_style(&JsValue::from_str("white")),
-    };
+    render_polygon(&convex);
+    context.set_fill_style(&JsValue::from_str("grey"));
     context.fill();
-    render_polygon(poly);
-  });
+  }
+  for pt in &pts {
+    render_point(&pt);
+  }
+  // {
+  //   let mut pts = pts.clone();
+  //   let smallest = smallest_point(&pts).unwrap();
+  //   pts.sort_unstable_by(|a, b| {
+  //     smallest
+  //       .ccw_cmp_around(a, b)
+  //       .then_with(|| smallest.cmp_distance_to(a, b))
+  //   });
+  //   render_line(&pts);
+  // }
+
+  START.call_once(|| on_mousemove(|event| main()));
+  // START.call_once(|| {
+  //   on_mousemove(|event| {
+  //     // clear_screen();
+  //     // set_viewport(2., 2.);
+  //     let x = event.client_x();
+  //     let y = event.client_y();
+  //     let (x, y) = inv_canvas_position(x, y);
+  //     let pt: Point<BigRational, 2> = Point::new([x, y]).try_into().unwrap();
+  //     render_point(&pt);
+  //   })
+  // });
+}
+
+fn smallest_point<T>(pts: &[Point<T, 2>]) -> Result<Point<T, 2>, Error>
+where
+  T: PolygonScalar,
+{
+  Ok(
+    pts
+      .iter()
+      .min_by_key(|a| (a.y_coord(), a.x_coord()))
+      .ok_or(Error::InsufficientVertices)?
+      .clone(),
+  )
 }

@@ -24,27 +24,25 @@ where
       .ccw_cmp_around(a, b)
       .then_with(|| smallest.cmp_distance_to(a, b))
   });
-  let mut known_good = 2;
+  let mut known_good = 1;
   let mut at = 2;
+  // Filter out points until all consecutive points are oriented counter-clockwise.
   while at < pts.len() {
-    if at != known_good {
-      pts.swap(at, known_good);
-    }
-    let p1 = &pts[known_good];
-    let p2 = &pts[known_good - 1];
-    let p3 = &pts[known_good - 2];
+    let p1 = &pts[at];
+    let p2 = &pts[known_good];
+    let p3 = &pts[known_good - 1];
     match p3.orientation(p2, p1) {
       Orientation::CounterClockWise => {
+        pts.swap(at, known_good + 1);
         at += 1;
         known_good += 1;
       }
       Orientation::ClockWise | Orientation::CoLinear => {
-        pts.swap(at, known_good - 1);
-        at += 1;
+        known_good -= 1;
       }
     }
   }
-  pts.truncate(known_good);
+  pts.truncate(known_good + 1);
   unsafe { Ok(ConvexPolygon::new_unchecked(Polygon::new(pts)?)) }
 }
 
@@ -53,16 +51,11 @@ where
 fn smallest_point<T>(pts: &[Point<T, 2>]) -> Result<Point<T, 2>, Error>
 where
   T: PolygonScalar,
-  // for<'a> &'a T: PolygonScalarRef<&'a T, T>,
 {
   Ok(
     pts
       .iter()
-      .min_by(|a, b| {
-        a.y_coord()
-          .cmp(b.y_coord())
-          .then_with(|| a.x_coord().cmp(b.x_coord()))
-      })
+      .min_by_key(|a| (a.y_coord(), a.x_coord()))
       .ok_or(Error::InsufficientVertices)?
       .clone(),
   )
