@@ -60,57 +60,47 @@
       const is_local = false;
       const params = new URLSearchParams(window.location.search);
       const hash = params.get('hash');
-      let mod;
-      if (is_local) {
-        mod = await import('./pkg/wasm.js');
+      const gist = params.get('gist');
+      if (is_local)
+        await from_local();
+      else if (hash)
+        await from_hash(hash)
+      else if (gist) {
+        const response = await fetch('https://gist.github.com/' + gist + '/raw');
+        console.log('Blob', response.data);
+        await from_blob(response.data);
       } else {
-        mod = await import('./wasm/' + hash + '.js');
+        ui.innerText = 'No hash or gist given.';
       }
+    }
+    async function from_blob(blog) {
+      const socket = new WebSocket('wss://web.rgeometry.org:20443/ws/');
+      socket.addEventListener('open', event => {
+        socket.send(blob);
+      });
+      socket.addEventListener('message', event => {
+        let msg = event.data;
+        let cmd = msg.substr(0, msg.indexOf('\n'));
+        let rest = msg.substr(msg.indexOf('\n') + 1);
+        if (cmd === 'success') {
+        } else if (cmd === 'error') {
+          ui.innerText = rest;
+        } else {
+          ui.innerText = 'Unknown command: ' + cmd;
+        }
+      });
+    }
+    async function from_local() {
+      let mod = await import('./pkg/wasm.js');
       let init = mod.default;
       ui.innerText = '';
-      // options:
-      //   * hash
-      //   * mode: interactive | once
-      // const params = new URLSearchParams(window.location.search);
-      // console.log('Params: ', params.get('hash'));
-      // First up we need to actually load the wasm file, so we use the
-      // default export to inform it where the wasm file is located on the
-      // server, and then we wait on the returned promise to wait for the
-      // wasm to be loaded.
-      //
-      // It may look like this: `await init('./pkg/without_a_bundler_bg.wasm');`,
-      // but there is also a handy default inside `init` function, which uses
-      // `import.meta` to locate the wasm file relatively to js file.
-      //
-      // Note that instead of a string you can also pass in any of the
-      // following things:
-      //
-      // * `WebAssembly.Module`
-      //
-      // * `ArrayBuffer`
-      //
-      // * `Response`
-      //
-      // * `Promise` which returns any of the above, e.g. `fetch("./path/to/wasm")`
-      //
-      // This gives you complete control over how the module is loaded
-      // and compiled.
-      //
-      // Also note that the promise, when resolved, yields the wasm module's
-      // exports which is the same as importing the `*_bg` module in other
-      // modes
-      if (is_local)
-        await init();
-      else
-        await init('./wasm/' + hash + '.wasm');
-
-      // function redrawCanvas() {
-      //   await init();
-      // }
-      // window.addEventListener('resize', redrawCanvas, false);
-
-      // And afterwards we can use all the functionality defined in wasm.
-      //greet();
+      await init();
+    }
+    async function from_hash(hash) {
+      let mod = await import('./wasm/' + hash + '.js');
+      let init = mod.default;
+      ui.innerText = '';
+      await init('./wasm/' + hash + '.wasm');
     }
 
     run();
