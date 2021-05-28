@@ -16,6 +16,7 @@ tungstenite       = "*"
 tokio-tungstenite = "*"
 directories       = "*"
 git-version       = "*"
+reqwest           = "*"
 
 [dev-dependencies]
 quickcheck        = "1"

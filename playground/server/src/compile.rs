@@ -1,4 +1,3 @@
-use base64;
 use directories::ProjectDirs;
 use std::collections::hash_map::DefaultHasher;
 use std::error::Error;
@@ -30,7 +29,7 @@ impl Error for CompileError {
   }
 }
 
-fn hash_code(code: &String) -> String {
+fn hash_code(code: &str) -> String {
   let mut s = DefaultHasher::new();
   code.hash(&mut s);
   GIT_VERSION.hash(&mut s);

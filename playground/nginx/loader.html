@@ -66,9 +66,7 @@
       } else if (hash) {
         await from_hash(hash)
       } else if (gist) {
-        const response = await fetch('https://gist.github.com/' + gist + '/raw');
-        console.log('Blob', response.data);
-        await from_blob(response.data);
+        await from_blob(gist);
       } else {
         ui.innerText = 'No hash or gist given.';
       }
@@ -83,6 +81,7 @@
         let cmd = msg.substr(0, msg.indexOf('\n'));
         let rest = msg.substr(msg.indexOf('\n') + 1);
         if (cmd === 'success') {
+          from_hash(rest);
         } else if (cmd === 'error') {
           ui.innerText = rest;
         } else {

@@ -15,7 +15,6 @@ use std::{env, io::Error as IoError, net::SocketAddr, sync::Arc};
 use futures_util::{SinkExt, StreamExt};
 
 use tokio::net::{TcpListener, TcpStream};
-use tungstenite;
 use tungstenite::protocol::Message;
 
 mod manager;
@@ -30,7 +29,7 @@ async fn handle_connection(
   compiler: Arc<Compiler>,
   raw_stream: TcpStream,
   addr: SocketAddr,
-) -> tungstenite::Result<()> {
+) -> Result<(), Box<dyn Error + Send + Sync>> {
   println!("Incoming TCP connection from: {}", addr);
 
   let ws_stream = tokio_tungstenite::accept_async(raw_stream)
@@ -40,27 +39,32 @@ async fn handle_connection(
 
   let (mut outgoing, mut incoming) = ws_stream.split();
 
-  loop {
-    match incoming.next().await {
-      Some(msg) => {
-        let msg = msg?;
-        if msg.is_close() {
-          break;
-        }
-        match compiler.run(String::from(msg.to_text().unwrap())).await {
-          Ok(path) => {
-            outgoing
-              .send(Message::text(format!("success\n{}", path)))
-              .await?
-          }
-          Err(fail) => {
-            outgoing
-              .send(Message::text(format!("error\n{}", fail)))
-              .await?
-          }
-        }
+  while let Some(msg) = incoming.next().await {
+    let msg = msg?;
+    if msg.is_close() {
+      break;
+    }
+    let msg = msg.to_text().unwrap();
+    let code = match msg.strip_prefix("gist:") {
+      None => String::from(msg),
+      Some(gist) => {
+        reqwest::get(format!("https://gist.github.com/{}/raw", gist))
+          .await?
+          .text()
+          .await?
       }
-      None => break,
+    };
+    match compiler.run(code).await {
+      Ok(path) => {
+        outgoing
+          .send(Message::text(format!("success\n{}", path)))
+          .await?
+      }
+      Err(fail) => {
+        outgoing
+          .send(Message::text(format!("error\n{}", fail)))
+          .await?
+      }
     }
   }
   Ok(())
