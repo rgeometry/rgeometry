@@ -30,7 +30,15 @@ ordered-float = "2.4.0"
 
 [dev-dependencies]
 proptest       = "1.0.0"
+criterion      = "0.3"
 rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
+
+[[bench]]
+name    = "convex_polygon"
+harness = false
+
+[profile.bench]
+debug = true
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--html-in-header", "doc-header.html"]
