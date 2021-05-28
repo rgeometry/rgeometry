@@ -27,19 +27,26 @@ pub struct Polygon<T, P = ()> {
 }
 
 impl<T> Polygon<T> {
-  pub fn new(points: Vec<Point<T, 2>>) -> Result<Polygon<T>, Error>
+  pub unsafe fn new_unchecked(points: Vec<Point<T, 2>>) -> Polygon<T>
   where
     T: PolygonScalar,
   {
     let len = points.len();
     let mut meta = Vec::with_capacity(len);
     meta.resize(len, ());
-    let p = Polygon {
+    Polygon {
       points,
       boundary: len,
       holes: vec![],
       meta,
-    };
+    }
+  }
+
+  pub fn new(points: Vec<Point<T, 2>>) -> Result<Polygon<T>, Error>
+  where
+    T: PolygonScalar,
+  {
+    let p = unsafe { Self::new_unchecked(points) };
     p.validate()?;
     Ok(p)
   }
