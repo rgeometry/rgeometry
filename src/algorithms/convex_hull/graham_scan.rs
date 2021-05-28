@@ -43,7 +43,7 @@ where
     }
   }
   pts.truncate(known_good + 1);
-  unsafe { Ok(ConvexPolygon::new_unchecked(Polygon::new(pts)?)) }
+  Ok(ConvexPolygon::new_unchecked(Polygon::new_unchecked(pts)))
 }
 
 // Find the smallest point and remove it from the vector

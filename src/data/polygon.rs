@@ -27,7 +27,7 @@ pub struct Polygon<T, P = ()> {
 }
 
 impl<T> Polygon<T> {
-  pub unsafe fn new_unchecked(points: Vec<Point<T, 2>>) -> Polygon<T>
+  pub fn new_unchecked(points: Vec<Point<T, 2>>) -> Polygon<T>
   where
     T: PolygonScalar,
   {
@@ -46,7 +46,7 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    let p = unsafe { Self::new_unchecked(points) };
+    let p = Self::new_unchecked(points);
     p.validate()?;
     Ok(p)
   }

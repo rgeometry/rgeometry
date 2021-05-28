@@ -33,9 +33,9 @@ where
   /// # Safety
   /// The input polygon has to be strictly convex, ie. no vertices are allowed to
   /// be concave or colinear.
-  pub unsafe fn new_unchecked(poly: Polygon<T, P>) -> ConvexPolygon<T, P> {
+  pub fn new_unchecked(poly: Polygon<T, P>) -> ConvexPolygon<T, P> {
     let convex = ConvexPolygon(poly);
-    // debug_assert_ok!(convex.validate());
+    debug_assert_ok!(convex.validate());
     convex
   }
 
@@ -112,7 +112,7 @@ impl ConvexPolygon<BigRational> {
       .collect();
     let n_vertices = (*vertices).len();
     debug_assert_eq!(n_vertices, n);
-    let p = unsafe { Polygon::new_unchecked(vertices) };
+    let p = Polygon::new_unchecked(vertices);
     for i in 0..n {
       if p.vertex_orientation(i as isize) != Orientation::CounterClockWise {
         return Self::random(n, max, rng);
@@ -124,7 +124,7 @@ impl ConvexPolygon<BigRational> {
       One::one(),
       BigInt::from_usize(max).unwrap(),
     ));
-    unsafe { ConvexPolygon::new_unchecked(s * t * p) }
+    ConvexPolygon::new_unchecked(s * t * p)
   }
 }
 
