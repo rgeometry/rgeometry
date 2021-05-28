@@ -1,5 +1,5 @@
 use crate::array::Orientation;
-use crate::data::{ConvexPolygon, Point, Polygon};
+use crate::data::{Point, Polygon, PolygonConvex};
 use crate::{Error, PolygonScalar};
 
 // https://en.wikipedia.org/wiki/Graham_scan
@@ -12,7 +12,7 @@ use crate::{Error, PolygonScalar};
 /// O(n log n)
 ///
 /// Longer description here.
-pub fn convex_hull<T>(mut pts: Vec<Point<T, 2>>) -> Result<ConvexPolygon<T>, Error>
+pub fn convex_hull<T>(mut pts: Vec<Point<T, 2>>) -> Result<PolygonConvex<T>, Error>
 where
   T: PolygonScalar,
   // for<'a> &'a T: PolygonScalarRef<&'a T, T>,
@@ -43,7 +43,7 @@ where
     }
   }
   pts.truncate(known_good + 1);
-  Ok(ConvexPolygon::new_unchecked(Polygon::new_unchecked(pts)))
+  Ok(PolygonConvex::new_unchecked(Polygon::new_unchecked(pts)))
 }
 
 // Find the smallest point and remove it from the vector

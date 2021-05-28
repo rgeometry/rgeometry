@@ -19,7 +19,7 @@ fn main() {
   //   .iter()
   //   .sum::<BigInt>());
 
-  let p: Polygon<BigRational> = ConvexPolygon::random(3, 1000, &mut rng).into();
+  let p: Polygon<BigRational> = PolygonConvex::random(3, 1000, &mut rng).into();
   // for view in p.iter_boundary_edges() {
   //   dbg!(view);
   // }

@@ -19,12 +19,12 @@ use crate::{Error, PolygonScalar};
 use super::Polygon;
 
 #[derive(Debug, Clone)]
-pub struct ConvexPolygon<T, P = ()>(Polygon<T, P>);
+pub struct PolygonConvex<T, P = ()>(Polygon<T, P>);
 
 ///////////////////////////////////////////////////////////////////////////////
-// ConvexPolygon
+// PolygonConvex
 
-impl<T, P> ConvexPolygon<T, P>
+impl<T, P> PolygonConvex<T, P>
 where
   T: PolygonScalar,
 {
@@ -33,8 +33,8 @@ where
   /// # Safety
   /// The input polygon has to be strictly convex, ie. no vertices are allowed to
   /// be concave or colinear.
-  pub fn new_unchecked(poly: Polygon<T, P>) -> ConvexPolygon<T, P> {
-    let convex = ConvexPolygon(poly);
+  pub fn new_unchecked(poly: Polygon<T, P>) -> PolygonConvex<T, P> {
+    let convex = PolygonConvex(poly);
     debug_assert_ok!(convex.validate());
     convex
   }
@@ -78,25 +78,25 @@ where
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ConvexPolygon<BigRational>
+// PolygonConvex<BigRational>
 
-impl ConvexPolygon<BigRational> {
+impl PolygonConvex<BigRational> {
   /// ```no_run
   /// # use rgeometry_wasm::playground::*;
   /// # use rgeometry::data::*;
   /// # let convex = {
-  /// ConvexPolygon::random(3, 1000, &mut rand::thread_rng())
+  /// PolygonConvex::random(3, 1000, &mut rand::thread_rng())
   /// # };
   /// # render_polygon(&convex);
   /// ```
   /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=36XCQBE0Yok="></iframe>
-  pub fn random<R>(n: usize, max: usize, rng: &mut R) -> ConvexPolygon<BigRational>
+  pub fn random<R>(n: usize, max: usize, rng: &mut R) -> PolygonConvex<BigRational>
   where
     R: Rng + ?Sized,
   {
     if n < 3 {
       // Return Result<P, Error> instead?
-      return ConvexPolygon::random(3, max, rng);
+      return PolygonConvex::random(3, max, rng);
     }
     let vs = {
       let mut vs = random_vectors(n, max, rng);
@@ -124,35 +124,35 @@ impl ConvexPolygon<BigRational> {
       One::one(),
       BigInt::from_usize(max).unwrap(),
     ));
-    ConvexPolygon::new_unchecked(s * t * p)
+    PolygonConvex::new_unchecked(s * t * p)
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Trait Implementations
 
-impl<T: PolygonScalar, P> Deref for ConvexPolygon<T, P> {
+impl<T: PolygonScalar, P> Deref for PolygonConvex<T, P> {
   type Target = Polygon<T, P>;
   fn deref(&self) -> &Self::Target {
     self.polygon()
   }
 }
 
-impl<T, P> From<ConvexPolygon<T, P>> for Polygon<T, P> {
-  fn from(convex: ConvexPolygon<T, P>) -> Polygon<T, P> {
+impl<T, P> From<PolygonConvex<T, P>> for Polygon<T, P> {
+  fn from(convex: PolygonConvex<T, P>) -> Polygon<T, P> {
     convex.0
   }
 }
 
-impl<'a, T, P> From<&'a ConvexPolygon<T, P>> for &'a Polygon<T, P> {
-  fn from(convex: &'a ConvexPolygon<T, P>) -> &'a Polygon<T, P> {
+impl<'a, T, P> From<&'a PolygonConvex<T, P>> for &'a Polygon<T, P> {
+  fn from(convex: &'a PolygonConvex<T, P>) -> &'a Polygon<T, P> {
     &convex.0
   }
 }
 
-impl Distribution<ConvexPolygon<BigRational>> for Standard {
-  fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ConvexPolygon<BigRational> {
-    ConvexPolygon::random(100, usize::MAX, rng)
+impl Distribution<PolygonConvex<BigRational>> for Standard {
+  fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PolygonConvex<BigRational> {
+    PolygonConvex::random(100, usize::MAX, rng)
   }
 }
 
@@ -248,8 +248,8 @@ mod tests {
 
   use ordered_float::NotNan;
 
-  impl Arbitrary for ConvexPolygon<BigRational> {
-    type Strategy = Just<ConvexPolygon<BigRational>>;
+  impl Arbitrary for PolygonConvex<BigRational> {
+    type Strategy = Just<PolygonConvex<BigRational>>;
     type Parameters = ();
     fn arbitrary_with(_params: ()) -> Self::Strategy {
       Self::arbitrary()
@@ -258,14 +258,14 @@ mod tests {
       let mut rng = rand::thread_rng();
       let n = rng.gen_range(3..=100);
       let max = rng.gen_range(n..=1_000_000_000);
-      let p = ConvexPolygon::random(n, max, &mut rng);
+      let p = PolygonConvex::random(n, max, &mut rng);
       Just(p)
     }
   }
 
   proptest! {
     #[test]
-    fn all_random_convex_polygons_are_valid(poly: ConvexPolygon<BigRational>) {
+    fn all_random_convex_polygons_are_valid(poly: PolygonConvex<BigRational>) {
       prop_assert_eq!(poly.validate(), Ok(()))
     }
 
