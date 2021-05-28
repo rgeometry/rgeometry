@@ -57,15 +57,15 @@
     // import init, { greet } from './wasm.js';
 
     async function run() {
-      const is_local = false;
       const params = new URLSearchParams(window.location.search);
+      const is_local = params.has('local');
       const hash = params.get('hash');
       const gist = params.get('gist');
-      if (is_local)
+      if (is_local === true) {
         await from_local();
-      else if (hash)
+      } else if (hash) {
         await from_hash(hash)
-      else if (gist) {
+      } else if (gist) {
         const response = await fetch('https://gist.github.com/' + gist + '/raw');
         console.log('Blob', response.data);
         await from_blob(response.data);
