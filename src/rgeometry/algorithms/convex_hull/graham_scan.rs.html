@@ -86,7 +86,7 @@
 <span id="62">62</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">array</span>::<span class="ident">Orientation</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">data</span>::{<span class="ident">ConvexPolygon</span>, <span class="ident">Point</span>, <span class="ident">Polygon</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">data</span>::{<span class="ident">Point</span>, <span class="ident">Polygon</span>, <span class="ident">PolygonConvex</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">PolygonScalar</span>};
 
 <span class="comment">// https://en.wikipedia.org/wiki/Graham_scan</span>
@@ -99,7 +99,7 @@
 <span class="doccomment">/// O(n log n)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Longer description here.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">convex_hull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">convex_hull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
   <span class="comment">// for&lt;&#39;a&gt; &amp;&#39;a T: PolygonScalarRef&lt;&amp;&#39;a T, T&gt;,</span>
@@ -130,7 +130,7 @@
     }
   }
   <span class="ident">pts</span>.<span class="ident">truncate</span>(<span class="ident">known_good</span> <span class="op">+</span> <span class="number">1</span>);
-  <span class="prelude-val">Ok</span>(<span class="ident">ConvexPolygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">Polygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">pts</span>)))
+  <span class="prelude-val">Ok</span>(<span class="ident">PolygonConvex</span>::<span class="ident">new_unchecked</span>(<span class="ident">Polygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">pts</span>)))
 }
 
 <span class="comment">// Find the smallest point and remove it from the vector</span>

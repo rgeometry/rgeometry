@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["EndPoint",""],["PointLocation",""]],"mod":[["polygon",""]],"struct":[["ConvexPolygon",""],["LineSegment",""],["LineSegmentView",""],["Point",""],["Polygon",""],["Transform",""],["Triangle",""],["TriangleView",""],["Vector",""],["VectorView",""]]});
+initSidebarItems({"enum":[["EndPoint",""],["PointLocation",""]],"mod":[["polygon",""]],"struct":[["LineSegment",""],["LineSegmentView",""],["Point",""],["Polygon",""],["PolygonConvex",""],["Transform",""],["Triangle",""],["TriangleView",""],["Vector",""],["VectorView",""]]});

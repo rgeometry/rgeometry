@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ConvexPolygon",""],["EdgeIter",""],["Iter",""],["IterMut",""],["Polygon",""]]});
+initSidebarItems({"struct":[["EdgeIter",""],["Iter",""],["IterMut",""],["Polygon",""],["PolygonConvex",""]]});

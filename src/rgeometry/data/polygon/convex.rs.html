@@ -342,12 +342,12 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Polygon</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span> <span class="op">=</span> ()<span class="op">&gt;</span>(<span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span> <span class="op">=</span> ()<span class="op">&gt;</span>(<span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>);
 
 <span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
-<span class="comment">// ConvexPolygon</span>
+<span class="comment">// PolygonConvex</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
 {
@@ -356,8 +356,8 @@
   <span class="doccomment">/// # Safety</span>
   <span class="doccomment">/// The input polygon has to be strictly convex, ie. no vertices are allowed to</span>
   <span class="doccomment">/// be concave or colinear.</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">convex</span> <span class="op">=</span> <span class="ident">ConvexPolygon</span>(<span class="ident">poly</span>);
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">convex</span> <span class="op">=</span> <span class="ident">PolygonConvex</span>(<span class="ident">poly</span>);
     <span class="macro">debug_assert_ok</span><span class="macro">!</span>(<span class="ident">convex</span>.<span class="ident">validate</span>());
     <span class="ident">convex</span>
   }
@@ -401,25 +401,25 @@
 }
 
 <span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
-<span class="comment">// ConvexPolygon&lt;BigRational&gt;</span>
+<span class="comment">// PolygonConvex&lt;BigRational&gt;</span>
 
-<span class="kw">impl</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
   <span class="doccomment">/// ```no_run</span>
   <span class="doccomment">/// # use rgeometry_wasm::playground::*;</span>
   <span class="doccomment">/// # use rgeometry::data::*;</span>
   <span class="doccomment">/// # let convex = {</span>
-  <span class="doccomment">/// ConvexPolygon::random(3, 1000, &amp;mut rand::thread_rng())</span>
+  <span class="doccomment">/// PolygonConvex::random(3, 1000, &amp;mut rand::thread_rng())</span>
   <span class="doccomment">/// # };</span>
   <span class="doccomment">/// # render_polygon(&amp;convex);</span>
   <span class="doccomment">/// ```</span>
   <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org:20443/loader.html?hash=36XCQBE0Yok=&quot;&gt;&lt;/iframe&gt;</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">max</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span>
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">max</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
   {
     <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">3</span> {
       <span class="comment">// Return Result&lt;P, Error&gt; instead?</span>
-      <span class="kw">return</span> <span class="ident">ConvexPolygon</span>::<span class="ident">random</span>(<span class="number">3</span>, <span class="ident">max</span>, <span class="ident">rng</span>);
+      <span class="kw">return</span> <span class="ident">PolygonConvex</span>::<span class="ident">random</span>(<span class="number">3</span>, <span class="ident">max</span>, <span class="ident">rng</span>);
     }
     <span class="kw">let</span> <span class="ident">vs</span> <span class="op">=</span> {
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vs</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span>, <span class="ident">max</span>, <span class="ident">rng</span>);
@@ -447,35 +447,35 @@
       <span class="ident">One</span>::<span class="ident">one</span>(),
       <span class="ident">BigInt</span>::<span class="ident">from_usize</span>(<span class="ident">max</span>).<span class="ident">unwrap</span>(),
     ));
-    <span class="ident">ConvexPolygon</span>::<span class="ident">new_unchecked</span>(<span class="ident">s</span> <span class="op">*</span> <span class="ident">t</span> <span class="op">*</span> <span class="ident">p</span>)
+    <span class="ident">PolygonConvex</span>::<span class="ident">new_unchecked</span>(<span class="ident">s</span> <span class="op">*</span> <span class="ident">t</span> <span class="op">*</span> <span class="ident">p</span>)
   }
 }
 
 <span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
 <span class="comment">// Trait Implementations</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PolygonScalar</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PolygonScalar</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
   <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>;
   <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Target</span> {
     <span class="self">self</span>.<span class="ident">polygon</span>()
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
     <span class="ident">convex</span>.<span class="number">0</span>
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
     <span class="kw-2">&amp;</span><span class="ident">convex</span>.<span class="number">0</span>
   }
 }
 
-<span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Standard</span> {
-  <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
-    <span class="ident">ConvexPolygon</span>::<span class="ident">random</span>(<span class="number">100</span>, <span class="ident">usize</span>::<span class="ident">MAX</span>, <span class="ident">rng</span>)
+<span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Standard</span> {
+  <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
+    <span class="ident">PolygonConvex</span>::<span class="ident">random</span>(<span class="number">100</span>, <span class="ident">usize</span>::<span class="ident">MAX</span>, <span class="ident">rng</span>)
   }
 }
 
@@ -571,8 +571,8 @@
 
   <span class="kw">use</span> <span class="ident">ordered_float</span>::<span class="ident">NotNan</span>;
 
-  <span class="kw">impl</span> <span class="ident">Arbitrary</span> <span class="kw">for</span> <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Strategy</span> <span class="op">=</span> <span class="ident">Just</span><span class="op">&lt;</span><span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+  <span class="kw">impl</span> <span class="ident">Arbitrary</span> <span class="kw">for</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Strategy</span> <span class="op">=</span> <span class="ident">Just</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Parameters</span> <span class="op">=</span> ();
     <span class="kw">fn</span> <span class="ident">arbitrary_with</span>(<span class="ident">_params</span>: ()) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Strategy</span> {
       <span class="self">Self</span>::<span class="ident">arbitrary</span>()
@@ -581,14 +581,14 @@
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand</span>::<span class="ident">thread_rng</span>();
       <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">3</span>..<span class="op">=</span><span class="number">100</span>);
       <span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="ident">n</span>..<span class="op">=</span><span class="number">1_000_000_000</span>);
-      <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">ConvexPolygon</span>::<span class="ident">random</span>(<span class="ident">n</span>, <span class="ident">max</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+      <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">PolygonConvex</span>::<span class="ident">random</span>(<span class="ident">n</span>, <span class="ident">max</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
       <span class="ident">Just</span>(<span class="ident">p</span>)
     }
   }
 
   <span class="macro">proptest</span><span class="macro">!</span> {
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid</span>(<span class="ident">poly</span>: <span class="ident">ConvexPolygon</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span>) {
       <span class="macro">prop_assert_eq</span><span class="macro">!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>(), <span class="prelude-val">Ok</span>(()))
     }
 
