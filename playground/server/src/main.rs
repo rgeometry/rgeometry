@@ -48,7 +48,7 @@ async fn handle_connection(
     let code = match msg.strip_prefix("gist:") {
       None => String::from(msg),
       Some(gist) => {
-        reqwest::get(format!("https://gist.github.com/{}/raw", gist))
+        reqwest::get(format!("https://gist.github.com/raw/{}", gist))
           .await?
           .text()
           .await?
