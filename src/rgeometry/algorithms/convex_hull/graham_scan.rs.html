@@ -22,68 +22,137 @@
 </style>
 
 <style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../rgeometry/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1"> 1</span>
-<span id="2"> 2</span>
-<span id="3"> 3</span>
-<span id="4"> 4</span>
-<span id="5"> 5</span>
-<span id="6"> 6</span>
-<span id="7"> 7</span>
-<span id="8"> 8</span>
-<span id="9"> 9</span>
-<span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
+                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">array</span>::<span class="ident">Orientation</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">data</span>::{<span class="ident">Point</span>, <span class="ident">Polygon</span>, <span class="ident">PolygonConvex</span>};
@@ -96,9 +165,74 @@
 <span class="comment">//    No panics.</span>
 <span class="comment">//    All Ok results are valid convex polygons.</span>
 <span class="comment">//    No points are outside the resulting convex polygon.</span>
-<span class="doccomment">/// O(n log n)</span>
+<span class="doccomment">/// $O(n log n)$ Convex hull of a set of points.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// Longer description here.</span>
+<span class="doccomment">/// [Graham scan][wiki] algorithm for finding the smallest convex polygon which</span>
+<span class="doccomment">/// contains all the given points.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Errors</span>
+<span class="doccomment">/// Will return an error iff the input set contains less than three distinct points.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Properties</span>
+<span class="doccomment">/// * No points from the input set will be outside the returned convex polygon.</span>
+<span class="doccomment">/// * All vertices in the convex polygon are from the input set.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// # pub fn main() {</span>
+<span class="doccomment">/// # use rgeometry::algorithms::convex_hull;</span>
+<span class="doccomment">/// # use rgeometry::data::Point;</span>
+<span class="doccomment">/// # use rgeometry::Error;</span>
+<span class="doccomment">/// let empty_set: Vec&lt;Point&lt;i32,2&gt;&gt; = vec![];</span>
+<span class="doccomment">/// assert_eq!(</span>
+<span class="doccomment">///   convex_hull(empty_set).err(),</span>
+<span class="doccomment">///   Some(Error::InsufficientVertices))</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// # pub fn main() {</span>
+<span class="doccomment">/// # use rgeometry::algorithms::convex_hull;</span>
+<span class="doccomment">/// # use rgeometry::data::Point;</span>
+<span class="doccomment">/// # use rgeometry::Error;</span>
+<span class="doccomment">/// let dups = vec![Point::new([0,0])].repeat(3);</span>
+<span class="doccomment">/// assert_eq!(</span>
+<span class="doccomment">///   convex_hull(dups).err(),</span>
+<span class="doccomment">///   Some(Error::InsufficientVertices))</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```no_run</span>
+<span class="doccomment">/// # pub fn main() {</span>
+<span class="doccomment">/// #   use rgeometry::algorithms::convex_hull;</span>
+<span class="doccomment">/// #   use rgeometry_wasm::playground::*;</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// #   static START: std::sync::Once = std::sync::Once::new();</span>
+<span class="doccomment">/// #   START.call_once(|| on_mousemove(|_event| main()));</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// #   clear_screen();</span>
+<span class="doccomment">/// #   set_viewport(2., 2.);</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// #   let canvas = get_canvas();</span>
+<span class="doccomment">/// #   let context = get_context_2d(&amp;canvas);</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// #   let pts = with_points(7);</span>
+<span class="doccomment">/// #   let points = pts.clone();</span>
+<span class="doccomment">/// if let Ok(convex) = convex_hull(points) {</span>
+<span class="doccomment">///   render_polygon(&amp;convex);</span>
+<span class="doccomment">/// #   context.set_fill_style(&amp;&quot;grey&quot;.into());</span>
+<span class="doccomment">/// #   context.fill();</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// #   for pt in &amp;pts {</span>
+<span class="doccomment">/// #     render_point(&amp;pt);</span>
+<span class="doccomment">/// #   }</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org:20443/loader.html?gist=eac484cd855d001815d23a053919b5ca&quot;&gt;&lt;/iframe&gt;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [wiki]: https://en.wikipedia.org/wiki/Graham_scan</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">convex_hull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
@@ -111,6 +245,10 @@
       .<span class="ident">ccw_cmp_around</span>(<span class="ident">a</span>, <span class="ident">b</span>)
       .<span class="ident">then_with</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">smallest</span>.<span class="ident">cmp_distance_to</span>(<span class="ident">a</span>, <span class="ident">b</span>))
   });
+  <span class="ident">pts</span>.<span class="ident">dedup</span>();
+  <span class="kw">if</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">3</span> {
+    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InsufficientVertices</span>);
+  }
   <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">known_good</span> <span class="op">=</span> <span class="number">1</span>;
   <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">at</span> <span class="op">=</span> <span class="number">2</span>;
   <span class="comment">// Filter out points until all consecutive points are oriented counter-clockwise.</span>
