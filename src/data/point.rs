@@ -1,4 +1,5 @@
 use array_init::{array_init, try_array_init};
+use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
 use ordered_float::{FloatIsNan, NotNan, OrderedFloat};
@@ -229,7 +230,7 @@ mod sub;
 // }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
   use super::*;
   use crate::Orientation::*;
 
@@ -318,8 +319,22 @@ mod tests {
     }
   }
 
+  impl<const N: usize> Arbitrary for Point<isize, N> {
+    type Strategy = Point<num::isize::Any, N>;
+    type Parameters = ();
+    fn arbitrary_with(_params: ()) -> Self::Strategy {
+      Point {
+        array: array_init(|_| any::<isize>()),
+      }
+    }
+  }
+
   pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> {
     any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.try_into().ok())
+  }
+
+  pub fn any_r<const N: usize>() -> impl Strategy<Value = Point<BigInt, N>> {
+    any::<Point<isize, N>>().prop_map(|pt| pt.cast(BigInt::from))
   }
 
   proptest! {
