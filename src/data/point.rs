@@ -13,7 +13,7 @@ use std::ops::Neg;
 use super::Vector;
 use crate::array::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)] // Required for correctness!
 pub struct Point<T, const N: usize> {
   pub array: [T; N],

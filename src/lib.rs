@@ -4,6 +4,7 @@
 // #![feature(const_generics)]
 // #![feature(const_evaluatable_checked)]
 #![doc(html_playground_url = "https://rgeometry.org/rgeometry-playground/")]
+#![doc(test(no_crate_inject))]
 use num_traits::*;
 use std::iter::Sum;
 use std::ops::*;

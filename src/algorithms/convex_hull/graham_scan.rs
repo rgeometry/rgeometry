@@ -9,9 +9,74 @@ use crate::{Error, PolygonScalar};
 //    No panics.
 //    All Ok results are valid convex polygons.
 //    No points are outside the resulting convex polygon.
-/// O(n log n)
+/// $O(n log n)$ Convex hull of a set of points.
 ///
-/// Longer description here.
+/// [Graham scan][wiki] algorithm for finding the smallest convex polygon which
+/// contains all the given points.
+///
+/// # Errors
+/// Will return an error iff the input set contains less than three distinct points.
+///
+/// # Properties
+/// * No points from the input set will be outside the returned convex polygon.
+/// * All vertices in the convex polygon are from the input set.
+///
+/// # Examples
+///
+/// ```rust
+/// # pub fn main() {
+/// # use rgeometry::algorithms::convex_hull;
+/// # use rgeometry::data::Point;
+/// # use rgeometry::Error;
+/// let empty_set: Vec<Point<i32,2>> = vec![];
+/// assert_eq!(
+///   convex_hull(empty_set).err(),
+///   Some(Error::InsufficientVertices))
+/// # }
+/// ```
+///
+/// ```rust
+/// # pub fn main() {
+/// # use rgeometry::algorithms::convex_hull;
+/// # use rgeometry::data::Point;
+/// # use rgeometry::Error;
+/// let dups = vec![Point::new([0,0])].repeat(3);
+/// assert_eq!(
+///   convex_hull(dups).err(),
+///   Some(Error::InsufficientVertices))
+/// # }
+/// ```
+///
+/// ```no_run
+/// # pub fn main() {
+/// #   use rgeometry::algorithms::convex_hull;
+/// #   use rgeometry_wasm::playground::*;
+/// #
+/// #   static START: std::sync::Once = std::sync::Once::new();
+/// #   START.call_once(|| on_mousemove(|_event| main()));
+/// #
+/// #   clear_screen();
+/// #   set_viewport(2., 2.);
+/// #
+/// #   let canvas = get_canvas();
+/// #   let context = get_context_2d(&canvas);
+/// #
+/// #   let pts = with_points(7);
+/// #   let points = pts.clone();
+/// if let Ok(convex) = convex_hull(points) {
+///   render_polygon(&convex);
+/// #   context.set_fill_style(&"grey".into());
+/// #   context.fill();
+/// }
+/// #   for pt in &pts {
+/// #     render_point(&pt);
+/// #   }
+/// # }
+/// ```
+///
+/// <iframe src="https://web.rgeometry.org:20443/loader.html?gist=eac484cd855d001815d23a053919b5ca"></iframe>
+///
+/// [wiki]: https://en.wikipedia.org/wiki/Graham_scan
 pub fn convex_hull<T>(mut pts: Vec<Point<T, 2>>) -> Result<PolygonConvex<T>, Error>
 where
   T: PolygonScalar,
@@ -24,6 +89,10 @@ where
       .ccw_cmp_around(a, b)
       .then_with(|| smallest.cmp_distance_to(a, b))
   });
+  pts.dedup();
+  if pts.len() < 3 {
+    return Err(Error::InsufficientVertices);
+  }
   let mut known_good = 1;
   let mut at = 2;
   // Filter out points until all consecutive points are oriented counter-clockwise.

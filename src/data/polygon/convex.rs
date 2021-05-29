@@ -89,7 +89,7 @@ impl PolygonConvex<BigRational> {
   /// # };
   /// # render_polygon(&convex);
   /// ```
-  /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=36XCQBE0Yok="></iframe>
+  /// <iframe src="https://web.rgeometry.org:20443/loader.html?gist=037a23f8391390df8560a2043a14121e"></iframe>
   pub fn random<R>(n: usize, max: usize, rng: &mut R) -> PolygonConvex<BigRational>
   where
     R: Rng + ?Sized,
