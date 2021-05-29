@@ -6,3 +6,4 @@
 [![Tests](https://github.com/rgeometry/rgeometry/actions/workflows/ci.yml/badge.svg)](https://github.com/rgeometry/rgeometry/actions/workflows/ci.yml)
 [![API](https://img.shields.io/badge/docs-head-informational.svg)](https://rgeometry.org/rgeometry/rgeometry/)
 [![dependency status](https://deps.rs/repo/github/rgeometry/rgeometry/status.svg)](https://deps.rs/repo/github/rgeometry/rgeometry)
+[![](https://tokei.rs/b1/github/rgeometry/rgeometry?category=code)](https://github.com/XAMPPRocky/tokei)
