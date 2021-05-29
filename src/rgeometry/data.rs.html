@@ -47,7 +47,7 @@
 <span id="23">23</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">mod</span> <span class="ident">line_segment</span>;
-<span class="kw">mod</span> <span class="ident">point</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">point</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">polygon</span>;
 <span class="kw">mod</span> <span class="ident">triangle</span>;
 <span class="kw">mod</span> <span class="ident">vector</span>;
@@ -63,7 +63,7 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">point</span>::<span class="ident">Point</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">vector</span>::{<span class="ident">Vector</span>, <span class="ident">VectorView</span>};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PointLocation</span> {
   <span class="ident">Inside</span>,
   <span class="ident">OnBoundary</span>,
