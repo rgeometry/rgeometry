@@ -8,8 +8,9 @@ Computational Geometry in Rust!
 [![codecov](https://codecov.io/gh/rgeometry/rgeometry/branch/main/graph/badge.svg?token=A0EFH689BR)](https://codecov.io/gh/rgeometry/rgeometry)
 [![GitHub branch checks state](https://img.shields.io/github/checks-status/rgeometry/rgeometry/main?label=tests&logo=github)](https://github.com/rgeometry/rgeometry/actions/workflows/ci.yml)
 [![dependency status](https://deps.rs/repo/github/rgeometry/rgeometry/status.svg)](https://deps.rs/repo/github/rgeometry/rgeometry)
-[![](https://tokei.rs/b1/github/rgeometry/rgeometry?category=code)](https://github.com/XAMPPRocky/tokei#badges)
 [![Discord](https://img.shields.io/discord/731822102935502908)](https://discord.gg/vZZmxwWjeZ)
+
+<!-- [![](https://tokei.rs/b1/github/rgeometry/rgeometry?category=code)](https://github.com/XAMPPRocky/tokei#badges) -->
 
 --------------------------------
 
