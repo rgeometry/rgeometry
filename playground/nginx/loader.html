@@ -92,14 +92,14 @@
     async function from_local() {
       let mod = await import('./pkg/wasm.js');
       let init = mod.default;
-      ui.innerText = '';
       await init();
+      ui.innerText = '';
     }
     async function from_hash(hash) {
       let mod = await import('./wasm/' + hash + '.js');
       let init = mod.default;
-      ui.innerText = '';
       await init('./wasm/' + hash + '.wasm');
+      ui.innerText = '';
     }
 
     run();
