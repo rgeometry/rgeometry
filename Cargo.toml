@@ -37,6 +37,10 @@ rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch =
 name    = "convex_polygon"
 harness = false
 
+[[bench]]
+name    = "graham_scan"
+harness = false
+
 [profile.bench]
 debug = true
 

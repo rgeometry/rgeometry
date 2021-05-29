@@ -96,7 +96,7 @@ where
   let mut known_good = 1;
   let mut at = 2;
   // Filter out points until all consecutive points are oriented counter-clockwise.
-  while at < pts.len() {
+  while at < pts.len() && known_good > 0 {
     let p1 = &pts[at];
     let p2 = &pts[known_good];
     let p3 = &pts[known_good - 1];
@@ -112,6 +112,9 @@ where
     }
   }
   pts.truncate(known_good + 1);
+  if pts.len() < 3 {
+    return Err(Error::InsufficientVertices);
+  }
   Ok(PolygonConvex::new_unchecked(Polygon::new_unchecked(pts)))
 }
 
