@@ -43,8 +43,8 @@
   <script>
     const htmlCanvas = document.getElementById('canvas');
     function resizeCanvas() {
-      htmlCanvas.width = window.innerWidth;
-      htmlCanvas.height = window.innerHeight;
+      htmlCanvas.width = window.innerWidth * window.devicePixelRatio;
+      htmlCanvas.height = window.innerHeight * window.devicePixelRatio;
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas, false);
