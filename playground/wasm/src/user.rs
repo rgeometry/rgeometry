@@ -19,11 +19,11 @@ use rgeometry::*;
 use rgeometry_wasm::playground::*;
 use std::convert::*;
 
-#[wasm_bindgen]
-extern "C" {
-  #[wasm_bindgen(js_namespace = console)]
-  fn log(s: &str);
-}
+// #[wasm_bindgen]
+// extern "C" {
+//   #[wasm_bindgen(js_namespace = console)]
+//   fn log(s: &str);
+// }
 
 // fn ui_range(init: usize, min: usize, max: usize) -> Rc<RefCell<usize>> {
 //   let count = Rc::new(RefCell::new(init));
@@ -61,24 +61,22 @@ extern "C" {
 //   static N_CORNERS: Rc<RefCell<usize>> = ui_range(10, 3, 30);
 // }
 
-/*
-pub fn main() {
-  static START: Once = Once::new();
+// pub fn main() {
+//   static START: Once = Once::new();
 
-  START.call_once(|| {
-    on_canvas_click(main);
-  });
+//   START.call_once(|| {
+//     on_canvas_click(main);
+//   });
 
-  set_viewport(2., 2.);
+//   set_viewport(2., 2.);
 
-  clear_screen();
+//   clear_screen();
 
-  let p: ConvexPolygon<BigRational> =
-    N_CORNERS.with(|n| ConvexPolygon::random(*n.borrow(), 1000, &mut rand::thread_rng()));
+//   let p: ConvexPolygon<BigRational> =
+//     N_CORNERS.with(|n| ConvexPolygon::random(*n.borrow(), 1000, &mut rand::thread_rng()));
 
-  render_polygon(&p);
-}
-*/
+//   render_polygon(&p);
+// }
 
 // pub fn main() {
 //   thread_local! {
