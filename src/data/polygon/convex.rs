@@ -28,7 +28,7 @@ impl<T, P> PolygonConvex<T, P>
 where
   T: PolygonScalar,
 {
-  /// O(1) Assume that a polygon is convex.
+  /// $O(1)$ Assume that a polygon is convex.
   ///
   /// # Safety
   /// The input polygon has to be strictly convex, ie. no vertices are allowed to
@@ -39,7 +39,7 @@ where
     convex
   }
 
-  /// $O(log n)$
+  /// $O(\log n)$
   ///
   /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU="></iframe>
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
@@ -62,6 +62,7 @@ where
     triangle.locate(pt)
   }
 
+  /// $O(n \log n)$
   pub fn validate(&self) -> Result<(), Error> {
     let len = self.0.points.len() as isize;
     for i in 0..len {
@@ -72,6 +73,7 @@ where
     self.0.validate()
   }
 
+  /// $O(1)$
   pub fn polygon(&self) -> &Polygon<T, P> {
     self.into()
   }
@@ -81,6 +83,10 @@ where
 // PolygonConvex<BigRational>
 
 impl PolygonConvex<BigRational> {
+  /// $O(n \log n)$ Uniformly sample a random convex polygon.
+  ///
+  /// The output polygon is centered at (0,0), and has a maximum width and height of 2 units.
+  ///
   /// ```no_run
   /// # use rgeometry_wasm::playground::*;
   /// # use rgeometry::data::*;

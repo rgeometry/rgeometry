@@ -9,7 +9,7 @@ use crate::{Error, PolygonScalar};
 //    No panics.
 //    All Ok results are valid convex polygons.
 //    No points are outside the resulting convex polygon.
-/// $O(n log n)$ Convex hull of a set of points.
+/// $O(n \log n)$ Convex hull of a set of points.
 ///
 /// [Graham scan][wiki] algorithm for finding the smallest convex polygon which
 /// contains all the given points.
