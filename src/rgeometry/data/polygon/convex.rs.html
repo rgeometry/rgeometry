@@ -320,6 +320,12 @@
 <span id="296">296</span>
 <span id="297">297</span>
 <span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim</span>::<span class="ident">debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint</span>::<span class="ident">BigInt</span>;
@@ -351,7 +357,7 @@
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
 {
-  <span class="doccomment">/// O(1) Assume that a polygon is convex.</span>
+  <span class="doccomment">/// $O(1)$ Assume that a polygon is convex.</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// # Safety</span>
   <span class="doccomment">/// The input polygon has to be strictly convex, ie. no vertices are allowed to</span>
@@ -362,7 +368,7 @@
     <span class="ident">convex</span>
   }
 
-  <span class="doccomment">/// $O(log n)$</span>
+  <span class="doccomment">/// $O(\log n)$</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU=&quot;&gt;&lt;/iframe&gt;</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span> {
@@ -385,6 +391,7 @@
     <span class="ident">triangle</span>.<span class="ident">locate</span>(<span class="ident">pt</span>)
   }
 
+  <span class="doccomment">/// $O(n \log n)$</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">points</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">isize</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">len</span> {
@@ -395,6 +402,7 @@
     <span class="self">self</span>.<span class="number">0</span>.<span class="ident">validate</span>()
   }
 
+  <span class="doccomment">/// $O(1)$</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">polygon</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
     <span class="self">self</span>.<span class="ident">into</span>()
   }
@@ -404,6 +412,10 @@
 <span class="comment">// PolygonConvex&lt;BigRational&gt;</span>
 
 <span class="kw">impl</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
+  <span class="doccomment">/// $O(n \log n)$ Uniformly sample a random convex polygon.</span>
+  <span class="doccomment">///</span>
+  <span class="doccomment">/// The output polygon is centered at (0,0), and has a maximum width and height of 2 units.</span>
+  <span class="doccomment">///</span>
   <span class="doccomment">/// ```no_run</span>
   <span class="doccomment">/// # use rgeometry_wasm::playground::*;</span>
   <span class="doccomment">/// # use rgeometry::data::*;</span>
