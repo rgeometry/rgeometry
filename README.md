@@ -2,7 +2,7 @@
 
 Computational Geometry in Rust!
 
-![Crates.io](https://img.shields.io/crates/v/rgeometry?color=4d76ae)
+[![Crates.io](https://img.shields.io/crates/v/rgeometry?color=4d76ae)](https://crates.io/crates/rgeometry)
 [![API](https://docs.rs/rgeometry/badge.svg)](https://docs.rs/rgeometry)
 [![API](https://img.shields.io/badge/docs-head-4d76ae.svg)](https://rgeometry.org/rgeometry/rgeometry/)
 [![codecov](https://codecov.io/gh/rgeometry/rgeometry/branch/main/graph/badge.svg?token=A0EFH689BR)](https://codecov.io/gh/rgeometry/rgeometry)
