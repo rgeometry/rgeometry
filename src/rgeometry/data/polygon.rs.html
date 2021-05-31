@@ -262,6 +262,7 @@
 <span id="238">238</span>
 <span id="239">239</span>
 <span id="240">240</span>
+<span id="241">241</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_rational</span>::<span class="ident">BigRational</span>;
@@ -325,11 +326,12 @@
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
   {
     <span class="comment">// Has no duplicate points.</span>
-    <span class="comment">// TODO. Hm, finding duplicates is difficult when using IEEE floats.</span>
-    <span class="comment">// There are two crates for dealing with this: noisy_float and ordered-float.</span>
-    <span class="comment">// Unfortunately, both libraries only implement a subset of the traits that</span>
-    <span class="comment">// are implemented by f64 and are required by rgeometry.</span>
-    <span class="comment">// For now, we&#39;ll just not look for duplicate points. :(</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seen</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BTreeSet</span>::<span class="ident">new</span>();
+    <span class="kw">for</span> (<span class="ident">pt</span>, <span class="ident">_meta</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter</span>() {
+      <span class="kw">if</span> <span class="op">!</span><span class="ident">seen</span>.<span class="ident">insert</span>(<span class="ident">pt</span>) {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">DuplicatePoints</span>);
+      }
+    }
 
     <span class="self">self</span>.<span class="ident">validate_weakly</span>()
   }
