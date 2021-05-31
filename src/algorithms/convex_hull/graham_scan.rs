@@ -89,7 +89,7 @@ where
       .ccw_cmp_around(a, b)
       .then_with(|| smallest.cmp_distance_to(a, b))
   });
-  pts.dedup();
+  pts.dedup(); // NOTE: This might not be necessary.
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
