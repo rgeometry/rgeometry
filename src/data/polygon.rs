@@ -60,11 +60,12 @@ impl<T, P> Polygon<T, P> {
     T: PolygonScalar,
   {
     // Has no duplicate points.
-    // TODO. Hm, finding duplicates is difficult when using IEEE floats.
-    // There are two crates for dealing with this: noisy_float and ordered-float.
-    // Unfortunately, both libraries only implement a subset of the traits that
-    // are implemented by f64 and are required by rgeometry.
-    // For now, we'll just not look for duplicate points. :(
+    let mut seen = std::collections::BTreeSet::new();
+    for (pt, _meta) in self.iter() {
+      if !seen.insert(pt) {
+        return Err(Error::DuplicatePoints);
+      }
+    }
 
     self.validate_weakly()
   }

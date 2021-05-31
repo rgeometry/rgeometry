@@ -22,6 +22,7 @@ pub use array::Orientation;
 pub enum Error {
   InsufficientVertices,
   SelfIntersections,
+  DuplicatePoints,
   /// Two consecutive line segments are either colinear or oriented clockwise.
   ConvexViolation,
   ClockWiseViolation,
