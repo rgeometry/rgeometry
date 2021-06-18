@@ -3,6 +3,7 @@ use crate::data::LineSegment;
 use crate::data::LineSegmentView;
 use crate::data::Point;
 use crate::data::Polygon;
+use crate::utils::*;
 use crate::Intersects;
 use crate::{Error, PolygonScalar};
 
@@ -163,17 +164,11 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
   let Intersection(a, b) = isect;
   let da = vertex_list.direct(a);
   let db = vertex_list.direct(b);
-  let DirectedEdge { src: a1, dst: a2 } = da; // a1.next = a2
-  let DirectedEdge { src: b1, dst: b2 } = db; // b1.next = b2
 
-  // let mut removed_edges = Vec::new();
-  // let mut inserted_edges = Vec::new();
   let removed_edges;
   let inserted_edges;
 
-  let are_overlapping = Orientation::is_colinear(&pts[a1], &pts[a2], &pts[b1])
-    && Orientation::is_colinear(&pts[a1], &pts[a2], &pts[b2]);
-  if are_overlapping {
+  if vertex_list.parallel(&pts, da, db) {
     let (a_min, a_max) = vertex_list.linear_extremes(pts, da);
     let (b_min, b_max) = vertex_list.linear_extremes(pts, db);
     let mut mergable = None;
@@ -462,118 +457,6 @@ impl IsectEdge {
   }
 }
 
-type SparseIndex = usize;
-struct SparseVec<T> {
-  dense: DenseCollection,
-  arr: Vec<T>,
-  free: Vec<SparseIndex>,
-}
-
-impl<T: Copy + Default> SparseVec<T> {
-  fn new() -> SparseVec<T> {
-    SparseVec {
-      dense: DenseCollection::new(),
-      arr: Vec::new(),
-      free: Vec::new(),
-    }
-  }
-
-  fn alloc(&mut self) -> SparseIndex {
-    let idx = self.free.pop().unwrap_or(self.arr.len());
-    self.dense.push(idx);
-    idx
-  }
-
-  fn push(&mut self, elt: T) -> SparseIndex {
-    let idx = self.alloc();
-    self[idx] = elt;
-    idx
-  }
-
-  fn remove(&mut self, idx: SparseIndex) -> T {
-    self.dense.remove(idx);
-    self.free.push(idx);
-    let ret = self.arr[idx];
-    self.arr[idx] = T::default();
-    ret
-  }
-
-  fn random<R>(&self, rng: &mut R) -> Option<SparseIndex>
-  where
-    R: Rng + ?Sized,
-  {
-    self.dense.random(rng)
-  }
-
-  fn to_vec(&self) -> Vec<T> {
-    let mut out = Vec::new();
-    for &idx in self.dense.dense.iter() {
-      out.push(self.arr[idx])
-    }
-    out
-  }
-}
-
-impl<T: Copy + Default> Index<SparseIndex> for SparseVec<T> {
-  type Output = T;
-  fn index(&self, index: SparseIndex) -> &T {
-    self.arr.index(index)
-  }
-}
-impl<T: Copy + Default> IndexMut<SparseIndex> for SparseVec<T> {
-  fn index_mut(&mut self, index: SparseIndex) -> &mut T {
-    if index >= self.arr.len() {
-      self.arr.resize(index + 1, T::default());
-    }
-    self.arr.index_mut(index)
-  }
-}
-
-type Dense = usize;
-type Sparse = usize;
-struct DenseCollection {
-  dense: Vec<Sparse>,
-  dense_rev: Vec<Dense>,
-}
-
-impl DenseCollection {
-  fn new() -> DenseCollection {
-    DenseCollection {
-      dense: Vec::new(),
-      dense_rev: Vec::new(),
-    }
-  }
-
-  fn push(&mut self, elt: Sparse) {
-    let idx = self.dense.len();
-    self.dense.push(elt);
-    self
-      .dense_rev
-      .resize(std::cmp::max(self.dense_rev.len(), elt + 1), usize::MAX);
-    self.dense_rev[elt] = idx;
-  }
-
-  // Swap the dense entry for 'elt' with the last entry.
-  // Update reverse mapping for the swapped entry to point to the new idx.
-  fn remove(&mut self, elt: Sparse) {
-    let elt_dense_idx = self.dense_rev[elt];
-    let last_sparse = *self.dense.last().unwrap();
-    self.dense.swap_remove(elt_dense_idx);
-    self.dense_rev[last_sparse] = elt_dense_idx;
-  }
-
-  fn random<R>(&self, rng: &mut R) -> Option<Sparse>
-  where
-    R: Rng + ?Sized,
-  {
-    if self.dense.is_empty() {
-      return None;
-    }
-    let idx = rng.gen_range(0..self.dense.len());
-    Some(self.dense[idx])
-  }
-}
-
 #[derive(Clone, Debug)]
 struct VertexList {
   links: Vec<Link>,
@@ -607,6 +490,16 @@ impl VertexList {
         src: nth,
         dst: link.next,
       })
+  }
+
+  fn parallel<T: PolygonScalar>(
+    &self,
+    pts: &[Point<T, 2>],
+    a: DirectedEdge,
+    b: DirectedEdge,
+  ) -> bool {
+    Orientation::is_colinear(&pts[a.src], &pts[a.dst], &pts[a.src])
+      && Orientation::is_colinear(&pts[a.src], &pts[a.dst], &pts[b.dst])
   }
 
   fn linear_extremes<T>(&self, pts: &[Point<T, 2>], edge: DirectedEdge) -> (Vertex, Vertex)
@@ -725,6 +618,7 @@ impl VertexList {
   // next <- b    a' <- prev
   fn uncross(&mut self, a: DirectedEdge, b: DirectedEdge) {
     // reverse links between b and a'
+    assert_ne!(a, b);
     let mut at = b.src;
     while at != a.src {
       let prev = self.links[at].prev;
@@ -766,12 +660,5 @@ impl VertexList {
       }
     }
     out
-  }
-}
-
-impl Index<Vertex> for VertexList {
-  type Output = Link;
-  fn index(&self, index: Vertex) -> &Link {
-    self.links.index(index)
   }
 }

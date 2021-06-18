@@ -15,6 +15,7 @@ pub mod data;
 mod intersection;
 mod matrix;
 mod transformation;
+mod utils;
 
 pub use array::Orientation;
 
