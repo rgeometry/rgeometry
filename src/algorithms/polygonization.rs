@@ -35,11 +35,11 @@ where
   }
   // if all points are colinear, return error.
   // dbg!(&pts);
-  let mut edges = EdgePolygon::new(&pts);
+  let mut vertex_list = VertexList::new(&pts);
   let mut isects = IntersectionSet::new(pts.len());
   // dbg!(edges.sorted_edges());
-  for e1 in edges.edges() {
-    for e2 in edges.edges() {
+  for e1 in vertex_list.edges() {
+    for e2 in vertex_list.edges() {
       if e1 < e2 {
         if let Some(isect) = intersects(&pts, e1, e2) {
           isects.push(isect)
@@ -49,10 +49,10 @@ where
   }
   // dbg!(isects.to_vec());
   while let Some(isect) = isects.random(rng) {
-    untangle(&pts, &mut edges, &mut isects, isect)
+    untangle(&pts, &mut vertex_list, &mut isects, isect)
   }
 
-  edges.sort_vertices(&mut pts);
+  vertex_list.sort_vertices(&mut pts);
   Polygon::new(pts)
 }
 
@@ -122,131 +122,65 @@ impl From<Isect> for Intersection {
   }
 }
 
-// untangle
-//   Five distinct cases:
-//       1. Edge 1 is before edge 2:
-//               a1 -------> (a2/b1)
-//                     b2 <- (a2/b1)
-//                     b2 ------------> next
-//          Solution:
-//               a1 -> b2 -> (a2/b1) -> next
-//       2. Edge 2 is before edge 1:
-//            prev ------------> b1
-//                    (a1/b2) <- b1
-//                    (a1/b2) -------> a2
-//          Solution:
-//            prev -> (a1/b2) -> b1 -> a2
-//       3. Edge 2 is inside edge 1: e1.1 -> (e2.1 -> e2.2) -> e1.2
-//                                   e1.1 -> (e2.2 <- e2.1) -> e1.2
-//             a1 -------------> a2
-//                   b1 -> b2
-//             prev-/        \-next
-//          Solution:
-//             a1 -> b1 -> b2 -> a2
-//             prev ---------> next
-//       4. Edge 2 is inside edge 1: e1.1 -> (e2.1 -> e2.2) -> e1.2
-//                                   e1.1 -> (e2.2 <- e2.1) -> e1.2
-//             a1 -------------> a2
-//                   b2 -> b1
-//             next-/        \-prev
-//          Solution:
-//             a1 -> b2 -> b1 -> a2
-//             next <--------- prev
-//       5. Edge 1 and Edge 2 crosses.
-//                  b1 <- b.prev
-//                  |
-//             a1 --+--> a2 -> a.next
-//                  |
-//                  V
-//                  b2
-//           Solution
-//               /->b1 -> b.prev
-//              /
-//             a1      /--a2 <- a.next
-//                    /
-//                   /
-//                  b2 ->
+// untangle takes two edges that overlap and finds a solution that reduces the circumference
+// of the polygon. The solution is trivial when the two edges are not parallel: Simply uncross
+// the edges and the new edge lengths are guaranteed to be smaller than before.
+// If the edges are parallel, things get a bit more complicated.
+// Two overlapping parallel edges must have at least one vertex that entirely contained by one
+// of the edges. For example:
+//    a1 -> a2
+// b1 -> b2
 //
-// Swap:
-//   a -> b
-//   b -> a
-// SetNext
-// ReverseOrder
+// It's tempting to cut a1 and put it between b1 and b2. This doesn't change the edge lengths from
+// b1 to b2 and it may decrease the edge length from a1.prev to a2. However, if a1 is on a straight
+// line then we haven't reduced the circumference of the polygon at all. So, we need to find a point
+// that doesn't lie on a straight line with its neighbours but still lies on the line given by the
+// overlapping edges. Once this point has been found (along with its corresponding edge), it can be
+// cut with the guarantee that it'll reduce the polygon circumference. Like this:
 //
-
-// untangle
-//   Five distinct cases:
-//       1. Edge 1 is before edge 2:
-//               a1 -------> (a2/b1)
-//                     b2 <- (a2/b1)
-//                     b2 ------------> next
-//          Solution:
-//               a1 -> b2 -> (a2/b1) -> next
-//       2. Edge 2 is before edge 1:
-//            prev ------------> b1
-//                    (a1/b2) <- b1
-//                    (a1/b2) -------> a2
-//          Solution:
-//            prev -> (a1/b2) -> b1 -> a2
-//       3. Edge 2 is inside edge 1: e1.1 -> (e2.1 -> e2.2) -> e1.2
-//                                   e1.1 -> (e2.2 <- e2.1) -> e1.2
-//             a1 -------------> a2
-//                   b1 -> b2
-//             prev-/        \-next
-//          Solution:
-//             a1 -> b1 -> b2 -> a2
-//             prev ---------> next
-//       4. Edge 2 is inside edge 1: e1.1 -> (e2.1 -> e2.2) -> e1.2
-//                                   e1.1 -> (e2.2 <- e2.1) -> e1.2
-//             a1 -------------> a2
-//                   b2 <- b1
-//             next-/        \-prev
-//          Solution:
-//             a1 -> b2 -> b1 -> a2
-//             next <--------- prev
-//       5. Edge 1 and Edge 2 crosses.
-//                  b1 <- b.prev
-//                  |
-//             a1 --+--> a2 -> a.next
-//                  |
-//                  V
-//                  b2
-//           Solution
-//               /->b1 -> b.prev
-//              /
-//             a1      /--a2 <- a.next
-//                    /
-//                   /
-//                  b2 ->
+//     prev
+//       |
+//       a1 -----> a2
+// b1 -------> b2
+//
+// Cut 'a1' and place it between 'b1' and 'b2':
+//
+//     prev
+//        \------> a2
+// b1 -> a1 -> b2
+//
+// The edge length from 'b1->b2' is identical to 'b1->a1->b2'.
+// The edge length from 'prev->a1->a2' is always greater than 'prev -> a2'.
+// We therefore know that the total circumference has decreased. QED.
 fn untangle<T: PolygonScalar + std::fmt::Debug>(
   pts: &[Point<T, 2>],
-  edges: &mut EdgePolygon,
+  vertex_list: &mut VertexList,
   set: &mut IntersectionSet,
   isect: Intersection,
 ) {
+  // dbg!(vertex_list.sorted_edges());
+  // dbg!(isect);
   let Intersection(a, b) = isect;
-  let da = edges.direct(a);
-  let db = edges.direct(b);
+  let da = vertex_list.direct(a);
+  let db = vertex_list.direct(b);
   let DirectedEdge { src: a1, dst: a2 } = da; // a1.next = a2
   let DirectedEdge { src: b1, dst: b2 } = db; // b1.next = b2
 
-  // assert!(&pts[a.0] <= &pts[b.0]);
+  // let mut removed_edges = Vec::new();
+  // let mut inserted_edges = Vec::new();
+  let removed_edges;
+  let inserted_edges;
 
-  // If edges cross, uncross them.
-  // If edges overlap:
-  //   Find the two sets of linear points.
-  //   If the sets are the same:
-  //     connect prev to min, max to next.
-  //   If the sets are different:
-  //     connect s1.prev to min, max to s1. next.
-  //     connect s2.prev to s2.next
   let are_overlapping = Orientation::is_colinear(&pts[a1], &pts[a2], &pts[b1])
     && Orientation::is_colinear(&pts[a1], &pts[a2], &pts[b2]);
   if are_overlapping {
-    let (a_min, a_max) = edges.linear_extremes(pts, da);
-    let (b_min, b_max) = edges.linear_extremes(pts, db);
+    let (a_min, a_max) = vertex_list.linear_extremes(pts, da);
+    let (b_min, b_max) = vertex_list.linear_extremes(pts, db);
     let mut mergable = None;
-    'outer: for edge in edges.range(a_min, a_max).chain(edges.range(b_min, b_max)) {
+    'outer: for edge in vertex_list
+      .range(a_min, a_max)
+      .chain(vertex_list.range(b_min, b_max))
+    {
       for &elt in [a_min, a_max, b_min, b_max].iter() {
         let segment = LineSegmentView::new(
           EndPoint::Exclusive(&pts[edge.src]),
@@ -264,16 +198,45 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     // is guaranteed to terminate.
     let (elt, edge) = mergable.expect("There must be at least one mergable point");
     // dbg!(elt, edge);
-    edges.hoist(elt, edge)
+    let elt_edges = vertex_list.vertex_edges(elt);
+    vertex_list.hoist(elt, edge);
+    removed_edges = vec![elt_edges.0, elt_edges.1, edge];
+    inserted_edges = vec![
+      DirectedEdge {
+        src: elt_edges.0.src,
+        dst: elt_edges.1.dst,
+      },
+      DirectedEdge {
+        src: elt,
+        dst: edge.dst,
+      },
+      DirectedEdge {
+        src: edge.src,
+        dst: elt,
+      },
+    ];
   } else {
     // Case 5
-    edges.uncross(a1, b1);
+    // eprintln!("Uncross");
+    vertex_list.uncross(da, db);
+    removed_edges = vec![da, db];
+    inserted_edges = vec![
+      DirectedEdge {
+        src: da.src,
+        dst: db.src,
+      },
+      DirectedEdge {
+        src: da.dst,
+        dst: db.dst,
+      },
+    ];
   }
-  for &edge in edges.removed_edges.iter() {
+  // dbg!(&removed_edges, &inserted_edges);
+  for &edge in removed_edges.iter() {
     set.remove_all(edge.into())
   }
-  for &edge in edges.inserted_edges.iter() {
-    for e1 in edges.edges() {
+  for &edge in inserted_edges.iter() {
+    for e1 in vertex_list.edges() {
       if e1 != edge {
         if let Some(isect) = intersects(&pts, e1, edge) {
           set.push(isect)
@@ -281,8 +244,6 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
       }
     }
   }
-  edges.removed_edges.clear();
-  edges.inserted_edges.clear();
 }
 
 struct IntersectionSet {
@@ -613,64 +574,39 @@ impl DenseCollection {
   }
 }
 
-struct EdgePolygon {
-  inserted_edges: Vec<DirectedEdge>,
-  removed_edges: Vec<DirectedEdge>,
+#[derive(Clone, Debug)]
+struct VertexList {
   links: Vec<Link>,
 }
 
 #[derive(Copy, Clone, Debug)]
 struct Link {
-  prev: usize,
-  next: usize,
+  prev: Vertex,
+  next: Vertex,
 }
 
-struct EdgeIter<'a> {
-  nth: usize,
-  links: &'a Vec<Link>,
-}
-
-impl<'a> Iterator for EdgeIter<'a> {
-  type Item = DirectedEdge;
-  fn next(&mut self) -> Option<Self::Item> {
-    if self.nth < self.links.len() {
-      let this = self.nth;
-      self.nth += 1;
-      Some(DirectedEdge {
-        src: this,
-        dst: self.links[this].next,
-      })
-    } else {
-      None
-    }
-  }
-}
-
-impl EdgePolygon {
-  fn new<T>(vertices: &[Point<T, 2>]) -> EdgePolygon {
+impl VertexList {
+  fn new<T>(vertices: &[Point<T, 2>]) -> VertexList {
     let size = vertices.len();
-    let locs: Vec<usize> = (0..size).collect();
 
-    let mut vec = Vec::with_capacity(size);
-    vec.resize(size, Link { prev: 0, next: 0 });
-
-    let mut ret = EdgePolygon {
-      inserted_edges: Vec::new(),
-      removed_edges: Vec::new(),
-      links: vec,
+    let mut ret = VertexList {
+      links: vec![Link { prev: 0, next: 0 }; size],
     };
-    for i in 0..size - 1 {
-      ret.connect(locs[i], locs[i + 1]);
+    for i in 0..size {
+      ret.connect(i, (i + 1) % size);
     }
-    ret.connect(locs[size - 1], locs[0]);
     ret
   }
 
-  fn edges(&self) -> EdgeIter<'_> {
-    EdgeIter {
-      nth: 0,
-      links: &self.links,
-    }
+  fn edges(&self) -> impl Iterator<Item = DirectedEdge> + '_ {
+    self
+      .links
+      .iter()
+      .enumerate()
+      .map(|(nth, link)| DirectedEdge {
+        src: nth,
+        dst: link.next,
+      })
   }
 
   fn linear_extremes<T>(&self, pts: &[Point<T, 2>], edge: DirectedEdge) -> (Vertex, Vertex)
@@ -723,10 +659,6 @@ impl EdgePolygon {
   fn connect(&mut self, a_idx: usize, b_idx: usize) {
     self.links[a_idx].next = b_idx;
     self.links[b_idx].prev = a_idx;
-    self.inserted_edges.push(DirectedEdge {
-      src: a_idx,
-      dst: b_idx,
-    })
   }
 
   fn connect_many<const N: usize>(&mut self, indices: [usize; N]) {
@@ -751,13 +683,20 @@ impl EdgePolygon {
     }
   }
 
-  // // prev <-> a1 <-> a2 <-> next =>
-  // // prev <-> a2 <-> a1 <-> next
-  // fn swap_edge(&mut self, edge: DirectedEdge) -> Vec<DirectedEdge> {
-  //   let prev_idx = self.links[edge.src].prev;
-  //   let next_idx = self.links[edge.dst].next;
-  //   self.connect_many([prev_idx, edge.dst, edge.src, next_idx])
-  // }
+  fn vertex_edges(&self, pt: Vertex) -> (DirectedEdge, DirectedEdge) {
+    let prev_idx = self.links[pt].prev;
+    let next_idx = self.links[pt].next;
+    (
+      DirectedEdge {
+        src: prev_idx,
+        dst: pt,
+      },
+      DirectedEdge {
+        src: pt,
+        dst: next_idx,
+      },
+    )
+  }
 
   // Turn:
   //
@@ -774,16 +713,8 @@ impl EdgePolygon {
     let prev_idx = self.links[pt].prev;
     let next_idx = self.links[pt].next;
     self.connect(prev_idx, next_idx);
-    self.removed_edges.push(DirectedEdge {
-      src: prev_idx,
-      dst: pt,
-    });
-    self.removed_edges.push(DirectedEdge {
-      src: pt,
-      dst: next_idx,
-    });
-    self.removed_edges.push(edge);
     self.connect_many([edge.src, pt, edge.dst]);
+    self.validate();
   }
 
   // a   b'
@@ -792,20 +723,18 @@ impl EdgePolygon {
   //         a    b'
   //         V    ^
   // next <- b    a' <- prev
-  fn uncross(&mut self, a_idx: usize, b_idx: usize) {
+  fn uncross(&mut self, a: DirectedEdge, b: DirectedEdge) {
     // reverse links between b and a'
-    let a_next = self.links[a_idx].next;
-    let b_next = self.links[b_idx].next;
-    let mut at = b_idx;
-    while at != a_idx {
+    let mut at = b.src;
+    while at != a.src {
       let prev = self.links[at].prev;
       let next = self.links[at].next;
       self.links[at].prev = next;
       self.links[at].next = prev;
       at = prev;
     }
-    self.connect(a_idx, b_idx);
-    self.connect(a_next, b_next);
+    self.connect(a.src, b.src);
+    self.connect(a.dst, b.dst);
     self.validate();
   }
 
@@ -840,6 +769,9 @@ impl EdgePolygon {
   }
 }
 
-// impl Index for EdgePolygon {
-//   type Output = Link
-// }
+impl Index<Vertex> for VertexList {
+  type Output = Link;
+  fn index(&self, index: Vertex) -> &Link {
+    self.links.index(index)
+  }
+}
