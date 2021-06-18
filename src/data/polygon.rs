@@ -94,8 +94,8 @@ impl<T, P> Polygon<T, P> {
     let xs: Vector<T, 2> = self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = edge.0.inner().0.as_vec();
-        let q = edge.1.inner().0.as_vec();
+        let p = edge.src.as_vec();
+        let q = edge.dst.as_vec();
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
@@ -117,8 +117,8 @@ impl<T, P> Polygon<T, P> {
     self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = edge.0.inner().0;
-        let q = edge.1.inner().0;
+        let p = edge.src;
+        let q = edge.dst;
         p.array[0].clone() * q.array[1].clone() - q.array[0].clone() * p.array[1].clone()
       })
       .sum()
@@ -141,13 +141,12 @@ impl<T, P> Polygon<T, P> {
     p1.orientation(p2, p3)
   }
 
-  pub fn iter_boundary_edges(&self) -> EdgeIter<'_, T, P, 2> {
+  pub fn iter_boundary_edges(&self) -> EdgeIter<'_, T, 2> {
     // let mut iter = self.iter();
     // let (this_point, this_meta) = iter.next().unwrap();
     EdgeIter {
       at: 0,
       points: self.points.borrow(),
-      meta: self.meta.borrow(),
     }
   }
 

@@ -1,7 +1,12 @@
+use crate::data::EndPoint;
+use crate::data::LineSegment;
+use crate::data::LineSegmentView;
 use crate::data::Point;
 use crate::data::Polygon;
+use crate::Intersects;
 use crate::{Error, PolygonScalar};
 
+use num_traits::NumOps;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use std::iter::FromIterator;
@@ -17,64 +22,50 @@ where
   T: PolygonScalar + std::fmt::Debug,
   R: Rng + ?Sized,
 {
-  pts.sort_unstable();
-  pts.dedup();
+  // pts.sort_unstable();
+  // pts.dedup();
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
-  dbg!(&pts);
-  let mut edges = EdgePolygon::new(rng, pts.len());
+  if pts
+    .iter()
+    .all(|pt| Orientation::is_colinear(&pts[0], &pts[1], pt))
+  {
+    return Err(Error::InsufficientVertices);
+  }
+  // if all points are colinear, return error.
+  // dbg!(&pts);
+  let mut edges = EdgePolygon::new(&pts);
   let mut isects = IntersectionSet::new(pts.len());
-  dbg!(edges.edges().collect::<Vec<Edge>>());
+  // dbg!(edges.sorted_edges());
   for e1 in edges.edges() {
     for e2 in edges.edges() {
       if e1 < e2 {
-        if let Some(isect) = intersects(&pts, &edges, e1, e2) {
-          dbg!(isect);
+        if let Some(isect) = intersects(&pts, e1, e2) {
           isects.push(isect)
         }
       }
     }
   }
+  // dbg!(isects.to_vec());
   while let Some(isect) = isects.random(rng) {
-    dbg!("untangle", isect);
     untangle(&pts, &mut edges, &mut isects, isect)
   }
 
-  let mut out = vec![];
-  let mut at = 0;
-  while edges.links[at].next != 0 {
-    out.push(pts[at].clone());
-    at = edges.links[at].next;
-  }
-  Polygon::new(out)
+  edges.sort_vertices(&mut pts);
+  Polygon::new(pts)
 }
 
-fn intersects<T>(pts: &[Point<T, 2>], ep: &EdgePolygon, a: Edge, b: Edge) -> Option<Intersection>
+fn intersects<T>(pts: &[Point<T, 2>], a: DirectedEdge, b: DirectedEdge) -> Option<Intersection>
 where
-  T: PolygonScalar,
+  T: PolygonScalar + std::fmt::Debug,
 {
-  let (a0, a1) = ep.order(a);
-  let (b0, b1) = ep.order(b);
-  let o1 = Orientation::new(&pts[a0], &pts[a1], &pts[b0]);
-  let o2 = Orientation::new(&pts[a1], &pts[a0], &pts[b1]);
-  let o3 = Orientation::new(&pts[b0], &pts[b1], &pts[a0]);
-  let o4 = Orientation::new(&pts[b1], &pts[b0], &pts[a1]);
+  let e1 = LineSegmentView::from(&pts[a.src]..&pts[a.dst]);
+  let e2 = LineSegmentView::from(&pts[b.src]..&pts[b.dst]);
+  e1.intersect(e2)?; // Returns Some(...) if there exist a point shared by both line segments.
 
-  // dbg!(a, b, o1, o2, o3, o4);
-  if o1 == Orientation::CoLinear && o2 == Orientation::CoLinear {
-    if b.0 <= a.1 {
-      Some(Intersection::new(a, b))
-    } else {
-      None
-    }
-  } else if o1 == o2 && o3 == o4 {
-    Some(Intersection::new(a, b))
-  } else if (o1 == Orientation::CoLinear || o3 == Orientation::CoLinear) && (a1 != b0 && b1 != a0) {
-    Some(Intersection::new(a, b))
-  } else {
-    None
-  }
+  // dbg!(ret, &pts[a.src], &pts[a.dst], &pts[b.src], &pts[b.dst]);
+  Some(Intersection::new(a.into(), b.into()))
 }
 
 type Vertex = usize;
@@ -87,12 +78,47 @@ impl Edge {
   }
 }
 
+impl From<IsectEdge> for Edge {
+  fn from(e: IsectEdge) -> Edge {
+    Edge::new(e.vertex0, e.vertex1)
+  }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+struct DirectedEdge {
+  src: Vertex,
+  dst: Vertex,
+}
+
+impl PartialOrd for DirectedEdge {
+  fn partial_cmp(&self, other: &DirectedEdge) -> Option<std::cmp::Ordering> {
+    Some(self.cmp(other))
+  }
+}
+impl Ord for DirectedEdge {
+  fn cmp(&self, other: &DirectedEdge) -> std::cmp::Ordering {
+    Edge::from(*self).cmp(&Edge::from(*other))
+  }
+}
+
+impl From<DirectedEdge> for Edge {
+  fn from(directed: DirectedEdge) -> Edge {
+    Edge::new(directed.src, directed.dst)
+  }
+}
+
 #[derive(Copy, Clone, Debug)]
 struct Intersection(Edge, Edge);
 
 impl Intersection {
   fn new(a: Edge, b: Edge) -> Intersection {
     Intersection(std::cmp::min(a, b), std::cmp::max(a, b))
+  }
+}
+
+impl From<Isect> for Intersection {
+  fn from(isect: Isect) -> Intersection {
+    Intersection::new(isect.edge0.into(), isect.edge1.into())
   }
 }
 
@@ -192,54 +218,71 @@ impl Intersection {
 //                    /
 //                   /
 //                  b2 ->
-fn untangle<T: PolygonScalar>(
+fn untangle<T: PolygonScalar + std::fmt::Debug>(
   pts: &[Point<T, 2>],
   edges: &mut EdgePolygon,
   set: &mut IntersectionSet,
   isect: Intersection,
 ) {
   let Intersection(a, b) = isect;
-  let (a1, a2) = edges.order(a); // a1.next = a2
-  let (b1, b2) = edges.order(b); // b1.next = b2
+  let da = edges.direct(a);
+  let db = edges.direct(b);
+  let DirectedEdge { src: a1, dst: a2 } = da; // a1.next = a2
+  let DirectedEdge { src: b1, dst: b2 } = db; // b1.next = b2
 
-  if Orientation::is_colinear(&pts[a1], &pts[b1], &pts[b2]) && b.1 < a.1 {
-    // b1 and b2 are on the line between a1 and a2.
-    if b1 == a2 {
-      dbg!("case1");
-      // Case 1
-      edges.swap_with_next(a2);
-      set.remove_all(a);
-      set.remove_all(b);
-    } else if a1 == b2 {
-      dbg!("case2");
-      // Case 2
-      edges.swap_with_next(b1);
-      set.remove_all(a);
-      set.remove_all(b);
-    } else {
-      if (a1 < a2) == (b1 < b2) {
-        dbg!("case3");
-        // Case 3
-        edges.cut(b1);
-        edges.connect_many([a1, b1, b2, a2]);
-      } else {
-        dbg!("case4");
-        // Case 4
-        edges.cut(b1);
-        edges.connect_many([a1, b2, b1, a2]);
+  // assert!(&pts[a.0] <= &pts[b.0]);
+
+  // If edges cross, uncross them.
+  // If edges overlap:
+  //   Find the two sets of linear points.
+  //   If the sets are the same:
+  //     connect prev to min, max to next.
+  //   If the sets are different:
+  //     connect s1.prev to min, max to s1. next.
+  //     connect s2.prev to s2.next
+  let are_overlapping = Orientation::is_colinear(&pts[a1], &pts[a2], &pts[b1])
+    && Orientation::is_colinear(&pts[a1], &pts[a2], &pts[b2]);
+  if are_overlapping {
+    let (a_min, a_max) = edges.linear_extremes(pts, da);
+    let (b_min, b_max) = edges.linear_extremes(pts, db);
+    let mut mergable = None;
+    'outer: for edge in edges.range(a_min, a_max).chain(edges.range(b_min, b_max)) {
+      for &elt in [a_min, a_max, b_min, b_max].iter() {
+        let segment = LineSegmentView::new(
+          EndPoint::Exclusive(&pts[edge.src]),
+          EndPoint::Exclusive(&pts[edge.dst]),
+        );
+        if segment.contains(&pts[elt]) {
+          mergable = Some((elt, edge));
+          break 'outer;
+        }
       }
-      set.remove_all(a);
-      set.remove_all(b);
     }
+    // elt is not linear. That is, prev -> elt -> next is not a straight line.
+    // Therefore, cutting it and adding to a straight line will shorten the polygon
+    // circumference. Since there's a lower limit on the circumference, this algorithm
+    // is guaranteed to terminate.
+    let (elt, edge) = mergable.expect("There must be at least one mergable point");
+    // dbg!(elt, edge);
+    edges.hoist(elt, edge)
   } else {
-    dbg!("case5");
     // Case 5
     edges.uncross(a1, b1);
-    dbg!("remove_all a");
-    set.remove_all(a);
-    dbg!("remove_all b");
-    set.remove_all(b);
   }
+  for &edge in edges.removed_edges.iter() {
+    set.remove_all(edge.into())
+  }
+  for &edge in edges.inserted_edges.iter() {
+    for e1 in edges.edges() {
+      if e1 != edge {
+        if let Some(isect) = intersects(&pts, e1, edge) {
+          set.push(isect)
+        }
+      }
+    }
+  }
+  edges.removed_edges.clear();
+  edges.inserted_edges.clear();
 }
 
 struct IntersectionSet {
@@ -254,7 +297,7 @@ impl IntersectionSet {
     let mut by_edge = Vec::new();
     by_edge.resize(vertices * (vertices - 1), None);
     IntersectionSet {
-      vertices: vertices,
+      vertices,
       intersections: SparseVec::new(),
       by_edge,
     }
@@ -301,12 +344,19 @@ impl IntersectionSet {
   {
     let idx = self.intersections.random(rng)?;
     let isect = self[idx];
-    // self.remove_all(isect.edge0);
-    // self.remove_all(isect.edge1);
     Some(Intersection::new(
       Edge::new(isect.edge0.vertex0, isect.edge0.vertex1),
       Edge::new(isect.edge1.vertex0, isect.edge1.vertex1),
     ))
+  }
+
+  fn to_vec(&self) -> Vec<Intersection> {
+    self
+      .intersections
+      .to_vec()
+      .into_iter()
+      .map(|isect| isect.into())
+      .collect()
   }
 }
 
@@ -493,6 +543,14 @@ impl<T: Copy + Default> SparseVec<T> {
   {
     self.dense.random(rng)
   }
+
+  fn to_vec(&self) -> Vec<T> {
+    let mut out = Vec::new();
+    for &idx in self.dense.dense.iter() {
+      out.push(self.arr[idx])
+    }
+    out
+  }
 }
 
 impl<T: Copy + Default> Index<SparseIndex> for SparseVec<T> {
@@ -528,7 +586,9 @@ impl DenseCollection {
   fn push(&mut self, elt: Sparse) {
     let idx = self.dense.len();
     self.dense.push(elt);
-    self.dense_rev.resize(elt + 1, usize::MAX);
+    self
+      .dense_rev
+      .resize(std::cmp::max(self.dense_rev.len(), elt + 1), usize::MAX);
     self.dense_rev[elt] = idx;
   }
 
@@ -545,7 +605,7 @@ impl DenseCollection {
   where
     R: Rng + ?Sized,
   {
-    if self.dense.len() == 0 {
+    if self.dense.is_empty() {
       return None;
     }
     let idx = rng.gen_range(0..self.dense.len());
@@ -554,6 +614,8 @@ impl DenseCollection {
 }
 
 struct EdgePolygon {
+  inserted_edges: Vec<DirectedEdge>,
+  removed_edges: Vec<DirectedEdge>,
   links: Vec<Link>,
 }
 
@@ -569,12 +631,15 @@ struct EdgeIter<'a> {
 }
 
 impl<'a> Iterator for EdgeIter<'a> {
-  type Item = Edge;
-  fn next(&mut self) -> Option<Edge> {
+  type Item = DirectedEdge;
+  fn next(&mut self) -> Option<Self::Item> {
     if self.nth < self.links.len() {
       let this = self.nth;
       self.nth += 1;
-      Some(Edge::new(this, self.links[this].next))
+      Some(DirectedEdge {
+        src: this,
+        dst: self.links[this].next,
+      })
     } else {
       None
     }
@@ -582,17 +647,18 @@ impl<'a> Iterator for EdgeIter<'a> {
 }
 
 impl EdgePolygon {
-  fn new<R>(rng: &mut R, size: usize) -> EdgePolygon
-  where
-    R: Rng + ?Sized,
-  {
-    let mut locs: Vec<usize> = Vec::from_iter(0..size);
-    locs.shuffle(rng);
+  fn new<T>(vertices: &[Point<T, 2>]) -> EdgePolygon {
+    let size = vertices.len();
+    let locs: Vec<usize> = (0..size).collect();
 
     let mut vec = Vec::with_capacity(size);
     vec.resize(size, Link { prev: 0, next: 0 });
 
-    let mut ret = EdgePolygon { links: vec };
+    let mut ret = EdgePolygon {
+      inserted_edges: Vec::new(),
+      removed_edges: Vec::new(),
+      links: vec,
+    };
     for i in 0..size - 1 {
       ret.connect(locs[i], locs[i + 1]);
     }
@@ -607,6 +673,49 @@ impl EdgePolygon {
     }
   }
 
+  fn linear_extremes<T>(&self, pts: &[Point<T, 2>], edge: DirectedEdge) -> (Vertex, Vertex)
+  where
+    T: Clone + NumOps + Ord,
+  {
+    let mut min = edge.src;
+    let mut max = edge.dst;
+    let is_linear = |idx: Vertex| {
+      Orientation::is_colinear(
+        &pts[self.links[idx].prev],
+        &pts[idx],
+        &pts[self.links[idx].next],
+      )
+    };
+    while is_linear(min) {
+      min = self.links[min].prev;
+      if min == edge.dst {
+        panic!("All points are linear.")
+      }
+    }
+    while is_linear(max) {
+      max = self.links[max].next;
+      if max == edge.src {
+        panic!("All points are linear.")
+      }
+    }
+    (min, max)
+  }
+
+  fn range(&self, mut min: Vertex, max: Vertex) -> impl Iterator<Item = DirectedEdge> + '_ {
+    std::iter::from_fn(move || {
+      if min != max {
+        let edge = DirectedEdge {
+          src: min,
+          dst: self.links[min].next,
+        };
+        min = self.links[min].next;
+        Some(edge)
+      } else {
+        None
+      }
+    })
+  }
+
   // fn get(&mut self, idx: usize) -> &mut Link {
   //   &mut self.links[idx]
   // }
@@ -614,6 +723,10 @@ impl EdgePolygon {
   fn connect(&mut self, a_idx: usize, b_idx: usize) {
     self.links[a_idx].next = b_idx;
     self.links[b_idx].prev = a_idx;
+    self.inserted_edges.push(DirectedEdge {
+      src: a_idx,
+      dst: b_idx,
+    })
   }
 
   fn connect_many<const N: usize>(&mut self, indices: [usize; N]) {
@@ -622,31 +735,55 @@ impl EdgePolygon {
     }
   }
 
-  fn order(&self, edge: Edge) -> (Vertex, Vertex) {
+  fn direct(&self, edge: Edge) -> DirectedEdge {
     if self.links[edge.0].next == edge.1 {
-      (edge.0, edge.1)
+      DirectedEdge {
+        src: edge.0,
+        dst: edge.1,
+      }
     } else {
       assert_eq!(self.links[edge.1].next, edge.0);
-      (edge.1, edge.0)
+      assert_eq!(self.links[edge.0].prev, edge.1);
+      DirectedEdge {
+        src: edge.1,
+        dst: edge.0,
+      }
     }
   }
 
-  // prev <-> a <-> b <-> next =>
-  // prev <-> b <-> a <-> next
-  fn swap_with_next(&mut self, a_idx: usize) {
-    let b_idx = self.links[a_idx].next;
-    let prev_idx = self.links[a_idx].prev;
-    let next_idx = self.links[b_idx].next;
-    self.connect_many([prev_idx, b_idx, a_idx, next_idx]);
-  }
+  // // prev <-> a1 <-> a2 <-> next =>
+  // // prev <-> a2 <-> a1 <-> next
+  // fn swap_edge(&mut self, edge: DirectedEdge) -> Vec<DirectedEdge> {
+  //   let prev_idx = self.links[edge.src].prev;
+  //   let next_idx = self.links[edge.dst].next;
+  //   self.connect_many([prev_idx, edge.dst, edge.src, next_idx])
+  // }
 
-  // prev -> a -> b -> next
-  // prev -> next
-  fn cut(&mut self, a_idx: usize) {
-    let prev_idx = self.links[a_idx].prev;
-    let b_idx = self.links[a_idx].next;
-    let next_idx = self.links[b_idx].next;
+  // Turn:
+  //
+  // prev -> pt -> next
+  // e1 ---------> e2
+  //
+  // Into:
+  //
+  // prev -------> next
+  // e1 ---> pt -> e2
+  //
+  //
+  fn hoist(&mut self, pt: Vertex, edge: DirectedEdge) {
+    let prev_idx = self.links[pt].prev;
+    let next_idx = self.links[pt].next;
     self.connect(prev_idx, next_idx);
+    self.removed_edges.push(DirectedEdge {
+      src: prev_idx,
+      dst: pt,
+    });
+    self.removed_edges.push(DirectedEdge {
+      src: pt,
+      dst: next_idx,
+    });
+    self.removed_edges.push(edge);
+    self.connect_many([edge.src, pt, edge.dst]);
   }
 
   // a   b'
@@ -660,7 +797,7 @@ impl EdgePolygon {
     let a_next = self.links[a_idx].next;
     let b_next = self.links[b_idx].next;
     let mut at = b_idx;
-    while at != a_next {
+    while at != a_idx {
       let prev = self.links[at].prev;
       let next = self.links[at].next;
       self.links[at].prev = next;
@@ -669,6 +806,37 @@ impl EdgePolygon {
     }
     self.connect(a_idx, b_idx);
     self.connect(a_next, b_next);
+    self.validate();
+  }
+
+  fn sort_vertices<T>(self, pts: &mut Vec<T>) {
+    let mut at = 0;
+    let mut nth = 0;
+    while self.links[at].next != 0 {
+      pts.swap(nth, at);
+      at = self.links[at].next;
+      nth += 1;
+    }
+  }
+
+  fn validate(&self) {
+    for (nth, link) in self.links.iter().enumerate() {
+      debug_assert_eq!(self.links[link.next].prev, nth);
+      debug_assert_eq!(self.links[link.prev].next, nth);
+    }
+  }
+
+  fn sorted_edges(&self) -> Vec<Vertex> {
+    let mut out = Vec::new();
+    let mut at = 0;
+    loop {
+      out.push(at);
+      at = self.links[at].next;
+      if at == 0 {
+        break;
+      }
+    }
+    out
   }
 }
 

@@ -18,6 +18,8 @@ mod transformation;
 
 pub use array::Orientation;
 
+pub use intersection::Intersects;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
   InsufficientVertices,

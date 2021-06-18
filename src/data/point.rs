@@ -35,8 +35,8 @@ where
 }
 
 // Methods on N-dimensional points.
-impl<T: Clone, const N: usize> Point<T, N> {
-  pub fn new(array: [T; N]) -> Point<T, N> {
+impl<T, const N: usize> Point<T, N> {
+  pub const fn new(array: [T; N]) -> Point<T, N> {
     Point { array }
   }
 
@@ -91,6 +91,7 @@ impl<T: Clone, const N: usize> Point<T, N> {
 
   pub fn cast<U, F>(&self, f: F) -> Point<U, N>
   where
+    T: Clone,
     F: Fn(T) -> U,
   {
     Point {
@@ -121,6 +122,14 @@ impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<BigRational, N> {
     Ok(Point {
       array: try_array_init(|i| BigRational::from_float(point.array[i]).ok_or(()))?,
     })
+  }
+}
+
+impl<T> From<(T, T)> for Point<T, 2> {
+  fn from(point: (T, T)) -> Point<T, 2> {
+    Point {
+      array: [point.0, point.1],
+    }
   }
 }
 
