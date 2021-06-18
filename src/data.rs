@@ -4,6 +4,7 @@ pub(crate) mod point;
 pub mod polygon;
 mod triangle;
 mod vector;
+pub mod vertex;
 
 pub use directed_edge::*;
 pub use line_segment::*;
