@@ -7,20 +7,11 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use std::ops::{Index, IndexMut};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
+#[non_exhaustive]
 pub struct Intersection {
   pub min: Edge,
   pub max: Edge,
-  _private: (),
-}
-
-impl std::fmt::Debug for Intersection {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("Intersection")
-      .field("min", &self.min)
-      .field("max", &self.max)
-      .finish()
-  }
 }
 
 impl Intersection {
@@ -28,7 +19,6 @@ impl Intersection {
     Intersection {
       min: std::cmp::min(a, b),
       max: std::cmp::max(a, b),
-      _private: (),
     }
   }
 }

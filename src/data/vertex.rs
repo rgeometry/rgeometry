@@ -5,11 +5,11 @@ pub use intersection_set::*;
 pub use vertex_list::*;
 
 pub type Vertex = usize;
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[non_exhaustive]
 pub struct Edge {
   pub min: Vertex,
   pub max: Vertex,
-  _private: (),
 }
 
 impl Edge {
@@ -17,17 +17,7 @@ impl Edge {
     Edge {
       min: std::cmp::min(a, b),
       max: std::cmp::max(a, b),
-      _private: (),
     }
-  }
-}
-
-impl std::fmt::Debug for Edge {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("Edge")
-      .field("min", &self.min)
-      .field("max", &self.max)
-      .finish()
   }
 }
 
