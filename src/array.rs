@@ -12,13 +12,50 @@ where
   array_init(|i| (lhs.index(i).clone() - rhs.index(i).clone()))
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
 pub enum Orientation {
   CounterClockWise,
   ClockWise,
   CoLinear,
 }
 use Orientation::*;
+
+impl Orientation {
+  pub fn new<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Orientation
+  where
+    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord,
+  {
+    raw_arr_turn(p, q, r)
+  }
+
+  pub fn is_colinear<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> bool
+  where
+    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord,
+  {
+    Orientation::new(p, q, r) == Orientation::CoLinear
+  }
+
+  pub fn is_ccw<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> bool
+  where
+    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord,
+  {
+    Orientation::new(p, q, r) == Orientation::CounterClockWise
+  }
+
+  pub fn is_cw<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> bool
+  where
+    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord,
+  {
+    Orientation::new(p, q, r) == Orientation::ClockWise
+  }
+
+  pub fn around_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
+  where
+    T: Ord + Mul<Output = T> + Clone,
+  {
+    raw_arr_turn_origin(q, r)
+  }
+}
 
 // How does the line from (0,0) to q to r turn?
 pub fn raw_arr_turn_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation

@@ -15,8 +15,11 @@ pub mod data;
 mod intersection;
 mod matrix;
 mod transformation;
+mod utils;
 
 pub use array::Orientation;
+
+pub use intersection::Intersects;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
@@ -36,7 +39,8 @@ pub trait PolygonScalar<T = Self, Output = Self>:
   + Zero
   + Sum
   + Ord
-  + Neg<Output = Output>
+  + Neg<Output = Self>
+  + Signed
 {
 }
 impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
@@ -48,7 +52,8 @@ impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
     + Zero
     + Sum
     + Ord
-    + Neg<Output = Output>
+    + Neg<Output = Self>
+    + Signed
 {
 }
 

@@ -3,6 +3,7 @@ use std::iter::Zip;
 use std::ops::*;
 
 use crate::data::line_segment::*;
+use crate::data::DirectedEdge;
 use crate::data::Point;
 
 pub struct Iter<'a, T: 'a, P: 'a> {
@@ -27,26 +28,23 @@ impl<'a, T, P> Iterator for IterMut<'a, T, P> {
   }
 }
 
-pub struct EdgeIter<'a, T: 'a, P: 'a, const N: usize> {
+pub struct EdgeIter<'a, T: 'a, const N: usize> {
   pub(crate) at: usize,
   pub(crate) points: &'a [Point<T, N>],
-  pub(crate) meta: &'a [P],
 }
 
-impl<'a, T, P, const N: usize> Iterator for EdgeIter<'a, T, P, N> {
-  type Item = LineSegmentView<'a, T, P, N>;
-  fn next(&mut self) -> Option<LineSegmentView<'a, T, P, N>> {
+impl<'a, T: Clone, const N: usize> Iterator for EdgeIter<'a, T, N> {
+  type Item = DirectedEdge<T, N>;
+  fn next(&mut self) -> Option<DirectedEdge<T, N>> {
     if self.at >= self.points.len() {
       return None;
     }
-    let this_point = self.points.index(self.at);
-    let this_meta = self.meta.index(self.at);
-    let next_point = self.points.index((self.at + 1) % self.points.len());
-    let next_meta = self.meta.index((self.at + 1) % self.points.len());
+    let this_point = self.points.index(self.at).clone();
+    let next_point = self.points.index((self.at + 1) % self.points.len()).clone();
     self.at += 1;
-    Some(LineSegmentView(
-      EndPoint::Open((this_point, this_meta)),
-      EndPoint::Closed((next_point, next_meta)),
-    ))
+    Some(DirectedEdge {
+      src: this_point,
+      dst: next_point,
+    })
   }
 }

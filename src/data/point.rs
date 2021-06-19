@@ -8,6 +8,7 @@ use rand::Rng;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Debug;
+use std::ops::Deref;
 use std::ops::Index;
 use std::ops::Neg;
 
@@ -34,8 +35,8 @@ where
 }
 
 // Methods on N-dimensional points.
-impl<T: Clone, const N: usize> Point<T, N> {
-  pub fn new(array: [T; N]) -> Point<T, N> {
+impl<T, const N: usize> Point<T, N> {
+  pub const fn new(array: [T; N]) -> Point<T, N> {
     Point { array }
   }
 
@@ -90,6 +91,7 @@ impl<T: Clone, const N: usize> Point<T, N> {
 
   pub fn cast<U, F>(&self, f: F) -> Point<U, N>
   where
+    T: Clone,
     F: Fn(T) -> U,
   {
     Point {
@@ -120,6 +122,14 @@ impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<BigRational, N> {
     Ok(Point {
       array: try_array_init(|i| BigRational::from_float(point.array[i]).ok_or(()))?,
     })
+  }
+}
+
+impl<T> From<(T, T)> for Point<T, 2> {
+  fn from(point: (T, T)) -> Point<T, 2> {
+    Point {
+      array: [point.0, point.1],
+    }
   }
 }
 
@@ -164,9 +174,8 @@ impl<T> Point<T, 2> {
   pub fn orientation(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
   where
     T: Clone + NumOps + Ord,
-    // for<'a> &'a T: Sub<Output = T>,
   {
-    raw_arr_turn(&self.array, &q.array, &r.array)
+    Orientation::new(&self.array, &q.array, &r.array)
   }
 
   /// Docs?
@@ -210,6 +219,13 @@ impl<T> Point<T, 3> {
   }
   pub fn z_coord(&self) -> &T {
     &self.array[2]
+  }
+}
+
+impl<T, const N: usize> Deref for Point<T, N> {
+  type Target = [T; N];
+  fn deref(&self) -> &[T; N] {
+    &self.array
   }
 }
 
@@ -352,11 +368,19 @@ pub mod tests {
   #[test]
   fn test_turns() {
     assert_eq!(
-      Point::new([0, 0]).orientation(&Point::new([1, 1]), &Point::new([2, 2])),
+      Orientation::new(
+        &Point::new([0, 0]),
+        &Point::new([1, 1]),
+        &Point::new([2, 2])
+      ),
       CoLinear
     );
     assert_eq!(
-      Point::new_nn([0.0, 0.0]).orientation(&Point::new_nn([1.0, 1.0]), &Point::new_nn([2.0, 2.0])),
+      Orientation::new(
+        &Point::new_nn([0.0, 0.0]),
+        &Point::new_nn([1.0, 1.0]),
+        &Point::new_nn([2.0, 2.0])
+      ),
       CoLinear
     );
 
