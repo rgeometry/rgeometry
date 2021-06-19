@@ -39,7 +39,8 @@ pub trait PolygonScalar<T = Self, Output = Self>:
   + Zero
   + Sum
   + Ord
-  + Neg<Output = Output>
+  + Neg<Output = Self>
+  + Signed
 {
 }
 impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
@@ -51,7 +52,8 @@ impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
     + Zero
     + Sum
     + Ord
-    + Neg<Output = Output>
+    + Neg<Output = Self>
+    + Signed
 {
 }
 

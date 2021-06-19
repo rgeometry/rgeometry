@@ -47,7 +47,16 @@ impl<T> Polygon<T> {
     T: PolygonScalar,
   {
     let p = Self::new_unchecked(points);
-    p.validate()?;
+    match p.validate() {
+      Err(Error::ClockWiseViolation) => {
+        let mut points = p.points;
+        points.reverse();
+        let p = Self::new_unchecked(points);
+        p.validate()?;
+        return Ok(p);
+      }
+      other => other?,
+    };
     Ok(p)
   }
 }
@@ -79,7 +88,7 @@ impl<T, P> Polygon<T, P> {
       return Err(Error::InsufficientVertices);
     }
     // Is counter-clockwise
-    if self.signed_area_2x() < T::zero() {
+    if !self.signed_area_2x().is_positive() {
       return Err(Error::ClockWiseViolation);
     }
     // Has no self intersections.
