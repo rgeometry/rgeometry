@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["rgeometry"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/index/trait.IndexMut.html\" title=\"trait core::ops::index::IndexMut\">IndexMut</a>&lt;<a class=\"struct\" href=\"rgeometry/data/vertex/struct.Edge.html\" title=\"struct rgeometry::data::vertex::Edge\">Edge</a>&gt; for <a class=\"struct\" href=\"rgeometry/data/vertex/struct.IntersectionSet.html\" title=\"struct rgeometry::data::vertex::IntersectionSet\">IntersectionSet</a>","synthetic":false,"types":["rgeometry::data::vertex::intersection_set::IntersectionSet"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
