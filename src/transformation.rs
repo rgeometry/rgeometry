@@ -153,47 +153,45 @@ where
   }
 }
 
-impl<'a, 'b, T, P> Mul<&'b Polygon<T, P>> for &'a Transform<T, 2>
+impl<'a, 'b, T> Mul<&'b Polygon<T>> for &'a Transform<T, 2>
 where
   T: TransformScalar,
-  P: Clone,
 {
-  type Output = Polygon<T, P>;
-  fn mul(self, other: &Polygon<T, P>) -> Polygon<T, P> {
+  type Output = Polygon<T>;
+  fn mul(self, other: &Polygon<T>) -> Polygon<T> {
     other.clone().map_points(|p| self * p)
   }
 }
 
-impl<'a, T, P> Mul<Polygon<T, P>> for &'a Transform<T, 2>
+impl<'a, T> Mul<Polygon<T>> for &'a Transform<T, 2>
 where
   T: TransformScalar,
 {
-  type Output = Polygon<T, P>;
-  fn mul(self, mut other: Polygon<T, P>) -> Polygon<T, P> {
-    for (pt, _meta) in other.iter_mut() {
+  type Output = Polygon<T>;
+  fn mul(self, mut other: Polygon<T>) -> Polygon<T> {
+    for pt in other.iter_mut() {
       *pt = self * pt.clone();
     }
     other
   }
 }
 
-impl<T, P> Mul<Polygon<T, P>> for Transform<T, 2>
+impl<T> Mul<Polygon<T>> for Transform<T, 2>
 where
   T: TransformScalar,
 {
-  type Output = Polygon<T, P>;
-  fn mul(self, other: Polygon<T, P>) -> Polygon<T, P> {
+  type Output = Polygon<T>;
+  fn mul(self, other: Polygon<T>) -> Polygon<T> {
     (&self).mul(other)
   }
 }
 
-impl<'a, T, P> Mul<&'a Polygon<T, P>> for Transform<T, 2>
+impl<'a, T> Mul<&'a Polygon<T>> for Transform<T, 2>
 where
   T: TransformScalar,
-  P: Clone,
 {
-  type Output = Polygon<T, P>;
-  fn mul(self, other: &Polygon<T, P>) -> Polygon<T, P> {
+  type Output = Polygon<T>;
+  fn mul(self, other: &Polygon<T>) -> Polygon<T> {
     (&self).mul(other)
   }
 }

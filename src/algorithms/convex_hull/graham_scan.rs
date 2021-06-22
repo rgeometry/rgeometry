@@ -221,7 +221,7 @@ mod tests {
           assert_ne!(poly.locate(pt), PointLocation::Outside)
         }
         // Prop #3: All vertices are in the input set.
-        for (pt, _meta) in poly.iter() {
+        for pt in poly.iter() {
           assert!(pts.contains(pt))
         }
       }

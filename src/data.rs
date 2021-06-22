@@ -13,7 +13,9 @@ pub use triangle::*;
 // pub use crate::polygon::EdgeIter as testing;
 
 #[doc(inline)]
-pub use crate::data::polygon::{Polygon, PolygonConvex};
+pub use crate::data::polygon::{
+  Cursor, DirectedIndexEdge, IndexEdge, Polygon, PolygonConvex, Position, VertexId,
+};
 pub use crate::transformation::Transform;
 pub use point::Point;
 pub use vector::{Vector, VectorView};

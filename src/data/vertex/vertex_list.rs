@@ -1,6 +1,6 @@
-use super::DirectedEdge;
-use super::Edge;
 use super::Vertex;
+use crate::data::DirectedIndexEdge;
+use crate::data::IndexEdge;
 use crate::data::Point;
 use crate::Orientation;
 use crate::PolygonScalar;
@@ -30,20 +30,20 @@ impl VertexList {
   }
 
   /// Iterator for unsorted edges.
-  pub fn unordered_edges(&self) -> impl Iterator<Item = Edge> + '_ {
+  pub fn unordered_edges(&self) -> impl Iterator<Item = IndexEdge> + '_ {
     self
       .links
       .iter()
       .enumerate()
-      .map(|(nth, link)| Edge::new(nth, link.next))
+      .map(|(nth, link)| IndexEdge::new(nth, link.next))
   }
 
-  pub fn unordered_directed_edges(&self) -> impl Iterator<Item = DirectedEdge> + '_ {
+  pub fn unordered_directed_edges(&self) -> impl Iterator<Item = DirectedIndexEdge> + '_ {
     self
       .links
       .iter()
       .enumerate()
-      .map(|(nth, link)| DirectedEdge {
+      .map(|(nth, link)| DirectedIndexEdge {
         src: nth,
         dst: link.next,
       })
@@ -62,14 +62,14 @@ impl VertexList {
   pub fn parallel<T: PolygonScalar>(
     &self,
     pts: &[Point<T, 2>],
-    a: DirectedEdge,
-    b: DirectedEdge,
+    a: DirectedIndexEdge,
+    b: DirectedIndexEdge,
   ) -> bool {
-    Orientation::is_colinear(&pts[a.src], &pts[a.dst], &pts[a.src])
+    Orientation::is_colinear(&pts[a.src], &pts[a.dst], &pts[b.src])
       && Orientation::is_colinear(&pts[a.src], &pts[a.dst], &pts[b.dst])
   }
 
-  pub fn linear_extremes<T>(&self, pts: &[Point<T, 2>], edge: DirectedEdge) -> (Vertex, Vertex)
+  pub fn linear_extremes<T>(&self, pts: &[Point<T, 2>], edge: DirectedIndexEdge) -> (Vertex, Vertex)
   where
     T: Clone + NumOps + Ord,
   {
@@ -97,10 +97,14 @@ impl VertexList {
     (min, max)
   }
 
-  pub fn range(&self, mut min: Vertex, max: Vertex) -> impl Iterator<Item = DirectedEdge> + '_ {
+  pub fn range(
+    &self,
+    mut min: Vertex,
+    max: Vertex,
+  ) -> impl Iterator<Item = DirectedIndexEdge> + '_ {
     std::iter::from_fn(move || {
       if min != max {
-        let edge = DirectedEdge {
+        let edge = DirectedIndexEdge {
           src: min,
           dst: self.links[min].next,
         };
@@ -127,31 +131,31 @@ impl VertexList {
     }
   }
 
-  pub fn direct(&self, edge: Edge) -> DirectedEdge {
+  pub fn direct(&self, edge: IndexEdge) -> DirectedIndexEdge {
     if self.links[edge.min].next == edge.max {
-      DirectedEdge {
+      DirectedIndexEdge {
         src: edge.min,
         dst: edge.max,
       }
     } else {
       assert_eq!(self.links[edge.max].next, edge.min);
       assert_eq!(self.links[edge.min].prev, edge.max);
-      DirectedEdge {
+      DirectedIndexEdge {
         src: edge.max,
         dst: edge.min,
       }
     }
   }
 
-  pub fn vertex_edges(&self, pt: Vertex) -> (DirectedEdge, DirectedEdge) {
+  pub fn vertex_edges(&self, pt: Vertex) -> (DirectedIndexEdge, DirectedIndexEdge) {
     let prev_idx = self.links[pt].prev;
     let next_idx = self.links[pt].next;
     (
-      DirectedEdge {
+      DirectedIndexEdge {
         src: prev_idx,
         dst: pt,
       },
-      DirectedEdge {
+      DirectedIndexEdge {
         src: pt,
         dst: next_idx,
       },
@@ -169,7 +173,7 @@ impl VertexList {
   // e1 ---> pt -> e2
   //
   //
-  pub fn hoist(&mut self, pt: Vertex, edge: DirectedEdge) {
+  pub fn hoist(&mut self, pt: Vertex, edge: DirectedIndexEdge) {
     let prev_idx = self.links[pt].prev;
     let next_idx = self.links[pt].next;
     self.connect(prev_idx, next_idx);
@@ -183,7 +187,7 @@ impl VertexList {
   //         a    b'
   //         V    ^
   // next <- b    a' <- prev
-  pub fn uncross(&mut self, a: DirectedEdge, b: DirectedEdge) {
+  pub fn uncross(&mut self, a: DirectedIndexEdge, b: DirectedIndexEdge) {
     // reverse links between b and a'
     assert_ne!(a, b);
     let mut at = b.src;

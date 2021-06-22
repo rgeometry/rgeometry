@@ -12,6 +12,7 @@ use crate::array::Orientation;
 use crate::data;
 use crate::data::Point;
 use crate::data::PointLocation;
+use crate::data::TriangleView;
 use crate::data::Vector;
 use crate::transformation::*;
 use crate::{Error, PolygonScalar};
@@ -19,12 +20,12 @@ use crate::{Error, PolygonScalar};
 use super::Polygon;
 
 #[derive(Debug, Clone)]
-pub struct PolygonConvex<T, P = ()>(Polygon<T, P>);
+pub struct PolygonConvex<T>(Polygon<T>);
 
 ///////////////////////////////////////////////////////////////////////////////
 // PolygonConvex
 
-impl<T, P> PolygonConvex<T, P>
+impl<T> PolygonConvex<T>
 where
   T: PolygonScalar,
 {
@@ -33,7 +34,7 @@ where
   /// # Safety
   /// The input polygon has to be strictly convex, ie. no vertices are allowed to
   /// be concave or colinear.
-  pub fn new_unchecked(poly: Polygon<T, P>) -> PolygonConvex<T, P> {
+  pub fn new_unchecked(poly: Polygon<T>) -> PolygonConvex<T> {
     let convex = PolygonConvex(poly);
     debug_assert_ok!(convex.validate());
     convex
@@ -45,28 +46,29 @@ where
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     // debug_assert_ok!(self.validate());
     let poly = &self.0;
-    let p0 = poly.vertex(0);
+    let vertices = self.boundary_slice();
+    let p0 = poly.index(vertices[0]);
     let mut lower = 1;
-    let mut upper = poly.points.len() as isize - 1;
+    let mut upper = vertices.len() - 1;
     while lower + 1 < upper {
       let middle = (lower + upper) / 2;
-      if p0.orientation(poly.vertex(middle), pt) == Orientation::CounterClockWise {
+      if p0.orientation(&poly.index(vertices[middle]), pt) == Orientation::CounterClockWise {
         lower = middle;
       } else {
         upper = middle;
       }
     }
-    let p1 = poly.vertex(lower);
-    let p2 = poly.vertex(upper);
-    let triangle = data::TriangleView::new([p0, p1, p2]);
+    let p1 = poly.index(vertices[lower]);
+    let p2 = poly.index(vertices[upper]);
+    let triangle = TriangleView::new([p0, p1, p2]);
     triangle.locate(pt)
   }
 
   /// $O(n \log n)$
   pub fn validate(&self) -> Result<(), Error> {
-    let len = self.0.points.len() as isize;
+    let len = self.0.vertices.len();
     for i in 0..len {
-      if self.0.vertex_orientation(i) != Orientation::CounterClockWise {
+      if self.0.vertex(i).orientation() != Orientation::CounterClockWise {
         return Err(Error::ConvexViolation);
       }
     }
@@ -74,7 +76,7 @@ where
   }
 
   /// $O(1)$
-  pub fn polygon(&self) -> &Polygon<T, P> {
+  pub fn polygon(&self) -> &Polygon<T> {
     self.into()
   }
 }
@@ -120,7 +122,7 @@ impl PolygonConvex<BigRational> {
     debug_assert_eq!(n_vertices, n);
     let p = Polygon::new_unchecked(vertices);
     for i in 0..n {
-      if p.vertex_orientation(i as isize) != Orientation::CounterClockWise {
+      if p.vertex(i).orientation() != Orientation::CounterClockWise {
         return Self::random(n, max, rng);
       }
     }
@@ -137,21 +139,21 @@ impl PolygonConvex<BigRational> {
 ///////////////////////////////////////////////////////////////////////////////
 // Trait Implementations
 
-impl<T: PolygonScalar, P> Deref for PolygonConvex<T, P> {
-  type Target = Polygon<T, P>;
+impl<T: PolygonScalar> Deref for PolygonConvex<T> {
+  type Target = Polygon<T>;
   fn deref(&self) -> &Self::Target {
     self.polygon()
   }
 }
 
-impl<T, P> From<PolygonConvex<T, P>> for Polygon<T, P> {
-  fn from(convex: PolygonConvex<T, P>) -> Polygon<T, P> {
+impl<T> From<PolygonConvex<T>> for Polygon<T> {
+  fn from(convex: PolygonConvex<T>) -> Polygon<T> {
     convex.0
   }
 }
 
-impl<'a, T, P> From<&'a PolygonConvex<T, P>> for &'a Polygon<T, P> {
-  fn from(convex: &'a PolygonConvex<T, P>) -> &'a Polygon<T, P> {
+impl<'a, T> From<&'a PolygonConvex<T>> for &'a Polygon<T> {
+  fn from(convex: &'a PolygonConvex<T>) -> &'a Polygon<T> {
     &convex.0
   }
 }
