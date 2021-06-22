@@ -189,9 +189,17 @@ impl<T> Polygon<T> {
 
   pub fn iter_boundary(&self) -> CursorIter<'_, T> {
     // FIXME: Use position 0 instead of vertex 0.
+    let root_cursor = Cursor {
+      polygon: &self,
+      position: Position {
+        position_id: PositionId(0),
+        start: 0,
+        end: self.boundary,
+      },
+    };
     CursorIter {
-      cursor_head: self.cursor(VertexId(0)),
-      cursor_tail: self.cursor(VertexId(0)).prev(),
+      cursor_head: root_cursor,
+      cursor_tail: root_cursor.prev(),
       exhausted: false,
     }
   }
