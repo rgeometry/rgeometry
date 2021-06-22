@@ -6,6 +6,7 @@ use crate::data::LineSegment;
 use crate::data::LineSegmentView;
 use crate::data::Point;
 use crate::data::Polygon;
+use crate::data::VertexId;
 use crate::data::{IndexIntersection, IndexIntersectionSet};
 use crate::utils::*;
 use crate::Intersects;
@@ -21,7 +22,7 @@ use crate::Orientation;
 
 // Create list of edges
 // Find all intersections
-/// O(n^4)
+/// $O(n^4)$ Generate a random, valid polygon from a set of points.
 pub fn two_opt_moves<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar + std::fmt::Debug,
@@ -46,7 +47,7 @@ where
   for e1 in edges(&poly) {
     for e2 in edges(&poly) {
       if e1 < e2 {
-        if let Some(isect) = intersects(&poly.vertices, e1, e2) {
+        if let Some(isect) = intersects(&poly, e1, e2) {
           isects.push(isect)
         }
       }
@@ -61,7 +62,7 @@ where
   Ok(poly)
 }
 
-fn endpoint<T>(a: usize, b: usize, c: usize, t: T) -> EndPoint<T> {
+fn endpoint<T>(a: VertexId, b: VertexId, c: VertexId, t: T) -> EndPoint<T> {
   if a == b || a == c {
     EndPoint::Exclusive(t)
   } else {
@@ -69,14 +70,14 @@ fn endpoint<T>(a: usize, b: usize, c: usize, t: T) -> EndPoint<T> {
   }
 }
 
-fn intersects<T>(pts: &[Point<T, 2>], a: IndexEdge, b: IndexEdge) -> Option<IndexIntersection>
+fn intersects<T>(poly: &Polygon<T>, a: IndexEdge, b: IndexEdge) -> Option<IndexIntersection>
 where
   T: PolygonScalar + std::fmt::Debug,
 {
-  let a_min = endpoint(a.min, b.min, b.max, &pts[a.min]);
-  let a_max = endpoint(a.max, b.min, b.max, &pts[a.max]);
-  let b_min = endpoint(b.min, a.min, a.max, &pts[b.min]);
-  let b_max = endpoint(b.max, a.min, a.max, &pts[b.max]);
+  let a_min = endpoint(a.min, b.min, b.max, poly.point(a.min));
+  let a_max = endpoint(a.max, b.min, b.max, poly.point(a.max));
+  let b_min = endpoint(b.min, a.min, a.max, poly.point(b.min));
+  let b_max = endpoint(b.max, a.min, a.max, poly.point(b.max));
   let e1 = LineSegmentView::new(a_min, a_max);
   let e2 = LineSegmentView::new(b_min, b_max);
   e1.intersect(e2)?; // Returns Some(...) if there exist a point shared by both line segments.
@@ -193,7 +194,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
   for &edge in inserted_edges.iter() {
     for e1 in edges(&poly) {
       if e1 != edge {
-        if let Some(isect) = intersects(&poly.vertices, e1, edge) {
+        if let Some(isect) = intersects(&poly, e1, edge) {
           eprintln!("Inserting new intersection: {:?} {:?}", e1, edge);
           set.push(isect)
         }

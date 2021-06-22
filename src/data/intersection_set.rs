@@ -112,14 +112,16 @@ impl IndexMut<IndexEdge> for IndexIntersectionSet {
   fn index_mut(&mut self, index: IndexEdge) -> &mut Option<SparseIndex> {
     self
       .by_edge
-      .index_mut(index.max + self.vertices * index.min)
+      .index_mut(index.max.0 + self.vertices * index.min.0)
   }
 }
 
 impl Index<IndexEdge> for IndexIntersectionSet {
   type Output = Option<SparseIndex>;
   fn index(&self, index: IndexEdge) -> &Option<SparseIndex> {
-    self.by_edge.index(index.max + self.vertices * index.min)
+    self
+      .by_edge
+      .index(index.max.0 + self.vertices * index.min.0)
   }
 }
 
@@ -138,11 +140,30 @@ impl PartialEq for IsectEdge {
 // Invariants:
 //   Edge0 < Edge1
 //   Edge.0 < Edge.1
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 // FIXME: Should not be pub.
 struct Isect {
   edge0: IsectEdge,
   edge1: IsectEdge,
+}
+
+impl Default for Isect {
+  fn default() -> Isect {
+    Isect {
+      edge0: IsectEdge {
+        vertex0: VertexId(usize::MAX),
+        vertex1: VertexId(usize::MAX),
+        next: None,
+        prev: None,
+      },
+      edge1: IsectEdge {
+        vertex0: VertexId(usize::MAX),
+        vertex1: VertexId(usize::MAX),
+        next: None,
+        prev: None,
+      },
+    }
+  }
 }
 
 impl Isect {
@@ -200,7 +221,7 @@ impl Index<IndexEdge> for Isect {
   }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 // FIXME: Should not be pub
 struct IsectEdge {
   vertex0: VertexId,
