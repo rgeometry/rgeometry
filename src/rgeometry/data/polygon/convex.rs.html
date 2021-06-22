@@ -326,6 +326,8 @@
 <span id="302">302</span>
 <span id="303">303</span>
 <span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -341,6 +343,7 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Point</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::PointLocation</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::TriangleView</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Vector</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::transformation</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">PolygonScalar</span>};
@@ -348,12 +351,12 @@
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::Polygon</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span> <span class="op">=</span> ()<span class="op">&gt;</span>(<span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
 
 <span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
 <span class="comment">// PolygonConvex</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
 {
@@ -362,7 +365,7 @@
   <span class="doccomment">/// # Safety</span>
   <span class="doccomment">/// The input polygon has to be strictly convex, ie. no vertices are allowed to</span>
   <span class="doccomment">/// be concave or colinear.</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">convex</span> <span class="op">=</span> <span class="ident">PolygonConvex</span>(<span class="ident">poly</span>);
     <span class="macro">debug_assert_ok!</span>(<span class="ident">convex</span>.<span class="ident">validate</span>());
     <span class="ident">convex</span>
@@ -374,28 +377,29 @@
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span> {
     <span class="comment">// debug_assert_ok!(self.validate());</span>
     <span class="kw">let</span> <span class="ident">poly</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
-    <span class="kw">let</span> <span class="ident">p0</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">vertex</span>(<span class="number">0</span>);
+    <span class="kw">let</span> <span class="ident">vertices</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">boundary_slice</span>();
+    <span class="kw">let</span> <span class="ident">p0</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="number">0</span>]);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lower</span> <span class="op">=</span> <span class="number">1</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">upper</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">points</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="number">1</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">upper</span> <span class="op">=</span> <span class="ident">vertices</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>;
     <span class="kw">while</span> <span class="ident">lower</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&lt;</span> <span class="ident">upper</span> {
       <span class="kw">let</span> <span class="ident">middle</span> <span class="op">=</span> (<span class="ident">lower</span> <span class="op">+</span> <span class="ident">upper</span>) <span class="op">/</span> <span class="number">2</span>;
-      <span class="kw">if</span> <span class="ident">p0</span>.<span class="ident">orientation</span>(<span class="ident">poly</span>.<span class="ident">vertex</span>(<span class="ident">middle</span>), <span class="ident">pt</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
+      <span class="kw">if</span> <span class="ident">p0</span>.<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">middle</span>]), <span class="ident">pt</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
         <span class="ident">lower</span> <span class="op">=</span> <span class="ident">middle</span>;
       } <span class="kw">else</span> {
         <span class="ident">upper</span> <span class="op">=</span> <span class="ident">middle</span>;
       }
     }
-    <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">vertex</span>(<span class="ident">lower</span>);
-    <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">vertex</span>(<span class="ident">upper</span>);
-    <span class="kw">let</span> <span class="ident">triangle</span> <span class="op">=</span> <span class="ident">data::TriangleView::new</span>([<span class="ident">p0</span>, <span class="ident">p1</span>, <span class="ident">p2</span>]);
+    <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">lower</span>]);
+    <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">upper</span>]);
+    <span class="kw">let</span> <span class="ident">triangle</span> <span class="op">=</span> <span class="ident">TriangleView::new</span>([<span class="ident">p0</span>, <span class="ident">p1</span>, <span class="ident">p2</span>]);
     <span class="ident">triangle</span>.<span class="ident">locate</span>(<span class="ident">pt</span>)
   }
 
   <span class="doccomment">/// $O(n \log n)$</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">points</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">isize</span>;
+    <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">vertices</span>.<span class="ident">len</span>();
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">len</span> {
-      <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">vertex_orientation</span>(<span class="ident">i</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
+      <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">cursor</span>(<span class="ident">i</span>).<span class="ident">orientation</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::ConvexViolation</span>);
       }
     }
@@ -403,7 +407,7 @@
   }
 
   <span class="doccomment">/// $O(1)$</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">polygon</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">polygon</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="self">self</span>.<span class="ident">into</span>()
   }
 }
@@ -449,7 +453,7 @@
     <span class="macro">debug_assert_eq!</span>(<span class="ident">n_vertices</span>, <span class="ident">n</span>);
     <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Polygon::new_unchecked</span>(<span class="ident">vertices</span>);
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">n</span> {
-      <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">vertex_orientation</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
+      <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">cursor</span>(<span class="ident">i</span>).<span class="ident">orientation</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
         <span class="kw">return</span> <span class="self">Self</span><span class="ident">::random</span>(<span class="ident">n</span>, <span class="ident">max</span>, <span class="ident">rng</span>);
       }
     }
@@ -466,21 +470,21 @@
 <span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
 <span class="comment">// Trait Implementations</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PolygonScalar</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-  <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PolygonScalar</span><span class="op">&gt;</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+  <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
   <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span><span class="ident">::Target</span> {
     <span class="self">self</span>.<span class="ident">polygon</span>()
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">convex</span>.<span class="number">0</span>
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw-2">&amp;</span><span class="ident">convex</span>.<span class="number">0</span>
   }
 }

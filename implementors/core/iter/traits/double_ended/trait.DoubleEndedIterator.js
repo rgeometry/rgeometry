@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["rgeometry"] = [{"text":"impl&lt;'a, T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/double_ended/trait.DoubleEndedIterator.html\" title=\"trait core::iter::traits::double_ended::DoubleEndedIterator\">DoubleEndedIterator</a> for <a class=\"struct\" href=\"rgeometry/data/polygon/struct.CursorIter.html\" title=\"struct rgeometry::data::polygon::CursorIter\">CursorIter</a>&lt;'a, T&gt;","synthetic":false,"types":["rgeometry::data::polygon::iter::CursorIter"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

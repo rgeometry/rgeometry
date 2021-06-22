@@ -208,13 +208,75 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::vertex</span>::{<span class="ident">DirectedEdge</span>, <span class="ident">Edge</span>, <span class="ident">Intersection</span>, <span class="ident">IntersectionSet</span>, <span class="ident">Vertex</span>, <span class="ident">VertexList</span>};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Cursor</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::DirectedIndexEdge</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::EndPoint</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::IndexEdge</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::LineSegment</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::LineSegmentView</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Point</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Polygon</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{<span class="ident">IndexIntersection</span>, <span class="ident">IndexIntersectionSet</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::utils</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Intersects</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">PolygonScalar</span>};
@@ -230,7 +292,7 @@
 <span class="comment">// Create list of edges</span>
 <span class="comment">// Find all intersections</span>
 <span class="doccomment">/// O(n^4)</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">two_opt_moves</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">two_opt_moves</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">std::fmt::Debug</span>,
   <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
@@ -248,13 +310,13 @@
   }
   <span class="comment">// if all points are colinear, return error.</span>
   <span class="comment">// dbg!(&amp;pts);</span>
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vertex_list</span> <span class="op">=</span> <span class="ident">VertexList::new</span>(<span class="ident">pts</span>.<span class="ident">len</span>());
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">isects</span> <span class="op">=</span> <span class="ident">IntersectionSet::new</span>(<span class="ident">pts</span>.<span class="ident">len</span>());
+  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">isects</span> <span class="op">=</span> <span class="ident">IndexIntersectionSet::new</span>(<span class="ident">pts</span>.<span class="ident">len</span>());
+  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poly</span> <span class="op">=</span> <span class="ident">Polygon::new_unchecked</span>(<span class="ident">pts</span>);
   <span class="comment">// dbg!(edges.sorted_edges());</span>
-  <span class="kw">for</span> <span class="ident">e1</span> <span class="kw">in</span> <span class="ident">vertex_list</span>.<span class="ident">unordered_edges</span>() {
-    <span class="kw">for</span> <span class="ident">e2</span> <span class="kw">in</span> <span class="ident">vertex_list</span>.<span class="ident">unordered_edges</span>() {
+  <span class="kw">for</span> <span class="ident">e1</span> <span class="kw">in</span> <span class="ident">edges</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>) {
+    <span class="kw">for</span> <span class="ident">e2</span> <span class="kw">in</span> <span class="ident">edges</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>) {
       <span class="kw">if</span> <span class="ident">e1</span> <span class="op">&lt;</span> <span class="ident">e2</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">isect</span>) <span class="op">=</span> <span class="ident">intersects</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>, <span class="ident">vertex_list</span>.<span class="ident">direct</span>(<span class="ident">e1</span>), <span class="ident">vertex_list</span>.<span class="ident">direct</span>(<span class="ident">e2</span>)) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">isect</span>) <span class="op">=</span> <span class="ident">intersects</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">vertices</span>, <span class="ident">e1</span>, <span class="ident">e2</span>) {
           <span class="ident">isects</span>.<span class="ident">push</span>(<span class="ident">isect</span>)
         }
       }
@@ -262,23 +324,35 @@
   }
   <span class="comment">// dbg!(isects.to_vec());</span>
   <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">isect</span>) <span class="op">=</span> <span class="ident">isects</span>.<span class="ident">random</span>(<span class="ident">rng</span>) {
-    <span class="ident">untangle</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">vertex_list</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">isects</span>, <span class="ident">isect</span>)
+    <span class="ident">untangle</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">poly</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">isects</span>, <span class="ident">isect</span>)
   }
-
-  <span class="ident">vertex_list</span>.<span class="ident">sort_vertices</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pts</span>);
-  <span class="ident">Polygon::new</span>(<span class="ident">pts</span>)
+  <span class="ident">poly</span>.<span class="ident">ensure_ccw</span>();
+  <span class="ident">poly</span>.<span class="ident">validate</span>()<span class="question-mark">?</span>;
+  <span class="prelude-val">Ok</span>(<span class="ident">poly</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">intersects</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">pts</span>: <span class="kw-2">&amp;</span>[<span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>], <span class="ident">a</span>: <span class="ident">DirectedEdge</span>, <span class="ident">b</span>: <span class="ident">DirectedEdge</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Intersection</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">endpoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">usize</span>, <span class="ident">b</span>: <span class="ident">usize</span>, <span class="ident">c</span>: <span class="ident">usize</span>, <span class="ident">t</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+  <span class="kw">if</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">b</span> <span class="op">|</span><span class="op">|</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">c</span> {
+    <span class="ident">EndPoint::Exclusive</span>(<span class="ident">t</span>)
+  } <span class="kw">else</span> {
+    <span class="ident">EndPoint::Inclusive</span>(<span class="ident">t</span>)
+  }
+}
+
+<span class="kw">fn</span> <span class="ident">intersects</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">pts</span>: <span class="kw-2">&amp;</span>[<span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>], <span class="ident">a</span>: <span class="ident">IndexEdge</span>, <span class="ident">b</span>: <span class="ident">IndexEdge</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">IndexIntersection</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">std::fmt::Debug</span>,
 {
-  <span class="kw">let</span> <span class="ident">e1</span> <span class="op">=</span> <span class="ident">LineSegmentView::from</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">a</span>.<span class="ident">src</span>]..<span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">a</span>.<span class="ident">dst</span>]);
-  <span class="kw">let</span> <span class="ident">e2</span> <span class="op">=</span> <span class="ident">LineSegmentView::from</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">b</span>.<span class="ident">src</span>]..<span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">b</span>.<span class="ident">dst</span>]);
+  <span class="kw">let</span> <span class="ident">a_min</span> <span class="op">=</span> <span class="ident">endpoint</span>(<span class="ident">a</span>.<span class="ident">min</span>, <span class="ident">b</span>.<span class="ident">min</span>, <span class="ident">b</span>.<span class="ident">max</span>, <span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">a</span>.<span class="ident">min</span>]);
+  <span class="kw">let</span> <span class="ident">a_max</span> <span class="op">=</span> <span class="ident">endpoint</span>(<span class="ident">a</span>.<span class="ident">max</span>, <span class="ident">b</span>.<span class="ident">min</span>, <span class="ident">b</span>.<span class="ident">max</span>, <span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">a</span>.<span class="ident">max</span>]);
+  <span class="kw">let</span> <span class="ident">b_min</span> <span class="op">=</span> <span class="ident">endpoint</span>(<span class="ident">b</span>.<span class="ident">min</span>, <span class="ident">a</span>.<span class="ident">min</span>, <span class="ident">a</span>.<span class="ident">max</span>, <span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">b</span>.<span class="ident">min</span>]);
+  <span class="kw">let</span> <span class="ident">b_max</span> <span class="op">=</span> <span class="ident">endpoint</span>(<span class="ident">b</span>.<span class="ident">max</span>, <span class="ident">a</span>.<span class="ident">min</span>, <span class="ident">a</span>.<span class="ident">max</span>, <span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">b</span>.<span class="ident">max</span>]);
+  <span class="kw">let</span> <span class="ident">e1</span> <span class="op">=</span> <span class="ident">LineSegmentView::new</span>(<span class="ident">a_min</span>, <span class="ident">a_max</span>);
+  <span class="kw">let</span> <span class="ident">e2</span> <span class="op">=</span> <span class="ident">LineSegmentView::new</span>(<span class="ident">b_min</span>, <span class="ident">b_max</span>);
   <span class="ident">e1</span>.<span class="ident">intersect</span>(<span class="ident">e2</span>)<span class="question-mark">?</span>; <span class="comment">// Returns Some(...) if there exist a point shared by both line segments.</span>
 
   <span class="comment">// dbg!(ret, &amp;pts[a.src], &amp;pts[a.dst], &amp;pts[b.src], &amp;pts[b.dst]);</span>
-  <span class="prelude-val">Some</span>(<span class="ident">Intersection::new</span>(<span class="ident">a</span>.<span class="ident">into</span>(), <span class="ident">b</span>.<span class="ident">into</span>()))
+  <span class="prelude-val">Some</span>(<span class="ident">IndexIntersection::new</span>(<span class="ident">a</span>, <span class="ident">b</span>))
 }
 
 <span class="comment">// untangle takes two edges that overlap and finds a solution that reduces the circumference</span>
@@ -312,32 +386,34 @@
 <span class="comment">// The edge length from &#39;prev-&gt;a1-&gt;a2&#39; is always greater than &#39;prev -&gt; a2&#39;.</span>
 <span class="comment">// We therefore know that the total circumference has decreased. QED.</span>
 <span class="kw">fn</span> <span class="ident">untangle</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">std::fmt::Debug</span><span class="op">&gt;</span>(
-  <span class="ident">pts</span>: <span class="kw-2">&amp;</span>[<span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>],
-  <span class="ident">vertex_list</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">VertexList</span>,
-  <span class="ident">set</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">IntersectionSet</span>,
-  <span class="ident">isect</span>: <span class="ident">Intersection</span>,
+  <span class="ident">poly</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+  <span class="ident">set</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">IndexIntersectionSet</span>,
+  <span class="ident">isect</span>: <span class="ident">IndexIntersection</span>,
 ) {
   <span class="comment">// dbg!(vertex_list.vertices().collect::&lt;Vec&lt;Vertex&gt;&gt;());</span>
   <span class="comment">// dbg!(isect);</span>
-  <span class="kw">let</span> <span class="ident">da</span> <span class="op">=</span> <span class="ident">vertex_list</span>.<span class="ident">direct</span>(<span class="ident">isect</span>.<span class="ident">min</span>);
-  <span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">vertex_list</span>.<span class="ident">direct</span>(<span class="ident">isect</span>.<span class="ident">max</span>);
+  <span class="macro">eprintln!</span>(<span class="string">&quot;Poly order: {:?}&quot;</span>, <span class="ident">poly</span>.<span class="ident">order</span>);
+  <span class="macro">eprintln!</span>(<span class="string">&quot;Poly pos:   {:?}&quot;</span>, <span class="ident">poly</span>.<span class="ident">positions</span>);
+  <span class="macro">eprintln!</span>(<span class="string">&quot;Untangle: {:?}&quot;</span>, <span class="ident">isect</span>);
+  <span class="comment">// let da = poly.direct(isect.min);</span>
+  <span class="comment">// let db = poly.direct(isect.max);</span>
+  <span class="kw">let</span> <span class="ident">da</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">cursor</span>(<span class="ident">poly</span>.<span class="ident">direct</span>(<span class="ident">isect</span>.<span class="ident">min</span>).<span class="ident">src</span>);
+  <span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">cursor</span>(<span class="ident">poly</span>.<span class="ident">direct</span>(<span class="ident">isect</span>.<span class="ident">max</span>).<span class="ident">src</span>);
 
   <span class="kw">let</span> <span class="ident">inserted_edges</span>;
 
-  <span class="kw">if</span> <span class="ident">vertex_list</span>.<span class="ident">parallel</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>, <span class="ident">da</span>, <span class="ident">db</span>) {
-    <span class="kw">let</span> (<span class="ident">a_min</span>, <span class="ident">a_max</span>) <span class="op">=</span> <span class="ident">vertex_list</span>.<span class="ident">linear_extremes</span>(<span class="ident">pts</span>, <span class="ident">da</span>);
-    <span class="kw">let</span> (<span class="ident">b_min</span>, <span class="ident">b_max</span>) <span class="op">=</span> <span class="ident">vertex_list</span>.<span class="ident">linear_extremes</span>(<span class="ident">pts</span>, <span class="ident">db</span>);
+  <span class="kw">if</span> <span class="ident">parallel_edges</span>(<span class="ident">da</span>, <span class="ident">db</span>) {
+    <span class="kw">let</span> (<span class="ident">a_min</span>, <span class="ident">a_max</span>) <span class="op">=</span> <span class="ident">linear_extremes</span>(<span class="ident">da</span>);
+    <span class="kw">let</span> (<span class="ident">b_min</span>, <span class="ident">b_max</span>) <span class="op">=</span> <span class="ident">linear_extremes</span>(<span class="ident">db</span>);
+
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mergable</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-    <span class="lifetime">&#39;outer</span>: <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="ident">vertex_list</span>
-      .<span class="ident">range</span>(<span class="ident">a_min</span>, <span class="ident">a_max</span>)
-      .<span class="ident">chain</span>(<span class="ident">vertex_list</span>.<span class="ident">range</span>(<span class="ident">b_min</span>, <span class="ident">b_max</span>))
-    {
+    <span class="lifetime">&#39;outer</span>: <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="ident">a_min</span>.<span class="ident">to</span>(<span class="ident">a_max</span>).<span class="ident">chain</span>(<span class="ident">b_min</span>.<span class="ident">to</span>(<span class="ident">b_max</span>)) {
       <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">elt</span> <span class="kw">in</span> [<span class="ident">a_min</span>, <span class="ident">a_max</span>, <span class="ident">b_min</span>, <span class="ident">b_max</span>].<span class="ident">iter</span>() {
         <span class="kw">let</span> <span class="ident">segment</span> <span class="op">=</span> <span class="ident">LineSegmentView::new</span>(
-          <span class="ident">EndPoint::Exclusive</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">edge</span>.<span class="ident">src</span>]),
-          <span class="ident">EndPoint::Exclusive</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">edge</span>.<span class="ident">dst</span>]),
+          <span class="ident">EndPoint::Exclusive</span>(<span class="ident">edge</span>.<span class="ident">point</span>()),
+          <span class="ident">EndPoint::Exclusive</span>(<span class="ident">edge</span>.<span class="ident">next</span>().<span class="ident">point</span>()),
         );
-        <span class="kw">if</span> <span class="ident">segment</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>[<span class="ident">elt</span>]) {
+        <span class="kw">if</span> <span class="ident">segment</span>.<span class="ident">contains</span>(<span class="ident">elt</span>.<span class="ident">point</span>()) {
           <span class="ident">mergable</span> <span class="op">=</span> <span class="prelude-val">Some</span>((<span class="ident">elt</span>, <span class="ident">edge</span>));
           <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
         }
@@ -349,51 +425,93 @@
     <span class="comment">// is guaranteed to terminate.</span>
     <span class="kw">let</span> (<span class="ident">elt</span>, <span class="ident">edge</span>) <span class="op">=</span> <span class="ident">mergable</span>.<span class="ident">expect</span>(<span class="string">&quot;There must be at least one mergable point&quot;</span>);
     <span class="comment">// dbg!(elt, edge);</span>
-    <span class="kw">let</span> <span class="ident">elt_edges</span> <span class="op">=</span> <span class="ident">vertex_list</span>.<span class="ident">vertex_edges</span>(<span class="ident">elt</span>);
-    <span class="ident">vertex_list</span>.<span class="ident">hoist</span>(<span class="ident">elt</span>, <span class="ident">edge</span>);
-    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">elt_edges</span>.<span class="number">0</span>);
-    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">elt_edges</span>.<span class="number">1</span>);
-    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">edge</span>);
+    <span class="comment">// let elt_edges = vertex_list.vertex_edges(elt);</span>
+    <span class="comment">// vertex_list.hoist(elt, edge);</span>
+    <span class="kw">let</span> <span class="ident">del_edge_1</span> <span class="op">=</span> <span class="ident">IndexEdge::new</span>(<span class="ident">elt</span>.<span class="ident">prev</span>().<span class="ident">vertex_id</span>(), <span class="ident">elt</span>.<span class="ident">vertex_id</span>());
+    <span class="kw">let</span> <span class="ident">del_edge_2</span> <span class="op">=</span> <span class="ident">IndexEdge::new</span>(<span class="ident">elt</span>.<span class="ident">vertex_id</span>(), <span class="ident">elt</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>());
+    <span class="kw">let</span> <span class="ident">del_edge_3</span> <span class="op">=</span> <span class="ident">IndexEdge::new</span>(<span class="ident">edge</span>.<span class="ident">vertex_id</span>(), <span class="ident">edge</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>());
+    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">del_edge_1</span>);
+    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">del_edge_2</span>);
+    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">del_edge_3</span>);
+
     <span class="ident">inserted_edges</span> <span class="op">=</span> <span class="macro">vec!</span>[
-      <span class="ident">DirectedEdge</span> {
-        <span class="ident">src</span>: <span class="ident">elt_edges</span>.<span class="number">0</span>.<span class="ident">src</span>,
-        <span class="ident">dst</span>: <span class="ident">elt_edges</span>.<span class="number">1</span>.<span class="ident">dst</span>,
-      },
-      <span class="ident">DirectedEdge</span> {
-        <span class="ident">src</span>: <span class="ident">elt</span>,
-        <span class="ident">dst</span>: <span class="ident">edge</span>.<span class="ident">dst</span>,
-      },
-      <span class="ident">DirectedEdge</span> {
-        <span class="ident">src</span>: <span class="ident">edge</span>.<span class="ident">src</span>,
-        <span class="ident">dst</span>: <span class="ident">elt</span>,
-      },
+      <span class="ident">IndexEdge::new</span>(<span class="ident">elt</span>.<span class="ident">prev</span>().<span class="ident">vertex_id</span>(), <span class="ident">elt</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>()),
+      <span class="ident">IndexEdge::new</span>(<span class="ident">edge</span>.<span class="ident">vertex_id</span>(), <span class="ident">elt</span>.<span class="ident">vertex_id</span>()),
+      <span class="ident">IndexEdge::new</span>(<span class="ident">elt</span>.<span class="ident">vertex_id</span>(), <span class="ident">edge</span>.<span class="ident">vertex_id</span>()),
     ];
+
+    <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">edge</span>.<span class="ident">position</span>;
+    <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">elt</span>.<span class="ident">position</span>;
+    <span class="macro">eprintln!</span>(<span class="string">&quot;Hoist: {:?} {:?}&quot;</span>, <span class="ident">p1</span>, <span class="ident">p2</span>);
+    <span class="ident">poly</span>.<span class="ident">vertices_join</span>(<span class="ident">p1</span>, <span class="ident">p2</span>);
   } <span class="kw">else</span> {
-    <span class="comment">// eprintln!(&quot;Uncross&quot;);</span>
-    <span class="ident">vertex_list</span>.<span class="ident">uncross</span>(<span class="ident">da</span>, <span class="ident">db</span>);
-    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">da</span>);
-    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="ident">db</span>);
+    <span class="comment">// vertex_list.uncross(da, db);</span>
+    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="macro">dbg!</span>(<span class="ident">IndexEdge::new</span>(<span class="ident">da</span>.<span class="ident">vertex_id</span>(), <span class="ident">da</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>())));
+    <span class="ident">set</span>.<span class="ident">remove_all</span>(<span class="macro">dbg!</span>(<span class="ident">IndexEdge::new</span>(<span class="ident">db</span>.<span class="ident">vertex_id</span>(), <span class="ident">db</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>())));
+
     <span class="ident">inserted_edges</span> <span class="op">=</span> <span class="macro">vec!</span>[
-      <span class="ident">DirectedEdge</span> {
-        <span class="ident">src</span>: <span class="ident">da</span>.<span class="ident">src</span>,
-        <span class="ident">dst</span>: <span class="ident">db</span>.<span class="ident">src</span>,
-      },
-      <span class="ident">DirectedEdge</span> {
-        <span class="ident">src</span>: <span class="ident">da</span>.<span class="ident">dst</span>,
-        <span class="ident">dst</span>: <span class="ident">db</span>.<span class="ident">dst</span>,
-      },
+      <span class="ident">IndexEdge::new</span>(<span class="ident">da</span>.<span class="ident">vertex_id</span>(), <span class="ident">db</span>.<span class="ident">vertex_id</span>()),
+      <span class="ident">IndexEdge::new</span>(<span class="ident">da</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>(), <span class="ident">db</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>()),
     ];
+
+    <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">da</span>.<span class="ident">next</span>().<span class="ident">position</span>;
+    <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">position</span>;
+    <span class="macro">eprintln!</span>(<span class="string">&quot;Uncross: {:?} {:?}&quot;</span>, <span class="ident">p1</span>, <span class="ident">p2</span>);
+    <span class="ident">poly</span>.<span class="ident">vertices_reverse</span>(<span class="ident">p1</span>, <span class="ident">p2</span>);
   }
   <span class="comment">// dbg!(&amp;removed_edges, &amp;inserted_edges);</span>
   <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">edge</span> <span class="kw">in</span> <span class="ident">inserted_edges</span>.<span class="ident">iter</span>() {
-    <span class="kw">for</span> <span class="ident">e1</span> <span class="kw">in</span> <span class="ident">vertex_list</span>.<span class="ident">unordered_directed_edges</span>() {
+    <span class="kw">for</span> <span class="ident">e1</span> <span class="kw">in</span> <span class="ident">edges</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>) {
       <span class="kw">if</span> <span class="ident">e1</span> <span class="op">!</span><span class="op">=</span> <span class="ident">edge</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">isect</span>) <span class="op">=</span> <span class="ident">intersects</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>, <span class="ident">e1</span>, <span class="ident">edge</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">isect</span>) <span class="op">=</span> <span class="ident">intersects</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">vertices</span>, <span class="ident">e1</span>, <span class="ident">edge</span>) {
+          <span class="macro">eprintln!</span>(<span class="string">&quot;Inserting new intersection: {:?} {:?}&quot;</span>, <span class="ident">e1</span>, <span class="ident">edge</span>);
           <span class="ident">set</span>.<span class="ident">push</span>(<span class="ident">isect</span>)
         }
       }
     }
   }
+}
+
+<span class="kw">fn</span> <span class="ident">parallel_edges</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">b</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>
+<span class="kw">where</span>
+  <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+{
+  <span class="kw">let</span> <span class="ident">a1</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">point</span>();
+  <span class="kw">let</span> <span class="ident">a2</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">next</span>().<span class="ident">point</span>();
+  <span class="kw">let</span> <span class="ident">b1</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">point</span>();
+  <span class="kw">let</span> <span class="ident">b2</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">next</span>().<span class="ident">point</span>();
+  <span class="ident">Orientation::is_colinear</span>(<span class="ident">a1</span>, <span class="ident">a2</span>, <span class="ident">b1</span>) <span class="op">&amp;&amp;</span> <span class="ident">Orientation::is_colinear</span>(<span class="ident">a1</span>, <span class="ident">a2</span>, <span class="ident">b2</span>)
+}
+
+<span class="doccomment">/// Find the leftmost and rightmost vertices that are not linear.</span>
+<span class="doccomment">/// Example:</span>
+<span class="doccomment">///    a                    f</span>
+<span class="doccomment">///     \- b - c - d -&gt; e -/</span>
+<span class="doccomment">/// linear_extremes(&#39;c&#39;) = (&#39;b&#39;, &#39;e&#39;).</span>
+<span class="doccomment">/// &#39;c&#39; is linear (there&#39;s a straight line from &#39;b&#39; to &#39;c&#39; to &#39;d&#39;).</span>
+<span class="doccomment">/// &#39;b&#39; is not linear since the line from &#39;a&#39; to &#39;b&#39; to &#39;c&#39; bends.</span>
+<span class="doccomment">/// &#39;b&#39; is therefore the first leftmost non-linear vertex and &#39;e&#39;</span>
+<span class="doccomment">/// is the first rightmost non-linear vertex.</span>
+<span class="kw">fn</span> <span class="ident">linear_extremes</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">at</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>)
+<span class="kw">where</span>
+  <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+{
+  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">at_min</span> <span class="op">=</span> <span class="ident">at</span>;
+  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">at_max</span> <span class="op">=</span> <span class="ident">at</span>;
+  <span class="ident">at_max</span>.<span class="ident">move_next</span>();
+  <span class="kw">while</span> <span class="ident">at_min</span>.<span class="ident">is_colinear</span>() {
+    <span class="ident">at_min</span>.<span class="ident">move_prev</span>();
+  }
+  <span class="kw">while</span> <span class="ident">at_max</span>.<span class="ident">is_colinear</span>() {
+    <span class="ident">at_max</span>.<span class="ident">move_next</span>();
+  }
+  (<span class="ident">at_min</span>, <span class="ident">at_max</span>)
+}
+
+<span class="kw">fn</span> <span class="ident">edges</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">poly</span>: <span class="kw-2">&amp;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">IndexEdge</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
+  <span class="ident">poly</span>
+    .<span class="ident">iter_boundary</span>()
+    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cursor</span><span class="op">|</span> <span class="ident">IndexEdge::new</span>(<span class="ident">cursor</span>.<span class="ident">vertex_id</span>(), <span class="ident">cursor</span>.<span class="ident">next</span>().<span class="ident">vertex_id</span>()))
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rgeometry" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>

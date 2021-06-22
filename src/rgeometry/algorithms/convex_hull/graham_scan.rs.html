@@ -476,7 +476,7 @@
           <span class="macro">assert_ne!</span>(<span class="ident">poly</span>.<span class="ident">locate</span>(<span class="ident">pt</span>), <span class="ident">PointLocation::Outside</span>)
         }
         <span class="comment">// Prop #3: All vertices are in the input set.</span>
-        <span class="kw">for</span> (<span class="ident">pt</span>, <span class="ident">_meta</span>) <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">iter</span>() {
+        <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">iter</span>() {
           <span class="macro">assert!</span>(<span class="ident">pts</span>.<span class="ident">contains</span>(<span class="ident">pt</span>))
         }
       }
