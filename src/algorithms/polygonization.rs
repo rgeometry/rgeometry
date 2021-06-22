@@ -22,45 +22,6 @@ use crate::Orientation;
 // Create list of edges
 // Find all intersections
 /// O(n^4)
-// pub fn two_opt_moves<T, R>(mut pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
-// where
-//   T: PolygonScalar + std::fmt::Debug,
-//   R: Rng + ?Sized,
-// {
-//   // pts.sort_unstable();
-//   // pts.dedup();
-//   if pts.len() < 3 {
-//     return Err(Error::InsufficientVertices);
-//   }
-//   if pts
-//     .iter()
-//     .all(|pt| Orientation::is_colinear(&pts[0], &pts[1], pt))
-//   {
-//     return Err(Error::InsufficientVertices);
-//   }
-//   // if all points are colinear, return error.
-//   // dbg!(&pts);
-//   let mut vertex_list = VertexList::new(pts.len());
-//   let mut isects = IntersectionSet::new(pts.len());
-//   // dbg!(edges.sorted_edges());
-//   for e1 in vertex_list.unordered_edges() {
-//     for e2 in vertex_list.unordered_edges() {
-//       if e1 < e2 {
-//         if let Some(isect) = intersects(&pts, e1, e2) {
-//           isects.push(isect)
-//         }
-//       }
-//     }
-//   }
-//   // dbg!(isects.to_vec());
-//   while let Some(isect) = isects.random(rng) {
-//     untangle(&pts, &mut vertex_list, &mut isects, isect)
-//   }
-
-//   vertex_list.sort_vertices(&mut pts);
-//   Polygon::new(pts)
-// }
-
 pub fn two_opt_moves<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar + std::fmt::Debug,
@@ -93,7 +54,7 @@ where
   }
   // dbg!(isects.to_vec());
   while let Some(isect) = isects.random(rng) {
-    untangle_poly(&mut poly, &mut isects, isect)
+    untangle(&mut poly, &mut isects, isect)
   }
   poly.ensure_ccw();
   poly.validate()?;
@@ -154,92 +115,7 @@ where
 // The edge length from 'b1->b2' is identical to 'b1->a1->b2'.
 // The edge length from 'prev->a1->a2' is always greater than 'prev -> a2'.
 // We therefore know that the total circumference has decreased. QED.
-// fn untangle<T: PolygonScalar + std::fmt::Debug>(
-//   pts: &[Point<T, 2>],
-//   vertex_list: &mut VertexList,
-//   set: &mut IntersectionSet,
-//   isect: Intersection,
-// ) {
-//   // dbg!(vertex_list.vertices().collect::<Vec<Vertex>>());
-//   // eprintln!("Untangle: {:?}", isect);
-//   let da = vertex_list.direct(isect.min);
-//   let db = vertex_list.direct(isect.max);
-
-//   let inserted_edges;
-
-//   if vertex_list.parallel(&pts, da, db) {
-//     let (a_min, a_max) = vertex_list.linear_extremes(pts, da);
-//     let (b_min, b_max) = vertex_list.linear_extremes(pts, db);
-//     let mut mergable = None;
-//     'outer: for edge in vertex_list
-//       .range(a_min, a_max)
-//       .chain(vertex_list.range(b_min, b_max))
-//     {
-//       for &elt in [a_min, a_max, b_min, b_max].iter() {
-//         let segment = LineSegmentView::new(
-//           EndPoint::Exclusive(&pts[edge.src]),
-//           EndPoint::Exclusive(&pts[edge.dst]),
-//         );
-//         if segment.contains(&pts[elt]) {
-//           mergable = Some((elt, edge));
-//           break 'outer;
-//         }
-//       }
-//     }
-//     // elt is not linear. That is, prev -> elt -> next is not a straight line.
-//     // Therefore, cutting it and adding to a straight line will shorten the polygon
-//     // circumference. Since there's a lower limit on the circumference, this algorithm
-//     // is guaranteed to terminate.
-//     let (elt, edge) = mergable.expect("There must be at least one mergable point");
-//     // dbg!(elt, edge);
-//     let elt_edges = vertex_list.vertex_edges(elt);
-//     vertex_list.hoist(elt, edge);
-//     set.remove_all(elt_edges.0);
-//     set.remove_all(elt_edges.1);
-//     set.remove_all(edge);
-//     inserted_edges = vec![
-//       DirectedIndexEdge {
-//         src: elt_edges.0.src,
-//         dst: elt_edges.1.dst,
-//       },
-//       DirectedIndexEdge {
-//         src: elt,
-//         dst: edge.dst,
-//       },
-//       DirectedIndexEdge {
-//         src: edge.src,
-//         dst: elt,
-//       },
-//     ];
-//   } else {
-//     // eprintln!("Uncross");
-//     vertex_list.uncross(da, db);
-//     set.remove_all(da);
-//     set.remove_all(db);
-//     inserted_edges = vec![
-//       DirectedIndexEdge {
-//         src: da.src,
-//         dst: db.src,
-//       },
-//       DirectedIndexEdge {
-//         src: da.dst,
-//         dst: db.dst,
-//       },
-//     ];
-//   }
-//   // dbg!(&removed_edges, &inserted_edges);
-//   for &edge in inserted_edges.iter() {
-//     for e1 in vertex_list.unordered_directed_edges() {
-//       if e1 != edge {
-//         if let Some(isect) = intersects(&pts, e1.into(), edge.into()) {
-//           set.push(isect)
-//         }
-//       }
-//     }
-//   }
-// }
-
-fn untangle_poly<T: PolygonScalar + std::fmt::Debug>(
+fn untangle<T: PolygonScalar + std::fmt::Debug>(
   poly: &mut Polygon<T>,
   set: &mut IndexIntersectionSet,
   isect: IndexIntersection,
@@ -337,6 +213,15 @@ where
   Orientation::is_colinear(a1, a2, b1) && Orientation::is_colinear(a1, a2, b2)
 }
 
+/// Find the leftmost and rightmost vertices that are not linear.
+/// Example:
+///    a                    f
+///     \- b - c - d -> e -/
+/// linear_extremes('c') = ('b', 'e').
+/// 'c' is linear (there's a straight line from 'b' to 'c' to 'd').
+/// 'b' is not linear since the line from 'a' to 'b' to 'c' bends.
+/// 'b' is therefore the first leftmost non-linear vertex and 'e'
+/// is the first rightmost non-linear vertex.
 fn linear_extremes<T>(at: Cursor<'_, T>) -> (Cursor<'_, T>, Cursor<'_, T>)
 where
   T: PolygonScalar,
