@@ -20,9 +20,9 @@ pub use iter::*;
 mod convex;
 pub use convex::*;
 
-pub type VertexId = usize;
-// #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-// pub struct VertexId(pub usize);
+// pub type VertexId = usize;
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct VertexId(pub usize);
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PositionId(usize);
@@ -76,7 +76,7 @@ impl<T> Polygon<T> {
     let len = vertices.len();
     Polygon {
       vertices,
-      order: (0..len).collect(),
+      order: (0..len).map(VertexId).collect(),
       positions: (0..len).map(PositionId).collect(),
       boundary: len,
       holes: vec![],
@@ -167,7 +167,7 @@ impl<T> Polygon<T> {
   }
 
   pub fn point(&self, idx: VertexId) -> &Point<T, 2> {
-    self.cursor(idx).point()
+    &self.vertices[idx.0]
   }
 
   /// O(k) where k is the number of holes.
@@ -188,9 +188,18 @@ impl<T> Polygon<T> {
   }
 
   pub fn iter_boundary(&self) -> CursorIter<'_, T> {
+    // FIXME: Use position 0 instead of vertex 0.
+    let root_cursor = Cursor {
+      polygon: &self,
+      position: Position {
+        position_id: PositionId(0),
+        start: 0,
+        end: self.boundary,
+      },
+    };
     CursorIter {
-      cursor_head: self.cursor(0),
-      cursor_tail: self.cursor(0).prev(),
+      cursor_head: root_cursor,
+      cursor_tail: root_cursor.prev(),
       exhausted: false,
     }
   }
@@ -307,14 +316,14 @@ impl<T> Polygon<T> {
   }
 
   fn vertex_to_position(&self, vertex: VertexId) -> PositionId {
-    self.positions[vertex]
+    self.positions[vertex.0]
   }
 
   fn swap_positions(&mut self, pa: Position, pb: Position) {
     let pa_vertex_id: VertexId = self.position_to_vertex(pa.position_id);
     let pb_vertex_id: VertexId = self.position_to_vertex(pb.position_id);
     self.order.swap(pa.position_id.0, pb.position_id.0);
-    self.positions.swap(pa_vertex_id, pb_vertex_id);
+    self.positions.swap(pa_vertex_id.0, pb_vertex_id.0);
   }
 }
 
@@ -408,7 +417,7 @@ impl<'a, T> Cursor<'a, T> {
   }
 
   pub fn point(self: Cursor<'a, T>) -> &'a Point<T, 2> {
-    self.polygon.vertices.index(self.vertex_id())
+    self.polygon.vertices.index(self.vertex_id().0)
   }
 
   pub fn move_next(&mut self) {

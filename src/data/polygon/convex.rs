@@ -66,9 +66,8 @@ where
 
   /// $O(n \log n)$
   pub fn validate(&self) -> Result<(), Error> {
-    let len = self.0.vertices.len();
-    for i in 0..len {
-      if self.0.cursor(i).orientation() != Orientation::CounterClockWise {
+    for cursor in self.0.iter_boundary() {
+      if cursor.orientation() != Orientation::CounterClockWise {
         return Err(Error::ConvexViolation);
       }
     }
@@ -121,8 +120,8 @@ impl PolygonConvex<BigRational> {
     let n_vertices = (*vertices).len();
     debug_assert_eq!(n_vertices, n);
     let p = Polygon::new_unchecked(vertices);
-    for i in 0..n {
-      if p.cursor(i).orientation() != Orientation::CounterClockWise {
+    for cursor in p.iter_boundary() {
+      if cursor.orientation() != Orientation::CounterClockWise {
         return Self::random(n, max, rng);
       }
     }
