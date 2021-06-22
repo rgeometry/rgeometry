@@ -127,6 +127,8 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">std::iter::Zip</span>;
@@ -136,9 +138,11 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Cursor</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::DirectedEdge</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Point</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::PointId</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Polygon</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Position</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::VertexId</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::PositionId</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::RingId</span>;
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">iter</span>: <span class="ident">std::slice::Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -213,7 +217,7 @@
     <span class="kw">if</span> <span class="ident">pos_head</span>.<span class="ident">position_id</span>.<span class="number">0</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">pos_tail</span>.<span class="ident">position_id</span>.<span class="number">0</span> {
       <span class="ident">pos_tail</span>.<span class="ident">position_id</span>.<span class="number">0</span> <span class="op">-</span> <span class="ident">pos_head</span>.<span class="ident">position_id</span>.<span class="number">0</span> <span class="op">+</span> <span class="number">1</span>
     } <span class="kw">else</span> {
-      <span class="ident">pos_head</span>.<span class="ident">end</span> <span class="op">-</span> <span class="ident">pos_head</span>.<span class="ident">position_id</span>.<span class="number">0</span> <span class="op">+</span> <span class="ident">pos_tail</span>.<span class="ident">position_id</span>.<span class="number">0</span> <span class="op">-</span> <span class="ident">pos_tail</span>.<span class="ident">start</span>
+      <span class="ident">pos_head</span>.<span class="ident">size</span> <span class="op">-</span> <span class="ident">pos_head</span>.<span class="ident">position_id</span>.<span class="number">0</span> <span class="op">+</span> <span class="ident">pos_tail</span>.<span class="ident">position_id</span>.<span class="number">0</span> <span class="op">+</span> <span class="number">1</span>
     }
   }
 }

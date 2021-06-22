@@ -273,7 +273,7 @@
 <span id="249">249</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::IndexEdge</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::VertexId</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::PointId</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::utils::SparseIndex</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::utils::SparseVec</span>;
 
@@ -425,14 +425,14 @@
   <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Isect</span> {
     <span class="ident">Isect</span> {
       <span class="ident">edge0</span>: <span class="ident">IsectEdge</span> {
-        <span class="ident">vertex0</span>: <span class="ident">VertexId</span>(<span class="ident">usize::MAX</span>),
-        <span class="ident">vertex1</span>: <span class="ident">VertexId</span>(<span class="ident">usize::MAX</span>),
+        <span class="ident">vertex0</span>: <span class="ident">PointId::INVALID</span>,
+        <span class="ident">vertex1</span>: <span class="ident">PointId::INVALID</span>,
         <span class="ident">next</span>: <span class="prelude-val">None</span>,
         <span class="ident">prev</span>: <span class="prelude-val">None</span>,
       },
       <span class="ident">edge1</span>: <span class="ident">IsectEdge</span> {
-        <span class="ident">vertex0</span>: <span class="ident">VertexId</span>(<span class="ident">usize::MAX</span>),
-        <span class="ident">vertex1</span>: <span class="ident">VertexId</span>(<span class="ident">usize::MAX</span>),
+        <span class="ident">vertex0</span>: <span class="ident">PointId::INVALID</span>,
+        <span class="ident">vertex1</span>: <span class="ident">PointId::INVALID</span>,
         <span class="ident">next</span>: <span class="prelude-val">None</span>,
         <span class="ident">prev</span>: <span class="prelude-val">None</span>,
       },
@@ -498,8 +498,8 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>)]</span>
 <span class="comment">// FIXME: Should not be pub</span>
 <span class="kw">struct</span> <span class="ident">IsectEdge</span> {
-  <span class="ident">vertex0</span>: <span class="ident">VertexId</span>,
-  <span class="ident">vertex1</span>: <span class="ident">VertexId</span>,
+  <span class="ident">vertex0</span>: <span class="ident">PointId</span>,
+  <span class="ident">vertex1</span>: <span class="ident">PointId</span>,
   <span class="ident">next</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SparseIndex</span><span class="op">&gt;</span>,
   <span class="ident">prev</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SparseIndex</span><span class="op">&gt;</span>,
 }
