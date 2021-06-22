@@ -1,5 +1,5 @@
-use super::Edge;
-use super::Vertex;
+use crate::data::IndexEdge;
+use crate::data::VertexId;
 use crate::utils::SparseIndex;
 use crate::utils::SparseVec;
 
@@ -9,39 +9,39 @@ use std::ops::{Index, IndexMut};
 
 #[derive(Copy, Clone, Debug)]
 #[non_exhaustive]
-pub struct Intersection {
-  pub min: Edge,
-  pub max: Edge,
+pub struct IndexIntersection {
+  pub min: IndexEdge,
+  pub max: IndexEdge,
 }
 
-impl Intersection {
-  pub fn new(a: Edge, b: Edge) -> Intersection {
-    Intersection {
+impl IndexIntersection {
+  pub fn new(a: IndexEdge, b: IndexEdge) -> IndexIntersection {
+    IndexIntersection {
       min: std::cmp::min(a, b),
       max: std::cmp::max(a, b),
     }
   }
 }
 
-impl From<Isect> for Intersection {
-  fn from(isect: Isect) -> Intersection {
-    Intersection::new(isect.edge0.into(), isect.edge1.into())
+impl From<Isect> for IndexIntersection {
+  fn from(isect: Isect) -> IndexIntersection {
+    IndexIntersection::new(isect.edge0.into(), isect.edge1.into())
   }
 }
 
-pub struct IntersectionSet {
+pub struct IndexIntersectionSet {
   vertices: usize,
   // This may grow to N^2 at the most (where N = number of vertices).
   by_idx: SparseVec<Isect>,
   by_edge: Vec<Option<SparseIndex>>,
 }
 
-impl IntersectionSet {
+impl IndexIntersectionSet {
   /// O(n^2)
-  pub fn new(vertices: usize) -> IntersectionSet {
+  pub fn new(vertices: usize) -> IndexIntersectionSet {
     let size = vertices * (vertices - 1);
     let by_edge = vec![None; size];
-    IntersectionSet {
+    IndexIntersectionSet {
       vertices,
       by_idx: SparseVec::new(),
       by_edge,
@@ -49,7 +49,7 @@ impl IntersectionSet {
   }
 
   // O(1)
-  pub fn push(&mut self, isect: Intersection) {
+  pub fn push(&mut self, isect: IndexIntersection) {
     let idx = self.by_idx.push(Isect::new(isect));
 
     for &edge in &[isect.min, isect.max] {
@@ -68,17 +68,17 @@ impl IntersectionSet {
 
     for &edge in &[isect.edge0, isect.edge1] {
       match edge.prev {
-        Some(prev) => self.by_idx[prev][Edge::from(edge)].next = edge.next,
-        None => self[Edge::from(edge)] = edge.next,
+        Some(prev) => self.by_idx[prev][IndexEdge::from(edge)].next = edge.next,
+        None => self[IndexEdge::from(edge)] = edge.next,
       }
       if let Some(next) = edge.next {
-        self.by_idx[next][Edge::from(edge)].prev = edge.prev;
+        self.by_idx[next][IndexEdge::from(edge)].prev = edge.prev;
       }
     }
   }
 
   // O(n) where N is the number of removed intersections.
-  pub fn remove_all(&mut self, edge: impl Into<Edge>) {
+  pub fn remove_all(&mut self, edge: impl Into<IndexEdge>) {
     let key = edge.into();
     while let Some(idx) = self[key] {
       self.remove(idx)
@@ -86,19 +86,19 @@ impl IntersectionSet {
   }
 
   // O(1)
-  pub fn random<R>(&mut self, rng: &mut R) -> Option<Intersection>
+  pub fn random<R>(&mut self, rng: &mut R) -> Option<IndexIntersection>
   where
     R: Rng + ?Sized,
   {
     let idx = self.by_idx.random(rng)?;
     let isect = self.by_idx[idx];
-    Some(Intersection::new(
-      Edge::new(isect.edge0.vertex0, isect.edge0.vertex1),
-      Edge::new(isect.edge1.vertex0, isect.edge1.vertex1),
+    Some(IndexIntersection::new(
+      IndexEdge::new(isect.edge0.vertex0, isect.edge0.vertex1),
+      IndexEdge::new(isect.edge1.vertex0, isect.edge1.vertex1),
     ))
   }
 
-  pub fn to_vec(&self) -> Vec<Intersection> {
+  pub fn to_vec(&self) -> Vec<IndexIntersection> {
     self
       .by_idx
       .to_vec()
@@ -108,23 +108,23 @@ impl IntersectionSet {
   }
 }
 
-impl IndexMut<Edge> for IntersectionSet {
-  fn index_mut(&mut self, index: Edge) -> &mut Option<SparseIndex> {
+impl IndexMut<IndexEdge> for IndexIntersectionSet {
+  fn index_mut(&mut self, index: IndexEdge) -> &mut Option<SparseIndex> {
     self
       .by_edge
       .index_mut(index.max + self.vertices * index.min)
   }
 }
 
-impl Index<Edge> for IntersectionSet {
+impl Index<IndexEdge> for IndexIntersectionSet {
   type Output = Option<SparseIndex>;
-  fn index(&self, index: Edge) -> &Option<SparseIndex> {
+  fn index(&self, index: IndexEdge) -> &Option<SparseIndex> {
     self.by_edge.index(index.max + self.vertices * index.min)
   }
 }
 
-impl PartialEq<Edge> for IsectEdge {
-  fn eq(&self, other: &Edge) -> bool {
+impl PartialEq<IndexEdge> for IsectEdge {
+  fn eq(&self, other: &IndexEdge) -> bool {
     self.vertex0 == other.min && self.vertex1 == other.max
   }
 }
@@ -146,7 +146,7 @@ struct Isect {
 }
 
 impl Isect {
-  fn new(intersection: Intersection) -> Isect {
+  fn new(intersection: IndexIntersection) -> Isect {
     Isect {
       edge0: IsectEdge::new(intersection.min),
       edge1: IsectEdge::new(intersection.max),
@@ -177,8 +177,8 @@ impl Index<IsectEdge> for Isect {
   }
 }
 
-impl IndexMut<Edge> for Isect {
-  fn index_mut(&mut self, index: Edge) -> &mut IsectEdge {
+impl IndexMut<IndexEdge> for Isect {
+  fn index_mut(&mut self, index: IndexEdge) -> &mut IsectEdge {
     if self.edge0 == index {
       &mut self.edge0
     } else {
@@ -188,9 +188,9 @@ impl IndexMut<Edge> for Isect {
   }
 }
 
-impl Index<Edge> for Isect {
+impl Index<IndexEdge> for Isect {
   type Output = IsectEdge;
-  fn index(&self, index: Edge) -> &IsectEdge {
+  fn index(&self, index: IndexEdge) -> &IsectEdge {
     if self.edge0 == index {
       &self.edge0
     } else {
@@ -203,15 +203,15 @@ impl Index<Edge> for Isect {
 #[derive(Clone, Copy, Debug, Default)]
 // FIXME: Should not be pub
 struct IsectEdge {
-  vertex0: Vertex,
-  vertex1: Vertex,
+  vertex0: VertexId,
+  vertex1: VertexId,
   next: Option<SparseIndex>,
   prev: Option<SparseIndex>,
 }
 
 impl IsectEdge {
   // FIXME: Sort vertex0 and vertex1
-  fn new(edge: Edge) -> IsectEdge {
+  fn new(edge: IndexEdge) -> IsectEdge {
     IsectEdge {
       vertex0: edge.min,
       vertex1: edge.max,
@@ -221,8 +221,8 @@ impl IsectEdge {
   }
 }
 
-impl From<IsectEdge> for Edge {
-  fn from(e: IsectEdge) -> Edge {
-    Edge::new(e.vertex0, e.vertex1)
+impl From<IsectEdge> for IndexEdge {
+  fn from(e: IsectEdge) -> IndexEdge {
+    IndexEdge::new(e.vertex0, e.vertex1)
   }
 }

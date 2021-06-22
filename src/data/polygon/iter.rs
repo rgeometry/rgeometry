@@ -3,48 +3,103 @@ use std::iter::Zip;
 use std::ops::*;
 
 use crate::data::line_segment::*;
+use crate::data::Cursor;
 use crate::data::DirectedEdge;
 use crate::data::Point;
+use crate::data::Polygon;
+use crate::data::Position;
+use crate::data::VertexId;
 
-pub struct Iter<'a, T: 'a, P: 'a> {
-  pub(crate) iter: Zip<std::slice::Iter<'a, Point<T, 2>>, std::slice::Iter<'a, P>>,
+pub struct Iter<'a, T: 'a> {
+  pub(crate) iter: std::slice::Iter<'a, Point<T, 2>>,
 }
-impl<'a, T, P> Iterator for Iter<'a, T, P> {
-  type Item = (&'a Point<T, 2>, &'a P);
-  fn next(&mut self) -> Option<(&'a Point<T, 2>, &'a P)> {
+impl<'a, T> Iterator for Iter<'a, T> {
+  type Item = &'a Point<T, 2>;
+  fn next(&mut self) -> Option<&'a Point<T, 2>> {
     self.iter.next()
   }
 }
 
-pub struct IterMut<'a, T: 'a, P: 'a> {
+pub struct IterMut<'a, T: 'a> {
   pub(crate) points: std::slice::IterMut<'a, Point<T, 2>>,
-  pub(crate) meta: std::slice::IterMut<'a, P>,
 }
 
-impl<'a, T, P> Iterator for IterMut<'a, T, P> {
-  type Item = (&'a mut Point<T, 2>, &'a mut P);
-  fn next(&mut self) -> Option<(&'a mut Point<T, 2>, &'a mut P)> {
-    Some((self.points.next()?, self.meta.next()?))
+impl<'a, T> Iterator for IterMut<'a, T> {
+  type Item = &'a mut Point<T, 2>;
+  fn next(&mut self) -> Option<&'a mut Point<T, 2>> {
+    self.points.next()
   }
 }
 
-pub struct EdgeIter<'a, T: 'a, const N: usize> {
-  pub(crate) at: usize,
-  pub(crate) points: &'a [Point<T, N>],
+pub struct EdgeIter<'a, T: 'a> {
+  pub(crate) iter: CursorIter<'a, T>,
 }
 
-impl<'a, T: Clone, const N: usize> Iterator for EdgeIter<'a, T, N> {
-  type Item = DirectedEdge<T, N>;
-  fn next(&mut self) -> Option<DirectedEdge<T, N>> {
-    if self.at >= self.points.len() {
-      return None;
-    }
-    let this_point = self.points.index(self.at).clone();
-    let next_point = self.points.index((self.at + 1) % self.points.len()).clone();
-    self.at += 1;
+impl<'a, T: Clone> Iterator for EdgeIter<'a, T> {
+  type Item = DirectedEdge<T, 2>;
+  fn next(&mut self) -> Option<DirectedEdge<T, 2>> {
+    let cursor = self.iter.next()?;
+    let this_point = cursor.point().clone();
+    let next_point = cursor.next().point().clone();
     Some(DirectedEdge {
       src: this_point,
       dst: next_point,
     })
+  }
+}
+
+pub struct CursorIter<'a, T: 'a> {
+  pub(crate) cursor_head: Cursor<'a, T>,
+  pub(crate) cursor_tail: Cursor<'a, T>, // inclusive
+  pub(crate) exhausted: bool,
+}
+
+impl<'a, T> Iterator for CursorIter<'a, T> {
+  type Item = Cursor<'a, T>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.exhausted {
+      None
+    } else {
+      let out = self.cursor_head;
+      if out == self.cursor_tail {
+        self.exhausted = true;
+      } else {
+        self.cursor_head.move_next();
+      }
+      Some(out)
+    }
+  }
+
+  fn size_hint(&self) -> (usize, Option<usize>) {
+    (self.len(), Some(self.len()))
+  }
+}
+
+impl<'a, T> ExactSizeIterator for CursorIter<'a, T> {
+  fn len(&self) -> usize {
+    let pos_head = self.cursor_head.position;
+    let pos_tail = self.cursor_head.position;
+    if pos_head.position_id.0 <= pos_tail.position_id.0 {
+      pos_tail.position_id.0 - pos_head.position_id.0 + 1
+    } else {
+      pos_head.end - pos_head.position_id.0 + pos_tail.position_id.0 - pos_tail.start
+    }
+  }
+}
+
+impl<'a, T> DoubleEndedIterator for CursorIter<'a, T> {
+  fn next_back(&mut self) -> Option<Self::Item> {
+    if self.exhausted {
+      None
+    } else {
+      let out = self.cursor_tail;
+      if out == self.cursor_head {
+        self.exhausted = true;
+      } else {
+        self.cursor_tail.move_next();
+      }
+      Some(out)
+    }
   }
 }
