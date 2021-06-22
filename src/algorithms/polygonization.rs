@@ -5,8 +5,8 @@ use crate::data::IndexEdge;
 use crate::data::LineSegment;
 use crate::data::LineSegmentView;
 use crate::data::Point;
+use crate::data::PointId;
 use crate::data::Polygon;
-use crate::data::VertexId;
 use crate::data::{IndexIntersection, IndexIntersectionSet};
 use crate::utils::*;
 use crate::Intersects;
@@ -62,7 +62,7 @@ where
   Ok(poly)
 }
 
-fn endpoint<T>(a: VertexId, b: VertexId, c: VertexId, t: T) -> EndPoint<T> {
+fn endpoint<T>(a: PointId, b: PointId, c: PointId, t: T) -> EndPoint<T> {
   if a == b || a == c {
     EndPoint::Exclusive(t)
   } else {
@@ -123,8 +123,8 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
 ) {
   // dbg!(vertex_list.vertices().collect::<Vec<Vertex>>());
   // dbg!(isect);
-  eprintln!("Poly order: {:?}", poly.order);
-  eprintln!("Poly pos:   {:?}", poly.positions);
+  // eprintln!("Poly order: {:?}", poly.order);
+  // eprintln!("Poly pos:   {:?}", poly.positions);
   eprintln!("Untangle: {:?}", isect);
   // let da = poly.direct(isect.min);
   // let db = poly.direct(isect.max);
@@ -158,17 +158,17 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     // dbg!(elt, edge);
     // let elt_edges = vertex_list.vertex_edges(elt);
     // vertex_list.hoist(elt, edge);
-    let del_edge_1 = IndexEdge::new(elt.prev().vertex_id(), elt.vertex_id());
-    let del_edge_2 = IndexEdge::new(elt.vertex_id(), elt.next().vertex_id());
-    let del_edge_3 = IndexEdge::new(edge.vertex_id(), edge.next().vertex_id());
+    let del_edge_1 = IndexEdge::new(elt.prev().point_id(), elt.point_id());
+    let del_edge_2 = IndexEdge::new(elt.point_id(), elt.next().point_id());
+    let del_edge_3 = IndexEdge::new(edge.point_id(), edge.next().point_id());
     set.remove_all(del_edge_1);
     set.remove_all(del_edge_2);
     set.remove_all(del_edge_3);
 
     inserted_edges = vec![
-      IndexEdge::new(elt.prev().vertex_id(), elt.next().vertex_id()),
-      IndexEdge::new(edge.vertex_id(), elt.vertex_id()),
-      IndexEdge::new(elt.vertex_id(), edge.vertex_id()),
+      IndexEdge::new(elt.prev().point_id(), elt.next().point_id()),
+      IndexEdge::new(edge.point_id(), elt.point_id()),
+      IndexEdge::new(elt.point_id(), edge.point_id()),
     ];
 
     let p1 = edge.position;
@@ -177,12 +177,12 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     poly.vertices_join(p1, p2);
   } else {
     // vertex_list.uncross(da, db);
-    set.remove_all(dbg!(IndexEdge::new(da.vertex_id(), da.next().vertex_id())));
-    set.remove_all(dbg!(IndexEdge::new(db.vertex_id(), db.next().vertex_id())));
+    set.remove_all(dbg!(IndexEdge::new(da.point_id(), da.next().point_id())));
+    set.remove_all(dbg!(IndexEdge::new(db.point_id(), db.next().point_id())));
 
     inserted_edges = vec![
-      IndexEdge::new(da.vertex_id(), db.vertex_id()),
-      IndexEdge::new(da.next().vertex_id(), db.next().vertex_id()),
+      IndexEdge::new(da.point_id(), db.point_id()),
+      IndexEdge::new(da.next().point_id(), db.next().point_id()),
     ];
 
     let p1 = da.next().position;
@@ -242,5 +242,5 @@ where
 fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
   poly
     .iter_boundary()
-    .map(|cursor| IndexEdge::new(cursor.vertex_id(), cursor.next().vertex_id()))
+    .map(|cursor| IndexEdge::new(cursor.point_id(), cursor.next().point_id()))
 }

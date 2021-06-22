@@ -6,9 +6,11 @@ use crate::data::line_segment::*;
 use crate::data::Cursor;
 use crate::data::DirectedEdge;
 use crate::data::Point;
+use crate::data::PointId;
 use crate::data::Polygon;
 use crate::data::Position;
-use crate::data::VertexId;
+use crate::data::PositionId;
+use crate::data::RingId;
 
 pub struct Iter<'a, T: 'a> {
   pub(crate) iter: std::slice::Iter<'a, Point<T, 2>>,
@@ -83,7 +85,7 @@ impl<'a, T> ExactSizeIterator for CursorIter<'a, T> {
     if pos_head.position_id.0 <= pos_tail.position_id.0 {
       pos_tail.position_id.0 - pos_head.position_id.0 + 1
     } else {
-      pos_head.end - pos_head.position_id.0 + pos_tail.position_id.0 - pos_tail.start
+      pos_head.size - pos_head.position_id.0 + pos_tail.position_id.0 + 1
     }
   }
 }

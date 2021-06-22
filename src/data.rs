@@ -15,7 +15,8 @@ pub use triangle::*;
 
 #[doc(inline)]
 pub use crate::data::polygon::{
-  Cursor, DirectedIndexEdge, IndexEdge, Polygon, PolygonConvex, Position, VertexId,
+  Cursor, DirectedIndexEdge, IndexEdge, PointId, Polygon, PolygonConvex, Position, PositionId,
+  RingId,
 };
 pub use crate::transformation::Transform;
 pub use point::Point;
