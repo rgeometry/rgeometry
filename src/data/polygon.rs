@@ -27,18 +27,33 @@ pub struct PositionId(usize);
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RingId(usize);
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PointId(pub(crate) usize);
+
+impl std::fmt::Debug for PointId {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+    f.write_fmt(format_args!("{}", self.0))
+  }
+}
 
 impl PointId {
   pub const INVALID: PointId = PointId(usize::MAX);
 }
 
 #[non_exhaustive]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct IndexEdge {
   pub min: PointId,
   pub max: PointId,
+}
+
+impl std::fmt::Debug for IndexEdge {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+    f.debug_tuple("IndexEdge")
+      .field(&self.min)
+      .field(&self.max)
+      .finish()
+  }
 }
 
 // Undirected Indexed Edge
@@ -63,7 +78,12 @@ pub struct DirectedIndexEdge {
   pub dst: PointId,
 }
 
-// intersections : [LineSegment] -> [(LineSegment,LineSegment, ILineSegment)]
+// A     C
+// B     D
+
+// A*D   C*B
+
+// intersections : &[impl Into<LineSegment>] -> impl Iterator<Item =(&LineSegment,&LineSegment, ILineSegment)>
 // cut_holes: Polygon -> PolygonSimple
 // cut_holes: Polygon -> Vec<PointId>
 // triangulate: Vec<Point<T,2>> + Vec<PointId> -> Vec<(PointId,PointId,PointId)>

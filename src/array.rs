@@ -55,6 +55,14 @@ impl Orientation {
   {
     raw_arr_turn_origin(q, r)
   }
+
+  pub fn reverse(self) -> Orientation {
+    match self {
+      Orientation::CounterClockWise => Orientation::ClockWise,
+      Orientation::ClockWise => Orientation::CounterClockWise,
+      Orientation::CoLinear => Orientation::CoLinear,
+    }
+  }
 }
 
 // How does the line from (0,0) to q to r turn?

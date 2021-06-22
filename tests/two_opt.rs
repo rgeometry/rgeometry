@@ -43,6 +43,21 @@ mod two_opt {
   }
 
   #[test]
+  fn with_dups() -> Result<(), Error> {
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let pts = vec![
+      Point::new([0, 0]),
+      Point::new([0, 0]),
+      Point::new([1, 1]),
+      Point::new([1, 1]),
+      Point::new([0, 1]),
+      Point::new([0, 1]),
+    ];
+    dbg!(two_opt_moves(pts, &mut rng)?);
+    Ok(())
+  }
+
+  #[test]
   fn basic() -> Result<(), Error> {
     let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
     let pts = vec![
@@ -53,6 +68,20 @@ mod two_opt {
       Point::new([2, 3]),
     ];
     two_opt_moves(pts, &mut rng)?;
+    Ok(())
+  }
+
+  #[test]
+  fn basic_2() -> Result<(), Error> {
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let pts = vec![
+      Point::new([0, 0]),
+      Point::new([1, 2]),
+      Point::new([2, 0]),
+      Point::new([0, 1]),
+      Point::new([2, 1]),
+    ];
+    dbg!(two_opt_moves(pts, &mut rng)?);
     Ok(())
   }
 }

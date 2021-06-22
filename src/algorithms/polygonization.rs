@@ -15,6 +15,7 @@ use crate::{Error, PolygonScalar};
 use num_traits::NumOps;
 use rand::seq::SliceRandom;
 use rand::Rng;
+use std::collections::BTreeSet;
 use std::iter::FromIterator;
 use std::ops::{Index, IndexMut};
 
@@ -23,13 +24,17 @@ use crate::Orientation;
 // Create list of edges
 // Find all intersections
 /// $O(n^4)$ Generate a random, valid polygon from a set of points.
-pub fn two_opt_moves<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
+pub fn two_opt_moves<T, R>(mut pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar + std::fmt::Debug,
   R: Rng + ?Sized,
 {
   // pts.sort_unstable();
   // pts.dedup();
+  {
+    let mut seen = BTreeSet::new();
+    pts.retain(|pt| seen.insert(pt.clone()));
+  }
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
@@ -43,7 +48,7 @@ where
   // dbg!(&pts);
   let mut isects = IndexIntersectionSet::new(pts.len());
   let mut poly = Polygon::new_unchecked(pts);
-  // dbg!(edges.sorted_edges());
+  dbg!(&poly.rings[0]);
   for e1 in edges(&poly) {
     for e2 in edges(&poly) {
       if e1 < e2 {
@@ -81,8 +86,7 @@ where
   let e1 = LineSegmentView::new(a_min, a_max);
   let e2 = LineSegmentView::new(b_min, b_max);
   e1.intersect(e2)?; // Returns Some(...) if there exist a point shared by both line segments.
-
-  // dbg!(ret, &pts[a.src], &pts[a.dst], &pts[b.src], &pts[b.dst]);
+  dbg!(e1, e2);
   Some(IndexIntersection::new(a, b))
 }
 
@@ -177,8 +181,8 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     poly.vertices_join(p1, p2);
   } else {
     // vertex_list.uncross(da, db);
-    set.remove_all(dbg!(IndexEdge::new(da.point_id(), da.next().point_id())));
-    set.remove_all(dbg!(IndexEdge::new(db.point_id(), db.next().point_id())));
+    set.remove_all(IndexEdge::new(da.point_id(), da.next().point_id()));
+    set.remove_all(IndexEdge::new(db.point_id(), db.next().point_id()));
 
     inserted_edges = vec![
       IndexEdge::new(da.point_id(), db.point_id()),
@@ -189,6 +193,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     let p2 = db.position;
     eprintln!("Uncross: {:?} {:?}", p1, p2);
     poly.vertices_reverse(p1, p2);
+    dbg!(&poly.rings[0]);
   }
   // dbg!(&removed_edges, &inserted_edges);
   for &edge in inserted_edges.iter() {
