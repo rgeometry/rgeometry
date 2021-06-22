@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Cursor",""],["CursorIter",""],["DirectedIndexEdge",""],["EdgeIter",""],["IndexEdge",""],["Iter",""],["IterMut",""],["Polygon",""],["PolygonConvex",""],["Position",""],["PositionId",""]],"type":[["VertexId",""]]});
+initSidebarItems({"struct":[["Cursor",""],["CursorIter",""],["DirectedIndexEdge",""],["EdgeIter",""],["IndexEdge",""],["Iter",""],["IterMut",""],["Polygon",""],["PolygonConvex",""],["Position",""],["PositionId",""],["VertexId",""]]});

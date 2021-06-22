@@ -517,6 +517,15 @@
 <span id="493">493</span>
 <span id="494">494</span>
 <span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -540,9 +549,9 @@
 <span class="kw">mod</span> <span class="ident">convex</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">convex</span>::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">VertexId</span> <span class="op">=</span> <span class="ident">usize</span>;
-<span class="comment">// #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]</span>
-<span class="comment">// pub struct VertexId(pub usize);</span>
+<span class="comment">// pub type VertexId = usize;</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VertexId</span>(<span class="kw">pub</span> <span class="ident">usize</span>);
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PositionId</span>(<span class="ident">usize</span>);
@@ -596,7 +605,7 @@
     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">vertices</span>.<span class="ident">len</span>();
     <span class="ident">Polygon</span> {
       <span class="ident">vertices</span>,
-      <span class="ident">order</span>: (<span class="number">0</span>..<span class="ident">len</span>).<span class="ident">collect</span>(),
+      <span class="ident">order</span>: (<span class="number">0</span>..<span class="ident">len</span>).<span class="ident">map</span>(<span class="ident">VertexId</span>).<span class="ident">collect</span>(),
       <span class="ident">positions</span>: (<span class="number">0</span>..<span class="ident">len</span>).<span class="ident">map</span>(<span class="ident">PositionId</span>).<span class="ident">collect</span>(),
       <span class="ident">boundary</span>: <span class="ident">len</span>,
       <span class="ident">holes</span>: <span class="macro">vec!</span>[],
@@ -687,7 +696,7 @@
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">point</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">VertexId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> {
-    <span class="self">self</span>.<span class="ident">cursor</span>(<span class="ident">idx</span>).<span class="ident">point</span>()
+    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">vertices</span>[<span class="ident">idx</span>.<span class="number">0</span>]
   }
 
   <span class="doccomment">/// O(k) where k is the number of holes.</span>
@@ -708,9 +717,18 @@
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_boundary</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CursorIter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="comment">// FIXME: Use position 0 instead of vertex 0.</span>
+    <span class="kw">let</span> <span class="ident">root_cursor</span> <span class="op">=</span> <span class="ident">Cursor</span> {
+      <span class="ident">polygon</span>: <span class="kw-2">&amp;</span><span class="self">self</span>,
+      <span class="ident">position</span>: <span class="ident">Position</span> {
+        <span class="ident">position_id</span>: <span class="ident">PositionId</span>(<span class="number">0</span>),
+        <span class="ident">start</span>: <span class="number">0</span>,
+        <span class="ident">end</span>: <span class="self">self</span>.<span class="ident">boundary</span>,
+      },
+    };
     <span class="ident">CursorIter</span> {
-      <span class="ident">cursor_head</span>: <span class="self">self</span>.<span class="ident">cursor</span>(<span class="number">0</span>),
-      <span class="ident">cursor_tail</span>: <span class="self">self</span>.<span class="ident">cursor</span>(<span class="number">0</span>).<span class="ident">prev</span>(),
+      <span class="ident">cursor_head</span>: <span class="ident">root_cursor</span>,
+      <span class="ident">cursor_tail</span>: <span class="ident">root_cursor</span>.<span class="ident">prev</span>(),
       <span class="ident">exhausted</span>: <span class="bool-val">false</span>,
     }
   }
@@ -827,14 +845,14 @@
   }
 
   <span class="kw">fn</span> <span class="ident">vertex_to_position</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">vertex</span>: <span class="ident">VertexId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PositionId</span> {
-    <span class="self">self</span>.<span class="ident">positions</span>[<span class="ident">vertex</span>]
+    <span class="self">self</span>.<span class="ident">positions</span>[<span class="ident">vertex</span>.<span class="number">0</span>]
   }
 
   <span class="kw">fn</span> <span class="ident">swap_positions</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">pa</span>: <span class="ident">Position</span>, <span class="ident">pb</span>: <span class="ident">Position</span>) {
     <span class="kw">let</span> <span class="ident">pa_vertex_id</span>: <span class="ident">VertexId</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">position_to_vertex</span>(<span class="ident">pa</span>.<span class="ident">position_id</span>);
     <span class="kw">let</span> <span class="ident">pb_vertex_id</span>: <span class="ident">VertexId</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">position_to_vertex</span>(<span class="ident">pb</span>.<span class="ident">position_id</span>);
     <span class="self">self</span>.<span class="ident">order</span>.<span class="ident">swap</span>(<span class="ident">pa</span>.<span class="ident">position_id</span>.<span class="number">0</span>, <span class="ident">pb</span>.<span class="ident">position_id</span>.<span class="number">0</span>);
-    <span class="self">self</span>.<span class="ident">positions</span>.<span class="ident">swap</span>(<span class="ident">pa_vertex_id</span>, <span class="ident">pb_vertex_id</span>);
+    <span class="self">self</span>.<span class="ident">positions</span>.<span class="ident">swap</span>(<span class="ident">pa_vertex_id</span>.<span class="number">0</span>, <span class="ident">pb_vertex_id</span>.<span class="number">0</span>);
   }
 }
 
@@ -928,7 +946,7 @@
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">point</span>(<span class="self">self</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> {
-    <span class="self">self</span>.<span class="ident">polygon</span>.<span class="ident">vertices</span>.<span class="ident">index</span>(<span class="self">self</span>.<span class="ident">vertex_id</span>())
+    <span class="self">self</span>.<span class="ident">polygon</span>.<span class="ident">vertices</span>.<span class="ident">index</span>(<span class="self">self</span>.<span class="ident">vertex_id</span>().<span class="number">0</span>)
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">move_next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
