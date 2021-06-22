@@ -1,5 +1,5 @@
 use crate::data::IndexEdge;
-use crate::data::VertexId;
+use crate::data::PointId;
 use crate::utils::SparseIndex;
 use crate::utils::SparseVec;
 
@@ -151,14 +151,14 @@ impl Default for Isect {
   fn default() -> Isect {
     Isect {
       edge0: IsectEdge {
-        vertex0: VertexId(usize::MAX),
-        vertex1: VertexId(usize::MAX),
+        vertex0: PointId::INVALID,
+        vertex1: PointId::INVALID,
         next: None,
         prev: None,
       },
       edge1: IsectEdge {
-        vertex0: VertexId(usize::MAX),
-        vertex1: VertexId(usize::MAX),
+        vertex0: PointId::INVALID,
+        vertex1: PointId::INVALID,
         next: None,
         prev: None,
       },
@@ -224,8 +224,8 @@ impl Index<IndexEdge> for Isect {
 #[derive(Clone, Copy, Debug)]
 // FIXME: Should not be pub
 struct IsectEdge {
-  vertex0: VertexId,
-  vertex1: VertexId,
+  vertex0: PointId,
+  vertex1: PointId,
   next: Option<SparseIndex>,
   prev: Option<SparseIndex>,
 }

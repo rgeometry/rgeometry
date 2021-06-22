@@ -20,24 +20,30 @@ pub use iter::*;
 mod convex;
 pub use convex::*;
 
-// pub type VertexId = usize;
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct VertexId(pub usize);
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PositionId(usize);
 // pub type PositionId = usize;
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct RingId(usize);
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct PointId(pub(crate) usize);
+
+impl PointId {
+  pub const INVALID: PointId = PointId(usize::MAX);
+}
+
 #[non_exhaustive]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct IndexEdge {
-  pub min: VertexId,
-  pub max: VertexId,
+  pub min: PointId,
+  pub max: PointId,
 }
 
 // Undirected Indexed Edge
 impl IndexEdge {
-  pub fn new(a: VertexId, b: VertexId) -> IndexEdge {
+  pub fn new(a: PointId, b: PointId) -> IndexEdge {
     IndexEdge {
       min: std::cmp::min(a, b),
       max: std::cmp::max(a, b),
@@ -53,20 +59,35 @@ impl From<DirectedIndexEdge> for IndexEdge {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DirectedIndexEdge {
-  pub src: VertexId,
-  pub dst: VertexId,
+  pub src: PointId,
+  pub dst: PointId,
 }
+
+// intersections : [LineSegment] -> [(LineSegment,LineSegment, ILineSegment)]
+// cut_holes: Polygon -> PolygonSimple
+// cut_holes: Polygon -> Vec<PointId>
+// triangulate: Vec<Point<T,2>> + Vec<PointId> -> Vec<(PointId,PointId,PointId)>
+// triangulate: Polygon -> Vec<Polygon>
+// triangulate: Polygon -> Vec<(PointId, PointId, PointId)>
 
 #[derive(Debug, Clone)]
 pub struct Polygon<T> {
-  pub(crate) vertices: Vec<Point<T, 2>>, // VertexId -> &Point<T,2>
-  pub(crate) order: Vec<VertexId>,
-  pub(crate) positions: Vec<PositionId>,
-  pub(crate) boundary: usize,
-  pub(crate) holes: Vec<usize>,
+  // Key: PointId
+  pub(crate) points: Vec<Point<T, 2>>,
+  pub(crate) ring_index: Vec<RingId>,         // Key: PointId
+  pub(crate) position_index: Vec<PositionId>, // Key: PointId
+  // Ring 0 is boundary and ccw
+  // Ring n+1 is a hole and cw.
+  pub(crate) rings: Vec<Vec<PointId>>,
+  // pub(crate) vertices: Vec<Point<T, 2>>, // VertexId -> &Point<T,2>
+  // pub(crate) order: Vec<VertexId>,       // Position -> VertexId
+  // pub(crate) positions: Vec<PositionId>, // VertexId -> Position
+  // pub(crate) boundary: usize,
+  // pub(crate) holes: Vec<usize>,
 }
 // loops: Vec<Vec<VertexId>>
-// positions: Vec<(LoopId, PositionId)>
+// vertex_loop: Vec<RingId>
+// vertex_position: Vec<PositionId>
 
 impl<T> Polygon<T> {
   pub fn new_unchecked(vertices: Vec<Point<T, 2>>) -> Polygon<T>
@@ -75,11 +96,15 @@ impl<T> Polygon<T> {
   {
     let len = vertices.len();
     Polygon {
-      vertices,
-      order: (0..len).map(VertexId).collect(),
-      positions: (0..len).map(PositionId).collect(),
-      boundary: len,
-      holes: vec![],
+      points: vertices,
+      ring_index: vec![RingId(0); len],
+      position_index: (0..len).map(PositionId).collect(),
+      rings: vec![(0..len).map(PointId).collect()],
+      // vertices,
+      // order: (0..len).map(VertexId).collect(),
+      // positions: (0..len).map(PositionId).collect(),
+      // boundary: len,
+      // holes: vec![],
     }
   }
 
@@ -116,8 +141,9 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
+    assert!(!self.rings.is_empty());
     // Has at least three points.
-    if self.vertices.len() < 3 {
+    if self.rings[0].len() < 3 {
       return Err(Error::InsufficientVertices);
     }
     // Is counter-clockwise
@@ -166,35 +192,35 @@ impl<T> Polygon<T> {
       .sum()
   }
 
-  pub fn point(&self, idx: VertexId) -> &Point<T, 2> {
-    &self.vertices[idx.0]
+  pub fn point(&self, idx: PointId) -> &Point<T, 2> {
+    &self.points[idx.0]
   }
 
   /// O(k) where k is the number of holes.
-  pub fn cursor(&self, idx: VertexId) -> Cursor<'_, T> {
-    // FIXME: Support holes.
+  pub fn cursor(&self, idx: PointId) -> Cursor<'_, T> {
+    let ring_id = self.ring_index[idx.0];
+    let position_id = self.position_index[idx.0];
     Cursor {
       polygon: &self,
       position: Position {
-        position_id: self.vertex_to_position(idx),
-        start: 0,
-        end: self.boundary,
+        ring_id,
+        position_id,
+        size: self.rings[ring_id.0].len(),
       },
     }
   }
 
-  pub fn boundary_slice(&self) -> &[VertexId] {
-    &self.order[0..self.boundary]
+  pub fn boundary_slice(&self) -> &[PointId] {
+    &self.rings[0]
   }
 
   pub fn iter_boundary(&self) -> CursorIter<'_, T> {
-    // FIXME: Use position 0 instead of vertex 0.
     let root_cursor = Cursor {
       polygon: &self,
       position: Position {
+        ring_id: RingId(0),
         position_id: PositionId(0),
-        start: 0,
-        end: self.boundary,
+        size: self.rings[0].len(),
       },
     };
     CursorIter {
@@ -210,29 +236,26 @@ impl<T> Polygon<T> {
     }
   }
 
-  pub fn map_points<F>(self, f: F) -> Polygon<T>
+  pub fn map_points<F>(mut self, f: F) -> Polygon<T>
   where
+    T: Clone,
     F: Fn(Point<T, 2>) -> Point<T, 2>,
   {
-    let pts = self.vertices.into_iter().map(f).collect();
-    Polygon {
-      vertices: pts,
-      order: self.order,
-      positions: self.positions,
-      boundary: self.boundary,
-      holes: self.holes,
+    for pt in self.iter_mut() {
+      *pt = f(pt.clone())
     }
+    self
   }
 
   pub fn iter(&self) -> Iter<'_, T> {
     Iter {
-      iter: self.vertices.iter(),
+      iter: self.points.iter(),
     }
   }
 
   pub fn iter_mut(&mut self) -> IterMut<'_, T> {
     IterMut {
-      points: self.vertices.iter_mut(),
+      points: self.points.iter_mut(),
     }
   }
 
@@ -242,17 +265,12 @@ impl<T> Polygon<T> {
     U: Clone,
     F: Fn(T) -> U + Clone,
   {
-    let pts = self
-      .vertices
-      .into_iter()
-      .map(|p| p.cast(f.clone()))
-      .collect();
+    let pts = self.points.into_iter().map(|p| p.cast(f.clone())).collect();
     Polygon {
-      vertices: pts,
-      order: self.order,
-      positions: self.positions,
-      boundary: self.boundary,
-      holes: self.holes,
+      points: pts,
+      ring_index: self.ring_index,
+      position_index: self.position_index,
+      rings: self.rings,
     }
   }
 
@@ -306,75 +324,51 @@ impl<T> Polygon<T> {
     T: PolygonScalar,
   {
     if !self.signed_area_2x().is_positive() {
-      self.order.reverse();
-      self.positions.reverse();
+      let root_position = Position {
+        ring_id: RingId(0),
+        position_id: PositionId(0),
+        size: self.rings[0].len(),
+      };
+      self.vertices_reverse(root_position, root_position.prev())
     }
   }
 
-  fn position_to_vertex(&self, position: PositionId) -> VertexId {
-    self.order[position.0]
-  }
-
-  fn vertex_to_position(&self, vertex: VertexId) -> PositionId {
-    self.positions[vertex.0]
+  fn position_to_point_id(&self, position: Position) -> PointId {
+    self.rings[position.ring_id.0][position.position_id.0]
   }
 
   fn swap_positions(&mut self, pa: Position, pb: Position) {
-    let pa_vertex_id: VertexId = self.position_to_vertex(pa.position_id);
-    let pb_vertex_id: VertexId = self.position_to_vertex(pb.position_id);
-    self.order.swap(pa.position_id.0, pb.position_id.0);
-    self.positions.swap(pa_vertex_id.0, pb_vertex_id.0);
+    assert_eq!(pa.ring_id, pb.ring_id);
+
+    let ring = &mut self.rings[pa.ring_id.0];
+
+    let pa_point_id: PointId = ring[pa.position_id.0];
+    let pb_point_id: PointId = ring[pb.position_id.0];
+    ring.swap(pa.position_id.0, pb.position_id.0);
+    self.position_index.swap(pa_point_id.0, pb_point_id.0);
   }
 }
 
 impl From<Polygon<BigRational>> for Polygon<f64> {
   fn from(p: Polygon<BigRational>) -> Polygon<f64> {
-    let pts = p.vertices.into_iter().map(|p| Point::from(&p)).collect();
-    Polygon {
-      vertices: pts,
-      order: p.order,
-      positions: p.positions,
-      boundary: p.boundary,
-      holes: p.holes,
-    }
+    p.cast(|r| r.to_f64().unwrap())
   }
 }
 impl<'a> From<&'a Polygon<BigRational>> for Polygon<f64> {
   fn from(p: &Polygon<BigRational>) -> Polygon<f64> {
-    let pts = p.vertices.iter().map(Point::from).collect();
-    Polygon {
-      vertices: pts,
-      order: p.order.clone(),
-      positions: p.positions.clone(),
-      boundary: p.boundary,
-      holes: p.holes.clone(),
-    }
+    p.clone().into()
   }
 }
 
 impl From<Polygon<f64>> for Polygon<BigRational> {
   fn from(p: Polygon<f64>) -> Polygon<BigRational> {
-    let pts = p.vertices.into_iter().map(|p| Point::from(&p)).collect();
-    Polygon {
-      vertices: pts,
-      order: p.order,
-      positions: p.positions,
-      boundary: p.boundary,
-      holes: p.holes,
-    }
+    p.cast(|f| BigRational::from_float(f).unwrap())
   }
 }
 
 impl<'a> From<&'a Polygon<f64>> for Polygon<BigRational> {
   fn from(p: &Polygon<f64>) -> Polygon<BigRational> {
-    let pts = p.vertices.iter().map(Point::from).collect();
-    Polygon {
-      vertices: pts,
-      order: p.order.clone(),
-      positions: p.positions.clone(),
-      boundary: p.boundary,
-      holes: p.holes.clone(),
-    }
+    p.clone().into()
   }
 }
 
@@ -386,7 +380,7 @@ pub struct Cursor<'a, T> {
 
 impl<'a, T> PartialEq for Cursor<'a, T> {
   fn eq(&self, other: &Cursor<'a, T>) -> bool {
-    self.vertex_id() == other.vertex_id()
+    self.position == other.position
   }
 }
 
@@ -402,8 +396,8 @@ impl<'a, T> Clone for Cursor<'a, T> {
 impl<'a, T> Copy for Cursor<'a, T> {}
 
 impl<'a, T> Cursor<'a, T> {
-  pub fn vertex_id(self) -> VertexId {
-    self.polygon.position_to_vertex(self.position.position_id)
+  pub fn point_id(self) -> PointId {
+    self.polygon.position_to_point_id(self.position)
   }
 
   pub fn prev(mut self) -> Cursor<'a, T> {
@@ -417,7 +411,7 @@ impl<'a, T> Cursor<'a, T> {
   }
 
   pub fn point(self: Cursor<'a, T>) -> &'a Point<T, 2> {
-    self.polygon.vertices.index(self.vertex_id().0)
+    &self.polygon.points[self.point_id().0]
   }
 
   pub fn move_next(&mut self) {
@@ -464,22 +458,12 @@ impl<'a, T> Cursor<'a, T> {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd)]
 pub struct Position {
-  position_id: PositionId, // start <= current < end
-  start: usize,            // start of range, inclusive.
-  end: usize,              // end of range, not inclusive.
+  ring_id: RingId,         // Ring identifier
+  size: usize,             // Ring size
+  position_id: PositionId, // Position in ring. 0 <= position_id < size
 }
 
 impl Position {
-  fn wrap(&self, index: usize) -> usize {
-    if index >= self.end {
-      index - self.end + self.start
-    } else if index < self.start {
-      self.end - (self.start - index)
-    } else {
-      index
-    }
-  }
-
   pub fn prev(mut self) -> Position {
     self.move_prev();
     self
@@ -491,14 +475,23 @@ impl Position {
   }
 
   pub fn move_next(&mut self) {
-    self.position_id.0 = self.wrap(self.position_id.0 + 1);
+    if self.position_id.0 == self.size - 1 {
+      self.position_id.0 = 0;
+    } else {
+      self.position_id.0 += 1;
+    }
   }
 
   pub fn move_prev(&mut self) {
     if self.position_id.0 == 0 {
-      self.position_id.0 = self.end - 1;
+      self.position_id.0 = self.size - 1;
     } else {
-      self.position_id.0 = self.wrap(self.position_id.0 - 1);
+      self.position_id.0 -= 1;
     }
   }
 }
+
+// pub trait Triangulate {
+//   type Iter: Iterator<Item = (VertexId, VertexId, VertexId)>;
+//   fn triangulate(&self) -> Self::Iter;
+// }
