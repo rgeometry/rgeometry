@@ -170,11 +170,21 @@ impl<T: Ord, const N: usize> From<RangeInclusive<Point<T, N>>> for LineSegment<T
   }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct LineSegmentView<'a, T, const N: usize> {
   pub min: EndPoint<&'a Point<T, N>>,
   pub max: EndPoint<&'a Point<T, N>>,
 }
+
+impl<'a, T, const N: usize> Clone for LineSegmentView<'a, T, N> {
+  fn clone(&self) -> Self {
+    LineSegmentView {
+      min: self.min,
+      max: self.max,
+    }
+  }
+}
+impl<'a, T, const N: usize> Copy for LineSegmentView<'a, T, N> {}
 
 impl<'a, T, const N: usize> LineSegmentView<'a, T, N> {
   pub fn new(
@@ -238,7 +248,7 @@ pub enum ILineSegment<'a, T> {
 
 impl<'a, T> Intersects for LineSegmentView<'a, T, 2>
 where
-  T: Clone + NumOps<T, T> + Ord,
+  T: Clone + NumOps<T, T> + Ord + std::fmt::Debug,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: LineSegmentView<'a, T, 2>) -> Option<Self::Result> {
@@ -251,6 +261,10 @@ where
     let l2_to_a1 = Orientation::new(b1, b2, a1);
     let l2_to_a2 = Orientation::new(b1, b2, a2);
     // dbg!(
+    //   a1,
+    //   a2,
+    //   b1,
+    //   b2,
     //   l1_to_b1,
     //   l1_to_b2,
     //   l2_to_a1,
@@ -291,7 +305,7 @@ where
       } else {
         None
       }
-    } else if l1_to_b1 == l2_to_a2 && l1_to_b2 == l2_to_a1 {
+    } else if l1_to_b1 == l1_to_b2.reverse() && l2_to_a1 == l2_to_a2.reverse() {
       Some(ILineSegment::Crossing)
     } else {
       None
@@ -301,7 +315,7 @@ where
 
 impl<'a, T> Intersects for &'a LineSegment<T, 2>
 where
-  T: Clone + Num + Ord,
+  T: Clone + Num + Ord + std::fmt::Debug,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a LineSegment<T, 2>) -> Option<Self::Result> {
@@ -311,7 +325,7 @@ where
 
 impl<'a, T> Intersects for &'a Range<Point<T, 2>>
 where
-  T: Clone + Num + Ord,
+  T: Clone + Num + Ord + std::fmt::Debug,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a Range<Point<T, 2>>) -> Option<Self::Result> {
@@ -321,7 +335,7 @@ where
 
 impl<'a, T> Intersects for &'a RangeInclusive<Point<T, 2>>
 where
-  T: Clone + Num + Ord,
+  T: Clone + Num + Ord + std::fmt::Debug,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a RangeInclusive<Point<T, 2>>) -> Option<Self::Result> {
@@ -500,6 +514,13 @@ mod tests {
   fn unit_6() {
     let l1 = LineSegment::from((4, 0)..(3, 0));
     let l2 = LineSegment::from((3, 0)..(1, 0));
+    assert_eq!(l1.intersect(&l2), None)
+  }
+
+  #[test]
+  fn unit_7() {
+    let l1 = LineSegment::from((0, 0)..(0, 1));
+    let l2 = LineSegment::from((1, 2)..(2, 1));
     assert_eq!(l1.intersect(&l2), None)
   }
 }

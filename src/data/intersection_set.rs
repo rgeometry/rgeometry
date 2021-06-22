@@ -7,11 +7,20 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use std::ops::{Index, IndexMut};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 #[non_exhaustive]
 pub struct IndexIntersection {
   pub min: IndexEdge,
   pub max: IndexEdge,
+}
+
+impl std::fmt::Debug for IndexIntersection {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+    f.debug_tuple("IndexIntersection")
+      .field(&self.min)
+      .field(&self.max)
+      .finish()
+  }
 }
 
 impl IndexIntersection {
