@@ -1,5 +1,5 @@
-use super::Vertex;
 use crate::data::IndexEdge;
+use crate::data::VertexId;
 use crate::utils::SparseIndex;
 use crate::utils::SparseVec;
 
@@ -9,39 +9,39 @@ use std::ops::{Index, IndexMut};
 
 #[derive(Copy, Clone, Debug)]
 #[non_exhaustive]
-pub struct Intersection {
+pub struct IndexIntersection {
   pub min: IndexEdge,
   pub max: IndexEdge,
 }
 
-impl Intersection {
-  pub fn new(a: IndexEdge, b: IndexEdge) -> Intersection {
-    Intersection {
+impl IndexIntersection {
+  pub fn new(a: IndexEdge, b: IndexEdge) -> IndexIntersection {
+    IndexIntersection {
       min: std::cmp::min(a, b),
       max: std::cmp::max(a, b),
     }
   }
 }
 
-impl From<Isect> for Intersection {
-  fn from(isect: Isect) -> Intersection {
-    Intersection::new(isect.edge0.into(), isect.edge1.into())
+impl From<Isect> for IndexIntersection {
+  fn from(isect: Isect) -> IndexIntersection {
+    IndexIntersection::new(isect.edge0.into(), isect.edge1.into())
   }
 }
 
-pub struct IntersectionSet {
+pub struct IndexIntersectionSet {
   vertices: usize,
   // This may grow to N^2 at the most (where N = number of vertices).
   by_idx: SparseVec<Isect>,
   by_edge: Vec<Option<SparseIndex>>,
 }
 
-impl IntersectionSet {
+impl IndexIntersectionSet {
   /// O(n^2)
-  pub fn new(vertices: usize) -> IntersectionSet {
+  pub fn new(vertices: usize) -> IndexIntersectionSet {
     let size = vertices * (vertices - 1);
     let by_edge = vec![None; size];
-    IntersectionSet {
+    IndexIntersectionSet {
       vertices,
       by_idx: SparseVec::new(),
       by_edge,
@@ -49,7 +49,7 @@ impl IntersectionSet {
   }
 
   // O(1)
-  pub fn push(&mut self, isect: Intersection) {
+  pub fn push(&mut self, isect: IndexIntersection) {
     let idx = self.by_idx.push(Isect::new(isect));
 
     for &edge in &[isect.min, isect.max] {
@@ -86,19 +86,19 @@ impl IntersectionSet {
   }
 
   // O(1)
-  pub fn random<R>(&mut self, rng: &mut R) -> Option<Intersection>
+  pub fn random<R>(&mut self, rng: &mut R) -> Option<IndexIntersection>
   where
     R: Rng + ?Sized,
   {
     let idx = self.by_idx.random(rng)?;
     let isect = self.by_idx[idx];
-    Some(Intersection::new(
+    Some(IndexIntersection::new(
       IndexEdge::new(isect.edge0.vertex0, isect.edge0.vertex1),
       IndexEdge::new(isect.edge1.vertex0, isect.edge1.vertex1),
     ))
   }
 
-  pub fn to_vec(&self) -> Vec<Intersection> {
+  pub fn to_vec(&self) -> Vec<IndexIntersection> {
     self
       .by_idx
       .to_vec()
@@ -108,7 +108,7 @@ impl IntersectionSet {
   }
 }
 
-impl IndexMut<IndexEdge> for IntersectionSet {
+impl IndexMut<IndexEdge> for IndexIntersectionSet {
   fn index_mut(&mut self, index: IndexEdge) -> &mut Option<SparseIndex> {
     self
       .by_edge
@@ -116,7 +116,7 @@ impl IndexMut<IndexEdge> for IntersectionSet {
   }
 }
 
-impl Index<IndexEdge> for IntersectionSet {
+impl Index<IndexEdge> for IndexIntersectionSet {
   type Output = Option<SparseIndex>;
   fn index(&self, index: IndexEdge) -> &Option<SparseIndex> {
     self.by_edge.index(index.max + self.vertices * index.min)
@@ -146,7 +146,7 @@ struct Isect {
 }
 
 impl Isect {
-  fn new(intersection: Intersection) -> Isect {
+  fn new(intersection: IndexIntersection) -> Isect {
     Isect {
       edge0: IsectEdge::new(intersection.min),
       edge1: IsectEdge::new(intersection.max),
@@ -203,8 +203,8 @@ impl Index<IndexEdge> for Isect {
 #[derive(Clone, Copy, Debug, Default)]
 // FIXME: Should not be pub
 struct IsectEdge {
-  vertex0: Vertex,
-  vertex1: Vertex,
+  vertex0: VertexId,
+  vertex1: VertexId,
   next: Option<SparseIndex>,
   prev: Option<SparseIndex>,
 }

@@ -1,4 +1,3 @@
-use crate::data::vertex::{Intersection, IntersectionSet, Vertex, VertexList};
 use crate::data::Cursor;
 use crate::data::DirectedIndexEdge;
 use crate::data::EndPoint;
@@ -7,6 +6,7 @@ use crate::data::LineSegment;
 use crate::data::LineSegmentView;
 use crate::data::Point;
 use crate::data::Polygon;
+use crate::data::{IndexIntersection, IndexIntersectionSet};
 use crate::utils::*;
 use crate::Intersects;
 use crate::{Error, PolygonScalar};
@@ -22,7 +22,46 @@ use crate::Orientation;
 // Create list of edges
 // Find all intersections
 /// O(n^4)
-pub fn two_opt_moves<T, R>(mut pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
+// pub fn two_opt_moves<T, R>(mut pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
+// where
+//   T: PolygonScalar + std::fmt::Debug,
+//   R: Rng + ?Sized,
+// {
+//   // pts.sort_unstable();
+//   // pts.dedup();
+//   if pts.len() < 3 {
+//     return Err(Error::InsufficientVertices);
+//   }
+//   if pts
+//     .iter()
+//     .all(|pt| Orientation::is_colinear(&pts[0], &pts[1], pt))
+//   {
+//     return Err(Error::InsufficientVertices);
+//   }
+//   // if all points are colinear, return error.
+//   // dbg!(&pts);
+//   let mut vertex_list = VertexList::new(pts.len());
+//   let mut isects = IntersectionSet::new(pts.len());
+//   // dbg!(edges.sorted_edges());
+//   for e1 in vertex_list.unordered_edges() {
+//     for e2 in vertex_list.unordered_edges() {
+//       if e1 < e2 {
+//         if let Some(isect) = intersects(&pts, e1, e2) {
+//           isects.push(isect)
+//         }
+//       }
+//     }
+//   }
+//   // dbg!(isects.to_vec());
+//   while let Some(isect) = isects.random(rng) {
+//     untangle(&pts, &mut vertex_list, &mut isects, isect)
+//   }
+
+//   vertex_list.sort_vertices(&mut pts);
+//   Polygon::new(pts)
+// }
+
+pub fn two_opt_moves<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar + std::fmt::Debug,
   R: Rng + ?Sized,
@@ -40,46 +79,7 @@ where
   }
   // if all points are colinear, return error.
   // dbg!(&pts);
-  let mut vertex_list = VertexList::new(pts.len());
-  let mut isects = IntersectionSet::new(pts.len());
-  // dbg!(edges.sorted_edges());
-  for e1 in vertex_list.unordered_edges() {
-    for e2 in vertex_list.unordered_edges() {
-      if e1 < e2 {
-        if let Some(isect) = intersects(&pts, e1, e2) {
-          isects.push(isect)
-        }
-      }
-    }
-  }
-  // dbg!(isects.to_vec());
-  while let Some(isect) = isects.random(rng) {
-    untangle(&pts, &mut vertex_list, &mut isects, isect)
-  }
-
-  vertex_list.sort_vertices(&mut pts);
-  Polygon::new(pts)
-}
-
-pub fn two_opt_moves_poly<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
-where
-  T: PolygonScalar + std::fmt::Debug,
-  R: Rng + ?Sized,
-{
-  // pts.sort_unstable();
-  // pts.dedup();
-  if pts.len() < 3 {
-    return Err(Error::InsufficientVertices);
-  }
-  if pts
-    .iter()
-    .all(|pt| Orientation::is_colinear(&pts[0], &pts[1], pt))
-  {
-    return Err(Error::InsufficientVertices);
-  }
-  // if all points are colinear, return error.
-  // dbg!(&pts);
-  let mut isects = IntersectionSet::new(pts.len());
+  let mut isects = IndexIntersectionSet::new(pts.len());
   let mut poly = Polygon::new_unchecked(pts);
   // dbg!(edges.sorted_edges());
   for e1 in edges(&poly) {
@@ -95,41 +95,33 @@ where
   while let Some(isect) = isects.random(rng) {
     untangle_poly(&mut poly, &mut isects, isect)
   }
-  poly.to_ccw();
+  poly.ensure_ccw();
   poly.validate()?;
   Ok(poly)
 }
 
-fn intersects<T>(pts: &[Point<T, 2>], a: IndexEdge, b: IndexEdge) -> Option<Intersection>
+fn endpoint<T>(a: usize, b: usize, c: usize, t: T) -> EndPoint<T> {
+  if a == b || a == c {
+    EndPoint::Exclusive(t)
+  } else {
+    EndPoint::Inclusive(t)
+  }
+}
+
+fn intersects<T>(pts: &[Point<T, 2>], a: IndexEdge, b: IndexEdge) -> Option<IndexIntersection>
 where
   T: PolygonScalar + std::fmt::Debug,
 {
-  let a_min = if a.min == b.min || a.min == b.max {
-    EndPoint::Exclusive(&pts[a.min])
-  } else {
-    EndPoint::Inclusive(&pts[a.min])
-  };
-  let a_max = if a.max == b.min || a.max == b.max {
-    EndPoint::Exclusive(&pts[a.max])
-  } else {
-    EndPoint::Inclusive(&pts[a.max])
-  };
-  let b_min = if b.min == a.min || b.min == a.max {
-    EndPoint::Exclusive(&pts[b.min])
-  } else {
-    EndPoint::Inclusive(&pts[b.min])
-  };
-  let b_max = if b.max == a.min || b.max == a.max {
-    EndPoint::Exclusive(&pts[b.max])
-  } else {
-    EndPoint::Inclusive(&pts[b.max])
-  };
+  let a_min = endpoint(a.min, b.min, b.max, &pts[a.min]);
+  let a_max = endpoint(a.max, b.min, b.max, &pts[a.max]);
+  let b_min = endpoint(b.min, a.min, a.max, &pts[b.min]);
+  let b_max = endpoint(b.max, a.min, a.max, &pts[b.max]);
   let e1 = LineSegmentView::new(a_min, a_max);
   let e2 = LineSegmentView::new(b_min, b_max);
   e1.intersect(e2)?; // Returns Some(...) if there exist a point shared by both line segments.
 
   // dbg!(ret, &pts[a.src], &pts[a.dst], &pts[b.src], &pts[b.dst]);
-  Some(Intersection::new(a.into(), b.into()))
+  Some(IndexIntersection::new(a, b))
 }
 
 // untangle takes two edges that overlap and finds a solution that reduces the circumference
@@ -162,95 +154,95 @@ where
 // The edge length from 'b1->b2' is identical to 'b1->a1->b2'.
 // The edge length from 'prev->a1->a2' is always greater than 'prev -> a2'.
 // We therefore know that the total circumference has decreased. QED.
-fn untangle<T: PolygonScalar + std::fmt::Debug>(
-  pts: &[Point<T, 2>],
-  vertex_list: &mut VertexList,
-  set: &mut IntersectionSet,
-  isect: Intersection,
-) {
-  // dbg!(vertex_list.vertices().collect::<Vec<Vertex>>());
-  // eprintln!("Untangle: {:?}", isect);
-  let da = vertex_list.direct(isect.min);
-  let db = vertex_list.direct(isect.max);
+// fn untangle<T: PolygonScalar + std::fmt::Debug>(
+//   pts: &[Point<T, 2>],
+//   vertex_list: &mut VertexList,
+//   set: &mut IntersectionSet,
+//   isect: Intersection,
+// ) {
+//   // dbg!(vertex_list.vertices().collect::<Vec<Vertex>>());
+//   // eprintln!("Untangle: {:?}", isect);
+//   let da = vertex_list.direct(isect.min);
+//   let db = vertex_list.direct(isect.max);
 
-  let inserted_edges;
+//   let inserted_edges;
 
-  if vertex_list.parallel(&pts, da, db) {
-    let (a_min, a_max) = vertex_list.linear_extremes(pts, da);
-    let (b_min, b_max) = vertex_list.linear_extremes(pts, db);
-    let mut mergable = None;
-    'outer: for edge in vertex_list
-      .range(a_min, a_max)
-      .chain(vertex_list.range(b_min, b_max))
-    {
-      for &elt in [a_min, a_max, b_min, b_max].iter() {
-        let segment = LineSegmentView::new(
-          EndPoint::Exclusive(&pts[edge.src]),
-          EndPoint::Exclusive(&pts[edge.dst]),
-        );
-        if segment.contains(&pts[elt]) {
-          mergable = Some((elt, edge));
-          break 'outer;
-        }
-      }
-    }
-    // elt is not linear. That is, prev -> elt -> next is not a straight line.
-    // Therefore, cutting it and adding to a straight line will shorten the polygon
-    // circumference. Since there's a lower limit on the circumference, this algorithm
-    // is guaranteed to terminate.
-    let (elt, edge) = mergable.expect("There must be at least one mergable point");
-    // dbg!(elt, edge);
-    let elt_edges = vertex_list.vertex_edges(elt);
-    vertex_list.hoist(elt, edge);
-    set.remove_all(elt_edges.0);
-    set.remove_all(elt_edges.1);
-    set.remove_all(edge);
-    inserted_edges = vec![
-      DirectedIndexEdge {
-        src: elt_edges.0.src,
-        dst: elt_edges.1.dst,
-      },
-      DirectedIndexEdge {
-        src: elt,
-        dst: edge.dst,
-      },
-      DirectedIndexEdge {
-        src: edge.src,
-        dst: elt,
-      },
-    ];
-  } else {
-    // eprintln!("Uncross");
-    vertex_list.uncross(da, db);
-    set.remove_all(da);
-    set.remove_all(db);
-    inserted_edges = vec![
-      DirectedIndexEdge {
-        src: da.src,
-        dst: db.src,
-      },
-      DirectedIndexEdge {
-        src: da.dst,
-        dst: db.dst,
-      },
-    ];
-  }
-  // dbg!(&removed_edges, &inserted_edges);
-  for &edge in inserted_edges.iter() {
-    for e1 in vertex_list.unordered_directed_edges() {
-      if e1 != edge {
-        if let Some(isect) = intersects(&pts, e1.into(), edge.into()) {
-          set.push(isect)
-        }
-      }
-    }
-  }
-}
+//   if vertex_list.parallel(&pts, da, db) {
+//     let (a_min, a_max) = vertex_list.linear_extremes(pts, da);
+//     let (b_min, b_max) = vertex_list.linear_extremes(pts, db);
+//     let mut mergable = None;
+//     'outer: for edge in vertex_list
+//       .range(a_min, a_max)
+//       .chain(vertex_list.range(b_min, b_max))
+//     {
+//       for &elt in [a_min, a_max, b_min, b_max].iter() {
+//         let segment = LineSegmentView::new(
+//           EndPoint::Exclusive(&pts[edge.src]),
+//           EndPoint::Exclusive(&pts[edge.dst]),
+//         );
+//         if segment.contains(&pts[elt]) {
+//           mergable = Some((elt, edge));
+//           break 'outer;
+//         }
+//       }
+//     }
+//     // elt is not linear. That is, prev -> elt -> next is not a straight line.
+//     // Therefore, cutting it and adding to a straight line will shorten the polygon
+//     // circumference. Since there's a lower limit on the circumference, this algorithm
+//     // is guaranteed to terminate.
+//     let (elt, edge) = mergable.expect("There must be at least one mergable point");
+//     // dbg!(elt, edge);
+//     let elt_edges = vertex_list.vertex_edges(elt);
+//     vertex_list.hoist(elt, edge);
+//     set.remove_all(elt_edges.0);
+//     set.remove_all(elt_edges.1);
+//     set.remove_all(edge);
+//     inserted_edges = vec![
+//       DirectedIndexEdge {
+//         src: elt_edges.0.src,
+//         dst: elt_edges.1.dst,
+//       },
+//       DirectedIndexEdge {
+//         src: elt,
+//         dst: edge.dst,
+//       },
+//       DirectedIndexEdge {
+//         src: edge.src,
+//         dst: elt,
+//       },
+//     ];
+//   } else {
+//     // eprintln!("Uncross");
+//     vertex_list.uncross(da, db);
+//     set.remove_all(da);
+//     set.remove_all(db);
+//     inserted_edges = vec![
+//       DirectedIndexEdge {
+//         src: da.src,
+//         dst: db.src,
+//       },
+//       DirectedIndexEdge {
+//         src: da.dst,
+//         dst: db.dst,
+//       },
+//     ];
+//   }
+//   // dbg!(&removed_edges, &inserted_edges);
+//   for &edge in inserted_edges.iter() {
+//     for e1 in vertex_list.unordered_directed_edges() {
+//       if e1 != edge {
+//         if let Some(isect) = intersects(&pts, e1.into(), edge.into()) {
+//           set.push(isect)
+//         }
+//       }
+//     }
+//   }
+// }
 
 fn untangle_poly<T: PolygonScalar + std::fmt::Debug>(
   poly: &mut Polygon<T>,
-  set: &mut IntersectionSet,
-  isect: Intersection,
+  set: &mut IndexIntersectionSet,
+  isect: IndexIntersection,
 ) {
   // dbg!(vertex_list.vertices().collect::<Vec<Vertex>>());
   // dbg!(isect);
@@ -259,8 +251,8 @@ fn untangle_poly<T: PolygonScalar + std::fmt::Debug>(
   eprintln!("Untangle: {:?}", isect);
   // let da = poly.direct(isect.min);
   // let db = poly.direct(isect.max);
-  let da = poly.vertex(poly.direct(isect.min).src);
-  let db = poly.vertex(poly.direct(isect.max).src);
+  let da = poly.cursor(poly.direct(isect.min).src);
+  let db = poly.cursor(poly.direct(isect.max).src);
 
   let inserted_edges;
 
@@ -272,10 +264,10 @@ fn untangle_poly<T: PolygonScalar + std::fmt::Debug>(
     'outer: for edge in a_min.to(a_max).chain(b_min.to(b_max)) {
       for &elt in [a_min, a_max, b_min, b_max].iter() {
         let segment = LineSegmentView::new(
-          EndPoint::Exclusive(edge.index()),
-          EndPoint::Exclusive(edge.index_next()),
+          EndPoint::Exclusive(edge.point()),
+          EndPoint::Exclusive(edge.next().point()),
         );
-        if segment.contains(elt.index()) {
+        if segment.contains(elt.point()) {
           mergable = Some((elt, edge));
           break 'outer;
         }
@@ -338,10 +330,10 @@ fn parallel_edges<T>(a: Cursor<'_, T>, b: Cursor<'_, T>) -> bool
 where
   T: PolygonScalar,
 {
-  let a1 = a.index();
-  let a2 = a.index_next();
-  let b1 = b.index();
-  let b2 = b.index_next();
+  let a1 = a.point();
+  let a2 = a.next().point();
+  let b1 = b.point();
+  let b2 = b.next().point();
   Orientation::is_colinear(a1, a2, b1) && Orientation::is_colinear(a1, a2, b2)
 }
 

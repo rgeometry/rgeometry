@@ -47,19 +47,19 @@ where
     // debug_assert_ok!(self.validate());
     let poly = &self.0;
     let vertices = self.boundary_slice();
-    let p0 = poly.index(vertices[0]);
+    let p0 = poly.point(vertices[0]);
     let mut lower = 1;
     let mut upper = vertices.len() - 1;
     while lower + 1 < upper {
       let middle = (lower + upper) / 2;
-      if p0.orientation(&poly.index(vertices[middle]), pt) == Orientation::CounterClockWise {
+      if p0.orientation(&poly.point(vertices[middle]), pt) == Orientation::CounterClockWise {
         lower = middle;
       } else {
         upper = middle;
       }
     }
-    let p1 = poly.index(vertices[lower]);
-    let p2 = poly.index(vertices[upper]);
+    let p1 = poly.point(vertices[lower]);
+    let p2 = poly.point(vertices[upper]);
     let triangle = TriangleView::new([p0, p1, p2]);
     triangle.locate(pt)
   }
@@ -68,7 +68,7 @@ where
   pub fn validate(&self) -> Result<(), Error> {
     let len = self.0.vertices.len();
     for i in 0..len {
-      if self.0.vertex(i).orientation() != Orientation::CounterClockWise {
+      if self.0.cursor(i).orientation() != Orientation::CounterClockWise {
         return Err(Error::ConvexViolation);
       }
     }
@@ -122,7 +122,7 @@ impl PolygonConvex<BigRational> {
     debug_assert_eq!(n_vertices, n);
     let p = Polygon::new_unchecked(vertices);
     for i in 0..n {
-      if p.vertex(i).orientation() != Orientation::CounterClockWise {
+      if p.cursor(i).orientation() != Orientation::CounterClockWise {
         return Self::random(n, max, rng);
       }
     }

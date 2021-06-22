@@ -65,6 +65,8 @@ pub struct Polygon<T> {
   pub(crate) boundary: usize,
   pub(crate) holes: Vec<usize>,
 }
+// loops: Vec<Vec<VertexId>>
+// positions: Vec<(LoopId, PositionId)>
 
 impl<T> Polygon<T> {
   pub fn new_unchecked(vertices: Vec<Point<T, 2>>) -> Polygon<T>
@@ -74,8 +76,8 @@ impl<T> Polygon<T> {
     let len = vertices.len();
     Polygon {
       vertices,
-      order: Vec::from_iter(0..len),
-      positions: Vec::from_iter((0..len).map(PositionId)),
+      order: (0..len).collect(),
+      positions: (0..len).map(PositionId).collect(),
       boundary: len,
       holes: vec![],
     }
@@ -86,7 +88,7 @@ impl<T> Polygon<T> {
     T: PolygonScalar,
   {
     let mut p = Self::new_unchecked(points);
-    p.to_ccw();
+    p.ensure_ccw();
     p.validate()?;
     Ok(p)
   }
@@ -164,12 +166,12 @@ impl<T> Polygon<T> {
       .sum()
   }
 
-  pub fn index(&self, idx: VertexId) -> &Point<T, 2> {
-    self.vertex(idx).index()
+  pub fn point(&self, idx: VertexId) -> &Point<T, 2> {
+    self.cursor(idx).point()
   }
 
   /// O(k) where k is the number of holes.
-  pub fn vertex(&self, idx: VertexId) -> Cursor<'_, T> {
+  pub fn cursor(&self, idx: VertexId) -> Cursor<'_, T> {
     // FIXME: Support holes.
     Cursor {
       polygon: &self,
@@ -185,10 +187,10 @@ impl<T> Polygon<T> {
     &self.order[0..self.boundary]
   }
 
-  pub fn iter_boundary<'a>(&'a self) -> CursorIter<'a, T> {
+  pub fn iter_boundary(&self) -> CursorIter<'_, T> {
     CursorIter {
-      cursor_head: self.vertex(0),
-      cursor_tail: self.vertex(0).prev(),
+      cursor_head: self.cursor(0),
+      cursor_tail: self.cursor(0).prev(),
       exhausted: false,
     }
   }
@@ -273,8 +275,8 @@ impl<T> Polygon<T> {
 
   /// Panics if the edge isn't part of the polygon.
   pub fn direct(&self, edge: IndexEdge) -> DirectedIndexEdge {
-    let min_cursor = self.vertex(edge.min);
-    let max_cursor = self.vertex(edge.max);
+    let min_cursor = self.cursor(edge.min);
+    let max_cursor = self.cursor(edge.max);
     if min_cursor.next() == max_cursor {
       DirectedIndexEdge {
         src: edge.min,
@@ -290,7 +292,7 @@ impl<T> Polygon<T> {
     }
   }
 
-  pub fn to_ccw(&mut self)
+  pub fn ensure_ccw(&mut self)
   where
     T: PolygonScalar,
   {
@@ -405,16 +407,8 @@ impl<'a, T> Cursor<'a, T> {
     self
   }
 
-  pub fn index(self: Cursor<'a, T>) -> &'a Point<T, 2> {
+  pub fn point(self: Cursor<'a, T>) -> &'a Point<T, 2> {
     self.polygon.vertices.index(self.vertex_id())
-  }
-
-  pub fn index_next(self) -> &'a Point<T, 2> {
-    self.next().index()
-  }
-
-  pub fn index_prev(self) -> &'a Point<T, 2> {
-    self.prev().index()
   }
 
   pub fn move_next(&mut self) {
@@ -429,9 +423,9 @@ impl<'a, T> Cursor<'a, T> {
   where
     T: PolygonScalar,
   {
-    let p1 = self.index_prev();
-    let p2 = self.index();
-    let p3 = self.index_next();
+    let p1 = self.prev().point();
+    let p2 = self.point();
+    let p3 = self.next().point();
     Orientation::new(p1, p2, p3)
   }
 

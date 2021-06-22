@@ -27,7 +27,7 @@ pub struct IterMut<'a, T: 'a> {
 impl<'a, T> Iterator for IterMut<'a, T> {
   type Item = &'a mut Point<T, 2>;
   fn next(&mut self) -> Option<&'a mut Point<T, 2>> {
-    Some(self.points.next()?)
+    self.points.next()
   }
 }
 
@@ -39,8 +39,8 @@ impl<'a, T: Clone> Iterator for EdgeIter<'a, T> {
   type Item = DirectedEdge<T, 2>;
   fn next(&mut self) -> Option<DirectedEdge<T, 2>> {
     let cursor = self.iter.next()?;
-    let this_point = cursor.index().clone();
-    let next_point = cursor.index_next().clone();
+    let this_point = cursor.point().clone();
+    let next_point = cursor.next().point().clone();
     Some(DirectedEdge {
       src: this_point,
       dst: next_point,
