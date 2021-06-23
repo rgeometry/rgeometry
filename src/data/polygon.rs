@@ -22,13 +22,30 @@ pub use convex::*;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PositionId(usize);
-// pub type PositionId = usize;
+
+impl From<PositionId> for usize {
+  fn from(pid: PositionId) -> usize {
+    pid.0
+  }
+}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RingId(usize);
 
+impl From<RingId> for usize {
+  fn from(rid: RingId) -> usize {
+    rid.0
+  }
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PointId(pub(crate) usize);
+
+impl From<PointId> for usize {
+  fn from(pid: PointId) -> usize {
+    pid.0
+  }
+}
 
 impl std::fmt::Debug for PointId {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
