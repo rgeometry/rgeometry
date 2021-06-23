@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["convex_hull","$O(n \\log n)$ Convex hull of a set of points."],["two_opt_moves","$O(n^4)$ Generate a random, valid polygon from a set of points."]],"mod":[["convex_hull",""],["polygonization",""]]});
+initSidebarItems({"fn":[["convex_hull","$O(n \\log n)$ Convex hull of a set of points."],["resolve_self_intersections",""],["two_opt_moves","$O(n^4)$ Generate a random, valid polygon from a set of points."]],"mod":[["convex_hull",""],["polygonization",""]]});

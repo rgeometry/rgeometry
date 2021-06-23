@@ -539,6 +539,26 @@
 <span id="515">515</span>
 <span id="516">516</span>
 <span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -564,13 +584,30 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PositionId</span>(<span class="ident">usize</span>);
-<span class="comment">// pub type PositionId = usize;</span>
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PositionId</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">usize</span> {
+  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">pid</span>: <span class="ident">PositionId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="ident">pid</span>.<span class="number">0</span>
+  }
+}
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RingId</span>(<span class="ident">usize</span>);
 
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">RingId</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">usize</span> {
+  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">rid</span>: <span class="ident">RingId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="ident">rid</span>.<span class="number">0</span>
+  }
+}
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PointId</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">usize</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PointId</span>(<span class="ident">usize</span>);
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PointId</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">usize</span> {
+  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">pid</span>: <span class="ident">PointId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="ident">pid</span>.<span class="number">0</span>
+  }
+}
 
 <span class="kw">impl</span> <span class="ident">std::fmt::Debug</span> <span class="kw">for</span> <span class="ident">PointId</span> {
   <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">std::fmt::Error</span><span class="op">&gt;</span> {
@@ -580,6 +617,9 @@
 
 <span class="kw">impl</span> <span class="ident">PointId</span> {
   <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">INVALID</span>: <span class="ident">PointId</span> <span class="op">=</span> <span class="ident">PointId</span>(<span class="ident">usize::MAX</span>);
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">usize</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="self">self</span>.<span class="number">0</span>
+  }
 }
 
 <span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
