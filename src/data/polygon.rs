@@ -39,7 +39,7 @@ impl From<RingId> for usize {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct PointId(pub(crate) usize);
+pub struct PointId(usize);
 
 impl From<PointId> for usize {
   fn from(pid: PointId) -> usize {
@@ -55,6 +55,9 @@ impl std::fmt::Debug for PointId {
 
 impl PointId {
   pub const INVALID: PointId = PointId(usize::MAX);
+  pub fn usize(self) -> usize {
+    self.0
+  }
 }
 
 #[non_exhaustive]

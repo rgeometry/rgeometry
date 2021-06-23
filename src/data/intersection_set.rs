@@ -121,7 +121,7 @@ impl IndexMut<IndexEdge> for IndexIntersectionSet {
   fn index_mut(&mut self, index: IndexEdge) -> &mut Option<SparseIndex> {
     self
       .by_edge
-      .index_mut(index.max.0 + self.vertices * index.min.0)
+      .index_mut(index.max.usize() + self.vertices * index.min.usize())
   }
 }
 
@@ -130,7 +130,7 @@ impl Index<IndexEdge> for IndexIntersectionSet {
   fn index(&self, index: IndexEdge) -> &Option<SparseIndex> {
     self
       .by_edge
-      .index(index.max.0 + self.vertices * index.min.0)
+      .index(index.max.usize() + self.vertices * index.min.usize())
   }
 }
 
