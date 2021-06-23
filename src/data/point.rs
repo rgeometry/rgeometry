@@ -116,15 +116,6 @@ impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<NotNan<f64>, N> {
   }
 }
 
-impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<BigRational, N> {
-  type Error = ();
-  fn try_from(point: Point<f64, N>) -> Result<Point<BigRational, N>, ()> {
-    Ok(Point {
-      array: try_array_init(|i| BigRational::from_float(point.array[i]).ok_or(()))?,
-    })
-  }
-}
-
 impl<T> From<(T, T)> for Point<T, 2> {
   fn from(point: (T, T)) -> Point<T, 2> {
     Point {
@@ -141,8 +132,24 @@ impl<'a, const N: usize> From<&'a Point<BigRational, N>> for Point<f64, N> {
   }
 }
 
+impl<const N: usize> From<Point<BigRational, N>> for Point<f64, N> {
+  fn from(point: Point<BigRational, N>) -> Point<f64, N> {
+    Point {
+      array: array_init(|i| point.array[i].to_f64().unwrap()),
+    }
+  }
+}
+
 impl<'a, const N: usize> From<&'a Point<f64, N>> for Point<BigRational, N> {
   fn from(point: &Point<f64, N>) -> Point<BigRational, N> {
+    Point {
+      array: array_init(|i| BigRational::from_f64(point.array[i]).unwrap()),
+    }
+  }
+}
+
+impl<const N: usize> From<Point<f64, N>> for Point<BigRational, N> {
+  fn from(point: Point<f64, N>) -> Point<BigRational, N> {
     Point {
       array: array_init(|i| BigRational::from_f64(point.array[i]).unwrap()),
     }
