@@ -81,7 +81,7 @@ impl<'a, T> Iterator for CursorIter<'a, T> {
 impl<'a, T> ExactSizeIterator for CursorIter<'a, T> {
   fn len(&self) -> usize {
     let pos_head = self.cursor_head.position;
-    let pos_tail = self.cursor_head.position;
+    let pos_tail = self.cursor_tail.position;
     if pos_head.position_id.0 <= pos_tail.position_id.0 {
       pos_tail.position_id.0 - pos_head.position_id.0 + 1
     } else {
