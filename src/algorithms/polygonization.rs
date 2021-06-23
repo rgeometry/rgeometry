@@ -21,6 +21,37 @@ use std::ops::{Index, IndexMut};
 
 use crate::Orientation;
 
+pub fn resolve_self_intersections<T, R>(poly: &mut Polygon<T>, rng: &mut R) -> Result<(), Error>
+where
+  T: PolygonScalar + std::fmt::Debug,
+  R: Rng + ?Sized,
+{
+  assert_eq!(poly.rings.len(), 1);
+  if poly.iter_boundary().all(|pt| pt.is_colinear()) {
+    return Err(Error::InsufficientVertices);
+  }
+  // if all points are colinear, return error.
+  // dbg!(&pts);
+  let mut isects = IndexIntersectionSet::new(poly.iter_boundary().len());
+  dbg!(&poly.rings[0]);
+  for e1 in edges(&poly) {
+    for e2 in edges(&poly) {
+      if e1 < e2 {
+        if let Some(isect) = intersects(&poly, e1, e2) {
+          isects.push(isect)
+        }
+      }
+    }
+  }
+  // dbg!(isects.to_vec());
+  while let Some(isect) = isects.random(rng) {
+    untangle(poly, &mut isects, isect)
+  }
+  poly.ensure_ccw();
+  poly.validate()?;
+  Ok(())
+}
+
 // Create list of edges
 // Find all intersections
 /// $O(n^4)$ Generate a random, valid polygon from a set of points.
@@ -38,32 +69,8 @@ where
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
-  if pts
-    .iter()
-    .all(|pt| Orientation::is_colinear(&pts[0], &pts[1], pt))
-  {
-    return Err(Error::InsufficientVertices);
-  }
-  // if all points are colinear, return error.
-  // dbg!(&pts);
-  let mut isects = IndexIntersectionSet::new(pts.len());
   let mut poly = Polygon::new_unchecked(pts);
-  dbg!(&poly.rings[0]);
-  for e1 in edges(&poly) {
-    for e2 in edges(&poly) {
-      if e1 < e2 {
-        if let Some(isect) = intersects(&poly, e1, e2) {
-          isects.push(isect)
-        }
-      }
-    }
-  }
-  // dbg!(isects.to_vec());
-  while let Some(isect) = isects.random(rng) {
-    untangle(&mut poly, &mut isects, isect)
-  }
-  poly.ensure_ccw();
-  poly.validate()?;
+  resolve_self_intersections(&mut poly, rng)?;
   Ok(poly)
 }
 

@@ -5,4 +5,4 @@ pub mod polygonization;
 pub use convex_hull::graham_scan::convex_hull;
 
 #[doc(inline)]
-pub use polygonization::two_opt_moves;
+pub use polygonization::*;
