@@ -9,6 +9,7 @@ use std::iter::Sum;
 use std::ops::*;
 
 use crate::array::Orientation;
+use crate::data::DirectedEdge;
 use crate::data::Point;
 use crate::data::Vector;
 use crate::Error;
@@ -114,22 +115,17 @@ pub struct DirectedIndexEdge {
 pub struct Polygon<T> {
   // Key: PointId
   pub(crate) points: Vec<Point<T, 2>>,
-  pub(crate) ring_index: Vec<RingId>,         // Key: PointId
-  pub(crate) position_index: Vec<PositionId>, // Key: PointId
+  // Key: PointId
+  pub(crate) ring_index: Vec<RingId>,
+  // Key: PointId
+  pub(crate) position_index: Vec<PositionId>,
   // Ring 0 is boundary and ccw
   // Ring n+1 is a hole and cw.
   pub(crate) rings: Vec<Vec<PointId>>,
-  // pub(crate) vertices: Vec<Point<T, 2>>, // VertexId -> &Point<T,2>
-  // pub(crate) order: Vec<VertexId>,       // Position -> VertexId
-  // pub(crate) positions: Vec<PositionId>, // VertexId -> Position
-  // pub(crate) boundary: usize,
-  // pub(crate) holes: Vec<usize>,
 }
-// loops: Vec<Vec<VertexId>>
-// vertex_loop: Vec<RingId>
-// vertex_position: Vec<PositionId>
 
 impl<T> Polygon<T> {
+  /// $O(1)$
   pub fn new_unchecked(vertices: Vec<Point<T, 2>>) -> Polygon<T>
   where
     T: PolygonScalar,
@@ -140,14 +136,10 @@ impl<T> Polygon<T> {
       ring_index: vec![RingId(0); len],
       position_index: (0..len).map(PositionId).collect(),
       rings: vec![(0..len).map(PointId).collect()],
-      // vertices,
-      // order: (0..len).map(VertexId).collect(),
-      // positions: (0..len).map(PositionId).collect(),
-      // boundary: len,
-      // holes: vec![],
     }
   }
 
+  /// $O(n^2)$
   pub fn new(points: Vec<Point<T, 2>>) -> Result<Polygon<T>, Error>
   where
     T: PolygonScalar,
@@ -191,7 +183,12 @@ impl<T> Polygon<T> {
       return Err(Error::ClockWiseViolation);
     }
     // Has no self intersections.
-    // TODO. Only check line intersections. Overlapping vertices are OK.
+    // XXX: Hm, allow overlapping (but not crossing) edges in the weakly check?
+    let edges: Vec<DirectedEdge<T, 2>> = self.iter_boundary_edges().collect();
+    let isects = crate::algorithms::segment_intersections(&edges).next();
+    if isects.is_some() {
+      return Err(Error::SelfIntersections);
+    }
     Ok(())
   }
 

@@ -41,6 +41,7 @@ pub trait PolygonScalar<T = Self, Output = Self>:
   + Ord
   + Neg<Output = Self>
   + Signed
+  + std::fmt::Debug
 {
 }
 impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
@@ -54,6 +55,7 @@ impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
     + Ord
     + Neg<Output = Self>
     + Signed
+    + std::fmt::Debug
 {
 }
 
