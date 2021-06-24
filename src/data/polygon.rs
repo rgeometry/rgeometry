@@ -115,22 +115,17 @@ pub struct DirectedIndexEdge {
 pub struct Polygon<T> {
   // Key: PointId
   pub(crate) points: Vec<Point<T, 2>>,
-  pub(crate) ring_index: Vec<RingId>,         // Key: PointId
-  pub(crate) position_index: Vec<PositionId>, // Key: PointId
+  // Key: PointId
+  pub(crate) ring_index: Vec<RingId>,
+  // Key: PointId
+  pub(crate) position_index: Vec<PositionId>,
   // Ring 0 is boundary and ccw
   // Ring n+1 is a hole and cw.
   pub(crate) rings: Vec<Vec<PointId>>,
-  // pub(crate) vertices: Vec<Point<T, 2>>, // VertexId -> &Point<T,2>
-  // pub(crate) order: Vec<VertexId>,       // Position -> VertexId
-  // pub(crate) positions: Vec<PositionId>, // VertexId -> Position
-  // pub(crate) boundary: usize,
-  // pub(crate) holes: Vec<usize>,
 }
-// loops: Vec<Vec<VertexId>>
-// vertex_loop: Vec<RingId>
-// vertex_position: Vec<PositionId>
 
 impl<T> Polygon<T> {
+  /// $O(1)$
   pub fn new_unchecked(vertices: Vec<Point<T, 2>>) -> Polygon<T>
   where
     T: PolygonScalar,
@@ -144,6 +139,7 @@ impl<T> Polygon<T> {
     }
   }
 
+  /// $O(n^2)$
   pub fn new(points: Vec<Point<T, 2>>) -> Result<Polygon<T>, Error>
   where
     T: PolygonScalar,
