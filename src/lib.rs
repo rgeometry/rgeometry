@@ -61,3 +61,32 @@ impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
 
 pub trait PolygonScalarRef<T = Self, Output = Self>: Clone + NumOps<T, Output> {}
 impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where T: Clone + NumOps<Rhs, Output> {}
+
+pub trait Extended: Signed {
+  type ExtendedSigned: Signed + Clone;
+  type ExtendedUnsigned: Clone;
+  fn extend_signed(self) -> Self::ExtendedSigned;
+  fn extend_unsigned(self) -> Self::ExtendedUnsigned;
+}
+
+impl Extended for i32 {
+  type ExtendedSigned = i64;
+  type ExtendedUnsigned = u64;
+  fn extend_signed(self) -> Self::ExtendedSigned {
+    self as Self::ExtendedSigned
+  }
+  fn extend_unsigned(self) -> Self::ExtendedUnsigned {
+    self as Self::ExtendedUnsigned
+  }
+}
+
+impl Extended for num_bigint::BigInt {
+  type ExtendedSigned = num_bigint::BigInt;
+  type ExtendedUnsigned = num_bigint::BigInt;
+  fn extend_signed(self) -> Self::ExtendedSigned {
+    self
+  }
+  fn extend_unsigned(self) -> Self::ExtendedUnsigned {
+    self
+  }
+}

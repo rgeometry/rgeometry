@@ -121,6 +121,8 @@ pub struct Polygon<T> {
   pub(crate) position_index: Vec<PositionId>,
   // Ring 0 is boundary and ccw
   // Ring n+1 is a hole and cw.
+  // Outer key: RingId
+  // Inner key: PositionId
   pub(crate) rings: Vec<Vec<PointId>>,
 }
 
