@@ -556,9 +556,6 @@
 <span id="532">532</span>
 <span id="533">533</span>
 <span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
-<span id="537">537</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -571,6 +568,7 @@
 <span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::array::Orientation</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::DirectedEdge</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Point</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Vector</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Error</span>;
@@ -676,22 +674,17 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
   <span class="comment">// Key: PointId</span>
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-  <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">ring_index</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RingId</span><span class="op">&gt;</span>,         <span class="comment">// Key: PointId</span>
-  <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">position_index</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PositionId</span><span class="op">&gt;</span>, <span class="comment">// Key: PointId</span>
+  <span class="comment">// Key: PointId</span>
+  <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">ring_index</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RingId</span><span class="op">&gt;</span>,
+  <span class="comment">// Key: PointId</span>
+  <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">position_index</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PositionId</span><span class="op">&gt;</span>,
   <span class="comment">// Ring 0 is boundary and ccw</span>
   <span class="comment">// Ring n+1 is a hole and cw.</span>
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">rings</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PointId</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-  <span class="comment">// pub(crate) vertices: Vec&lt;Point&lt;T, 2&gt;&gt;, // VertexId -&gt; &amp;Point&lt;T,2&gt;</span>
-  <span class="comment">// pub(crate) order: Vec&lt;VertexId&gt;,       // Position -&gt; VertexId</span>
-  <span class="comment">// pub(crate) positions: Vec&lt;PositionId&gt;, // VertexId -&gt; Position</span>
-  <span class="comment">// pub(crate) boundary: usize,</span>
-  <span class="comment">// pub(crate) holes: Vec&lt;usize&gt;,</span>
 }
-<span class="comment">// loops: Vec&lt;Vec&lt;VertexId&gt;&gt;</span>
-<span class="comment">// vertex_loop: Vec&lt;RingId&gt;</span>
-<span class="comment">// vertex_position: Vec&lt;PositionId&gt;</span>
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+  <span class="doccomment">/// $O(1)$</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">vertices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
@@ -702,14 +695,10 @@
       <span class="ident">ring_index</span>: <span class="macro">vec!</span>[<span class="ident">RingId</span>(<span class="number">0</span>); <span class="ident">len</span>],
       <span class="ident">position_index</span>: (<span class="number">0</span>..<span class="ident">len</span>).<span class="ident">map</span>(<span class="ident">PositionId</span>).<span class="ident">collect</span>(),
       <span class="ident">rings</span>: <span class="macro">vec!</span>[(<span class="number">0</span>..<span class="ident">len</span>).<span class="ident">map</span>(<span class="ident">PointId</span>).<span class="ident">collect</span>()],
-      <span class="comment">// vertices,</span>
-      <span class="comment">// order: (0..len).map(VertexId).collect(),</span>
-      <span class="comment">// positions: (0..len).map(PositionId).collect(),</span>
-      <span class="comment">// boundary: len,</span>
-      <span class="comment">// holes: vec![],</span>
     }
   }
 
+  <span class="doccomment">/// $O(n^2)$</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
@@ -753,7 +742,12 @@
       <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::ClockWiseViolation</span>);
     }
     <span class="comment">// Has no self intersections.</span>
-    <span class="comment">// TODO. Only check line intersections. Overlapping vertices are OK.</span>
+    <span class="comment">// XXX: Hm, allow overlapping (but not crossing) edges in the weakly check?</span>
+    <span class="kw">let</span> <span class="ident">edges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DirectedEdge</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">iter_boundary_edges</span>().<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="ident">isects</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::algorithms::segment_intersections</span>(<span class="kw-2">&amp;</span><span class="ident">edges</span>).<span class="ident">next</span>();
+    <span class="kw">if</span> <span class="ident">isects</span>.<span class="ident">is_some</span>() {
+      <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SelfIntersections</span>);
+    }
     <span class="prelude-val">Ok</span>(())
   }
 

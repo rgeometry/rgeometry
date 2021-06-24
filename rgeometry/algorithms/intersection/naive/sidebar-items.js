@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["segment_intersections","$O(n^2)$ Finds all line segment intersections."]]});
