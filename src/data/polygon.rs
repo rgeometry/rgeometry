@@ -9,6 +9,7 @@ use std::iter::Sum;
 use std::ops::*;
 
 use crate::array::Orientation;
+use crate::data::DirectedEdge;
 use crate::data::Point;
 use crate::data::Vector;
 use crate::Error;
@@ -140,11 +141,6 @@ impl<T> Polygon<T> {
       ring_index: vec![RingId(0); len],
       position_index: (0..len).map(PositionId).collect(),
       rings: vec![(0..len).map(PointId).collect()],
-      // vertices,
-      // order: (0..len).map(VertexId).collect(),
-      // positions: (0..len).map(PositionId).collect(),
-      // boundary: len,
-      // holes: vec![],
     }
   }
 
@@ -191,7 +187,12 @@ impl<T> Polygon<T> {
       return Err(Error::ClockWiseViolation);
     }
     // Has no self intersections.
-    // TODO. Only check line intersections. Overlapping vertices are OK.
+    // XXX: Hm, allow overlapping (but not crossing) edges in the weakly check?
+    let edges: Vec<DirectedEdge<T, 2>> = self.iter_boundary_edges().collect();
+    let isects = crate::algorithms::segment_intersections(&edges).next();
+    if isects.is_some() {
+      return Err(Error::SelfIntersections);
+    }
     Ok(())
   }
 

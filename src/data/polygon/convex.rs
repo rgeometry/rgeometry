@@ -263,7 +263,7 @@ mod tests {
     }
     fn arbitrary() -> Self::Strategy {
       let mut rng = rand::thread_rng();
-      let n = rng.gen_range(3..=100);
+      let n = rng.gen_range(3..=20);
       let max = rng.gen_range(n..=1_000_000_000);
       let p = PolygonConvex::random(n, max, &mut rng);
       Just(p)
