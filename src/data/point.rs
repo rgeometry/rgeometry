@@ -54,29 +54,30 @@ impl<T, const N: usize> Point<T, N> {
     self.into()
   }
 
+  // Warning: May cause arithmetic overflow.
   pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
   where
-    T: Clone + Zero + Ord + NumOps,
-    // for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
+    T: Clone + Zero + Ord + NumOps + crate::Extended,
   {
     self
       .squared_euclidean_distance(p)
       .cmp(&self.squared_euclidean_distance(q))
   }
 
-  pub fn squared_euclidean_distance(&self, rhs: &Point<T, N>) -> T
+  // Warning: May cause arithmetic overflow.
+  pub fn squared_euclidean_distance(&self, rhs: &Point<T, N>) -> T::ExtendedSigned
   where
-    T: Clone + Zero + NumOps,
-    // for<'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T>,
+    T: Clone + Zero + NumOps + crate::Extended,
   {
     self
       .array
       .iter()
       .zip(rhs.array.iter())
-      .fold(T::zero(), |sum, (a, b)| {
-        let diff: T = a.clone() - b.clone();
-        sum + diff.clone() * diff
+      .map(|(a, b)| {
+        let diff = a.clone().extend_signed() - b.clone().extend_signed();
+        diff.clone() * diff
       })
+      .sum()
   }
 
   // Similar to num_traits::identities::Zero but doesn't require an Add impl.
@@ -398,7 +399,7 @@ pub mod tests {
 
   proptest! {
     #[test]
-    fn squared_euclidean_distance_fuzz(pt1: Point<f64,2>, pt2: Point<f64,2>) {
+    fn squared_euclidean_distance_fuzz(pt1 in any_nn::<2>(), pt2 in any_nn::<2>()) {
       let _ = pt1.squared_euclidean_distance(&pt2);
     }
 
@@ -497,6 +498,14 @@ pub mod tests {
     assert_eq!(
       Point::new([1, 0]).orientation(&Point::new([0, 6]), &Point::new([0, 8])),
       ClockWise
+    );
+  }
+
+  #[test]
+  fn unit_3() {
+    assert_eq!(
+      Point::new([-12_i8, -126]).orientation(&Point::new([-12, -126]), &Point::new([0, -126])),
+      CoLinear
     );
   }
 }

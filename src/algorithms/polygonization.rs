@@ -33,7 +33,7 @@ where
   // if all points are colinear, return error.
   // dbg!(&pts);
   let mut isects = IndexIntersectionSet::new(poly.iter_boundary().len());
-  dbg!(&poly.rings[0]);
+  // dbg!(&poly.rings[0]);
   for e1 in edges(&poly) {
     for e2 in edges(&poly) {
       if e1 < e2 {
@@ -93,7 +93,7 @@ where
   let e1 = LineSegmentView::new(a_min, a_max);
   let e2 = LineSegmentView::new(b_min, b_max);
   e1.intersect(e2)?; // Returns Some(...) if there exist a point shared by both line segments.
-  dbg!(e1, e2);
+                     // dbg!(e1, e2);
   Some(IndexIntersection::new(a, b))
 }
 
@@ -200,7 +200,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     let p2 = db.position;
     eprintln!("Uncross: {:?} {:?}", p1, p2);
     poly.vertices_reverse(p1, p2);
-    dbg!(&poly.rings[0]);
+    // dbg!(&poly.rings[0]);
   }
   // dbg!(&removed_edges, &inserted_edges);
   for &edge in inserted_edges.iter() {

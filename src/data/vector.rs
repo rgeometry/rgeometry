@@ -54,6 +54,14 @@ where
     }
     total
   }
+
+  pub fn cast<U, F>(&self, f: F) -> Vector<U, N>
+  where
+    T: Clone,
+    F: Fn(T) -> U,
+  {
+    Vector(array_init(|i| f(self.0[i].clone())))
+  }
 }
 
 impl<T, const N: usize> Index<usize> for Vector<T, N> {

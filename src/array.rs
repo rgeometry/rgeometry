@@ -294,7 +294,6 @@ where
     ClockWise => Ordering::Greater,
     CoLinear => Ordering::Equal,
   };
-  dbg!(aq, ar);
   match (aq, ar) {
     // Easy cases: Q and R are on either side of the line p->z:
     (CounterClockWise, ClockWise) => Ordering::Less,
@@ -376,7 +375,6 @@ mod tests {
           for &coord4 in slice {
             for &coord5 in slice {
               for &coord6 in slice {
-                dbg!(coord1, coord2, coord3, coord4, coord5, coord6);
                 Extended::cmp_slope(&[coord1, coord2], &[coord3, coord4], &[coord5, coord6]);
               }
             }

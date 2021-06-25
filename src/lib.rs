@@ -66,7 +66,13 @@ pub trait PolygonScalarRef<T = Self, Output = Self>: Clone + NumOps<T, Output> {
 impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where T: Clone + NumOps<Rhs, Output> {}
 
 pub trait Extended: NumOps<Self, Self> + Ord + Clone {
-  type ExtendedSigned: Clone + NumOps<Self::ExtendedSigned, Self::ExtendedSigned> + Ord;
+  type ExtendedSigned: Clone
+    + NumOps<Self::ExtendedSigned, Self::ExtendedSigned>
+    + Ord
+    + Sum
+    + FromPrimitive
+    + NumAssignOps
+    + Signed;
   fn extend_signed(self) -> Self::ExtendedSigned;
   fn truncate_signed(val: Self::ExtendedSigned) -> Self;
   fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
@@ -179,7 +185,7 @@ fixed_precision!(i64, u64, i128, u128);
 fixed_precision!(isize, usize, i128, u128);
 arbitrary_precision!(num_bigint::BigInt);
 arbitrary_precision!(num_rational::BigRational);
-arbitrary_precision!(ordered_float::OrderedFloat<f32>);
-arbitrary_precision!(ordered_float::OrderedFloat<f64>);
+// arbitrary_precision!(ordered_float::OrderedFloat<f32>);
+// arbitrary_precision!(ordered_float::OrderedFloat<f64>);
 arbitrary_precision!(ordered_float::NotNan<f32>);
 arbitrary_precision!(ordered_float::NotNan<f64>);
