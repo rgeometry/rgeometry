@@ -556,6 +556,29 @@
 <span id="532">532</span>
 <span id="533">533</span>
 <span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -572,6 +595,7 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Point</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Vector</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Error</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Extended</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::PolygonScalar</span>;
 
 <span class="kw">mod</span> <span class="ident">iter</span>;
@@ -680,6 +704,8 @@
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">position_index</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PositionId</span><span class="op">&gt;</span>,
   <span class="comment">// Ring 0 is boundary and ccw</span>
   <span class="comment">// Ring n+1 is a hole and cw.</span>
+  <span class="comment">// Outer key: RingId</span>
+  <span class="comment">// Inner key: PositionId</span>
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">rings</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PointId</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
@@ -738,7 +764,7 @@
       <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InsufficientVertices</span>);
     }
     <span class="comment">// Is counter-clockwise</span>
-    <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">signed_area_2x</span>().<span class="ident">is_positive</span>() {
+    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">orientation</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
       <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::ClockWiseViolation</span>);
     }
     <span class="comment">// Has no self intersections.</span>
@@ -755,26 +781,26 @@
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
   {
-    <span class="kw">let</span> <span class="ident">xs</span>: <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
+    <span class="kw">let</span> <span class="ident">xs</span>: <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T::ExtendedSigned</span>, <span class="number">2</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>
       .<span class="ident">iter_boundary_edges</span>()
       .<span class="ident">map</span>(<span class="op">|</span><span class="ident">edge</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">edge</span>.<span class="ident">src</span>.<span class="ident">as_vec</span>();
-        <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">edge</span>.<span class="ident">dst</span>.<span class="ident">as_vec</span>();
+        <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">edge</span>.<span class="ident">src</span>.<span class="ident">as_vec</span>().<span class="ident">cast</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">extend_signed</span>());
+        <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">edge</span>.<span class="ident">dst</span>.<span class="ident">as_vec</span>().<span class="ident">cast</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">extend_signed</span>());
         (<span class="ident">p</span> <span class="op">+</span> <span class="ident">q</span>) <span class="op">*</span> (<span class="ident">p</span>.<span class="number">0</span>[<span class="number">0</span>].<span class="ident">clone</span>() <span class="op">*</span> <span class="ident">q</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">clone</span>() <span class="op">-</span> <span class="ident">q</span>.<span class="number">0</span>[<span class="number">0</span>].<span class="ident">clone</span>() <span class="op">*</span> <span class="ident">p</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">clone</span>())
       })
       .<span class="ident">sum</span>();
-    <span class="kw">let</span> <span class="ident">three</span> <span class="op">=</span> <span class="ident">T::from_usize</span>(<span class="number">3</span>).<span class="ident">unwrap</span>();
-    <span class="ident">Point::from</span>(<span class="ident">xs</span> <span class="op">/</span> (<span class="ident">three</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">signed_area_2x</span>()))
+    <span class="kw">let</span> <span class="ident">three</span> <span class="op">=</span> <span class="ident">T::ExtendedSigned::from_usize</span>(<span class="number">3</span>).<span class="ident">unwrap</span>();
+    <span class="ident">Point::from</span>(<span class="ident">xs</span> <span class="op">/</span> (<span class="ident">three</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">signed_area_2x</span>())).<span class="ident">cast</span>(<span class="ident">Extended::truncate_signed</span>)
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">signed_area</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
   {
-    <span class="self">self</span>.<span class="ident">signed_area_2x</span>() <span class="op">/</span> <span class="ident">T::from_usize</span>(<span class="number">2</span>).<span class="ident">unwrap</span>()
+    <span class="ident">Extended::truncate_signed</span>(<span class="self">self</span>.<span class="ident">signed_area_2x</span>() <span class="op">/</span> <span class="ident">T::ExtendedSigned::from_usize</span>(<span class="number">2</span>).<span class="ident">unwrap</span>())
   }
 
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">signed_area_2x</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">signed_area_2x</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T::ExtendedSigned</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
   {
@@ -783,9 +809,20 @@
       .<span class="ident">map</span>(<span class="op">|</span><span class="ident">edge</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">edge</span>.<span class="ident">src</span>;
         <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">edge</span>.<span class="ident">dst</span>;
-        <span class="ident">p</span>.<span class="ident">array</span>[<span class="number">0</span>].<span class="ident">clone</span>() <span class="op">*</span> <span class="ident">q</span>.<span class="ident">array</span>[<span class="number">1</span>].<span class="ident">clone</span>() <span class="op">-</span> <span class="ident">q</span>.<span class="ident">array</span>[<span class="number">0</span>].<span class="ident">clone</span>() <span class="op">*</span> <span class="ident">p</span>.<span class="ident">array</span>[<span class="number">1</span>].<span class="ident">clone</span>()
+        <span class="ident">p</span>.<span class="ident">array</span>[<span class="number">0</span>].<span class="ident">clone</span>().<span class="ident">extend_signed</span>() <span class="op">*</span> <span class="ident">q</span>.<span class="ident">array</span>[<span class="number">1</span>].<span class="ident">clone</span>().<span class="ident">extend_signed</span>()
+          <span class="op">-</span> <span class="ident">q</span>.<span class="ident">array</span>[<span class="number">0</span>].<span class="ident">clone</span>().<span class="ident">extend_signed</span>() <span class="op">*</span> <span class="ident">p</span>.<span class="ident">array</span>[<span class="number">1</span>].<span class="ident">clone</span>().<span class="ident">extend_signed</span>()
       })
       .<span class="ident">sum</span>()
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+  {
+    <span class="kw">match</span> <span class="self">self</span>.<span class="ident">iter_boundary</span>().<span class="ident">min_by</span>(<span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">point</span>().<span class="ident">cmp</span>(<span class="ident">b</span>.<span class="ident">point</span>())) {
+      <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Orientation::CoLinear</span>,
+      <span class="prelude-val">Some</span>(<span class="ident">cursor</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cursor</span>.<span class="ident">orientation</span>(),
+    }
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">point</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">PointId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> {
@@ -919,13 +956,17 @@
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
   {
-    <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">signed_area_2x</span>().<span class="ident">is_positive</span>() {
-      <span class="kw">let</span> <span class="ident">root_position</span> <span class="op">=</span> <span class="ident">Position</span> {
-        <span class="ident">ring_id</span>: <span class="ident">RingId</span>(<span class="number">0</span>),
-        <span class="ident">position_id</span>: <span class="ident">PositionId</span>(<span class="number">0</span>),
-        <span class="ident">size</span>: <span class="self">self</span>.<span class="ident">rings</span>[<span class="number">0</span>].<span class="ident">len</span>(),
-      };
-      <span class="self">self</span>.<span class="ident">vertices_reverse</span>(<span class="ident">root_position</span>, <span class="ident">root_position</span>.<span class="ident">prev</span>())
+    <span class="kw">match</span> <span class="self">self</span>.<span class="ident">orientation</span>() {
+      <span class="ident">Orientation::CounterClockWise</span> <span class="op">=</span><span class="op">&gt;</span> (),
+      <span class="ident">Orientation::CoLinear</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;Polygon is non-orientable.&quot;</span>),
+      <span class="ident">Orientation::ClockWise</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">root_position</span> <span class="op">=</span> <span class="ident">Position</span> {
+          <span class="ident">ring_id</span>: <span class="ident">RingId</span>(<span class="number">0</span>),
+          <span class="ident">position_id</span>: <span class="ident">PositionId</span>(<span class="number">0</span>),
+          <span class="ident">size</span>: <span class="self">self</span>.<span class="ident">rings</span>[<span class="number">0</span>].<span class="ident">len</span>(),
+        };
+        <span class="self">self</span>.<span class="ident">vertices_reverse</span>(<span class="ident">root_position</span>, <span class="ident">root_position</span>.<span class="ident">prev</span>())
+      }
     }
   }
 
@@ -1091,6 +1132,11 @@
 <span class="comment">//   type Iter: Iterator&lt;Item = (VertexId, VertexId, VertexId)&gt;;</span>
 <span class="comment">//   fn triangulate(&amp;self) -&gt; Self::Iter;</span>
 <span class="comment">// }</span>
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
+  <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+}
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rgeometry" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
     <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>

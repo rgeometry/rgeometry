@@ -316,7 +316,7 @@
   <span class="comment">// if all points are colinear, return error.</span>
   <span class="comment">// dbg!(&amp;pts);</span>
   <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">isects</span> <span class="op">=</span> <span class="ident">IndexIntersectionSet::new</span>(<span class="ident">poly</span>.<span class="ident">iter_boundary</span>().<span class="ident">len</span>());
-  <span class="macro">dbg!</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">rings</span>[<span class="number">0</span>]);
+  <span class="comment">// dbg!(&amp;poly.rings[0]);</span>
   <span class="kw">for</span> <span class="ident">e1</span> <span class="kw">in</span> <span class="ident">edges</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>) {
     <span class="kw">for</span> <span class="ident">e2</span> <span class="kw">in</span> <span class="ident">edges</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>) {
       <span class="kw">if</span> <span class="ident">e1</span> <span class="op">&lt;</span> <span class="ident">e2</span> {
@@ -376,7 +376,7 @@
   <span class="kw">let</span> <span class="ident">e1</span> <span class="op">=</span> <span class="ident">LineSegmentView::new</span>(<span class="ident">a_min</span>, <span class="ident">a_max</span>);
   <span class="kw">let</span> <span class="ident">e2</span> <span class="op">=</span> <span class="ident">LineSegmentView::new</span>(<span class="ident">b_min</span>, <span class="ident">b_max</span>);
   <span class="ident">e1</span>.<span class="ident">intersect</span>(<span class="ident">e2</span>)<span class="question-mark">?</span>; <span class="comment">// Returns Some(...) if there exist a point shared by both line segments.</span>
-  <span class="macro">dbg!</span>(<span class="ident">e1</span>, <span class="ident">e2</span>);
+                     <span class="comment">// dbg!(e1, e2);</span>
   <span class="prelude-val">Some</span>(<span class="ident">IndexIntersection::new</span>(<span class="ident">a</span>, <span class="ident">b</span>))
 }
 
@@ -483,7 +483,7 @@
     <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">position</span>;
     <span class="macro">eprintln!</span>(<span class="string">&quot;Uncross: {:?} {:?}&quot;</span>, <span class="ident">p1</span>, <span class="ident">p2</span>);
     <span class="ident">poly</span>.<span class="ident">vertices_reverse</span>(<span class="ident">p1</span>, <span class="ident">p2</span>);
-    <span class="macro">dbg!</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">rings</span>[<span class="number">0</span>]);
+    <span class="comment">// dbg!(&amp;poly.rings[0]);</span>
   }
   <span class="comment">// dbg!(&amp;removed_edges, &amp;inserted_edges);</span>
   <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">edge</span> <span class="kw">in</span> <span class="ident">inserted_edges</span>.<span class="ident">iter</span>() {

@@ -593,18 +593,18 @@
     }
     <span class="kw">fn</span> <span class="ident">arbitrary</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::Strategy</span> {
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
-      <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">3</span>..<span class="op">=</span><span class="number">20</span>);
-      <span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="ident">n</span>..<span class="op">=</span><span class="number">1_000_000_000</span>);
-      <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">PolygonConvex::random</span>(<span class="ident">n</span>, <span class="ident">max</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+      <span class="comment">// let n = rng.gen_range(3..=20);</span>
+      <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="number">5</span>;
+      <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">PolygonConvex::random</span>(<span class="ident">n</span>, <span class="number">1_000_000_000</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
       <span class="ident">Just</span>(<span class="ident">p</span>)
     }
   }
 
   <span class="macro">proptest!</span> {
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span>) {
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>(), <span class="prelude-val">Ok</span>(()))
-    }
+    <span class="comment">// #[test]</span>
+    <span class="comment">// fn all_random_convex_polygons_are_valid(poly: PolygonConvex&lt;BigRational&gt;) {</span>
+    <span class="comment">//   prop_assert_eq!(poly.validate().err(), None)</span>
+    <span class="comment">// }</span>
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">sum_to_max</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">1</span>..<span class="number">1000</span>, <span class="ident">max</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">1_000_000</span>) {
