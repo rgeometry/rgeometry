@@ -36,7 +36,7 @@ where
   /// be concave or colinear.
   pub fn new_unchecked(poly: Polygon<T>) -> PolygonConvex<T> {
     let convex = PolygonConvex(poly);
-    // debug_assert_ok!(convex.validate());
+    debug_assert_ok!(convex.validate());
     convex
   }
 
