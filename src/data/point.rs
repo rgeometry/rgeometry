@@ -180,7 +180,7 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 impl<T> Point<T, 2> {
   pub fn orientation(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
   where
-    T: Clone + NumOps + Ord,
+    T: Clone + NumOps + Ord + crate::Extended,
   {
     Orientation::new(&self.array, &q.array, &r.array)
   }
@@ -352,12 +352,40 @@ pub mod tests {
     }
   }
 
+  impl<const N: usize> Arbitrary for Point<i64, N> {
+    type Strategy = Point<num::i64::Any, N>;
+    type Parameters = ();
+    fn arbitrary_with(_params: ()) -> Self::Strategy {
+      Point {
+        array: array_init(|_| any::<i64>()),
+      }
+    }
+  }
+
+  impl<const N: usize> Arbitrary for Point<i8, N> {
+    type Strategy = Point<num::i8::Any, N>;
+    type Parameters = ();
+    fn arbitrary_with(_params: ()) -> Self::Strategy {
+      Point {
+        array: array_init(|_| any::<i8>()),
+      }
+    }
+  }
+
   pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> {
     any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.try_into().ok())
   }
 
   pub fn any_r<const N: usize>() -> impl Strategy<Value = Point<BigInt, N>> {
     any::<Point<isize, N>>().prop_map(|pt| pt.cast(BigInt::from))
+  }
+
+  pub fn any_64<const N: usize>() -> impl Strategy<Value = Point<i64, N>> {
+    any::<Point<i64, N>>()
+  }
+
+  pub fn any_8<const N: usize>() -> impl Strategy<Value = Point<i8, N>> {
+    any::<Point<i8, N>>()
   }
 
   proptest! {
@@ -367,8 +395,34 @@ pub mod tests {
     }
 
     #[test]
-    fn cmp_around_fuzz(pt1 in any_nn(), pt2 in any_nn(), pt3 in any_nn()) {
+    fn cmp_around_fuzz_nn(pt1 in any_nn(), pt2 in any_nn(), pt3 in any_nn()) {
       let _ = pt1.ccw_cmp_around(&pt2, &pt3);
+    }
+
+    #[test]
+    fn cmp_around_fuzz_i8(pt1 in any_8(), pt2 in any_8(), pt3 in any_8()) {
+      let _ = pt1.ccw_cmp_around(&pt2, &pt3);
+    }
+
+    #[test]
+    fn bigint_colinear(pt1 in any_r(), pt2 in any_r()) {
+      let diff = &pt2 - &pt1;
+      let pt3 = &pt2 + &diff;
+      prop_assert!(Orientation::is_colinear(&pt1, &pt2, &pt3))
+    }
+
+    #[test]
+    fn bigint_not_colinear(pt1 in any_r(), pt2 in any_r()) {
+      let diff = &pt2 - &pt1;
+      let pt3 = &pt2 + &diff + &Vector([BigInt::from(1),BigInt::from(1)]);
+      prop_assert!(!Orientation::is_colinear(&pt1, &pt2, &pt3))
+    }
+
+    #[test]
+    fn orientation_reverse(pt1 in any_64(), pt2 in any_64(), pt3 in any_64()) {
+      let abc = Orientation::new(&pt1, &pt2, &pt3);
+      let cba = Orientation::new(&pt3, &pt2, &pt1);
+      prop_assert_eq!(abc, cba.reverse())
     }
   }
 
@@ -407,6 +461,38 @@ pub mod tests {
     assert_eq!(
       Point::new([0, 0]).orientation(&Point::new([0, 0]), &Point::new([0, 0])),
       CoLinear
+    );
+
+    // let l1 = LineSegment::new(Inclusive((0, 0).into()), Inclusive((1, 0).into()));
+    // let l2 = LineSegment::new(Inclusive((1, 0).into()), Inclusive((2, 0).into()));
+    // let l3 = LineSegment::new(Inclusive((1, 0).into()), Inclusive((1, 0).into()));
+  }
+
+  #[test]
+  fn unit_1() {
+    assert_eq!(
+      Point::new([0, 0]).orientation(&Point::new([1, 0]), &Point::new([1, 0])),
+      CoLinear
+    );
+    assert_eq!(
+      Point::new([0, 0]).orientation(&Point::new([1, 0]), &Point::new([2, 0])),
+      CoLinear
+    );
+    assert_eq!(
+      Point::new([1, 0]).orientation(&Point::new([2, 0]), &Point::new([0, 0])),
+      CoLinear
+    );
+    assert_eq!(
+      Point::new([1, 0]).orientation(&Point::new([2, 0]), &Point::new([1, 0])),
+      CoLinear
+    );
+  }
+
+  #[test]
+  fn unit_2() {
+    assert_eq!(
+      Point::new([1, 0]).orientation(&Point::new([0, 6]), &Point::new([0, 8])),
+      ClockWise
     );
   }
 }

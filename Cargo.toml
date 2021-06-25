@@ -1,15 +1,15 @@
 [package]
-authors     = ["David Himmelstrup <lemmih@gmail.com>"]
-categories  = ["algorithms", "data-structures", "mathematics", "graphics"]
+authors   = ["David Himmelstrup <lemmih@gmail.com>"]
+categories = ["algorithms", "data-structures", "mathematics", "graphics"]
 description = "High-Level Computational Geometry"
-edition     = "2018"
-homepage    = "https://rgeometry.org/"
-license     = "Unlicense"
-name        = "rgeometry"
-readme      = "README.md"
-repository  = "https://github.com/rgeometry/rgeometry"
-version     = "0.3.0"
-exclude     = [
+edition   = "2018"
+homepage  = "https://rgeometry.org/"
+license   = "Unlicense"
+name      = "rgeometry"
+readme    = "README.md"
+repository = "https://github.com/rgeometry/rgeometry"
+version   = "0.3.0"
+exclude   = [
   ".dockerignore",
   ".github",
   ".gitignore",
@@ -19,27 +19,31 @@ exclude     = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-array-init    = "2.0"
-getrandom     = { version = "^0.2.3", features = ["js"] }
-num-bigint    = "0.4"
-num-rational  = "0.4"
-num-traits    = "0.2.*"
-rand          = { version = "0.8", features = ["small_rng"] }
-claim         = "0.5.0"
-ordered-float = { git = "https://github.com/reem/rust-ordered-float", version = "2.5.0" }
+array-init  = "2.0"
+getrandom   = { version="^0.2.3", features=["js"] }
+num-bigint  = "0.4"
+num-rational = "0.4"
+num-traits  = "0.2.*"
+rand        = { version="0.8", features=["small_rng"] }
+claim       = "0.5.0"
+ordered-float = "2.5.1"
 
 [dev-dependencies]
-proptest       = "1.0.0"
-criterion      = "0.3"
-rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
+proptest     = "1.0.0"
+criterion    = "0.3"
+rgeometry-wasm = { git="https://github.com/rgeometry/rgeometry-wasm", branch="main" }
 
 [[bench]]
-name    = "convex_polygon"
+name  = "convex_polygon"
 harness = false
 
 [[bench]]
-name    = "graham_scan"
+name  = "graham_scan"
 harness = false
+
+[profile.test]
+opt-level     = 1
+overflow-checks = true
 
 [profile.bench]
 debug = true
@@ -48,4 +52,4 @@ debug = true
 rustdoc-args = ["--html-in-header", "doc-header.html"]
 
 [patch."https://github.com/rgeometry/rgeometry"]
-rgeometry = { path = "." }
+rgeometry = { path="." }

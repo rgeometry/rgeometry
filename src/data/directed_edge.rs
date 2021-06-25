@@ -31,7 +31,7 @@ impl<'a, T: Ord, const N: usize> From<&'a DirectedEdge<T, N>> for LineSegmentVie
 
 impl<'a, T> Intersects for &'a DirectedEdge<T, 2>
 where
-  T: Clone + Num + Ord + std::fmt::Debug,
+  T: Clone + Num + Ord + std::fmt::Debug + crate::Extended,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a DirectedEdge<T, 2>) -> Option<Self::Result> {
