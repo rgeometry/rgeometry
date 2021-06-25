@@ -38,6 +38,18 @@ impl Orientation {
     }
   }
 
+  pub fn along_vector<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Orientation
+  where
+    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
+  {
+    // raw_arr_turn(p, q, r)
+    match Extended::cmp_vector_slope(p, q, r) {
+      Ordering::Less => Orientation::ClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+      Ordering::Greater => Orientation::CounterClockWise,
+    }
+  }
+
   pub fn is_colinear<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> bool
   where
     T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
@@ -59,12 +71,12 @@ impl Orientation {
     Orientation::new(p, q, r) == Orientation::ClockWise
   }
 
-  pub fn around_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
-  where
-    T: Ord + Mul<Output = T> + Clone + Extended,
-  {
-    raw_arr_turn_origin(q, r)
-  }
+  // pub fn around_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
+  // where
+  //   T: Ord + Mul<Output = T> + Clone + Extended,
+  // {
+  //   raw_arr_turn_origin(q, r)
+  // }
 
   pub fn reverse(self) -> Orientation {
     match self {
@@ -76,19 +88,19 @@ impl Orientation {
 }
 
 // How does the line from (0,0) to q to r turn?
-pub fn raw_arr_turn_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
-where
-  T: Ord + Mul<Output = T> + Clone,
-  // for<'a> &'a T: Mul<Output = T>,
-{
-  let [ux, uy] = q.clone();
-  let [vx, vy] = r.clone();
-  match (ux * vy).cmp(&(uy * vx)) {
-    Ordering::Less => ClockWise,
-    Ordering::Greater => CounterClockWise,
-    Ordering::Equal => CoLinear,
-  }
-}
+// pub fn raw_arr_turn_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
+// where
+//   T: Ord + Mul<Output = T> + Clone,
+//   // for<'a> &'a T: Mul<Output = T>,
+// {
+//   let [ux, uy] = q.clone();
+//   let [vx, vy] = r.clone();
+//   match (ux * vy).cmp(&(uy * vx)) {
+//     Ordering::Less => ClockWise,
+//     Ordering::Greater => CounterClockWise,
+//     Ordering::Equal => CoLinear,
+//   }
+// }
 
 // pub fn raw_arr_turn<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Orientation
 // where
@@ -210,48 +222,114 @@ pub fn extended_orientation_i64(p: &[i64; 2], q: &[i64; 2], r: &[i64; 2]) -> Ord
 // }
 
 // Sort 'p' and 'q' counterclockwise around (0,0) along the 'z' axis.
-pub fn ccw_cmp_around_origin_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Ordering
+// pub fn ccw_cmp_around_origin_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Ordering
+// where
+//   T: Clone + Ord + Mul<Output = T> + Neg<Output = T>,
+// {
+//   let [zx, zy] = z;
+//   let b: &[T; 2] = &[zy.clone().neg(), zx.clone()];
+//   let ap = raw_arr_turn_origin(z, p);
+//   let aq = raw_arr_turn_origin(z, q);
+//   let on_zero = |d: &[T; 2]| match raw_arr_turn_origin(b, d) {
+//     CounterClockWise => false,
+//     ClockWise => true,
+//     CoLinear => true,
+//   };
+//   let cmp = match raw_arr_turn_origin(p, q) {
+//     CounterClockWise => Ordering::Less,
+//     ClockWise => Ordering::Greater,
+//     CoLinear => Ordering::Equal,
+//   };
+//   match (ap, aq) {
+//     (CounterClockWise, CounterClockWise) => cmp,
+//     (CounterClockWise, ClockWise) => Ordering::Less,
+//     (CounterClockWise, CoLinear) => {
+//       if on_zero(q) {
+//         Ordering::Greater
+//       } else {
+//         Ordering::Less
+//       }
+//     }
+
+//     (ClockWise, CounterClockWise) => Ordering::Greater,
+//     (ClockWise, ClockWise) => cmp,
+//     (ClockWise, CoLinear) => Ordering::Less,
+
+//     (CoLinear, CounterClockWise) => {
+//       if on_zero(p) {
+//         Ordering::Less
+//       } else {
+//         Ordering::Greater
+//       }
+//     }
+//     (CoLinear, ClockWise) => Ordering::Less,
+//     (CoLinear, CoLinear) => match (on_zero(p), on_zero(q)) {
+//       (true, true) => Ordering::Equal,
+//       (false, false) => Ordering::Equal,
+//       (true, false) => Ordering::Less,
+//       (false, true) => Ordering::Greater,
+//     },
+//   }
+// }
+
+pub fn ccw_cmp_around_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Ordering
 where
-  T: Clone + Ord + Mul<Output = T> + Neg<Output = T>,
+  T: Clone + Ord + num_traits::NumOps<T, T> + Extended + Signed,
 {
-  let [zx, zy] = z;
-  let b: &[T; 2] = &[zy.clone().neg(), zx.clone()];
-  let ap = raw_arr_turn_origin(z, p);
-  let aq = raw_arr_turn_origin(z, q);
-  let on_zero = |d: &[T; 2]| match raw_arr_turn_origin(b, d) {
-    CounterClockWise => false,
-    ClockWise => true,
-    CoLinear => true,
+  let aq = Orientation::along_vector(p, z, q);
+  let ar = Orientation::along_vector(p, z, r);
+  let on_zero = |d: &[T; 2]| {
+    !((d[0] < p[0] && z[0].is_positive())
+      || (d[1] < p[1] && z[1].is_positive())
+      || (d[0] > p[0] && z[0].is_negative())
+      || (d[1] > p[1] && z[1].is_negative()))
   };
-  let cmp = match raw_arr_turn_origin(p, q) {
+  // let on_zero = |d: &[T; 2]| match Orientation::new(p, pb, d) {
+  //   CounterClockWise => false,
+  //   ClockWise => true,
+  //   CoLinear => true,
+  // };
+  let cmp = || match Orientation::new(p, q, r) {
     CounterClockWise => Ordering::Less,
     ClockWise => Ordering::Greater,
     CoLinear => Ordering::Equal,
   };
-  match (ap, aq) {
-    (CounterClockWise, CounterClockWise) => cmp,
+  dbg!(aq, ar);
+  match (aq, ar) {
+    // Easy cases: Q and R are on either side of the line p->z:
     (CounterClockWise, ClockWise) => Ordering::Less,
-    (CounterClockWise, CoLinear) => {
-      if on_zero(q) {
-        Ordering::Greater
-      } else {
-        Ordering::Less
-      }
-    }
-
     (ClockWise, CounterClockWise) => Ordering::Greater,
-    (ClockWise, ClockWise) => cmp,
-    (ClockWise, CoLinear) => Ordering::Less,
+    // A CoLinear point may be in front of p->z (0 degree angle) or behind
+    // it (180 degree angle). If the other point is clockwise, it must have an
+    // angle greater than 180 degrees and must therefore be greater than the
+    // colinear point.
+    (CoLinear, ClockWise) => Ordering::Less,
+    (ClockWise, CoLinear) => Ordering::Greater,
 
+    // if Q and R are on the same side of P->Z then the most clockwise point
+    // will have the smallest angle.
+    (CounterClockWise, CounterClockWise) => cmp(),
+    (ClockWise, ClockWise) => cmp(),
+
+    // CoLinear points have an angle of either 0 degrees or 180 degrees. on_zero
+    // can distinguish these two cases:
+    //    on_zero(p) => 0 degrees.
+    //   !on_zero(p) => 180 degrees.
+    (CounterClockWise, CoLinear) => {
+      if on_zero(r) {
+        Ordering::Greater // angle(r) = 0 & 0 < angle(q) < 180. Thus: Q > R
+      } else {
+        Ordering::Less // angle(r) = 180 & 0 < angle(q) < 180. Thus: Q < R
+      }
+    }
     (CoLinear, CounterClockWise) => {
-      if on_zero(p) {
+      if on_zero(q) {
         Ordering::Less
       } else {
         Ordering::Greater
       }
     }
-    (CoLinear, ClockWise) => Ordering::Less,
-    (CoLinear, CoLinear) => match (on_zero(p), on_zero(q)) {
+    (CoLinear, CoLinear) => match (on_zero(q), on_zero(r)) {
       (true, true) => Ordering::Equal,
       (false, false) => Ordering::Equal,
       (true, false) => Ordering::Less,
@@ -280,6 +358,7 @@ mod tests {
       Ordering::Equal
     );
   }
+
   #[test]
   fn cmp_slope_2() {
     assert_eq!(
@@ -305,5 +384,19 @@ mod tests {
         }
       }
     }
+  }
+
+  #[test]
+  fn cmp_around_1() {
+    use num_bigint::*;
+    let pt1 = [BigInt::from(0), BigInt::from(0)];
+    let pt2 = [BigInt::from(-1), BigInt::from(1)];
+    // let pt2 = [BigInt::from(-717193444810564826_i64), BigInt::from(1)];
+    let vector = [BigInt::from(1), BigInt::from(0)];
+
+    assert_eq!(
+      ccw_cmp_around_with(&vector, &pt1, &pt2, &pt1),
+      Ordering::Greater
+    );
   }
 }

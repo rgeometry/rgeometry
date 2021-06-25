@@ -70,6 +70,7 @@ pub trait Extended: NumOps<Self, Self> + Ord + Clone {
   fn extend_signed(self) -> Self::ExtendedSigned;
   fn truncate_signed(val: Self::ExtendedSigned) -> Self;
   fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
+  fn cmp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
 }
 
 macro_rules! fixed_precision {
@@ -83,17 +84,6 @@ macro_rules! fixed_precision {
         val as Self
       }
 
-      // ux = 0 - 1 = 1, true
-      // vy = 8 - 0 = 8, false
-      // uy = 6 - 0 = 6, false
-      // vx = 0 - 1 = 1, true
-
-      // ux*vy = -8
-      // uy*vx = -6
-
-      // P: 1 0
-      // Q: 0 6
-      // R: 0 8
       fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
         // Return the absolute difference along with its sign.
         // diff(0, 10) => (10, true)
@@ -109,10 +99,6 @@ macro_rules! fixed_precision {
         }
         let (ux, ux_neg) = diff(q[0], p[0]);
         let (vy, vy_neg) = diff(r[1], p[1]);
-        // neg xor neg = pos = 0
-        // neg xor pos = neg = 1
-        // pos xor neg = neg = 1
-        // pos xor pos = pos = 0
         let ux_vy_neg = ux_neg.bitxor(vy_neg) && ux != 0 && vy != 0;
         let (uy, uy_neg) = diff(q[1], p[1]);
         let (vx, vx_neg) = diff(r[0], p[0]);
@@ -123,9 +109,37 @@ macro_rules! fixed_precision {
           (true, true) => (uy * vx).cmp(&(ux * vy)),
           (false, false) => (ux * vy).cmp(&(uy * vx)),
         }
-        // uy_vx_neg
-        //   .cmp(&ux_vy_neg)
-        //   .then_with(|| (ux * vy).cmp(&(uy * vx)))
+      }
+
+      fn cmp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        // Return the absolute difference along with its sign.
+        // diff(0, 10) => (10, true)
+        // diff(10, 0) => (10, false)
+        // diff(i8::MIN,i8:MAX) => (255_u16, true)
+        // diff(a,b) = (c, sign) where a = if sign { b-c } else { b+c }
+        fn diff(a: $ty, b: $ty) -> ($ulong, bool) {
+          if b > a {
+            (b.wrapping_sub(a) as $uty as $ulong, true)
+          } else {
+            (a.wrapping_sub(b) as $uty as $ulong, false)
+          }
+        }
+        let (ux, ux_neg) = (q[0].unsigned_abs() as $ulong, q[0] < 0);
+        let (vy, vy_neg) = diff(r[1], p[1]);
+        // neg xor neg = pos = 0
+        // neg xor pos = neg = 1
+        // pos xor neg = neg = 1
+        // pos xor pos = pos = 0
+        let ux_vy_neg = ux_neg.bitxor(vy_neg) && ux != 0 && vy != 0;
+        let (uy, uy_neg) = (q[1].unsigned_abs() as $ulong, q[1] < 0);
+        let (vx, vx_neg) = diff(r[0], p[0]);
+        let uy_vx_neg = uy_neg.bitxor(vx_neg) && uy != 0 && vx != 0;
+        match (ux_vy_neg, uy_vx_neg) {
+          (true, false) => Ordering::Less,
+          (false, true) => Ordering::Greater,
+          (true, true) => (uy * vx).cmp(&(ux * vy)),
+          (false, false) => (ux * vy).cmp(&(uy * vx)),
+        }
       }
     }
   };
@@ -147,6 +161,13 @@ macro_rules! arbitrary_precision {
         let slope2 = (q[1].clone() - p[1].clone()) * (r[0].clone() - q[0].clone());
         slope1.cmp(&slope2)
       }
+      fn cmp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        Extended::cmp_slope(
+          p,
+          &[&p[0] + &q[0], &p[1] + &q[1]],
+          r
+        )
+      }
     })*
   };
 }
@@ -159,4 +180,6 @@ fixed_precision!(isize, usize, i128, u128);
 arbitrary_precision!(num_bigint::BigInt);
 arbitrary_precision!(num_rational::BigRational);
 arbitrary_precision!(ordered_float::OrderedFloat<f32>);
+arbitrary_precision!(ordered_float::OrderedFloat<f64>);
 arbitrary_precision!(ordered_float::NotNan<f32>);
+arbitrary_precision!(ordered_float::NotNan<f64>);

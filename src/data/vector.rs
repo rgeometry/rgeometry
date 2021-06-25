@@ -2,8 +2,8 @@ use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
 use num_traits::identities::One;
 use num_traits::identities::Zero;
-use num_traits::NumOps;
 use num_traits::NumRef;
+use num_traits::{NumOps, Signed};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
@@ -17,6 +17,7 @@ use std::ops::Sub;
 
 use crate::array::*;
 use crate::data::Point;
+use crate::Extended;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
@@ -92,8 +93,7 @@ impl<'a, const N: usize> TryFrom<Vector<f64, N>> for Vector<BigRational, N> {
 impl<T> Vector<T, 2> {
   pub fn ccw_cmp_around(&self, p: &Vector<T, 2>, q: &Vector<T, 2>) -> Ordering
   where
-    T: NumRef + Clone + Ord + Neg<Output = T> + Zero + One,
-    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
+    T: Extended + Signed,
   {
     self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
   }
@@ -104,21 +104,19 @@ impl<T> Vector<T, 2> {
     q: &Vector<T, 2>,
   ) -> Ordering
   where
-    T: NumRef + Clone + Ord + Neg<Output = T>,
-    for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
+    T: Extended + Signed,
   {
-    ccw_cmp_around_origin_with(&z.0, &(p - self).0, &(q - self).0)
+    ccw_cmp_around_with(&z.0, &self.0, &p.0, &q.0)
   }
 
   // FIXME: rename to sort_around_origin
   // FIXME: sort by magnitude if two vectors have the same angle.
   pub fn sort_around(pts: &mut Vec<Vector<T, 2>>)
   where
-    T: NumRef + Ord + Clone + Neg<Output = T> + Zero + One,
-    // for<'a> &'a T: Mul<Output = T> + Neg<Output = T>,
+    T: Extended + Signed,
   {
-    pts.sort_unstable_by(|a, b| ccw_cmp_around_origin_with(&[T::one(), T::zero()], &a.0, &b.0))
-    // unimplemented!();
+    let origin = [T::zero(), T::zero()];
+    pts.sort_unstable_by(|a, b| ccw_cmp_around_with(&[T::one(), T::zero()], &origin, &a.0, &b.0))
     // L.sortBy (ccwCmpAround c <> cmpByDistanceTo c)
   }
 }

@@ -124,6 +124,14 @@ impl<T> From<(T, T)> for Point<T, 2> {
   }
 }
 
+impl From<Point<i64, 2>> for Point<BigInt, 2> {
+  fn from(point: Point<i64, 2>) -> Point<BigInt, 2> {
+    Point {
+      array: [point.array[0].into(), point.array[1].into()],
+    }
+  }
+}
+
 impl<'a, const N: usize> From<&'a Point<BigRational, N>> for Point<f64, N> {
   fn from(point: &Point<BigRational, N>) -> Point<f64, N> {
     Point {
@@ -188,7 +196,7 @@ impl<T> Point<T, 2> {
   /// Docs?
   pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Clone + Ord + NumOps + Zero + One + Neg<Output = T>,
+    T: Clone + Ord + NumOps + Zero + One + Neg<Output = T> + crate::Extended + Signed,
     // for<'a> &'a T: Mul<&'a T, Output = T>,
   {
     self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
@@ -196,10 +204,10 @@ impl<T> Point<T, 2> {
 
   pub fn ccw_cmp_around_with(&self, z: &Vector<T, 2>, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Clone + Ord + NumOps + Neg<Output = T>,
+    T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended + Signed,
     // for<'a> &'a T: Mul<Output = T>,
   {
-    ccw_cmp_around_origin_with(&z.0, &(p - self).0, &(q - self).0)
+    ccw_cmp_around_with(&z.0, &self, &p, &q)
   }
 }
 
@@ -462,10 +470,6 @@ pub mod tests {
       Point::new([0, 0]).orientation(&Point::new([0, 0]), &Point::new([0, 0])),
       CoLinear
     );
-
-    // let l1 = LineSegment::new(Inclusive((0, 0).into()), Inclusive((1, 0).into()));
-    // let l2 = LineSegment::new(Inclusive((1, 0).into()), Inclusive((2, 0).into()));
-    // let l3 = LineSegment::new(Inclusive((1, 0).into()), Inclusive((1, 0).into()));
   }
 
   #[test]

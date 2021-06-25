@@ -93,6 +93,7 @@ where
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
+  debug_assert_eq!(&pts[0], smallest);
   let mut write_idx = 1;
   let mut read_idx = 2;
   // Drop points that are co-linear with our origin.
@@ -210,19 +211,31 @@ mod tests {
     assert_ok!(poly.validate());
   }
 
+  #[test]
+  fn unit_1() {
+    let points: Vec<Point<BigInt, 2>> = vec![
+      Point::new([0, 0]).into(),
+      Point::new([-1, 1]).into(),
+      Point::new([0, 1]).into(),
+      Point::new([-717193444810564826, 1]).into(),
+    ];
+    let poly = convex_hull(points).unwrap();
+    assert_ok!(poly.validate());
+  }
+
   proptest! {
     #[test]
     fn convex_hull_prop(pts in vec(any_r(), 0..100)) {
       if let Ok(poly) = convex_hull(pts.clone()) {
         // Prop #1: Results are valid.
-        assert_ok!(poly.validate());
+        prop_assert_eq!(poly.validate().err(), None);
         // Prop #2: No points from the input set are outside the polygon.
         for pt in pts.iter() {
-          assert_ne!(poly.locate(pt), PointLocation::Outside)
+          prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
         }
         // Prop #3: All vertices are in the input set.
         for pt in poly.iter() {
-          assert!(pts.contains(pt))
+          prop_assert!(pts.contains(pt))
         }
       }
     }
