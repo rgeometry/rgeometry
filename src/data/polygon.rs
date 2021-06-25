@@ -13,6 +13,7 @@ use crate::data::DirectedEdge;
 use crate::data::Point;
 use crate::data::Vector;
 use crate::Error;
+use crate::Extended;
 use crate::PolygonScalar;
 
 mod iter;
@@ -207,16 +208,14 @@ impl<T> Polygon<T> {
       })
       .sum();
     let three = T::ExtendedSigned::from_usize(3).unwrap();
-    Point::from(xs / (three * self.signed_area_2x())).cast(|v| crate::Extended::truncate_signed(v))
+    Point::from(xs / (three * self.signed_area_2x())).cast(Extended::truncate_signed)
   }
 
   pub fn signed_area(&self) -> T
   where
     T: PolygonScalar,
   {
-    crate::Extended::truncate_signed(
-      self.signed_area_2x() / T::ExtendedSigned::from_usize(2).unwrap(),
-    )
+    Extended::truncate_signed(self.signed_area_2x() / T::ExtendedSigned::from_usize(2).unwrap())
   }
 
   pub fn signed_area_2x(&self) -> T::ExtendedSigned
