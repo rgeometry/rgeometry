@@ -89,7 +89,6 @@ where
       .ccw_cmp_around(a, b)
       .then_with(|| smallest.cmp_distance_to(a, b))
   });
-  pts.dedup(); // NOTE: This might not be necessary.
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
@@ -194,6 +193,35 @@ mod tests {
     ];
     let poly = convex_hull(points).unwrap();
     assert_ok!(poly.validate());
+  }
+
+  #[test]
+  fn convex_hull_dups() {
+    let points = vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([2, 2]),
+      Point::new([2, 2]),
+      Point::new([5, 1]),
+      Point::new([5, 1]),
+    ];
+    let poly = convex_hull(points).unwrap();
+    assert_ok!(poly.validate());
+  }
+
+  #[test]
+  fn convex_hull_insufficient_dups() {
+    let points = vec![
+      Point::new([0, 0]),
+      Point::new([0, 0]),
+      Point::new([2, 2]),
+      Point::new([2, 2]),
+      Point::new([0, 0]),
+      Point::new([2, 2]),
+    ];
+    assert_eq!(convex_hull(points).err(), Some(Error::InsufficientVertices));
   }
 
   #[test]
