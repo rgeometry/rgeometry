@@ -87,12 +87,13 @@ where
   pts.sort_unstable_by(|a, b| {
     smallest
       .ccw_cmp_around(a, b)
-      .then_with(|| smallest.cmp_distance_to(a, b))
+      .then_with(|| (a.y_coord(), a.x_coord()).cmp(&(b.y_coord(), b.x_coord())))
+    // .then_with(|| smallest.cmp_distance_to(a, b))
   });
-  pts.dedup(); // NOTE: This might not be necessary.
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
+  debug_assert_eq!(&pts[0], smallest);
   let mut write_idx = 1;
   let mut read_idx = 2;
   // Drop points that are co-linear with our origin.
@@ -196,6 +197,35 @@ mod tests {
   }
 
   #[test]
+  fn convex_hull_dups() {
+    let points = vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([2, 2]),
+      Point::new([2, 2]),
+      Point::new([5, 1]),
+      Point::new([5, 1]),
+    ];
+    let poly = convex_hull(points).unwrap();
+    assert_ok!(poly.validate());
+  }
+
+  #[test]
+  fn convex_hull_insufficient_dups() {
+    let points = vec![
+      Point::new([0, 0]),
+      Point::new([0, 0]),
+      Point::new([2, 2]),
+      Point::new([2, 2]),
+      Point::new([0, 0]),
+      Point::new([2, 2]),
+    ];
+    assert_eq!(convex_hull(points).err(), Some(Error::InsufficientVertices));
+  }
+
+  #[test]
   fn convex_hull_invalid() {
     let points: Vec<Point<i64, 2>> = vec![
       Point { array: [0, 0] },
@@ -210,19 +240,58 @@ mod tests {
     assert_ok!(poly.validate());
   }
 
+  #[test]
+  fn unit_1() {
+    let points: Vec<Point<BigInt, 2>> = vec![
+      Point::new([0, 0]).into(),
+      Point::new([-1, 1]).into(),
+      Point::new([0, 1]).into(),
+      Point::new([-717193444810564826, 1]).into(),
+    ];
+    let poly = convex_hull(points).unwrap();
+    assert_ok!(poly.validate());
+  }
+
+  #[test]
+  fn unit_2() {
+    let points: Vec<Point<i8, 2>> = vec![
+      Point::new([0, 0]),
+      Point::new([0, -10]),
+      Point::new([-13, 0]),
+    ];
+    let poly = convex_hull(points).unwrap();
+    assert_ok!(poly.validate());
+  }
+
   proptest! {
     #[test]
     fn convex_hull_prop(pts in vec(any_r(), 0..100)) {
       if let Ok(poly) = convex_hull(pts.clone()) {
         // Prop #1: Results are valid.
-        assert_ok!(poly.validate());
+        prop_assert_eq!(poly.validate().err(), None);
         // Prop #2: No points from the input set are outside the polygon.
         for pt in pts.iter() {
-          assert_ne!(poly.locate(pt), PointLocation::Outside)
+          prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
         }
         // Prop #3: All vertices are in the input set.
         for pt in poly.iter() {
-          assert!(pts.contains(pt))
+          prop_assert!(pts.contains(pt))
+        }
+      }
+    }
+
+    #[test]
+    fn convex_hull_prop_i8(pts in vec(any_8(), 0..100)) {
+      if let Ok(poly) = convex_hull(pts.clone()) {
+        // Prop #1: Results are valid.
+        prop_assert_eq!(poly.validate().err(), None);
+        // Prop #2: No points from the input set are outside the polygon.
+        for pt in pts.iter() {
+          prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
+        }
+        // Prop #3: All vertices are in the input set.
+        for pt in poly.iter() {
+          prop_assert!(pts.contains(pt))
         }
       }
     }

@@ -13,6 +13,7 @@ use crate::data::DirectedEdge;
 use crate::data::Point;
 use crate::data::Vector;
 use crate::Error;
+use crate::Extended;
 use crate::PolygonScalar;
 
 mod iter;
@@ -121,6 +122,8 @@ pub struct Polygon<T> {
   pub(crate) position_index: Vec<PositionId>,
   // Ring 0 is boundary and ccw
   // Ring n+1 is a hole and cw.
+  // Outer key: RingId
+  // Inner key: PositionId
   pub(crate) rings: Vec<Vec<PointId>>,
 }
 
@@ -179,7 +182,7 @@ impl<T> Polygon<T> {
       return Err(Error::InsufficientVertices);
     }
     // Is counter-clockwise
-    if !self.signed_area_2x().is_positive() {
+    if self.orientation() != Orientation::CounterClockWise {
       return Err(Error::ClockWiseViolation);
     }
     // Has no self intersections.
@@ -196,26 +199,26 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    let xs: Vector<T, 2> = self
+    let xs: Vector<T::ExtendedSigned, 2> = self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = edge.src.as_vec();
-        let q = edge.dst.as_vec();
+        let p = &edge.src.as_vec().cast(|v| v.extend_signed());
+        let q = &edge.dst.as_vec().cast(|v| v.extend_signed());
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
-    let three = T::from_usize(3).unwrap();
-    Point::from(xs / (three * self.signed_area_2x()))
+    let three = T::ExtendedSigned::from_usize(3).unwrap();
+    Point::from(xs / (three * self.signed_area_2x())).cast(Extended::truncate_signed)
   }
 
   pub fn signed_area(&self) -> T
   where
     T: PolygonScalar,
   {
-    self.signed_area_2x() / T::from_usize(2).unwrap()
+    Extended::truncate_signed(self.signed_area_2x() / T::ExtendedSigned::from_usize(2).unwrap())
   }
 
-  pub fn signed_area_2x(&self) -> T
+  pub fn signed_area_2x(&self) -> T::ExtendedSigned
   where
     T: PolygonScalar,
   {
@@ -224,9 +227,20 @@ impl<T> Polygon<T> {
       .map(|edge| {
         let p = edge.src;
         let q = edge.dst;
-        p.array[0].clone() * q.array[1].clone() - q.array[0].clone() * p.array[1].clone()
+        p.array[0].clone().extend_signed() * q.array[1].clone().extend_signed()
+          - q.array[0].clone().extend_signed() * p.array[1].clone().extend_signed()
       })
       .sum()
+  }
+
+  pub fn orientation(&self) -> Orientation
+  where
+    T: PolygonScalar,
+  {
+    match self.iter_boundary().min_by(|a, b| a.point().cmp(b.point())) {
+      None => Orientation::CoLinear,
+      Some(cursor) => cursor.orientation(),
+    }
   }
 
   pub fn point(&self, idx: PointId) -> &Point<T, 2> {
@@ -360,13 +374,17 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    if !self.signed_area_2x().is_positive() {
-      let root_position = Position {
-        ring_id: RingId(0),
-        position_id: PositionId(0),
-        size: self.rings[0].len(),
-      };
-      self.vertices_reverse(root_position, root_position.prev())
+    match self.orientation() {
+      Orientation::CounterClockWise => (),
+      Orientation::CoLinear => panic!("Polygon is non-orientable."),
+      Orientation::ClockWise => {
+        let root_position = Position {
+          ring_id: RingId(0),
+          position_id: PositionId(0),
+          size: self.rings[0].len(),
+        };
+        self.vertices_reverse(root_position, root_position.prev())
+      }
     }
   }
 
@@ -532,3 +550,8 @@ impl Position {
 //   type Iter: Iterator<Item = (VertexId, VertexId, VertexId)>;
 //   fn triangulate(&self) -> Self::Iter;
 // }
+
+#[cfg(test)]
+pub mod tests {
+  use super::*;
+}

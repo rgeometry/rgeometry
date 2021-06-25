@@ -7,7 +7,7 @@ pub fn segment_intersections<'a, Edge, T: 'a>(
 ) -> impl Iterator<Item = (&Edge, &Edge)>
 where
   &'a Edge: Into<LineSegmentView<'a, T, 2>>,
-  T: Clone + num_traits::NumOps<T, T> + Ord + std::fmt::Debug,
+  T: Clone + num_traits::NumOps<T, T> + Ord + std::fmt::Debug + crate::Extended,
 {
   pairs(edges).filter_map(|(a, b)| {
     let a_edge: LineSegmentView<'a, T, 2> = a.into();

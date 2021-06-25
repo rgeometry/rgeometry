@@ -248,7 +248,7 @@ pub enum ILineSegment<'a, T> {
 
 impl<'a, T> Intersects for LineSegmentView<'a, T, 2>
 where
-  T: Clone + NumOps<T, T> + Ord + std::fmt::Debug,
+  T: Clone + NumOps<T, T> + Ord + std::fmt::Debug + crate::Extended,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: LineSegmentView<'a, T, 2>) -> Option<Self::Result> {
@@ -315,7 +315,7 @@ where
 
 impl<'a, T> Intersects for &'a LineSegment<T, 2>
 where
-  T: Clone + Num + Ord + std::fmt::Debug,
+  T: Clone + Num + Ord + std::fmt::Debug + crate::Extended,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a LineSegment<T, 2>) -> Option<Self::Result> {
@@ -325,7 +325,7 @@ where
 
 impl<'a, T> Intersects for &'a Range<Point<T, 2>>
 where
-  T: Clone + Num + Ord + std::fmt::Debug,
+  T: Clone + Num + Ord + std::fmt::Debug + crate::Extended,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a Range<Point<T, 2>>) -> Option<Self::Result> {
@@ -335,7 +335,7 @@ where
 
 impl<'a, T> Intersects for &'a RangeInclusive<Point<T, 2>>
 where
-  T: Clone + Num + Ord + std::fmt::Debug,
+  T: Clone + Num + Ord + std::fmt::Debug + crate::Extended,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a RangeInclusive<Point<T, 2>>) -> Option<Self::Result> {
