@@ -13,6 +13,7 @@ use num_traits::cast::ToPrimitive;
 use rand::distributions::Standard;
 use rand::Rng;
 use rgeometry::*;
+use rgeometry_wasm::playground::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -37,6 +38,15 @@ pub fn run() {
     redraw();
   });
   ev.forget();
+
+  on_mousemove(|event| {
+    upd_mouse(event);
+    redraw();
+  });
+  on_touchmove(|event| {
+    upd_touch(event);
+    redraw()
+  });
 
   redraw();
 }

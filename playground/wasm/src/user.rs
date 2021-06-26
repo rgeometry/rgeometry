@@ -118,9 +118,6 @@ use std::convert::*;
 // }
 
 pub fn main() {
-  static START: Once = Once::new();
-  START.call_once(|| on_mousemove(|_event| main()));
-
   clear_screen();
   set_viewport(2., 2.);
 

@@ -58,6 +58,7 @@ features = [
   'HtmlCanvasElement',
   'HtmlInputElement',
   'InputEvent',
+  'TouchEvent',
   'Window',
 ]
 
