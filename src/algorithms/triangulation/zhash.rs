@@ -37,14 +37,6 @@ where
   let mut possible_ears = EarStore::new(order.len());
   std::iter::from_fn(move || match len {
     0..=2 => None,
-    3 => {
-      len = 0;
-      let focus = possible_ears.pop(rng).unwrap();
-      let prev = vertices.prev(focus);
-      let next = vertices.next(focus);
-      let out = (order[prev], order[focus], order[next]);
-      Some(out)
-    }
     _ => {
       let mut focus = possible_ears.pop(rng).unwrap();
       let mut prev = vertices.prev(focus);
