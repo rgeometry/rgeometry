@@ -37,27 +37,23 @@ where
   let mut possible_ears = EarStore::new(order.len());
   std::iter::from_fn(move || match len {
     0..=2 => None,
-    _ => {
-      let mut focus = possible_ears.pop(rng).unwrap();
-      let mut prev = vertices.prev(focus);
-      let mut next = vertices.next(focus);
-      while ear_check(points, order, &vertices, prev, focus, next) {
-        focus = possible_ears.pop(rng)?;
-        prev = vertices.prev(focus);
-        next = vertices.next(focus);
+    _ => loop {
+      let focus = possible_ears.pop(rng).unwrap();
+      let prev = vertices.prev(focus);
+      let next = vertices.next(focus);
+      if is_ear(points, order, &vertices, prev, focus, next) {
+        possible_ears.new_possible_ear(prev);
+        possible_ears.new_possible_ear(next);
+        vertices.delete(focus);
+        len -= 1;
+        let out = (order[prev], order[focus], order[next]);
+        return Some(out);
       }
-
-      possible_ears.new_possible_ear(prev);
-      possible_ears.new_possible_ear(next);
-      vertices.delete(focus);
-      len -= 1;
-      let out = (order[prev], order[focus], order[next]);
-      Some(out)
-    }
+    },
   })
 }
 
-fn ear_check<T>(
+fn is_ear<T>(
   points: &[Point<T, 2>],
   order: &[PointId],
   vertices: &List,
@@ -69,18 +65,18 @@ where
   T: PolygonScalar,
 {
   let get_point = |key: usize| &points[order[key].usize()];
-  if Orientation::new(get_point(a), get_point(b), get_point(c)) == Orientation::CounterClockWise {
-    let trig = TriangleView::new([get_point(a), get_point(b), get_point(c)]);
+  let trig = TriangleView::new_unchecked([get_point(a), get_point(b), get_point(c)]);
+  if trig.orientation() == Orientation::CounterClockWise {
     let mut focus = vertices.next(c);
     while focus != a {
       if trig.locate(&points[focus]) != PointLocation::Outside {
-        return true;
+        return false;
       }
       focus = vertices.next(focus);
     }
-    false
-  } else {
     true
+  } else {
+    false
   }
 }
 

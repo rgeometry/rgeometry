@@ -46,14 +46,22 @@ where
     triangle
   }
 
+  pub fn new_unchecked(pts: [&'a Point<T, 2>; 3]) -> TriangleView<'a, T> {
+    TriangleView(pts)
+  }
+
   // O(1)
   pub fn validate(&self) -> Result<(), Error> {
-    let arr = &self.0;
-    if arr.index(0).orientation(&arr[1], &arr[2]) != Orientation::CounterClockWise {
+    if self.orientation() != Orientation::CounterClockWise {
       Err(Error::ClockWiseViolation)
     } else {
       Ok(())
     }
+  }
+
+  pub fn orientation(&self) -> Orientation {
+    let arr = &self.0;
+    Orientation::new(&arr[0], &arr[1], &arr[2])
   }
 
   // O(1)
