@@ -105,7 +105,7 @@ pub struct DirectedIndexEdge {
 
 // A*D   C*B
 
-// intersections : &[impl Into<LineSegment>] -> impl Iterator<Item =(&LineSegment,&LineSegment, ILineSegment)>
+// DONE: intersections : &[impl Into<LineSegment>] -> impl Iterator<Item =(&LineSegment,&LineSegment, ILineSegment)>
 // cut_holes: Polygon -> PolygonSimple
 // cut_holes: Polygon -> Vec<PointId>
 // triangulate: Vec<Point<T,2>> + Vec<PointId> -> Vec<(PointId,PointId,PointId)>
@@ -114,6 +114,7 @@ pub struct DirectedIndexEdge {
 
 #[derive(Debug, Clone)]
 pub struct Polygon<T> {
+  // Use points: Arc<Vec<Point<T, 2>>>, ?
   // Key: PointId
   pub(crate) points: Vec<Point<T, 2>>,
   // Key: PointId
@@ -199,36 +200,38 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    let xs: Vector<T::ExtendedSigned, 2> = self
+    let xs: Vector<T, 2> = self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = &edge.src.as_vec().cast(|v| v.extend_signed());
-        let q = &edge.dst.as_vec().cast(|v| v.extend_signed());
+        let p = &edge.src.as_vec().cast(|v| v);
+        let q = &edge.dst.as_vec().cast(|v| v);
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
-    let three = T::ExtendedSigned::from_usize(3).unwrap();
-    Point::from(xs / (three * self.signed_area_2x())).cast(Extended::truncate_signed)
+    let three = T::from_usize(3).unwrap();
+    Point::from(xs / (three * self.signed_area_2x()))
   }
 
-  pub fn signed_area(&self) -> T
+  pub fn signed_area<F>(&self) -> F
   where
-    T: PolygonScalar,
+    T: PolygonScalar + Into<F>,
+    F: NumOps<F, F> + Sum + FromPrimitive,
   {
-    Extended::truncate_signed(self.signed_area_2x() / T::ExtendedSigned::from_usize(2).unwrap())
+    self.signed_area_2x::<F>() / F::from_usize(2).unwrap()
   }
 
-  pub fn signed_area_2x(&self) -> T::ExtendedSigned
+  pub fn signed_area_2x<F>(&self) -> F
   where
-    T: PolygonScalar,
+    T: PolygonScalar + Into<F>,
+    F: NumOps<F, F> + Sum,
   {
     self
       .iter_boundary_edges()
       .map(|edge| {
         let p = edge.src;
         let q = edge.dst;
-        p.array[0].clone().extend_signed() * q.array[1].clone().extend_signed()
-          - q.array[0].clone().extend_signed() * p.array[1].clone().extend_signed()
+        p.array[0].clone().into() * q.array[1].clone().into()
+          - q.array[0].clone().into() * p.array[1].clone().into()
       })
       .sum()
   }

@@ -1,6 +1,7 @@
 use super::{Point, PointLocation};
 use crate::{Error, Orientation, PolygonScalar, PolygonScalarRef};
 use claim::debug_assert_ok;
+use num_traits::*;
 use std::ops::*;
 
 // FIXME: Support n-dimensional triangles?
@@ -70,5 +71,32 @@ where
     } else {
       PointLocation::Inside
     }
+  }
+
+  pub fn signed_area<F>(&self) -> F
+  where
+    T: PolygonScalar + Into<F>,
+    F: NumOps<F, F> + FromPrimitive + Clone,
+  {
+    self.signed_area_2x::<F>() / F::from_usize(2).unwrap()
+  }
+
+  pub fn signed_area_2x<F>(&self) -> F
+  where
+    T: PolygonScalar + Into<F>,
+    F: NumOps<F, F> + Clone,
+  {
+    let [a, b, c] = self.0;
+    let ax = a.x_coord().clone().into();
+    let ay = a.y_coord().clone().into();
+    let bx = b.x_coord().clone().into();
+    let by = b.y_coord().clone().into();
+    let cx = c.x_coord().clone().into();
+    let cy = c.y_coord().clone().into();
+    ax.clone() * by.clone() - bx.clone() * ay.clone() + bx * cy.clone() - cx.clone() * by + cx * ay
+      - ax * cy
+    // x1*y2 - x2*y1 +
+    // x2*y3 - x3*y2 +
+    // x3*y1 - x1*y3
   }
 }
