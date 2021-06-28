@@ -35,17 +35,17 @@ where
   let mut len = order.len();
   let mut vertices = List::new(order.len());
   let mut possible_ears = EarStore::new(order.len());
-  std::iter::from_fn(move || {
-    if len < 3 {
-      None
-    } else if len == 3 {
+  std::iter::from_fn(move || match len {
+    0..=2 => None,
+    3 => {
       len = 0;
       let focus = possible_ears.pop(rng).unwrap();
       let prev = vertices.prev(focus);
       let next = vertices.next(focus);
       let out = (order[prev], order[focus], order[next]);
       Some(out)
-    } else {
+    }
+    _ => {
       let mut focus = possible_ears.pop(rng).unwrap();
       let mut prev = vertices.prev(focus);
       let mut next = vertices.next(focus);
@@ -136,6 +136,23 @@ mod tests {
 
     assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(p));
   }
+
+  use proptest::prelude::*;
+  use proptest::strategy::*;
+  use proptest::test_runner::*;
+
+  proptest! {
+    // #[test]
+    // fn all_random_convex_polygons_are_valid(poly: PolygonConvex<BigRational>) {
+    //   prop_assert_eq!(poly.validate().err(), None)
+    // }
+
+    #[test]
+    fn hash_unhash(a in any::<u32>(), b in any::<u32>()) {
+      prop_assert_eq!(zunhash_pair(zhash_pair(a,b)), (a,b))
+
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -154,13 +171,13 @@ pub struct ZHashBox<'a, T> {
 
 pub trait ZHashable: Sized {
   type ZHashKey;
-  fn zhash_key<'a>(zbox: ZHashBox<'a, Self>) -> Self::ZHashKey;
+  fn zhash_key(zbox: ZHashBox<'_, Self>) -> Self::ZHashKey;
   fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64;
 }
 
 impl ZHashable for f64 {
   type ZHashKey = (f64, f64, f64, f64);
-  fn zhash_key<'a>(zbox: ZHashBox<'a, f64>) -> Self::ZHashKey {
+  fn zhash_key(zbox: ZHashBox<'_, f64>) -> Self::ZHashKey {
     let width = zbox.max_x - zbox.min_x;
     let height = zbox.max_y - zbox.min_y;
     (*zbox.min_x, *zbox.min_y, width, height)
@@ -176,7 +193,7 @@ impl ZHashable for f64 {
 
 impl ZHashable for u64 {
   type ZHashKey = (u64, u64, u32, u32);
-  fn zhash_key<'a>(zbox: ZHashBox<'a, u64>) -> Self::ZHashKey {
+  fn zhash_key(zbox: ZHashBox<'_, u64>) -> Self::ZHashKey {
     let width = zbox.max_x - zbox.min_x;
     let height = zbox.max_y - zbox.min_y;
     let x_r_shift = 32u32.saturating_sub(width.leading_zeros());
@@ -193,15 +210,13 @@ impl ZHashable for u64 {
 
 impl ZHashable for u32 {
   type ZHashKey = ();
-  fn zhash_key<'a>(_zbox: ZHashBox<'a, u32>) -> Self::ZHashKey {
-    ()
-  }
+  fn zhash_key(_zbox: ZHashBox<'_, u32>) -> Self::ZHashKey {}
   fn zhash_fn(_key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
     zhash_pair(*point.x_coord(), *point.y_coord())
   }
 }
 
-fn zunhash_pair(w: u64) -> (u32, u32) {
+pub fn zunhash_pair(w: u64) -> (u32, u32) {
   (zunhash_u32(w), zunhash_u32(w >> 1))
 }
 
@@ -215,7 +230,7 @@ fn zunhash_u32(w: u64) -> u32 {
   w as u32
 }
 
-fn zhash_pair(a: u32, b: u32) -> u64 {
+pub fn zhash_pair(a: u32, b: u32) -> u64 {
   zhash_u32(a) | zhash_u32(b) << 1
 }
 
@@ -225,8 +240,7 @@ fn zhash_u32(w: u32) -> u64 {
   let w = (w | w << 8) & 0x00FF00FF00FF00FF;
   let w = (w | w << 4) & 0x0F0F0F0F0F0F0F0F;
   let w = (w | w << 2) & 0x3333333333333333;
-  let w = (w | w << 1) & 0x5555555555555555;
-  w
+  (w | w << 1) & 0x5555555555555555
 }
 
 ///////////////////////////////////////////////////////////////////////////////
