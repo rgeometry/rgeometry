@@ -11,6 +11,8 @@ use std::ops::*;
 use crate::array::Orientation;
 use crate::data::DirectedEdge;
 use crate::data::Point;
+use crate::data::PointLocation;
+use crate::data::TriangleView;
 use crate::data::Vector;
 use crate::Error;
 use crate::Extended;
@@ -126,6 +128,17 @@ pub struct Polygon<T> {
   // Outer key: RingId
   // Inner key: PositionId
   pub(crate) rings: Vec<Vec<PointId>>,
+}
+
+impl<T> Default for Polygon<T> {
+  fn default() -> Polygon<T> {
+    Polygon {
+      points: Vec::default(),
+      ring_index: Vec::default(),
+      position_index: Vec::default(),
+      rings: Vec::default(),
+    }
+  }
 }
 
 impl<T> Polygon<T> {
@@ -480,6 +493,25 @@ impl<'a, T> Cursor<'a, T> {
     self.position.move_prev()
   }
 
+  // O(n)
+  pub fn is_ear(&self) -> bool
+  where
+    T: PolygonScalar,
+  {
+    let trig =
+      TriangleView::new_unchecked([self.prev().point(), self.point(), self.next().point()]);
+    if trig.orientation() == Orientation::CounterClockWise {
+      for pt in self.next().next().to(self.prev()) {
+        if trig.locate(pt.point()) != PointLocation::Outside {
+          return false;
+        }
+      }
+      true
+    } else {
+      false
+    }
+  }
+
   pub fn orientation(&self) -> Orientation
   where
     T: PolygonScalar,
@@ -557,4 +589,14 @@ impl Position {
 #[cfg(test)]
 pub mod tests {
   use super::*;
+  use crate::data::point::tests::*;
+
+  use proptest::prelude::*;
+
+  proptest! {
+    #[test]
+    fn random_polygon(poly: Polygon<i8>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+  }
 }

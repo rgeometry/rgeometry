@@ -136,7 +136,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
   // dbg!(isect);
   // eprintln!("Poly order: {:?}", poly.order);
   // eprintln!("Poly pos:   {:?}", poly.positions);
-  eprintln!("Untangle: {:?}", isect);
+  // eprintln!("Untangle: {:?}", isect);
   // let da = poly.direct(isect.min);
   // let db = poly.direct(isect.max);
   let da = poly.cursor(poly.direct(isect.min).src);
@@ -184,7 +184,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
 
     let p1 = edge.position;
     let p2 = elt.position;
-    eprintln!("Hoist: {:?} {:?}", p1, p2);
+    // eprintln!("Hoist: {:?} {:?}", p1, p2);
     poly.vertices_join(p1, p2);
   } else {
     // vertex_list.uncross(da, db);
@@ -198,7 +198,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
 
     let p1 = da.next().position;
     let p2 = db.position;
-    eprintln!("Uncross: {:?} {:?}", p1, p2);
+    // eprintln!("Uncross: {:?} {:?}", p1, p2);
     poly.vertices_reverse(p1, p2);
     // dbg!(&poly.rings[0]);
   }
@@ -207,7 +207,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     for e1 in edges(&poly) {
       if e1 != edge {
         if let Some(isect) = intersects(&poly, e1, edge) {
-          eprintln!("Inserting new intersection: {:?} {:?}", e1, edge);
+          // eprintln!("Inserting new intersection: {:?} {:?}", e1, edge);
           set.push(isect)
         }
       }

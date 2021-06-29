@@ -152,6 +152,7 @@ mod tests {
   use super::*;
   use crate::data::point::tests::*;
   use crate::data::PointLocation;
+  use crate::testing::*;
 
   use claim::assert_ok;
   use num_bigint::BigInt;

@@ -31,6 +31,13 @@ pub enum Error {
   ConvexViolation,
   ClockWiseViolation,
 }
+
+impl std::fmt::Display for Error {
+  fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+    todo!()
+  }
+}
+
 pub trait PolygonScalar<T = Self, Output = Self>:
   PolygonScalarRef<T, Output>
   + AddAssign<Output>
@@ -189,3 +196,6 @@ arbitrary_precision!(num_rational::BigRational);
 // arbitrary_precision!(ordered_float::OrderedFloat<f64>);
 arbitrary_precision!(ordered_float::NotNan<f32>);
 arbitrary_precision!(ordered_float::NotNan<f64>);
+
+#[cfg(test)]
+pub mod testing;

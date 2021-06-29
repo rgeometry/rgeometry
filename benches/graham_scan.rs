@@ -1,3 +1,4 @@
+/*
 use array_init::array_init;
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use num_bigint::BigInt;
@@ -88,3 +89,5 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
 criterion_group!(benches, criterion_benchmark);
 criterion_main!(benches);
+*/
+fn main() {}
