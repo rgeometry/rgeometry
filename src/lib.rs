@@ -11,7 +11,7 @@ use std::iter::Sum;
 use std::ops::*;
 
 pub mod algorithms;
-pub mod array;
+mod array;
 pub mod data;
 mod intersection;
 mod matrix;
@@ -33,8 +33,14 @@ pub enum Error {
 }
 
 impl std::fmt::Display for Error {
-  fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-    todo!()
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+    match self {
+      Error::InsufficientVertices => write!(f, "Insufficient vertices"),
+      Error::SelfIntersections => write!(f, "Self intersections"),
+      Error::DuplicatePoints => write!(f, "Duplicate points"),
+      Error::ConvexViolation => write!(f, "Convex violation"),
+      Error::ClockWiseViolation => write!(f, "Clockwise violation"),
+    }
   }
 }
 

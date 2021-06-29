@@ -150,24 +150,14 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::data::point::tests::*;
   use crate::data::PointLocation;
   use crate::testing::*;
 
   use claim::assert_ok;
   use num_bigint::BigInt;
-  use ordered_float::Float;
-  use ordered_float::NotNan;
-  use std::convert::TryInto;
-  use std::fmt::Debug;
-  use std::ops::IndexMut;
 
-  use proptest::array::*;
   use proptest::collection::*;
-  use proptest::num;
   use proptest::prelude::*;
-  use proptest::strategy::*;
-  use proptest::test_runner::*;
 
   #[test]
   fn convex_hull_colinear() {

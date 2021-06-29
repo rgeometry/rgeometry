@@ -1,23 +1,17 @@
 use crate::data::Cursor;
-use crate::data::DirectedIndexEdge;
 use crate::data::EndPoint;
 use crate::data::IndexEdge;
-use crate::data::LineSegment;
 use crate::data::LineSegmentView;
 use crate::data::Point;
 use crate::data::PointId;
 use crate::data::Polygon;
 use crate::data::{IndexIntersection, IndexIntersectionSet};
-use crate::utils::*;
 use crate::Intersects;
 use crate::{Error, PolygonScalar};
 
-use num_traits::NumOps;
-use rand::seq::SliceRandom;
 use rand::Rng;
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
-use std::ops::{Index, IndexMut};
 
 use crate::Orientation;
 
@@ -38,33 +32,37 @@ where
     for e2 in edges(&poly) {
       if e1 < e2 {
         if let Some(isect) = intersects(&poly, e1, e2) {
+          // eprintln!("Inserting new intersection: {:?} {:?}", e1, e2);
           isects.push(isect)
         }
       }
     }
   }
+  sanity_check(&poly, &isects);
   // dbg!(isects.to_vec());
   while let Some(isect) = isects.random(rng) {
     untangle(poly, &mut isects, isect)
   }
   poly.ensure_ccw();
-  poly.validate()?;
+  // poly.validate()?;
   Ok(())
 }
 
 // Create list of edges
 // Find all intersections
 /// $O(n^4)$ Generate a random, valid polygon from a set of points.
-pub fn two_opt_moves<T, R>(mut pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
+pub fn two_opt_moves<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar + std::fmt::Debug,
   R: Rng + ?Sized,
 {
-  // pts.sort_unstable();
-  // pts.dedup();
   {
     let mut seen = BTreeSet::new();
-    pts.retain(|pt| seen.insert(pt.clone()));
+    for pt in pts.iter() {
+      if !seen.insert(pt) {
+        return Err(Error::DuplicatePoints);
+      }
+    }
   }
   if pts.len() < 3 {
     return Err(Error::InsufficientVertices);
@@ -92,8 +90,8 @@ where
   let b_max = endpoint(b.max, a.min, a.max, poly.point(b.max));
   let e1 = LineSegmentView::new(a_min, a_max);
   let e2 = LineSegmentView::new(b_min, b_max);
+  // dbg!(e1, e2);
   e1.intersect(e2)?; // Returns Some(...) if there exist a point shared by both line segments.
-                     // dbg!(e1, e2);
   Some(IndexIntersection::new(a, b))
 }
 
@@ -172,6 +170,10 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     let del_edge_1 = IndexEdge::new(elt.prev().point_id(), elt.point_id());
     let del_edge_2 = IndexEdge::new(elt.point_id(), elt.next().point_id());
     let del_edge_3 = IndexEdge::new(edge.point_id(), edge.next().point_id());
+    // eprintln!(
+    //   "Del edges: {:?} {:?} {:?}",
+    //   del_edge_1, del_edge_2, del_edge_3
+    // );
     set.remove_all(del_edge_1);
     set.remove_all(del_edge_2);
     set.remove_all(del_edge_3);
@@ -179,7 +181,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     inserted_edges = vec![
       IndexEdge::new(elt.prev().point_id(), elt.next().point_id()),
       IndexEdge::new(edge.point_id(), elt.point_id()),
-      IndexEdge::new(elt.point_id(), edge.point_id()),
+      IndexEdge::new(elt.point_id(), edge.next().point_id()),
     ];
 
     let p1 = edge.position;
@@ -203,6 +205,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     // dbg!(&poly.rings[0]);
   }
   // dbg!(&removed_edges, &inserted_edges);
+  // eprintln!("New edges: {:?}", &inserted_edges);
   for &edge in inserted_edges.iter() {
     for e1 in edges(&poly) {
       if e1 != edge {
@@ -213,6 +216,34 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
       }
     }
   }
+  // sanity_check(&poly, &set);
+}
+
+#[allow(dead_code)]
+fn sanity_check<T: PolygonScalar>(poly: &Polygon<T>, isects: &IndexIntersectionSet) {
+  let naive_set = naive_intersection_set(poly);
+  let fast_set = BTreeSet::from_iter(isects.iter());
+  let missing: Vec<&IndexIntersection> = naive_set.difference(&fast_set).collect();
+  let extra: Vec<&IndexIntersection> = fast_set.difference(&naive_set).collect();
+  if !missing.is_empty() {
+    panic!("Fast set is too small! {:?}", missing);
+  }
+  if !extra.is_empty() {
+    panic!("Fast set is too large! {:?}", extra);
+  }
+}
+fn naive_intersection_set<T: PolygonScalar>(poly: &Polygon<T>) -> BTreeSet<IndexIntersection> {
+  let mut set = BTreeSet::new();
+  for e1 in edges(&poly) {
+    for e2 in edges(&poly) {
+      if e1 < e2 {
+        if let Some(isect) = intersects(&poly, e1, e2) {
+          set.insert(isect);
+        }
+      }
+    }
+  }
+  set
 }
 
 fn parallel_edges<T>(a: Cursor<'_, T>, b: Cursor<'_, T>) -> bool
@@ -255,4 +286,199 @@ fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
   poly
     .iter_boundary()
     .map(|cursor| IndexEdge::new(cursor.point_id(), cursor.next().point_id()))
+}
+
+#[cfg(test)]
+pub mod tests {
+  use super::*;
+  use crate::testing::*;
+  use crate::*;
+
+  use proptest::collection::vec;
+  use proptest::prelude::*;
+  use rand::rngs::mock::StepRng;
+  use rand::SeedableRng;
+
+  #[test]
+  fn unit_1() {
+    let pts: Vec<Point<i8, 2>> = vec![
+      Point { array: [-71, 91] },
+      Point { array: [-17, -117] },
+      Point { array: [-13, 98] },
+      Point { array: [-84, 67] },
+      Point { array: [-12, -92] },
+      Point { array: [-95, 71] },
+      Point { array: [-81, -2] },
+      Point { array: [-91, -9] },
+      Point { array: [-42, -66] },
+      Point { array: [-107, 105] },
+      Point { array: [-49, 9] },
+      Point { array: [-96, 92] },
+      Point { array: [42, 11] },
+      Point { array: [-63, 56] },
+      Point { array: [122, -53] },
+      Point { array: [93, 29] },
+      Point { array: [-93, 89] },
+      Point { array: [40, -63] },
+      Point { array: [-127, -44] },
+      Point { array: [-108, 74] },
+      Point { array: [96, -5] },
+      Point { array: [46, 3] },
+      Point { array: [-103, -94] },
+      Point { array: [125, 73] },
+      Point { array: [104, 60] },
+      Point { array: [-55, -55] },
+      Point { array: [-112, -42] },
+      Point { array: [107, -16] },
+      Point { array: [38, -111] },
+      Point { array: [57, 123] },
+      Point { array: [-107, 108] },
+      Point { array: [46, -61] },
+      Point { array: [0, -35] },
+      Point { array: [35, -115] },
+      Point { array: [-120, 31] },
+      Point { array: [123, -87] },
+      Point { array: [-22, -87] },
+      Point { array: [-91, 27] },
+      Point { array: [101, -6] },
+      Point { array: [43, 6] },
+      Point { array: [-31, -73] },
+      Point {
+        array: [-107, -115],
+      },
+      Point { array: [-60, -98] },
+      Point { array: [-18, -94] },
+      Point { array: [52, -22] },
+      Point { array: [-71, -128] },
+      Point { array: [80, -26] },
+      Point { array: [104, -91] },
+      Point { array: [-91, 45] },
+      Point { array: [-79, -91] },
+      Point { array: [-47, -124] },
+      Point { array: [14, 101] },
+      Point { array: [-21, -69] },
+      Point { array: [16, 55] },
+      Point { array: [105, -76] },
+      Point { array: [-78, 39] },
+      Point { array: [80, -114] },
+      Point { array: [-6, 9] },
+      Point { array: [-65, -104] },
+      Point { array: [16, -1] },
+      Point { array: [122, -67] },
+      Point { array: [-93, -123] },
+      Point {
+        array: [-121, -120],
+      },
+      Point { array: [112, 32] },
+      Point { array: [-87, -126] },
+      Point { array: [-120, -38] },
+      Point { array: [90, -111] },
+    ];
+    let ret = two_opt_moves(pts, &mut rand::rngs::SmallRng::seed_from_u64(0));
+
+    assert_eq!(ret.and_then(|val| val.validate()).err(), None);
+  }
+
+  #[test]
+  fn unit_2() {
+    let pts: Vec<Point<i8, 2>> = vec![
+      Point { array: [-17, 35] },
+      Point { array: [-43, -87] },
+      Point { array: [-61, -9] },
+      Point { array: [111, -92] },
+      Point {
+        array: [-120, -104],
+      },
+      Point { array: [-33, 105] },
+      Point { array: [-91, -50] },
+      Point { array: [64, 70] },
+      Point { array: [-94, -72] },
+      Point { array: [-1, 42] },
+      Point { array: [72, -67] },
+      Point { array: [9, 12] },
+      Point { array: [99, 28] },
+      Point { array: [50, -98] },
+      Point { array: [-119, -48] },
+      Point { array: [-65, 9] },
+      Point { array: [107, 28] },
+      Point { array: [52, -38] },
+      Point { array: [-27, 103] },
+      Point { array: [-78, -37] },
+      Point { array: [-107, -52] },
+      Point { array: [108, -88] },
+      Point { array: [29, -114] },
+      Point { array: [-101, 69] },
+      Point { array: [-23, -70] },
+      Point { array: [68, -115] },
+      Point { array: [-13, -41] },
+      Point { array: [16, -128] },
+      Point { array: [45, -91] },
+      Point { array: [-16, -72] },
+      Point { array: [100, 110] },
+      Point { array: [38, -122] },
+      Point { array: [-32, -127] },
+      Point { array: [-42, 96] },
+      Point { array: [124, -118] },
+      Point { array: [77, -50] },
+      Point { array: [15, 97] },
+      Point { array: [23, 14] },
+      Point { array: [-69, -12] },
+      Point { array: [-27, 53] },
+      Point { array: [-58, 91] },
+      Point { array: [58, -21] },
+      Point { array: [-105, 30] },
+      Point { array: [122, -22] },
+      Point { array: [109, 0] },
+      Point { array: [-2, 42] },
+      Point { array: [10, -84] },
+      Point { array: [-87, 8] },
+      Point { array: [53, 26] },
+      Point { array: [112, -27] },
+      Point { array: [-61, 9] },
+      Point { array: [-58, -6] },
+      Point { array: [-76, 8] },
+      Point { array: [63, -82] },
+      Point { array: [96, 106] },
+      Point { array: [72, -123] },
+      Point { array: [-78, -85] },
+      Point { array: [22, 9] },
+      Point { array: [22, 107] },
+      Point { array: [40, -16] },
+      Point { array: [81, -2] },
+      Point { array: [46, 6] },
+      Point { array: [-10, 120] },
+      Point { array: [83, -51] },
+      Point { array: [-54, 27] },
+      Point { array: [-60, -3] },
+      Point { array: [-81, 71] },
+      Point { array: [-3, -80] },
+      Point { array: [92, 39] },
+      Point { array: [-103, 0] },
+      Point { array: [-13, 40] },
+      Point { array: [-110, 45] },
+      Point { array: [96, 64] },
+      Point { array: [-51, 91] },
+      Point { array: [-108, 53] },
+      Point { array: [44, 81] },
+      Point { array: [56, 47] },
+    ];
+    // let mut rng = StepRng::new(0, 0);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let ret = two_opt_moves(pts, &mut rng);
+
+    assert_eq!(ret.and_then(|val| val.validate()).err(), None);
+  }
+
+  proptest! {
+    #[test]
+    fn points_to_polygon(mut pts in vec(any_8(), 3..100)) {
+      let mut set = BTreeSet::new();
+      pts.retain(|pt| set.insert(pt.clone()));
+      if pts.len() >= 3 {
+        let mut rng = StepRng::new(0, 0);
+        let ret = two_opt_moves(pts, &mut rng);
+        prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
+      }
+    }
+  }
 }

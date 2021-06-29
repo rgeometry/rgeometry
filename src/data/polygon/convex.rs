@@ -9,7 +9,6 @@ use std::collections::BTreeSet;
 use std::ops::*;
 
 use crate::array::Orientation;
-use crate::data;
 use crate::data::Point;
 use crate::data::PointLocation;
 use crate::data::TriangleView;
@@ -246,14 +245,8 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::Orientation::*;
-  use crate::*;
 
   use proptest::prelude::*;
-  use proptest::strategy::*;
-  use proptest::test_runner::*;
-
-  use ordered_float::NotNan;
 
   impl Arbitrary for PolygonConvex<BigRational> {
     type Strategy = Just<PolygonConvex<BigRational>>;

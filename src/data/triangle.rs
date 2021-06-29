@@ -2,7 +2,6 @@ use super::{Point, PointLocation};
 use crate::{Error, Orientation, PolygonScalar, PolygonScalarRef};
 use claim::debug_assert_ok;
 use num_traits::*;
-use std::ops::*;
 
 // FIXME: Support n-dimensional triangles?
 pub struct Triangle<T>([Point<T, 2>; 3]);

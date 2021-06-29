@@ -2,7 +2,7 @@ use array_init::{array_init, try_array_init};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
-use ordered_float::{FloatIsNan, NotNan, OrderedFloat};
+use ordered_float::{FloatIsNan, NotNan};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
@@ -267,18 +267,7 @@ pub mod tests {
   use crate::testing::*;
   use crate::Orientation::*;
 
-  use ordered_float::Float;
-  use ordered_float::NotNan;
-  use std::convert::TryInto;
-  use std::fmt::Debug;
-  use std::ops::IndexMut;
-
-  use proptest::array::*;
-  use proptest::collection::*;
-  use proptest::num;
   use proptest::prelude::*;
-  use proptest::strategy::*;
-  use proptest::test_runner::*;
 
   proptest! {
     #[test]

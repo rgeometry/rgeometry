@@ -2,10 +2,6 @@ use crate::data::{Point, PointId, PointLocation, TriangleView};
 use crate::Orientation;
 use crate::PolygonScalar;
 
-use num_traits::Zero;
-use rand::distributions::{Distribution, Standard};
-use rand::rngs::mock::StepRng;
-use rand::seq::SliceRandom;
 use rand::Rng;
 
 // FIXME: Rename to ear-clipping.
@@ -84,10 +80,12 @@ where
 mod tests {
   use super::*;
   use crate::data::*;
+  use crate::testing;
   use num_bigint::BigInt;
+  use num_traits::Zero;
   use rand::SeedableRng;
 
-  fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: Polygon<F>) -> BigInt {
+  fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
     let mut trig_area_2x = BigInt::zero();
     // let mut rng = StepRng::new(0,0);
     let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
@@ -107,7 +105,7 @@ mod tests {
     ])
     .unwrap();
 
-    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(p));
+    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
   }
 
   #[test]
@@ -122,18 +120,16 @@ mod tests {
     ])
     .unwrap();
 
-    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(p));
+    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
   }
 
   use proptest::prelude::*;
-  use proptest::strategy::*;
-  use proptest::test_runner::*;
 
   proptest! {
-    // #[test]
-    // fn all_random_convex_polygons_are_valid(poly: PolygonConvex<BigRational>) {
-    //   prop_assert_eq!(poly.validate().err(), None)
-    // }
+    #[test]
+    fn equal_area_prop(poly: Polygon<i64>) {
+      prop_assert_eq!(poly.signed_area_2x::<BigInt>(), trig_area_2x(&poly));
+    }
 
     #[test]
     fn hash_unhash(a in any::<u32>(), b in any::<u32>()) {

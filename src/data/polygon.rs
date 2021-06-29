@@ -1,22 +1,12 @@
 // use claim::debug_assert_ok;
 use num_rational::BigRational;
 use num_traits::*;
-use ordered_float::{FloatIsNan, NotNan, OrderedFloat};
-use std::borrow::Borrow;
-use std::iter::ExactSizeIterator;
-use std::iter::FromIterator;
 use std::iter::Sum;
 use std::ops::*;
 
 use crate::array::Orientation;
-use crate::data::DirectedEdge;
-use crate::data::Point;
-use crate::data::PointLocation;
-use crate::data::TriangleView;
-use crate::data::Vector;
-use crate::Error;
-use crate::Extended;
-use crate::PolygonScalar;
+use crate::data::{DirectedEdge, Point, PointLocation, TriangleView, Vector};
+use crate::{Error, PolygonScalar};
 
 mod iter;
 pub use iter::*;
@@ -589,7 +579,6 @@ impl Position {
 #[cfg(test)]
 pub mod tests {
   use super::*;
-  use crate::data::point::tests::*;
 
   use proptest::prelude::*;
 

@@ -2,7 +2,6 @@
 //  * points
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
-use crate::data::point::tests::*;
 use crate::data::{Point, PointId, Polygon};
 use crate::PolygonScalar;
 
@@ -10,13 +9,11 @@ use array_init::{array_init, try_array_init};
 use core::ops::Range;
 use num_bigint::BigInt;
 use ordered_float::NotNan;
-use proptest::array::*;
-use proptest::collection::*;
-use proptest::num;
-use proptest::num::f64::*;
 use proptest::prelude::*;
 use proptest::strategy::*;
 use proptest::test_runner::*;
+use rand::SeedableRng;
+use std::collections::BTreeSet;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use std::ops::Index;
@@ -171,13 +168,23 @@ where
   fn new_tree(&self, runner: &mut TestRunner) -> Result<Self::Tree, Reason> {
     let n = runner.rng().gen_range(self.1.clone()).max(3);
     let mut points = Vec::with_capacity(n);
+    let mut set = BTreeSet::new();
+    let mut actual = Vec::new();
     for _ in 0..n {
-      points.push(Point::new([self.0.clone(), self.0.clone()]).new_tree(runner)?)
+      let pt = Point::new([self.0.clone(), self.0.clone()]).new_tree(runner)?;
+      let current = pt.current();
+      if set.insert(current.clone()) {
+        points.push(pt);
+        actual.push(current)
+      }
     }
-    let actual = points.iter().map(|pt| pt.current()).collect();
-    let poly =
-      crate::algorithms::two_opt_moves(actual, runner.rng()).map_err(|err| err.to_string())?;
+    // eprintln!("Generated points: {}/{}", points.len(), n);
+    // eprintln!("Generating poly: {:?}", &actual);
+    let rng = &mut rand::rngs::SmallRng::seed_from_u64(0);
+    let poly = crate::algorithms::two_opt_moves(actual, rng).map_err(|err| err.to_string())?;
 
+    assert_eq!(poly.rings[0].len(), points.len());
+    // eprintln!("Re-ordering points");
     // FIXME: Super ugly:
     let mut new_points = Vec::new();
     for &pid in poly.rings[0].iter() {
@@ -202,7 +209,7 @@ where
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     let (size_range, t_params) = params;
     if size_range.is_empty() {
-      PolygonStrat(T::arbitrary_with(t_params), 3..10)
+      PolygonStrat(T::arbitrary_with(t_params), 3..100)
     } else {
       PolygonStrat(T::arbitrary_with(t_params), size_range)
     }
