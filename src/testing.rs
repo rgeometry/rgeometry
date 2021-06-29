@@ -170,7 +170,7 @@ where
     let mut points = Vec::with_capacity(n);
     let mut set = BTreeSet::new();
     let mut actual = Vec::new();
-    for _ in 0..n {
+    while actual.len() < n {
       let pt = Point::new([self.0.clone(), self.0.clone()]).new_tree(runner)?;
       let current = pt.current();
       if set.insert(current.clone()) {
