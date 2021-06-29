@@ -222,7 +222,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
 #[allow(dead_code)]
 fn sanity_check<T: PolygonScalar>(poly: &Polygon<T>, isects: &IndexIntersectionSet) {
   let naive_set = naive_intersection_set(poly);
-  let fast_set = BTreeSet::from_iter(isects.iter());
+  let fast_set = isects.iter().collect();
   let missing: Vec<&IndexIntersection> = naive_set.difference(&fast_set).collect();
   let extra: Vec<&IndexIntersection> = fast_set.difference(&naive_set).collect();
   if !missing.is_empty() {
