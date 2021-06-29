@@ -54,7 +54,10 @@ mod two_opt {
       Point::new([0, 1]),
       Point::new([0, 1]),
     ];
-    dbg!(two_opt_moves(pts, &mut rng)?);
+    assert_eq!(
+      two_opt_moves(pts, &mut rng).err(),
+      Some(Error::DuplicatePoints)
+    );
     Ok(())
   }
 
