@@ -7,11 +7,24 @@ use crate::data::Point;
 // B        = bbbb = b b b b
 // zhash_pair(a,b) = babababa
 
+#[derive(Debug)]
 pub struct ZHashBox<'a, T> {
   min_x: &'a T,
   max_x: &'a T,
   min_y: &'a T,
   max_y: &'a T,
+}
+impl<'a, T> Copy for ZHashBox<'a, T> {}
+
+impl<'a, T> Clone for ZHashBox<'a, T> {
+  fn clone(&self) -> ZHashBox<'a, T> {
+    ZHashBox {
+      min_x: self.min_x,
+      max_x: self.max_x,
+      min_y: self.min_y,
+      max_y: self.max_y,
+    }
+  }
 }
 
 pub trait ZHashable: Sized {
@@ -32,6 +45,38 @@ impl ZHashable for f64 {
     let z_hash_max = u32::MAX as f64;
     let x = ((point.x_coord() - min_x) / width * z_hash_max) as u32;
     let y = ((point.y_coord() - min_y) / height * z_hash_max) as u32;
+    zhash_pair(x, y)
+  }
+}
+
+impl ZHashable for i64 {
+  type ZHashKey = (i64, i64, u32, u32);
+  fn zhash_key(zbox: ZHashBox<'_, i64>) -> Self::ZHashKey {
+    let width = zbox.max_x.wrapping_sub(*zbox.min_x) as u64;
+    let height = zbox.max_y.wrapping_sub(*zbox.min_y) as u64;
+    let x_r_shift = 32u32.saturating_sub(width.leading_zeros());
+    let y_r_shift = 32u32.saturating_sub(height.leading_zeros());
+    (*zbox.min_x, *zbox.min_y, x_r_shift, y_r_shift)
+  }
+  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
+    let (min_x, min_y, x_r_shift, y_r_shift) = key;
+    let x = ((point.x_coord().wrapping_sub(min_x) as u64) >> x_r_shift) as u32;
+    let y = ((point.y_coord().wrapping_sub(min_y) as u64) >> y_r_shift) as u32;
+    zhash_pair(x, y)
+  }
+}
+
+impl ZHashable for i8 {
+  type ZHashKey = (i8, i8);
+  fn zhash_key(zbox: ZHashBox<'_, i8>) -> Self::ZHashKey {
+    (*zbox.min_x, *zbox.min_y)
+  }
+  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
+    let (min_x, min_y) = key;
+    let x = (point.x_coord().wrapping_sub(min_x) as u8) as u32;
+    let y = (point.y_coord().wrapping_sub(min_y) as u8) as u32;
+    dbg!(point.x_coord(), min_x, x);
+    dbg!(point.y_coord(), min_y, y);
     zhash_pair(x, y)
   }
 }
@@ -91,14 +136,55 @@ fn zhash_u32(w: u32) -> u64 {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::data::Point;
+  use crate::data::Triangle;
+  use crate::testing::*;
 
   use proptest::prelude::*;
+  use rand::SeedableRng;
 
   proptest! {
     #[test]
-    fn hash_unhash(a in any::<u32>(), b in any::<u32>()) {
+    fn hash_unhash_prop(a in any::<u32>(), b in any::<u32>()) {
       prop_assert_eq!(zunhash_pair(zhash_pair(a,b)), (a,b))
+    }
 
+    #[test]
+    fn cmp_prop_i8(trig in any_triangle::<i8>()) {
+      let (min, max) = trig.view().bounding_box();
+      let zbox = ZHashBox {
+        min_x: min.x_coord(),
+        max_x: max.x_coord(),
+        min_y: min.y_coord(),
+        max_y: max.y_coord(),
+      };
+      let key = ZHashable::zhash_key(zbox);
+      let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+      let middle = trig.view().rejection_sampling(&mut rng);
+      let min_hash = ZHashable::zhash_fn(key, &min);
+      let max_hash = ZHashable::zhash_fn(key, &max);
+      let mid_hash = ZHashable::zhash_fn(key, &middle);
+      prop_assert!( min_hash <= mid_hash );
+      prop_assert!( mid_hash <= max_hash );
+    }
+
+    #[test]
+    fn cmp_prop_i64(trig in any_triangle::<i64>()) {
+      let (min, max) = trig.view().bounding_box();
+      let zbox = ZHashBox {
+        min_x: min.x_coord(),
+        max_x: max.x_coord(),
+        min_y: min.y_coord(),
+        max_y: max.y_coord(),
+      };
+      let key = ZHashable::zhash_key(zbox);
+      let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+      let middle = trig.view().rejection_sampling(&mut rng);
+      let min_hash = ZHashable::zhash_fn(key, &min);
+      let max_hash = ZHashable::zhash_fn(key, &max);
+      let mid_hash = ZHashable::zhash_fn(key, &middle);
+      prop_assert!( min_hash <= mid_hash );
+      prop_assert!( mid_hash <= max_hash );
     }
   }
 }

@@ -2,7 +2,7 @@
 //  * points
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
-use crate::data::{Point, PointId, Polygon};
+use crate::data::{Point, PointId, Polygon, Triangle};
 use crate::PolygonScalar;
 
 use array_init::{array_init, try_array_init};
@@ -325,3 +325,33 @@ pub fn any_64<const N: usize>() -> impl Strategy<Value = Point<i64, N>> {
 pub fn any_8<const N: usize>() -> impl Strategy<Value = Point<i8, N>> {
   any::<Point<i8, N>>()
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary triangle
+
+pub fn any_triangle<T>() -> impl Strategy<Value = Triangle<T>>
+where
+  T: Arbitrary + Clone + PolygonScalar,
+  <T as Arbitrary>::Strategy: Clone,
+  <T as Arbitrary>::Parameters: Clone,
+{
+  any::<[Point<T, 2>; 3]>().prop_filter_map("Ensure CCW", |pts| Triangle::new(pts).ok())
+}
+
+// impl<T: Arbitrary> Arbitrary for Triangle<T>
+// where
+//   T::Strategy: Clone,
+//   T::Parameters: Clone,
+//   T: Clone,
+// {
+//   type Strategy = [T::Strategy; 3];
+//   type Parameters = T::Parameters;
+//   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+//     let p1 = T::arbitrary_with(params);
+//     let p2 = T::arbitrary_with(params);
+//     let p3 = T::arbitrary_with(params);
+//     Point {
+//       array: array_init(|_| T::arbitrary_with(params.clone())),
+//     }
+//   }
+// }

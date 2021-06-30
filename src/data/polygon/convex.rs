@@ -59,7 +59,7 @@ where
     }
     let p1 = poly.point(vertices[lower]);
     let p2 = poly.point(vertices[upper]);
-    let triangle = TriangleView::new([p0, p1, p2]);
+    let triangle = TriangleView::new_unchecked([p0, p1, p2]);
     triangle.locate(pt)
   }
 

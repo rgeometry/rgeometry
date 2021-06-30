@@ -89,7 +89,7 @@ mod tests {
     // let mut rng = StepRng::new(0,0);
     let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
     for (a, b, c) in triangulate_list(&p.points, &p.rings[0], &mut rng) {
-      let trig = TriangleView::new([p.point(a), p.point(b), p.point(c)]);
+      let trig = TriangleView::new_unchecked([p.point(a), p.point(b), p.point(c)]);
       trig_area_2x += trig.signed_area_2x::<BigInt>();
     }
     trig_area_2x
