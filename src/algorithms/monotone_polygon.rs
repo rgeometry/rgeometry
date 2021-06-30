@@ -4,6 +4,7 @@ use crate::{Error, PolygonScalar};
 use std::vec;
 use std::collections::HashMap;
 
+/// Checks if points form a y-monotone polygon, returns its paths if true
 pub fn get_y_monotone_polygons<T>(points: &Vec<Point<T, 2>>) -> Result<[Vec<&Point<T, 2>>;2], Error>
 where
   T: PolygonScalar,
@@ -45,6 +46,55 @@ where
             return Err(Error::InsufficientVertices);
         }
     }
-    monotone_polygons[1].extend_from_slice(&reordered_polygon[idx..]);
+    monotone_polygons[1].extend_from_slice(&reordered_polygon[idx-1..]);
+    monotone_polygons[1].push(&points.last().unwrap());
     Ok(monotone_polygons)
+}
+
+//testing
+#[cfg(test)]
+mod monotone_testing {
+    use crate::data::{Point, Polygon, PolygonConvex};
+    use crate::algorithms::monotone_polygon::get_y_monotone_polygons;
+    use std::assert;
+
+    #[test]
+    fn convex_polygon_is_montone()
+    {
+        let mut rng = rand::thread_rng();
+        let convex_polygon = PolygonConvex::random(8,100,&mut rng);
+        let res = get_y_monotone_polygons(&convex_polygon.points);
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn concave_polygon_not_montone()
+    {
+        let polygon = Polygon::new(
+            vec![Point::new([0,1]),Point::new([1,2]),Point::new([1,-2]),Point::new([0,-1]),Point::new([-1,-2]),Point::new([-1,2])]).unwrap();
+        let res = get_y_monotone_polygons(&polygon.points);
+        assert!(res.is_err());
+    }
+    #[test]
+    fn convex_polygon_monotone_paths()
+    {
+        let polygon = Polygon::new(
+            vec![Point::new([0,3]),Point::new([1,2]),Point::new([1,-2]),Point::new([0,-3]),Point::new([-1,-2]),Point::new([-1,2])]).unwrap();
+        let res = get_y_monotone_polygons(&polygon.points);
+        assert!(res.is_ok());
+        let res_paths = res.unwrap();
+        assert_eq!(res_paths[0].len(),  4);
+        assert_eq!(res_paths[1].len(),  4);
+    }
+    #[test]
+    fn monotone_mountain()
+    {
+        let polygon = Polygon::new(
+            vec![Point::new([0,3]),Point::new([1,2]),Point::new([1,-2]),Point::new([0,-3])]).unwrap();
+        let res = get_y_monotone_polygons(&polygon.points);
+        assert!(res.is_ok());
+        let res_paths = res.unwrap();
+        assert_eq!(res_paths[0].len(),  4);
+        assert_eq!(res_paths[1].len(),  2);
+    }
 }
