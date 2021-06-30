@@ -11,7 +11,6 @@ use crate::{Error, PolygonScalar};
 
 use rand::Rng;
 use std::collections::BTreeSet;
-use std::iter::FromIterator;
 
 use crate::Orientation;
 
@@ -292,7 +291,6 @@ fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
 pub mod tests {
   use super::*;
   use crate::testing::*;
-  use crate::*;
 
   use proptest::collection::vec;
   use proptest::prelude::*;
