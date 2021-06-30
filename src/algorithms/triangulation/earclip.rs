@@ -31,46 +31,39 @@ where
   R: Rng + ?Sized,
 {
   let mut len = order.len();
-  let mut vertices = List::new(order.len());
+  let mut vertices = List::new(points, order);
   let mut possible_ears = EarStore::new(order.len());
   std::iter::from_fn(move || match len {
     0..=2 => None,
     _ => loop {
-      let focus = possible_ears.pop(rng).unwrap();
-      let prev = vertices.prev(focus);
-      let next = vertices.next(focus);
-      if is_ear(points, order, &vertices, prev, focus, next) {
-        possible_ears.new_possible_ear(prev);
-        possible_ears.new_possible_ear(next);
+      let focus = vertices.cursor(possible_ears.pop(rng).unwrap());
+      let prev = focus.prev();
+      let next = focus.next();
+      if is_ear(prev, focus, next) {
+        possible_ears.new_possible_ear(prev.position);
+        possible_ears.new_possible_ear(next.position);
+        let out = (prev.point_id(), focus.point_id(), next.point_id());
+        let focus = focus.position;
         vertices.delete(focus);
         len -= 1;
-        let out = (order[prev], order[focus], order[next]);
         return Some(out);
       }
     },
   })
 }
 
-fn is_ear<T>(
-  points: &[Point<T, 2>],
-  order: &[PointId],
-  vertices: &List,
-  a: usize,
-  b: usize,
-  c: usize,
-) -> bool
+fn is_ear<T>(a: Cursor<'_, T>, b: Cursor<'_, T>, c: Cursor<'_, T>) -> bool
 where
   T: PolygonScalar,
 {
-  let get_point = |key: usize| &points[order[key].usize()];
-  let trig = TriangleView::new_unchecked([get_point(a), get_point(b), get_point(c)]);
+  let trig = TriangleView::new_unchecked([a.point(), b.point(), c.point()]);
   if trig.orientation() == Orientation::CounterClockWise {
-    let mut focus = vertices.next(c);
+    let mut focus = c.next();
     while focus != a {
-      if trig.locate(get_point(focus)) != PointLocation::Outside {
+      if trig.locate(focus.point()) != PointLocation::Outside {
         return false;
       }
-      focus = vertices.next(focus);
+      focus = focus.next();
     }
     true
   } else {
@@ -91,7 +84,7 @@ where
   R: Rng + ?Sized,
 {
   let mut len = order.len();
-  let mut vertices = List::new(order.len());
+  let mut vertices = List::new(points, order);
   let mut possible_ears = EarStore::new(order.len());
 
   let zbox = zbox_slice(points, order);
@@ -100,9 +93,7 @@ where
     .iter()
     .map(|&pid| ZHashable::zhash_fn(key, &points[pid.usize()]))
     .collect();
-  // let mut zorder: Vec<PointId> = order.into();
-  // zorder.sort_unstable_by_key(|&pid| zhashes[pid.usize()]);
-  let mut zorder = List::new_sorted(&zhashes);
+  let mut zorder = List::new_sorted(points, order, zhashes);
 
   std::iter::from_fn(move || match len {
     0..=2 => None,
@@ -110,11 +101,12 @@ where
       let focus = possible_ears.pop(rng).unwrap();
       let prev = vertices.prev(focus);
       let next = vertices.next(focus);
-      if is_ear_hashed(points, order, key, &zhashes, &zorder, prev, focus, next) {
-        // if !is_ear(points, order, &vertices, prev, focus, next) {
-        //   // eprintln!("points: {:?}", points);
-        //   panic!("IS NOT EAR: {} {} {}", prev, focus, next);
-        // }
+      if is_ear_hashed(
+        key,
+        zorder.cursor(prev),
+        zorder.cursor(focus),
+        zorder.cursor(next),
+      ) {
         possible_ears.new_possible_ear(prev);
         possible_ears.new_possible_ear(next);
         vertices.delete(focus);
@@ -123,30 +115,20 @@ where
         let out = (order[prev], order[focus], order[next]);
         return Some(out);
       }
-      // else {
-      //   if is_ear(points, order, &vertices, prev, focus, next) {
-      //     panic!("SHOULD BE EAR");
-      //   }
-      // }
     },
   })
 }
 
 fn is_ear_hashed<T: ZHashable>(
-  points: &[Point<T, 2>],
-  order: &[PointId],
   key: <T as ZHashable>::ZHashKey,
-  zhashes: &[u64],
-  zorder: &List,
-  a: usize,
-  b: usize,
-  c: usize,
+  a: Cursor<'_, T>,
+  b: Cursor<'_, T>,
+  c: Cursor<'_, T>,
 ) -> bool
 where
   T: PolygonScalar,
 {
-  let get_point = |key: usize| &points[order[key].usize()];
-  let trig = TriangleView::new_unchecked([get_point(a), get_point(b), get_point(c)]);
+  let trig = TriangleView::new_unchecked([a.point(), b.point(), c.point()]);
   if trig.orientation() == Orientation::CounterClockWise {
     // Points inside the triangle are guaranteed to have a zhash
     // between the hashes of the bounding box.
@@ -156,57 +138,39 @@ where
 
     // Points inside the triangle are likely to be nearby so start
     // by searching in both directions.
-    let mut up_focus = zorder.next(b);
-    let mut down_focus = zorder.prev(b);
-    // dbg!(&min, &max);
-    // dbg!(min_hash, max_hash, up_focus, down_focus);
-    while up_focus != usize::MAX
-      && down_focus != usize::MAX
-      && zhashes[up_focus] <= max_hash
-      && zhashes[up_focus] >= min_hash
-      && zhashes[down_focus] <= max_hash
-      && zhashes[down_focus] >= min_hash
-    {
-      if (down_focus != a
-        && down_focus != b
-        && down_focus != c
-        && trig.locate(get_point(down_focus)) != PointLocation::Outside)
-        || (up_focus != a
-          && up_focus != b
-          && up_focus != c
-          && trig.locate(get_point(up_focus)) != PointLocation::Outside)
-      {
+    let mut up_focus = b.next();
+    let mut down_focus = b.prev();
+
+    let cond = |cursor: Cursor<'_, T>| cursor.valid() && cursor.between(min_hash, max_hash);
+    let check = |cursor: Cursor<'_, T>| {
+      cursor != a
+        && cursor != b
+        && cursor != c
+        && trig.locate(cursor.point()) != PointLocation::Outside
+    };
+
+    while cond(up_focus) && cond(down_focus) {
+      if check(up_focus) || check(down_focus) {
         return false;
       }
-      up_focus = zorder.next(up_focus);
-      down_focus = zorder.prev(down_focus);
+      up_focus = up_focus.next();
+      down_focus = down_focus.prev();
     }
 
     // Look upwards
-    while up_focus != usize::MAX && zhashes[up_focus] <= max_hash && zhashes[up_focus] >= min_hash {
-      if up_focus != a
-        && up_focus != b
-        && up_focus != c
-        && trig.locate(get_point(up_focus)) != PointLocation::Outside
-      {
+    while cond(up_focus) {
+      if check(up_focus) {
         return false;
       }
-      up_focus = zorder.next(up_focus);
+      up_focus = up_focus.next();
     }
 
     // Look downwards
-    while down_focus != usize::MAX
-      && zhashes[down_focus] >= min_hash
-      && zhashes[down_focus] <= max_hash
-    {
-      if down_focus != a
-        && down_focus != b
-        && down_focus != c
-        && trig.locate(get_point(down_focus)) != PointLocation::Outside
-      {
+    while cond(down_focus) {
+      if check(down_focus) {
         return false;
       }
-      down_focus = zorder.prev(down_focus);
+      down_focus = down_focus.prev();
     }
 
     true
@@ -354,13 +318,73 @@ mod tests {
 ///////////////////////////////////////////////////////////////////////////////
 // Linked List that supports deletions and re-insertions (of deleted items)
 
-struct List {
+struct Cursor<'a, T> {
+  list: &'a List<'a, T>,
+  position: usize,
+}
+
+impl<'a, T> Eq for Cursor<'a, T> {}
+
+impl<'a, T> PartialEq for Cursor<'a, T> {
+  fn eq(&self, other: &Cursor<'a, T>) -> bool {
+    self.position == other.position
+  }
+}
+
+impl<'a, T> Copy for Cursor<'a, T> {}
+
+impl<'a, T> Clone for Cursor<'a, T> {
+  fn clone(&self) -> Cursor<'a, T> {
+    Cursor {
+      list: self.list,
+      position: self.position,
+    }
+  }
+}
+
+impl<'a, T> Cursor<'a, T> {
+  fn valid(&self) -> bool {
+    self.position != usize::MAX
+  }
+
+  fn next(mut self) -> Cursor<'a, T> {
+    self.position = self.list.next(self.position);
+    self
+  }
+
+  fn prev(mut self) -> Cursor<'a, T> {
+    self.position = self.list.prev(self.position);
+    self
+  }
+
+  fn point(&self) -> &Point<T, 2> {
+    self.list.point(self.position)
+  }
+
+  fn point_id(&self) -> PointId {
+    self.list.point_id(self.position)
+  }
+
+  fn hash(&self) -> u64 {
+    self.list.hash(self.position)
+  }
+
+  fn between(&self, min: u64, max: u64) -> bool {
+    self.hash() >= min && self.hash() <= max
+  }
+}
+
+struct List<'a, T> {
+  points: &'a [Point<T, 2>],
+  order: &'a [PointId],
+  hashes: Vec<u64>,
   prev: Vec<usize>,
   next: Vec<usize>,
 }
 
-impl List {
-  fn new(size: usize) -> List {
+impl<'a, T> List<'a, T> {
+  fn new(points: &'a [Point<T, 2>], slice: &'a [PointId]) -> List<'a, T> {
+    let size = slice.len();
     let mut prev = Vec::with_capacity(size);
     let mut next = Vec::with_capacity(size);
     prev.resize(size, 0);
@@ -369,7 +393,13 @@ impl List {
       prev[(i + 1) % size] = i;
       next[i] = (i + 1) % size;
     }
-    List { prev, next }
+    List {
+      points: points,
+      order: slice,
+      hashes: vec![],
+      prev,
+      next,
+    }
   }
 
   fn prev(&self, vertex: usize) -> usize {
@@ -391,7 +421,28 @@ impl List {
     }
   }
 
-  fn new_sorted(keys: &[u64]) -> List {
+  fn cursor(&self, vertex: usize) -> Cursor<'_, T> {
+    Cursor {
+      list: self,
+      position: vertex,
+    }
+  }
+
+  fn point(&self, vertex: usize) -> &Point<T, 2> {
+    &self.points[self.point_id(vertex).usize()]
+  }
+
+  fn point_id(&self, vertex: usize) -> PointId {
+    self.order[vertex]
+  }
+
+  fn hash(&self, vertex: usize) -> u64 {
+    self.hashes[vertex]
+  }
+}
+
+impl<'a, T> List<'a, T> {
+  fn new_sorted(points: &'a [Point<T, 2>], order: &'a [PointId], keys: Vec<u64>) -> List<'a, T> {
     let size = keys.len();
     let mut v: Vec<usize> = (0..size).collect();
     v.sort_unstable_by_key(|&idx| keys[idx]);
@@ -405,7 +456,13 @@ impl List {
     }
     next[v[size - 1]] = usize::MAX;
     prev[v[0]] = usize::MAX;
-    List { prev, next }
+    List {
+      points,
+      order,
+      hashes: keys,
+      prev,
+      next,
+    }
   }
 }
 
