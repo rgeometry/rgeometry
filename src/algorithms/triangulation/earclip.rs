@@ -383,8 +383,8 @@ struct List<'a, T> {
 }
 
 impl<'a, T> List<'a, T> {
-  fn new(points: &'a [Point<T, 2>], slice: &'a [PointId]) -> List<'a, T> {
-    let size = slice.len();
+  fn new(points: &'a [Point<T, 2>], order: &'a [PointId]) -> List<'a, T> {
+    let size = order.len();
     let mut prev = Vec::with_capacity(size);
     let mut next = Vec::with_capacity(size);
     prev.resize(size, 0);
@@ -394,8 +394,8 @@ impl<'a, T> List<'a, T> {
       next[i] = (i + 1) % size;
     }
     List {
-      points: points,
-      order: slice,
+      points,
+      order,
       hashes: vec![],
       prev,
       next,
