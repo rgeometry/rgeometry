@@ -1,20 +1,12 @@
 // use claim::debug_assert_ok;
 use num_rational::BigRational;
 use num_traits::*;
-use ordered_float::{FloatIsNan, NotNan, OrderedFloat};
-use std::borrow::Borrow;
-use std::iter::ExactSizeIterator;
-use std::iter::FromIterator;
 use std::iter::Sum;
 use std::ops::*;
 
 use crate::array::Orientation;
-use crate::data::DirectedEdge;
-use crate::data::Point;
-use crate::data::Vector;
-use crate::Error;
-use crate::Extended;
-use crate::PolygonScalar;
+use crate::data::{DirectedEdge, Point, PointLocation, TriangleView, Vector};
+use crate::{Error, PolygonScalar};
 
 mod iter;
 pub use iter::*;
@@ -105,7 +97,7 @@ pub struct DirectedIndexEdge {
 
 // A*D   C*B
 
-// intersections : &[impl Into<LineSegment>] -> impl Iterator<Item =(&LineSegment,&LineSegment, ILineSegment)>
+// DONE: intersections : &[impl Into<LineSegment>] -> impl Iterator<Item =(&LineSegment,&LineSegment, ILineSegment)>
 // cut_holes: Polygon -> PolygonSimple
 // cut_holes: Polygon -> Vec<PointId>
 // triangulate: Vec<Point<T,2>> + Vec<PointId> -> Vec<(PointId,PointId,PointId)>
@@ -114,6 +106,7 @@ pub struct DirectedIndexEdge {
 
 #[derive(Debug, Clone)]
 pub struct Polygon<T> {
+  // Use points: Arc<Vec<Point<T, 2>>>, ?
   // Key: PointId
   pub(crate) points: Vec<Point<T, 2>>,
   // Key: PointId
@@ -125,6 +118,17 @@ pub struct Polygon<T> {
   // Outer key: RingId
   // Inner key: PositionId
   pub(crate) rings: Vec<Vec<PointId>>,
+}
+
+impl<T> Default for Polygon<T> {
+  fn default() -> Polygon<T> {
+    Polygon {
+      points: Vec::default(),
+      ring_index: Vec::default(),
+      position_index: Vec::default(),
+      rings: Vec::default(),
+    }
+  }
 }
 
 impl<T> Polygon<T> {
@@ -199,36 +203,38 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    let xs: Vector<T::ExtendedSigned, 2> = self
+    let xs: Vector<T, 2> = self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = &edge.src.as_vec().cast(|v| v.extend_signed());
-        let q = &edge.dst.as_vec().cast(|v| v.extend_signed());
+        let p = &edge.src.as_vec().cast(|v| v);
+        let q = &edge.dst.as_vec().cast(|v| v);
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
-    let three = T::ExtendedSigned::from_usize(3).unwrap();
-    Point::from(xs / (three * self.signed_area_2x())).cast(Extended::truncate_signed)
+    let three = T::from_usize(3).unwrap();
+    Point::from(xs / (three * self.signed_area_2x()))
   }
 
-  pub fn signed_area(&self) -> T
+  pub fn signed_area<F>(&self) -> F
   where
-    T: PolygonScalar,
+    T: PolygonScalar + Into<F>,
+    F: NumOps<F, F> + Sum + FromPrimitive,
   {
-    Extended::truncate_signed(self.signed_area_2x() / T::ExtendedSigned::from_usize(2).unwrap())
+    self.signed_area_2x::<F>() / F::from_usize(2).unwrap()
   }
 
-  pub fn signed_area_2x(&self) -> T::ExtendedSigned
+  pub fn signed_area_2x<F>(&self) -> F
   where
-    T: PolygonScalar,
+    T: PolygonScalar + Into<F>,
+    F: NumOps<F, F> + Sum,
   {
     self
       .iter_boundary_edges()
       .map(|edge| {
         let p = edge.src;
         let q = edge.dst;
-        p.array[0].clone().extend_signed() * q.array[1].clone().extend_signed()
-          - q.array[0].clone().extend_signed() * p.array[1].clone().extend_signed()
+        p.array[0].clone().into() * q.array[1].clone().into()
+          - q.array[0].clone().into() * p.array[1].clone().into()
       })
       .sum()
   }
@@ -477,6 +483,25 @@ impl<'a, T> Cursor<'a, T> {
     self.position.move_prev()
   }
 
+  // O(n)
+  pub fn is_ear(&self) -> bool
+  where
+    T: PolygonScalar,
+  {
+    let trig =
+      TriangleView::new_unchecked([self.prev().point(), self.point(), self.next().point()]);
+    if trig.orientation() == Orientation::CounterClockWise {
+      for pt in self.next().next().to(self.prev()) {
+        if trig.locate(pt.point()) != PointLocation::Outside {
+          return false;
+        }
+      }
+      true
+    } else {
+      false
+    }
+  }
+
   pub fn orientation(&self) -> Orientation
   where
     T: PolygonScalar,
@@ -554,4 +579,13 @@ impl Position {
 #[cfg(test)]
 pub mod tests {
   use super::*;
+
+  use proptest::prelude::*;
+
+  proptest! {
+    #[test]
+    fn random_polygon(poly: Polygon<i8>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+  }
 }

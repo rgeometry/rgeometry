@@ -3,11 +3,10 @@ use crate::data::PointId;
 use crate::utils::SparseIndex;
 use crate::utils::SparseVec;
 
-use rand::seq::SliceRandom;
 use rand::Rng;
 use std::ops::{Index, IndexMut};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 #[non_exhaustive]
 pub struct IndexIntersection {
   pub min: IndexEdge,
@@ -75,6 +74,8 @@ impl IndexIntersectionSet {
   fn remove(&mut self, idx: SparseIndex) {
     let isect = self.by_idx.remove(idx);
 
+    // eprintln!("Removing intersection: {:?}", isect);
+
     for &edge in &[isect.edge0, isect.edge1] {
       match edge.prev {
         Some(prev) => self.by_idx[prev][IndexEdge::from(edge)].next = edge.next,
@@ -107,13 +108,8 @@ impl IndexIntersectionSet {
     ))
   }
 
-  pub fn to_vec(&self) -> Vec<IndexIntersection> {
-    self
-      .by_idx
-      .to_vec()
-      .into_iter()
-      .map(|isect| isect.into())
-      .collect()
+  pub fn iter(&self) -> impl Iterator<Item = IndexIntersection> + '_ {
+    self.by_idx.iter().map(|&isect| isect.into())
   }
 }
 
