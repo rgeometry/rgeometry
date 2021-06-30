@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["Orientation",""]],"fn":[["ccw_cmp_around_with",""],["extended_orientation_i64",""],["raw_arr_sub",""]]});

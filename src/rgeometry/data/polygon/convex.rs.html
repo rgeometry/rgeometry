@@ -320,13 +320,6 @@
 <span id="296">296</span>
 <span id="297">297</span>
 <span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -339,7 +332,6 @@
 <span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::array::Orientation</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Point</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::PointLocation</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::TriangleView</span>;
@@ -390,7 +382,7 @@
     }
     <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">lower</span>]);
     <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">upper</span>]);
-    <span class="kw">let</span> <span class="ident">triangle</span> <span class="op">=</span> <span class="ident">TriangleView::new</span>([<span class="ident">p0</span>, <span class="ident">p1</span>, <span class="ident">p2</span>]);
+    <span class="kw">let</span> <span class="ident">triangle</span> <span class="op">=</span> <span class="ident">TriangleView::new_unchecked</span>([<span class="ident">p0</span>, <span class="ident">p1</span>, <span class="ident">p2</span>]);
     <span class="ident">triangle</span>.<span class="ident">locate</span>(<span class="ident">pt</span>)
   }
 
@@ -576,14 +568,8 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-  <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Orientation</span>::<span class="kw-2">*</span>;
-  <span class="kw">use</span> <span class="kw">crate</span>::<span class="kw-2">*</span>;
 
   <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
-  <span class="kw">use</span> <span class="ident">proptest::strategy</span>::<span class="kw-2">*</span>;
-  <span class="kw">use</span> <span class="ident">proptest::test_runner</span>::<span class="kw-2">*</span>;
-
-  <span class="kw">use</span> <span class="ident">ordered_float::NotNan</span>;
 
   <span class="kw">impl</span> <span class="ident">Arbitrary</span> <span class="kw">for</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Strategy</span> <span class="op">=</span> <span class="ident">Just</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">BigRational</span><span class="op">&gt;</span><span class="op">&gt;</span>;

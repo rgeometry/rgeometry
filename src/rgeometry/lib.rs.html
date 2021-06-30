@@ -213,6 +213,22 @@
 <span id="189">189</span>
 <span id="190">190</span>
 <span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#![<span class="ident">doc</span>(<span class="ident">test</span>(<span class="ident">no_crate_inject</span>))]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
@@ -227,7 +243,7 @@
 <span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">algorithms</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">array</span>;
+<span class="kw">mod</span> <span class="ident">array</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">data</span>;
 <span class="kw">mod</span> <span class="ident">intersection</span>;
 <span class="kw">mod</span> <span class="ident">matrix</span>;
@@ -247,6 +263,19 @@
   <span class="ident">ConvexViolation</span>,
   <span class="ident">ClockWiseViolation</span>,
 }
+
+<span class="kw">impl</span> <span class="ident">std::fmt::Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
+  <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">std::fmt::Error</span><span class="op">&gt;</span> {
+    <span class="kw">match</span> <span class="self">self</span> {
+      <span class="ident">Error::InsufficientVertices</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Insufficient vertices&quot;</span>),
+      <span class="ident">Error::SelfIntersections</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Self intersections&quot;</span>),
+      <span class="ident">Error::DuplicatePoints</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Duplicate points&quot;</span>),
+      <span class="ident">Error::ConvexViolation</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Convex violation&quot;</span>),
+      <span class="ident">Error::ClockWiseViolation</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Clockwise violation&quot;</span>),
+    }
+  }
+}
+
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PolygonScalar</span><span class="op">&lt;</span><span class="ident">T</span> <span class="op">=</span> <span class="self">Self</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span><span class="op">&gt;</span>:
   <span class="ident">PolygonScalarRef</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Output</span><span class="op">&gt;</span>
   <span class="op">+</span> <span class="ident">AddAssign</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">&gt;</span>
@@ -405,6 +434,9 @@
 <span class="comment">// arbitrary_precision!(ordered_float::OrderedFloat&lt;f64&gt;);</span>
 <span class="macro">arbitrary_precision!</span>(<span class="ident">ordered_float::NotNan</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>);
 <span class="macro">arbitrary_precision!</span>(<span class="ident">ordered_float::NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>);
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">testing</span>;
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rgeometry" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

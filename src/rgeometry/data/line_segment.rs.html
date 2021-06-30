@@ -548,6 +548,40 @@
 <span id="524">524</span>
 <span id="525">525</span>
 <span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::cmp::Eq</span>;
@@ -821,7 +855,9 @@
     <span class="comment">//   l2_to_a1,</span>
     <span class="comment">//   l2_to_a2,</span>
     <span class="comment">//   inner_between(other.min.inner(), self.min.as_ref(), self.max.as_ref()),</span>
-    <span class="comment">//   inner_between(other.max.inner(), self.min.as_ref(), self.max.as_ref())</span>
+    <span class="comment">//   inner_between(other.max.inner(), self.min.as_ref(), self.max.as_ref()),</span>
+    <span class="comment">//   inner_between(self.min.inner(), other.min.as_ref(), other.max.as_ref()),</span>
+    <span class="comment">//   inner_between(self.max.inner(), other.min.as_ref(), other.max.as_ref()),</span>
     <span class="comment">// );</span>
     <span class="kw">if</span> <span class="ident">l1_to_b1</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CoLinear</span> <span class="op">&amp;&amp;</span> <span class="ident">l1_to_b2</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CoLinear</span> {
       <span class="kw">let</span> <span class="ident">c_min</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">rightmost</span>(<span class="ident">other</span>.<span class="ident">min</span>);
@@ -839,18 +875,32 @@
       }
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">l1_to_b1</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CoLinear</span> {
       <span class="comment">// dbg!(other.0 &gt;= self.0, other.0 &lt;= self.1, other.0.is_closed());</span>
-      <span class="kw">if</span> <span class="ident">inner_between</span>(<span class="ident">other</span>.<span class="ident">min</span>.<span class="ident">inner</span>(), <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">as_ref</span>(), <span class="self">self</span>.<span class="ident">max</span>.<span class="ident">as_ref</span>())
-        <span class="op">&amp;&amp;</span> <span class="ident">other</span>.<span class="ident">min</span>.<span class="ident">is_inclusive</span>()
+      <span class="kw">if</span> <span class="ident">other</span>.<span class="ident">min</span>.<span class="ident">is_inclusive</span>()
+        <span class="op">&amp;&amp;</span> <span class="ident">inner_between</span>(<span class="ident">other</span>.<span class="ident">min</span>.<span class="ident">inner</span>(), <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">as_ref</span>(), <span class="self">self</span>.<span class="ident">max</span>.<span class="ident">as_ref</span>())
       {
         <span class="prelude-val">Some</span>(<span class="ident">ILineSegment::Crossing</span>)
       } <span class="kw">else</span> {
         <span class="prelude-val">None</span>
       }
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">l1_to_b2</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CoLinear</span> {
-      <span class="comment">// dbg!(self.1, other.1);</span>
-      <span class="comment">// dbg!(other.1 &gt;= self.0, other.1 &lt;= self.1, other.1.is_closed());</span>
-      <span class="kw">if</span> <span class="ident">inner_between</span>(<span class="ident">other</span>.<span class="ident">max</span>.<span class="ident">inner</span>(), <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">as_ref</span>(), <span class="self">self</span>.<span class="ident">max</span>.<span class="ident">as_ref</span>())
-        <span class="op">&amp;&amp;</span> <span class="ident">other</span>.<span class="ident">max</span>.<span class="ident">is_inclusive</span>()
+      <span class="kw">if</span> <span class="ident">other</span>.<span class="ident">max</span>.<span class="ident">is_inclusive</span>()
+        <span class="op">&amp;&amp;</span> <span class="ident">inner_between</span>(<span class="ident">other</span>.<span class="ident">max</span>.<span class="ident">inner</span>(), <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">as_ref</span>(), <span class="self">self</span>.<span class="ident">max</span>.<span class="ident">as_ref</span>())
+      {
+        <span class="prelude-val">Some</span>(<span class="ident">ILineSegment::Crossing</span>)
+      } <span class="kw">else</span> {
+        <span class="prelude-val">None</span>
+      }
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">l2_to_a1</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CoLinear</span> {
+      <span class="kw">if</span> <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">is_inclusive</span>()
+        <span class="op">&amp;&amp;</span> <span class="ident">inner_between</span>(<span class="self">self</span>.<span class="ident">min</span>.<span class="ident">inner</span>(), <span class="ident">other</span>.<span class="ident">min</span>.<span class="ident">as_ref</span>(), <span class="ident">other</span>.<span class="ident">max</span>.<span class="ident">as_ref</span>())
+      {
+        <span class="prelude-val">Some</span>(<span class="ident">ILineSegment::Crossing</span>)
+      } <span class="kw">else</span> {
+        <span class="prelude-val">None</span>
+      }
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">l2_to_a2</span> <span class="op">=</span><span class="op">=</span> <span class="ident">CoLinear</span> {
+      <span class="kw">if</span> <span class="self">self</span>.<span class="ident">max</span>.<span class="ident">is_inclusive</span>()
+        <span class="op">&amp;&amp;</span> <span class="ident">inner_between</span>(<span class="self">self</span>.<span class="ident">max</span>.<span class="ident">inner</span>(), <span class="ident">other</span>.<span class="ident">min</span>.<span class="ident">as_ref</span>(), <span class="ident">other</span>.<span class="ident">max</span>.<span class="ident">as_ref</span>())
       {
         <span class="prelude-val">Some</span>(<span class="ident">ILineSegment::Crossing</span>)
       } <span class="kw">else</span> {
@@ -896,11 +946,22 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-  <span class="kw">use</span> <span class="kw">super</span><span class="ident">::EndPoint</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Intersects</span>;
   <span class="kw">use</span> <span class="ident">ILineSegment</span>::<span class="kw-2">*</span>;
+
+  <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+
+  <span class="macro">proptest!</span> {
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">flip_intersects_prop</span>(<span class="ident">pts</span>: [<span class="ident">i8</span>; <span class="number">8</span>]) {
+      <span class="kw">let</span> [<span class="ident">a</span>,<span class="ident">b</span>,<span class="ident">c</span>,<span class="ident">d</span>,<span class="ident">e</span>,<span class="ident">f</span>,<span class="ident">g</span>,<span class="ident">h</span>] <span class="op">=</span> <span class="ident">pts</span>;
+      <span class="kw">let</span> <span class="ident">l1</span> <span class="op">=</span> <span class="ident">LineSegment::from</span>((<span class="ident">a</span>, <span class="ident">b</span>)..(<span class="ident">c</span>, <span class="ident">d</span>));
+      <span class="kw">let</span> <span class="ident">l2</span> <span class="op">=</span> <span class="ident">LineSegment::from</span>((<span class="ident">e</span>, <span class="ident">f</span>)..(<span class="ident">g</span>, <span class="ident">h</span>));
+      <span class="macro">assert_eq!</span>(<span class="ident">l1</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">l2</span>), <span class="ident">l2</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">l1</span>));
+    }
+  }
 
   <span class="comment">//             P6</span>
   <span class="comment">//</span>
@@ -1073,6 +1134,13 @@
     <span class="kw">let</span> <span class="ident">l1</span> <span class="op">=</span> <span class="ident">LineSegment::from</span>((<span class="number">0</span>, <span class="number">0</span>)..(<span class="number">0</span>, <span class="number">1</span>));
     <span class="kw">let</span> <span class="ident">l2</span> <span class="op">=</span> <span class="ident">LineSegment::from</span>((<span class="number">1</span>, <span class="number">2</span>)..(<span class="number">2</span>, <span class="number">1</span>));
     <span class="macro">assert_eq!</span>(<span class="ident">l1</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">l2</span>), <span class="prelude-val">None</span>)
+  }
+
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">unit_8</span>() {
+    <span class="kw">let</span> <span class="ident">l1</span> <span class="op">=</span> <span class="ident">LineSegment::from</span>((<span class="op">-</span><span class="number">106</span>, <span class="number">0</span>)..(<span class="number">54</span>, <span class="op">-</span><span class="number">128</span>));
+    <span class="kw">let</span> <span class="ident">l2</span> <span class="op">=</span> <span class="ident">LineSegment::from</span>((<span class="op">-</span><span class="number">71</span>, <span class="op">-</span><span class="number">28</span>)..(<span class="number">31</span>, <span class="op">-</span><span class="number">8</span>));
+    <span class="macro">assert_eq!</span>(<span class="ident">l1</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">l2</span>), <span class="ident">l2</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">l1</span>));
   }
 }
 </pre></div>

@@ -136,14 +136,8 @@
 <span id="112">112</span>
 <span id="113">113</span>
 <span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">num_traits::NumOps</span>;
-<span class="kw">use</span> <span class="ident">rand::seq::SliceRandom</span>;
 <span class="kw">use</span> <span class="ident">rand::Rng</span>;
-<span class="kw">use</span> <span class="ident">std::iter::FromIterator</span>;
 <span class="kw">use</span> <span class="ident">std::ops</span>::{<span class="ident">Index</span>, <span class="ident">IndexMut</span>};
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SparseIndex</span> <span class="op">=</span> <span class="ident">usize</span>;
@@ -189,12 +183,8 @@
     <span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">random</span>(<span class="ident">rng</span>)
   }
 
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_vec</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">idx</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">dense</span>.<span class="ident">iter</span>() {
-      <span class="ident">out</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">arr</span>[<span class="ident">idx</span>])
-    }
-    <span class="ident">out</span>
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
+    <span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">idx</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">arr</span>.<span class="ident">index</span>(<span class="ident">idx</span>))
   }
 }
 
@@ -255,6 +245,10 @@
     }
     <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">0</span>..<span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">len</span>());
     <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">dense</span>[<span class="ident">idx</span>])
+  }
+
+  <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Sparse</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
+    <span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">iter</span>().<span class="ident">copied</span>()
   }
 }
 </pre></div>
