@@ -1,21 +1,9 @@
-use array_init::array_init;
-use num_traits::CheckedMul;
 use num_traits::Signed;
 use std::cmp::Ordering;
-use std::ops::BitXor;
-use std::ops::Index;
 use std::ops::Mul;
-use std::ops::Neg;
 use std::ops::Sub;
 
 use crate::Extended;
-
-pub fn raw_arr_sub<T, const N: usize>(lhs: &[T; N], rhs: &[T; N]) -> [T; N]
-where
-  T: Sub<Output = T> + Clone,
-{
-  array_init(|i| (lhs.index(i).clone() - rhs.index(i).clone()))
-}
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
 pub enum Orientation {
@@ -175,9 +163,9 @@ impl Orientation {
 //   }
 // }
 
-pub fn extended_orientation_i64(p: &[i64; 2], q: &[i64; 2], r: &[i64; 2]) -> Ordering {
-  crate::Extended::cmp_slope(p, q, r)
-}
+// pub fn extended_orientation_i64(p: &[i64; 2], q: &[i64; 2], r: &[i64; 2]) -> Ordering {
+//   crate::Extended::cmp_slope(p, q, r)
+// }
 
 // pub fn turn_i64(p: &[i64; 2], q: &[i64; 2], r: &[i64; 2]) -> Orientation {
 //   raw_arr_turn_2(p, q, r)

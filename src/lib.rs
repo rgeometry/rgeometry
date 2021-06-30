@@ -11,7 +11,7 @@ use std::iter::Sum;
 use std::ops::*;
 
 pub mod algorithms;
-pub mod array;
+mod array;
 pub mod data;
 mod intersection;
 mod matrix;
@@ -31,6 +31,19 @@ pub enum Error {
   ConvexViolation,
   ClockWiseViolation,
 }
+
+impl std::fmt::Display for Error {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+    match self {
+      Error::InsufficientVertices => write!(f, "Insufficient vertices"),
+      Error::SelfIntersections => write!(f, "Self intersections"),
+      Error::DuplicatePoints => write!(f, "Duplicate points"),
+      Error::ConvexViolation => write!(f, "Convex violation"),
+      Error::ClockWiseViolation => write!(f, "Clockwise violation"),
+    }
+  }
+}
+
 pub trait PolygonScalar<T = Self, Output = Self>:
   PolygonScalarRef<T, Output>
   + AddAssign<Output>
@@ -189,3 +202,6 @@ arbitrary_precision!(num_rational::BigRational);
 // arbitrary_precision!(ordered_float::OrderedFloat<f64>);
 arbitrary_precision!(ordered_float::NotNan<f32>);
 arbitrary_precision!(ordered_float::NotNan<f64>);
+
+#[cfg(test)]
+pub mod testing;

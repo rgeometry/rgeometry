@@ -270,7 +270,9 @@ where
     //   l2_to_a1,
     //   l2_to_a2,
     //   inner_between(other.min.inner(), self.min.as_ref(), self.max.as_ref()),
-    //   inner_between(other.max.inner(), self.min.as_ref(), self.max.as_ref())
+    //   inner_between(other.max.inner(), self.min.as_ref(), self.max.as_ref()),
+    //   inner_between(self.min.inner(), other.min.as_ref(), other.max.as_ref()),
+    //   inner_between(self.max.inner(), other.min.as_ref(), other.max.as_ref()),
     // );
     if l1_to_b1 == CoLinear && l1_to_b2 == CoLinear {
       let c_min = self.min.rightmost(other.min);
@@ -288,18 +290,32 @@ where
       }
     } else if l1_to_b1 == CoLinear {
       // dbg!(other.0 >= self.0, other.0 <= self.1, other.0.is_closed());
-      if inner_between(other.min.inner(), self.min.as_ref(), self.max.as_ref())
-        && other.min.is_inclusive()
+      if other.min.is_inclusive()
+        && inner_between(other.min.inner(), self.min.as_ref(), self.max.as_ref())
       {
         Some(ILineSegment::Crossing)
       } else {
         None
       }
     } else if l1_to_b2 == CoLinear {
-      // dbg!(self.1, other.1);
-      // dbg!(other.1 >= self.0, other.1 <= self.1, other.1.is_closed());
-      if inner_between(other.max.inner(), self.min.as_ref(), self.max.as_ref())
-        && other.max.is_inclusive()
+      if other.max.is_inclusive()
+        && inner_between(other.max.inner(), self.min.as_ref(), self.max.as_ref())
+      {
+        Some(ILineSegment::Crossing)
+      } else {
+        None
+      }
+    } else if l2_to_a1 == CoLinear {
+      if self.min.is_inclusive()
+        && inner_between(self.min.inner(), other.min.as_ref(), other.max.as_ref())
+      {
+        Some(ILineSegment::Crossing)
+      } else {
+        None
+      }
+    } else if l2_to_a2 == CoLinear {
+      if self.max.is_inclusive()
+        && inner_between(self.max.inner(), other.min.as_ref(), other.max.as_ref())
       {
         Some(ILineSegment::Crossing)
       } else {
@@ -345,11 +361,22 @@ where
 
 #[cfg(test)]
 mod tests {
-  use super::EndPoint::*;
   use super::*;
   use crate::data::*;
   use crate::Intersects;
   use ILineSegment::*;
+
+  use proptest::prelude::*;
+
+  proptest! {
+    #[test]
+    fn flip_intersects_prop(pts: [i8; 8]) {
+      let [a,b,c,d,e,f,g,h] = pts;
+      let l1 = LineSegment::from((a, b)..(c, d));
+      let l2 = LineSegment::from((e, f)..(g, h));
+      assert_eq!(l1.intersect(&l2), l2.intersect(&l1));
+    }
+  }
 
   //             P6
   //
@@ -522,5 +549,12 @@ mod tests {
     let l1 = LineSegment::from((0, 0)..(0, 1));
     let l2 = LineSegment::from((1, 2)..(2, 1));
     assert_eq!(l1.intersect(&l2), None)
+  }
+
+  #[test]
+  fn unit_8() {
+    let l1 = LineSegment::from((-106, 0)..(54, -128));
+    let l2 = LineSegment::from((-71, -28)..(31, -8));
+    assert_eq!(l1.intersect(&l2), l2.intersect(&l1));
   }
 }

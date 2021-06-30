@@ -1,8 +1,6 @@
 use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
-use num_traits::identities::One;
 use num_traits::identities::Zero;
-use num_traits::NumRef;
 use num_traits::{NumOps, Signed};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;

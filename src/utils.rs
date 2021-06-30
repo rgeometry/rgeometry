@@ -1,7 +1,4 @@
-use num_traits::NumOps;
-use rand::seq::SliceRandom;
 use rand::Rng;
-use std::iter::FromIterator;
 use std::ops::{Index, IndexMut};
 
 pub type SparseIndex = usize;
@@ -47,12 +44,8 @@ impl<T: Copy + Default> SparseVec<T> {
     self.dense.random(rng)
   }
 
-  pub fn to_vec(&self) -> Vec<T> {
-    let mut out = Vec::new();
-    for &idx in self.dense.dense.iter() {
-      out.push(self.arr[idx])
-    }
-    out
+  pub fn iter(&self) -> impl Iterator<Item = &T> + '_ {
+    self.dense.iter().map(move |idx| self.arr.index(idx))
   }
 }
 
@@ -113,5 +106,9 @@ impl DenseCollection {
     }
     let idx = rng.gen_range(0..self.dense.len());
     Some(self.dense[idx])
+  }
+
+  fn iter(&self) -> impl Iterator<Item = Sparse> + '_ {
+    self.dense.iter().copied()
   }
 }
