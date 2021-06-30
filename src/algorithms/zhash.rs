@@ -9,10 +9,10 @@ use crate::data::Point;
 
 #[derive(Debug)]
 pub struct ZHashBox<'a, T> {
-  min_x: &'a T,
-  max_x: &'a T,
-  min_y: &'a T,
-  max_y: &'a T,
+  pub min_x: &'a T,
+  pub max_x: &'a T,
+  pub min_y: &'a T,
+  pub max_y: &'a T,
 }
 impl<'a, T> Copy for ZHashBox<'a, T> {}
 
@@ -28,7 +28,7 @@ impl<'a, T> Clone for ZHashBox<'a, T> {
 }
 
 pub trait ZHashable: Sized {
-  type ZHashKey;
+  type ZHashKey: Copy;
   fn zhash_key(zbox: ZHashBox<'_, Self>) -> Self::ZHashKey;
   fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64;
 }
@@ -75,8 +75,8 @@ impl ZHashable for i8 {
     let (min_x, min_y) = key;
     let x = (point.x_coord().wrapping_sub(min_x) as u8) as u32;
     let y = (point.y_coord().wrapping_sub(min_y) as u8) as u32;
-    dbg!(point.x_coord(), min_x, x);
-    dbg!(point.y_coord(), min_y, y);
+    // dbg!(point.x_coord(), min_x, x);
+    // dbg!(point.y_coord(), min_y, y);
     zhash_pair(x, y)
   }
 }

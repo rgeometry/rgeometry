@@ -132,22 +132,22 @@ where
     let min_x = self.0[0]
       .x_coord()
       .min(self.0[1].x_coord())
-      .min(self.0[1].x_coord())
+      .min(self.0[2].x_coord())
       .clone();
     let max_x = self.0[0]
       .x_coord()
       .max(self.0[1].x_coord())
-      .max(self.0[1].x_coord())
+      .max(self.0[2].x_coord())
       .clone();
     let min_y = self.0[0]
       .y_coord()
       .min(self.0[1].y_coord())
-      .min(self.0[1].y_coord())
+      .min(self.0[2].y_coord())
       .clone();
     let max_y = self.0[0]
       .y_coord()
       .max(self.0[1].y_coord())
-      .max(self.0[1].y_coord())
+      .max(self.0[2].y_coord())
       .clone();
     (Point::new([min_x, min_y]), Point::new([max_x, max_y]))
   }
@@ -170,7 +170,7 @@ where
     }
   }
 
-  //   sampleTriangle :: (RandomGen g, Random r, Fractional r, Ord r) => Triangle 2 p r -> Rand g (Point 2 r)
+  // sampleTriangle :: (RandomGen g, Random r, Fractional r, Ord r) => Triangle 2 p r -> Rand g (Point 2 r)
   // sampleTriangle (Triangle v1 v2 v3) = do
   //   a' <- getRandomR (0, 1)
   //   b' <- getRandomR (0, 1)

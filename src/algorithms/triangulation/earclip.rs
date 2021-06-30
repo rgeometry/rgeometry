@@ -1,10 +1,12 @@
+use std::borrow::BorrowMut;
+
+use crate::algorithms::zhash::{ZHashBox, ZHashable};
 use crate::data::{Point, PointId, PointLocation, TriangleView};
 use crate::Orientation;
 use crate::PolygonScalar;
 
+use num_traits::Zero;
 use rand::Rng;
-
-// FIXME: Rename to ear-clipping.
 
 // triangulate: Vec<Point<T,2>> + Vec<PointId> -> Vec<(PointId,PointId,PointId)>
 // triangulate: Polygon -> Vec<Polygon>
@@ -65,7 +67,7 @@ where
   if trig.orientation() == Orientation::CounterClockWise {
     let mut focus = vertices.next(c);
     while focus != a {
-      if trig.locate(&points[focus]) != PointLocation::Outside {
+      if trig.locate(get_point(focus)) != PointLocation::Outside {
         return false;
       }
       focus = vertices.next(focus);
@@ -76,18 +78,196 @@ where
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Z-order hash ear clipping
+
+pub fn triangulate_list_hashed<'a, T, R>(
+  points: &'a [Point<T, 2>],
+  order: &'a [PointId],
+  rng: &'a mut R,
+) -> impl Iterator<Item = (PointId, PointId, PointId)> + 'a
+where
+  T: PolygonScalar + ZHashable,
+  R: Rng + ?Sized,
+{
+  let mut len = order.len();
+  let mut vertices = List::new(order.len());
+  let mut possible_ears = EarStore::new(order.len());
+
+  let zbox = zbox_slice(points, order);
+  let key = ZHashable::zhash_key(zbox);
+  let zhashes: Vec<u64> = order
+    .iter()
+    .map(|&pid| ZHashable::zhash_fn(key, &points[pid.usize()]))
+    .collect();
+  // let mut zorder: Vec<PointId> = order.into();
+  // zorder.sort_unstable_by_key(|&pid| zhashes[pid.usize()]);
+  let mut zorder = List::new_sorted(&zhashes);
+
+  std::iter::from_fn(move || match len {
+    0..=2 => None,
+    _ => loop {
+      let focus = possible_ears.pop(rng).unwrap();
+      let prev = vertices.prev(focus);
+      let next = vertices.next(focus);
+      if is_ear_hashed(points, order, key, &zhashes, &zorder, prev, focus, next) {
+        // if !is_ear(points, order, &vertices, prev, focus, next) {
+        //   // eprintln!("points: {:?}", points);
+        //   panic!("IS NOT EAR: {} {} {}", prev, focus, next);
+        // }
+        possible_ears.new_possible_ear(prev);
+        possible_ears.new_possible_ear(next);
+        vertices.delete(focus);
+        zorder.delete(focus);
+        len -= 1;
+        let out = (order[prev], order[focus], order[next]);
+        return Some(out);
+      }
+      // else {
+      //   if is_ear(points, order, &vertices, prev, focus, next) {
+      //     panic!("SHOULD BE EAR");
+      //   }
+      // }
+    },
+  })
+}
+
+fn is_ear_hashed<T: ZHashable>(
+  points: &[Point<T, 2>],
+  order: &[PointId],
+  key: <T as ZHashable>::ZHashKey,
+  zhashes: &[u64],
+  zorder: &List,
+  a: usize,
+  b: usize,
+  c: usize,
+) -> bool
+where
+  T: PolygonScalar,
+{
+  let get_point = |key: usize| &points[order[key].usize()];
+  let trig = TriangleView::new_unchecked([get_point(a), get_point(b), get_point(c)]);
+  if trig.orientation() == Orientation::CounterClockWise {
+    // Points inside the triangle are guaranteed to have a zhash
+    // between the hashes of the bounding box.
+    let (min, max) = trig.bounding_box();
+    let min_hash = ZHashable::zhash_fn(key, &min);
+    let max_hash = ZHashable::zhash_fn(key, &max);
+
+    // Points inside the triangle are likely to be nearby so start
+    // by searching in both directions.
+    let mut up_focus = zorder.next(b);
+    let mut down_focus = zorder.prev(b);
+    // dbg!(&min, &max);
+    // dbg!(min_hash, max_hash, up_focus, down_focus);
+    while up_focus != usize::MAX
+      && down_focus != usize::MAX
+      && zhashes[up_focus] <= max_hash
+      && zhashes[up_focus] >= min_hash
+      && zhashes[down_focus] <= max_hash
+      && zhashes[down_focus] >= min_hash
+    {
+      if (down_focus != a
+        && down_focus != b
+        && down_focus != c
+        && trig.locate(get_point(down_focus)) != PointLocation::Outside)
+        || (up_focus != a
+          && up_focus != b
+          && up_focus != c
+          && trig.locate(get_point(up_focus)) != PointLocation::Outside)
+      {
+        return false;
+      }
+      up_focus = zorder.next(up_focus);
+      down_focus = zorder.prev(down_focus);
+    }
+
+    // Look upwards
+    while up_focus != usize::MAX && zhashes[up_focus] <= max_hash && zhashes[up_focus] >= min_hash {
+      if up_focus != a
+        && up_focus != b
+        && up_focus != c
+        && trig.locate(get_point(up_focus)) != PointLocation::Outside
+      {
+        return false;
+      }
+      up_focus = zorder.next(up_focus);
+    }
+
+    // Look downwards
+    while down_focus != usize::MAX
+      && zhashes[down_focus] >= min_hash
+      && zhashes[down_focus] <= max_hash
+    {
+      if down_focus != a
+        && down_focus != b
+        && down_focus != c
+        && trig.locate(get_point(down_focus)) != PointLocation::Outside
+      {
+        return false;
+      }
+      down_focus = zorder.prev(down_focus);
+    }
+
+    true
+  } else {
+    false
+  }
+}
+
+fn zbox_slice<'a, T>(slice: &'a [Point<T, 2>], order: &'a [PointId]) -> ZHashBox<'a, T>
+where
+  T: PolygonScalar + ZHashable,
+{
+  if slice.is_empty() {
+    panic!("Cannot zhash an empty slice");
+    // return ZHashBox {
+    //   min_x: &T::zero(),
+    //   max_x: &T::zero(),
+    //   min_y: &T::zero(),
+    //   max_y: &T::zero(),
+    // };
+  }
+  let mut zbox = ZHashBox {
+    min_x: slice[0].x_coord(),
+    max_x: slice[0].x_coord(),
+    min_y: slice[0].y_coord(),
+    max_y: slice[0].y_coord(),
+  };
+  for &pid in order {
+    let pt = &slice[pid.usize()];
+    if zbox.min_x > pt.x_coord() {
+      zbox.min_x = pt.x_coord();
+    }
+    if zbox.max_x < pt.x_coord() {
+      zbox.max_x = pt.x_coord();
+    }
+    if zbox.min_y > pt.y_coord() {
+      zbox.min_y = pt.y_coord();
+    }
+    if zbox.max_y < pt.y_coord() {
+      zbox.max_y = pt.y_coord();
+    }
+  }
+  zbox
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Tests
+
 #[cfg(test)]
 mod tests {
   use super::*;
   use crate::data::*;
   use num_bigint::BigInt;
   use num_traits::Zero;
+  use rand::rngs::SmallRng;
   use rand::SeedableRng;
 
   fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
     let mut trig_area_2x = BigInt::zero();
     // let mut rng = StepRng::new(0,0);
-    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let mut rng = SmallRng::seed_from_u64(0);
     for (a, b, c) in triangulate_list(&p.points, &p.rings[0], &mut rng) {
       let trig = TriangleView::new_unchecked([p.point(a), p.point(b), p.point(c)]);
       trig_area_2x += trig.signed_area_2x::<BigInt>();
@@ -122,12 +302,51 @@ mod tests {
     assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
   }
 
+  #[test]
+  fn basic_3() {
+    let mut rng2 = SmallRng::seed_from_u64(0);
+    let p: Polygon<i8> = Polygon::new(vec![
+      Point { array: [-44, -11] },
+      Point { array: [-43, 23] },
+      Point { array: [-64, 44] },
+      Point { array: [-52, 114] },
+      Point { array: [-82, 69] },
+    ])
+    .unwrap();
+
+    triangulate_list_hashed(&p.points, &p.rings[0], &mut rng2).count();
+  }
+
+  #[test]
+  fn basic_4() {
+    let mut rng2 = SmallRng::seed_from_u64(0);
+    let p: Polygon<i8> = Polygon::new(vec![
+      Point { array: [12, 5] },   // 0
+      Point { array: [0, 8] },    // 1
+      Point { array: [-10, -6] }, // 2 cut
+      Point { array: [-3, 3] },   // 3
+      Point { array: [-2, 4] },   // 4
+    ])
+    .unwrap();
+
+    triangulate_list_hashed(&p.points, &p.rings[0], &mut rng2).count();
+  }
+
   use proptest::prelude::*;
 
   proptest! {
     #[test]
     fn equal_area_prop(poly: Polygon<i64>) {
       prop_assert_eq!(poly.signed_area_2x::<BigInt>(), trig_area_2x(&poly));
+    }
+
+    #[test]
+    fn hashed_identity_prop(poly: Polygon<i8>) {
+      let mut rng1 = SmallRng::seed_from_u64(0);
+      let mut rng2 = SmallRng::seed_from_u64(0);
+      let not_hashed: Vec<(PointId,PointId,PointId)> = triangulate_list(&poly.points, &poly.rings[0], &mut rng1).collect();
+      let hashed: Vec<(PointId,PointId,PointId)> = triangulate_list_hashed(&poly.points, &poly.rings[0], &mut rng2).collect();
+      prop_assert_eq!(not_hashed, hashed);
     }
   }
 }
@@ -164,8 +383,29 @@ impl List {
   fn delete(&mut self, vertex: usize) {
     let prev = self.prev[vertex];
     let next = self.next[vertex];
-    self.next[prev] = next;
-    self.prev[next] = prev;
+    if prev != usize::MAX {
+      self.next[prev] = next;
+    }
+    if next != usize::MAX {
+      self.prev[next] = prev;
+    }
+  }
+
+  fn new_sorted(keys: &[u64]) -> List {
+    let size = keys.len();
+    let mut v: Vec<usize> = (0..size).collect();
+    v.sort_unstable_by_key(|&idx| keys[idx]);
+    let mut prev = Vec::with_capacity(size);
+    let mut next = Vec::with_capacity(size);
+    prev.resize(size, 0);
+    next.resize(size, 0);
+    for i in 0..size {
+      prev[v[(i + 1) % size]] = v[i];
+      next[v[i]] = v[(i + 1) % size];
+    }
+    next[v[size - 1]] = usize::MAX;
+    prev[v[0]] = usize::MAX;
+    List { prev, next }
   }
 }
 

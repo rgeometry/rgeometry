@@ -27,9 +27,11 @@ use std::ops::IndexMut;
 // 2. Simplify points.
 pub struct ShrinkablePolygon<T: ValueTree> {
   points: Vec<ShrinkablePoint<T, 2>>,
-  cut: Option<PointId>,
+  cut: Vec<PointId>,
+  cut_prev: Option<PointId>,
   uncut: Vec<PointId>,
-  shrink: usize,
+  prev_shrink: Option<usize>,
+  next_shrink: usize,
   done: bool,
 }
 
@@ -40,15 +42,19 @@ where
   fn new(points: Vec<ShrinkablePoint<T, 2>>) -> Self {
     ShrinkablePolygon {
       points: points,
-      cut: None,
+      cut: Vec::new(),
+      cut_prev: None,
       uncut: Vec::new(),
-      shrink: 0,
+      prev_shrink: None,
+      next_shrink: 0,
       done: false,
     }
   }
 
   fn polygon(&self) -> Polygon<<T as ValueTree>::Value> {
-    Polygon::new_unchecked(self.points.iter().map(|pt| pt.current()).collect())
+    let mut poly = Polygon::new_unchecked(self.points.iter().map(|pt| pt.current()).collect());
+    poly.rings[0].retain(|pid| !self.cut.contains(pid));
+    poly
   }
 }
 
@@ -59,61 +65,86 @@ where
   type Value = Polygon<<T as ValueTree>::Value>;
 
   fn current(&self) -> Self::Value {
-    if self.done {
-      return self.polygon();
-    }
-    let mut poly = self.polygon();
-    if let Some(cut) = self.cut {
-      poly.rings[0].remove(cut.usize());
-    }
-    return poly;
+    let mut poly = Polygon::new_unchecked(self.points.iter().map(|pt| pt.current()).collect());
+    poly.rings[0].retain(|pid| !self.cut.contains(pid));
+    Polygon::new_unchecked(
+      poly.rings[0]
+        .iter()
+        .map(|pid| poly.points[pid.usize()].clone())
+        .collect(),
+    )
   }
 
   // Reduce the complexity and return 'true' if something changed.
   // Return 'false' if the complexity cannot be reduced.
   fn simplify(&mut self) -> bool {
-    if self.done {
-      // eprintln!("Shrink done");
-      return false;
-    }
+    // if self.done {
+    //   // eprintln!("Shrink done");
+    //   return false;
+    // }
 
     // If we previously cut an ear and the tests are still failing, make the cut permanent.
-    if let Some(cut) = self.cut {
-      // eprintln!("Shrink cut {:?}", cut);
-      self.points.remove(cut.usize());
-      self.cut = None;
+    // if let Some(cut) = self.cut {
+    //   // eprintln!("Shrink cut {:?}", cut);
+    //   self.points.remove(cut.usize());
+    //   self.cut = None;
+    //   self.uncut.clear();
+    // }
+    if self.cut_prev.is_some() {
       self.uncut.clear();
+      self.cut_prev = None;
     }
 
     // Look for more ears to cut.
-    for pt in self.polygon().iter_boundary() {
-      if !self.uncut.contains(&pt.point_id()) && pt.is_ear() {
-        // eprintln!("Shrink ear: {:?}", pt.point_id());
-        self.cut = Some(pt.point_id());
-        return true;
-      }
-    }
-
-    // No more ears can be cut. Let's try simplifying points:
-    // eprintln!("Shrinking point: {}", self.shrink);
-    while self.shrink < self.points.len() && !self.points[self.shrink].simplify() {
-      self.shrink += 1;
-      // eprintln!("Shrink next point: {}", self.shrink);
-    }
-    if self.shrink < self.points.len() {
-      while self.polygon().validate().is_err() {
-        // eprintln!("Bad point shrink. Undo: {}", self.shrink);
-        if !self.points[self.shrink].complicate() {
-          // eprintln!("Cannot undo. Abort");
-          self.done = true;
+    let poly = self.polygon();
+    if poly.rings[0].len() > 3 {
+      for pt in poly.iter_boundary() {
+        if !self.uncut.contains(&pt.point_id()) && pt.is_ear() {
+          // eprintln!(
+          //   "Cut ear: {:?} {}/{}",
+          //   pt.point_id(),
+          //   self.cut.len(),
+          //   self.points.len()
+          // );
+          self.cut.push(pt.point_id());
+          self.cut_prev = Some(pt.point_id());
+          // if !self.uncut_prev.is_empty() {
+          //   eprintln!("Re-trying: {:?}", self.uncut_prev);
+          // }
+          // self.uncut_prev.clear();
+          // std::mem::swap(&mut self.uncut, &mut self.uncut_prev);
           return true;
         }
       }
+    }
+
+    // eprintln!("Simplify done: {:?} {:?}", self.uncut, self.uncut_prev);
+
+    // No more ears can be cut. Let's try simplifying points:
+    // eprintln!("Shrinking point: {}", self.next_shrink);
+    while self.next_shrink < poly.rings[0].len()
+      && !self.points[poly.rings[0][self.next_shrink].usize()].simplify()
+    {
+      self.next_shrink += 1;
+      // eprintln!("Shrink next point: {}", self.shrink);
+    }
+    if self.next_shrink < poly.rings[0].len() {
+      while self.polygon().validate().is_err() {
+        // eprintln!("Bad point shrink. Undo: {}", self.next_shrink);
+        if !self.points[poly.rings[0][self.next_shrink].usize()].complicate() {
+          // eprintln!("Cannot undo. Abort");
+          self.next_shrink = usize::MAX;
+          return true;
+        }
+      }
+      // eprintln!("Phew. Fixed: {}", self.next_shrink);
+      self.prev_shrink = Some(self.next_shrink);
       return true;
     } else {
       self.done = true;
       return false;
     }
+    // return false;
   }
 
   // The value has been shrunk so much that the test-cases no longer fail.
@@ -123,31 +154,54 @@ where
       return false;
     }
 
-    if let Some(cut) = self.cut {
-      // eprintln!("Undo cut");
+    if let Some(cut) = self.cut_prev {
+      self.cut.pop();
+      self.cut_prev = None;
+      // eprintln!(
+      //   "Undo cut: {:?} {}/{}",
+      //   cut,
+      //   self.cut.len(),
+      //   self.points.len()
+      // );
+      // self.done = true;
+      // std::mem::swap(&mut self.uncut, &mut self.uncut_prev);
       self.uncut.push(cut);
-      self.cut = None;
       return true;
     }
 
-    if self.shrink < self.points.len() {
-      // eprintln!("Undo shrink");
-      if !self.points[self.shrink].complicate() {
-        self.shrink += 1;
-      } else {
-        while self.polygon().validate().is_err() {
-          // eprintln!("Bad point unshrink. Undo: {}", self.shrink);
-          if !self.points[self.shrink].complicate() {
-            // eprintln!("Cannot undo. Abort");
-            self.done = true;
-            return true;
-          }
+    if let Some(idx) = self.prev_shrink {
+      let key = self.polygon().rings[0][idx].usize();
+      self.points[key].complicate();
+      while self.polygon().validate().is_err() {
+        // eprintln!("Bad point unshrink. Undo: {}", self.shrink);
+        if !self.points[key].complicate() {
+          // eprintln!("Cannot undo. Abort");
+          self.done = true;
+          return true;
         }
       }
-      return true;
-    } else {
-      return false;
+      self.prev_shrink = None;
     }
+
+    // if self.shrink < self.points.len() {
+    //   // eprintln!("Undo shrink");
+    //   if !self.points[self.shrink].complicate() {
+    //     self.shrink += 1;
+    //   } else {
+    //     while self.polygon().validate().is_err() {
+    //       // eprintln!("Bad point unshrink. Undo: {}", self.shrink);
+    //       if !self.points[self.shrink].complicate() {
+    //         // eprintln!("Cannot undo. Abort");
+    //         self.done = true;
+    //         return true;
+    //       }
+    //     }
+    //   }
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+    return false;
   }
 }
 
