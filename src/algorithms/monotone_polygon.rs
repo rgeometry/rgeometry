@@ -43,7 +43,7 @@ where
         let curr = reordered_polygon[i];
         let prev = reordered_polygon[i-1];
         if curr.array[1] < prev.array[1] {
-            return Err(Error::InsufficientVertices);
+            return Err(Error::InsufficientVertices); // ToDo: replace with proper error
         }
     }
     monotone_polygons[1].extend_from_slice(&reordered_polygon[idx-1..]);
@@ -62,13 +62,13 @@ mod monotone_testing {
     fn convex_polygon_is_montone()
     {
         let mut rng = rand::thread_rng();
-        let convex_polygon = PolygonConvex::random(8,100,&mut rng);
+        let convex_polygon = PolygonConvex::random(10,100,&mut rng);
         let res = get_y_monotone_polygons(&convex_polygon.points);
         assert!(res.is_ok());
     }
 
     #[test]
-    fn concave_polygon_not_montone()
+    fn non_y_monotone()
     {
         let polygon = Polygon::new(
             vec![Point::new([0,1]),Point::new([1,2]),Point::new([1,-2]),Point::new([0,-1]),Point::new([-1,-2]),Point::new([-1,2])]).unwrap();
