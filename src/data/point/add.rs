@@ -1,6 +1,7 @@
 use super::Point;
 use super::Vector;
 use array_init::array_init;
+use num_traits::NumOps;
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Index;
@@ -46,11 +47,11 @@ where
 // point += &vector
 impl<T, const N: usize> AddAssign<&Vector<T, N>> for Point<T, N>
 where
-  for<'a> T: AddAssign<&'a T>,
+  T: NumOps + Clone + AddAssign,
 {
   fn add_assign(&mut self, other: &Vector<T, N>) {
     for i in 0..N {
-      self.array[i] += other.0.index(i)
+      self.array[i] += other.0.index(i).clone()
     }
   }
 }
@@ -58,7 +59,7 @@ where
 // point += vector
 impl<T, const N: usize> AddAssign<Vector<T, N>> for Point<T, N>
 where
-  for<'a> T: AddAssign<&'a T>,
+  T: NumOps + Clone + AddAssign,
 {
   fn add_assign(&mut self, other: Vector<T, N>) {
     self.add_assign(&other)

@@ -1,5 +1,6 @@
 // use claim::debug_assert_ok;
-use num_rational::BigRational;
+use num::BigInt;
+use num::BigRational;
 use num_traits::*;
 use std::iter::Sum;
 use std::ops::*;
@@ -13,6 +14,8 @@ pub use iter::*;
 
 mod convex;
 pub use convex::*;
+
+use super::Transform;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PositionId(usize);
@@ -213,6 +216,21 @@ impl<T> Polygon<T> {
       .sum();
     let three = T::from_usize(3).unwrap();
     Point::from(xs / (three * self.signed_area_2x()))
+  }
+
+  // Convert to BigRational. Center on <0,0>. Scale size such that max(width,height) = 1.
+  pub fn normalize(&self) -> Polygon<BigRational>
+  where
+    T: PolygonScalar + Into<BigInt>,
+  {
+    let p = self.clone().cast(|t| BigRational::from(t.into()));
+    let centroid = p.centroid();
+    let t = Transform::translate(-Vector::from(centroid));
+    // let s = Transform::uniform_scale(BigRational::new(
+    //   One::one(),
+    //   BigInt::from_usize(width).unwrap(),
+    // ));
+    t * p
   }
 
   pub fn signed_area<F>(&self) -> F
