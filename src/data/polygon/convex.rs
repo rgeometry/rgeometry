@@ -122,14 +122,14 @@ where
       .into_iter()
       .scan(Point::zero(), |st, vec| {
         *st += vec;
-        Some(st.clone())
+        Some(*st)
       })
       .collect();
     let n_vertices = (*vertices).len();
     debug_assert_eq!(n_vertices, n);
     match crate::algorithms::convex_hull(vertices).ok() {
       // If the vertices are all colinear then give up and try again.
-      None => return Self::random(n, rng),
+      None => Self::random(n, rng),
       Some(p) => p,
     }
   }
