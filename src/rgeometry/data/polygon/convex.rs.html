@@ -296,6 +296,16 @@
 <span id="272">272</span>
 <span id="273">273</span>
 <span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -397,7 +407,7 @@
 {
   <span class="doccomment">/// $O(n \log n)$ Uniformly sample a random convex polygon.</span>
   <span class="doccomment">///</span>
-  <span class="doccomment">/// The output polygon is centered at (0,0), and has a maximum width and height of 2 units.</span>
+  <span class="doccomment">/// The output polygon is rooted in (0,0), grows upwards, and has a height and width of T::MAX.</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// ```no_run</span>
   <span class="doccomment">/// # use rgeometry_wasm::playground::*;</span>
@@ -534,6 +544,16 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid_i8</span>(<span class="ident">poly</span> <span class="kw">in</span> <span class="ident">any_convex</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>()) {
       <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">random_convex_prop</span>(<span class="ident">poly</span> <span class="kw">in</span> <span class="ident">any_convex</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>()) {
+      <span class="kw">let</span> (<span class="ident">min</span>, <span class="ident">max</span>) <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">bounding_box</span>();
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">min</span>.<span class="ident">y_coord</span>(), <span class="kw-2">&amp;</span><span class="number">0</span>);
+      <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">x_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">x_coord</span>();
+      <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">y_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">y_coord</span>();
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">width</span>, <span class="ident">i8::MAX</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">height</span>, <span class="ident">i8::MAX</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
