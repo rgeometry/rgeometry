@@ -98,7 +98,7 @@ where
 {
   /// $O(n \log n)$ Uniformly sample a random convex polygon.
   ///
-  /// The output polygon is centered at (0,0), and has a maximum width and height of 2 units.
+  /// The output polygon is rooted in (0,0), grows upwards, and has a height and width of T::MAX.
   ///
   /// ```no_run
   /// # use rgeometry_wasm::playground::*;
@@ -235,6 +235,16 @@ mod tests {
     #[test]
     fn all_random_convex_polygons_are_valid_i8(poly in any_convex::<i8>()) {
       prop_assert_eq!(poly.validate().err(), None)
+    }
+
+    #[test]
+    fn random_convex_prop(poly in any_convex::<i8>()) {
+      let (min, max) = poly.bounding_box();
+      prop_assert_eq!(min.y_coord(), &0);
+      let width = max.x_coord() - min.x_coord();
+      let height = max.y_coord() - min.y_coord();
+      prop_assert_eq!(width, i8::MAX);
+      prop_assert_eq!(height, i8::MAX);
     }
 
     #[test]
