@@ -265,7 +265,7 @@ where
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     let (size_range, t_params) = params;
     if size_range.is_empty() {
-      PolygonStrat(T::arbitrary_with(t_params), 3..100)
+      PolygonStrat(T::arbitrary_with(t_params), 3..50)
     } else {
       PolygonStrat(T::arbitrary_with(t_params), size_range)
     }

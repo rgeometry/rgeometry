@@ -83,6 +83,7 @@ where
   pub fn normalize(&self) -> PolygonConvex<BigRational>
   where
     T: PolygonScalar + Into<BigInt>,
+    T::ExtendedSigned: Into<BigInt>,
   {
     PolygonConvex::new_unchecked(self.0.normalize())
   }
