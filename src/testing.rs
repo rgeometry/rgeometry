@@ -2,16 +2,18 @@
 //  * points
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
-use crate::data::{Point, PointId, Polygon, Triangle};
+use crate::data::{Point, PointId, Polygon, PolygonConvex, Triangle};
 use crate::PolygonScalar;
 
 use array_init::{array_init, try_array_init};
 use core::ops::Range;
 use num_bigint::BigInt;
+use num_traits::*;
 use ordered_float::NotNan;
 use proptest::prelude::*;
 use proptest::strategy::*;
 use proptest::test_runner::*;
+use rand::distributions::uniform::SampleUniform;
 use rand::SeedableRng;
 use std::collections::BTreeSet;
 use std::convert::TryInto;
@@ -263,11 +265,25 @@ where
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     let (size_range, t_params) = params;
     if size_range.is_empty() {
-      PolygonStrat(T::arbitrary_with(t_params), 3..100)
+      PolygonStrat(T::arbitrary_with(t_params), 3..50)
     } else {
       PolygonStrat(T::arbitrary_with(t_params), size_range)
     }
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary convex polygons
+
+pub fn any_convex<T>() -> impl Strategy<Value = PolygonConvex<T>>
+where
+  T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
+{
+  (3usize..=100, any::<u64>()).prop_map(|(n, seed)| {
+    let rng = &mut rand::rngs::SmallRng::seed_from_u64(seed);
+    let p = PolygonConvex::random(n, rng);
+    p
+  })
 }
 
 ///////////////////////////////////////////////////////////////////////////////
