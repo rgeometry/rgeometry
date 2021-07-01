@@ -127,6 +127,8 @@ where
       .collect();
     let n_vertices = (*vertices).len();
     debug_assert_eq!(n_vertices, n);
+    // FIXME: Use the convex hull algorithm for polygons rather than point sets.
+    //        It runs in O(n) rather than O(n log n). Hasn't been implemented, yet, though.
     match crate::algorithms::convex_hull(vertices).ok() {
       // If the vertices are all colinear then give up and try again.
       None => Self::random(n, rng),
