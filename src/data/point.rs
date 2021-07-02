@@ -187,8 +187,8 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 
 // Methods on two-dimensional points.
 impl<T> Point<T, 2> {
-  /// Determine the direction you have to turn if you walk from `p`
-  /// to `q` to `r`.
+  /// Determine the direction you have to turn if you walk from `p1`
+  /// to `p2` to `p3`.
   ///
   /// For fixed-precision types (i8,i16,i32,i64,etc), this function is
   /// guaranteed to work for any input and never cause any arithmetic overflows.
@@ -208,11 +208,11 @@ impl<T> Point<T, 2> {
   /// assert!(Point::orient(&p1, &p2, &Point::new([ 1, 2 ])).is_cw());
   /// ```
   ///
-  pub fn orient(p: &Point<T, 2>, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
+  pub fn orient(p1: &Point<T, 2>, p2: &Point<T, 2>, p3: &Point<T, 2>) -> Orientation
   where
     T: Clone + NumOps + Ord + crate::Extended,
   {
-    Orientation::new(&p, &q, &r)
+    Orientation::new(&p1, &p2, &p3)
   }
 
   /// Docs?
