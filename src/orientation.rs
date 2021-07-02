@@ -21,6 +21,11 @@ impl Orientation {
   /// For fixed-precision types (i8,i16,i32,i64,etc), this function is
   /// guaranteed to work for any input and never cause any arithmetic overflows.
   ///
+  /// # Polymorphism
+  ///
+  /// This function works with both [Points](Point) and [Vectors](Vector). You should prefer to
+  /// use [Point::orient] when possible.
+  ///
   /// # Examples
   ///
   /// ```rust
