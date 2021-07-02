@@ -145,29 +145,51 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     let (a_min, a_max) = linear_extremes(da);
     let (b_min, b_max) = linear_extremes(db);
 
+    // A kink is a point which would shorten the circumference of the polygon
+    // if it was removed.
+    // If we can find a kink and an edge which contains it then we can move it
+    // and shorten the circumference.
+    let mut kinks = Vec::new();
+    for elt in a_min.to_inclusive(a_max).chain(b_min.to_inclusive(b_max)) {
+      let inner_segment: LineSegmentView<T, 2> = (elt.prev().point()..elt.next().point()).into();
+      if elt.orientation() != Orientation::CoLinear || !inner_segment.contains(elt.point()) {
+        kinks.push(elt);
+      }
+    }
+
     let mut mergable = None;
     'outer: for edge in a_min.to(a_max).chain(b_min.to(b_max)) {
-      for &elt in [a_min, a_max, b_min, b_max].iter() {
-        let segment = LineSegmentView::new(
-          EndPoint::Exclusive(edge.point()),
-          EndPoint::Exclusive(edge.next().point()),
-        );
-        if segment.contains(elt.point()) {
-          mergable = Some((elt, edge));
+      let segment = LineSegmentView::new(
+        EndPoint::Exclusive(edge.point()),
+        EndPoint::Exclusive(edge.next().point()),
+      );
+      for &kink in kinks.iter() {
+        if segment.contains(kink.point()) {
+          mergable = Some((kink, edge));
           break 'outer;
         }
       }
     }
+    // if mergable.is_none() {
+    //   dbg!(&kinks);
+    //   dbg!(a_min.point());
+    //   dbg!(a_max.point());
+    //   dbg!(b_min.point());
+    //   dbg!(b_max.point());
+    //   for (nth, edge) in a_min.to(a_max).chain(b_min.to(b_max)).enumerate() {
+    //     dbg!(nth, edge.point(), edge.next().point());
+    //   }
+    // }
     // elt is not linear. That is, prev -> elt -> next is not a straight line.
     // Therefore, cutting it and adding to a straight line will shorten the polygon
     // circumference. Since there's a lower limit on the circumference, this algorithm
     // is guaranteed to terminate.
-    let (elt, edge) = mergable.expect("There must be at least one mergable point");
+    let (kink, edge) = mergable.expect("There must be at least one mergable edge");
     // dbg!(elt, edge);
     // let elt_edges = vertex_list.vertex_edges(elt);
     // vertex_list.hoist(elt, edge);
-    let del_edge_1 = IndexEdge::new(elt.prev().point_id(), elt.point_id());
-    let del_edge_2 = IndexEdge::new(elt.point_id(), elt.next().point_id());
+    let del_edge_1 = IndexEdge::new(kink.prev().point_id(), kink.point_id());
+    let del_edge_2 = IndexEdge::new(kink.point_id(), kink.next().point_id());
     let del_edge_3 = IndexEdge::new(edge.point_id(), edge.next().point_id());
     // eprintln!(
     //   "Del edges: {:?} {:?} {:?}",
@@ -178,13 +200,13 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     set.remove_all(del_edge_3);
 
     inserted_edges = vec![
-      IndexEdge::new(elt.prev().point_id(), elt.next().point_id()),
-      IndexEdge::new(edge.point_id(), elt.point_id()),
-      IndexEdge::new(elt.point_id(), edge.next().point_id()),
+      IndexEdge::new(kink.prev().point_id(), kink.next().point_id()),
+      IndexEdge::new(edge.point_id(), kink.point_id()),
+      IndexEdge::new(kink.point_id(), edge.next().point_id()),
     ];
 
     let p1 = edge.position;
-    let p2 = elt.position;
+    let p2 = kink.position;
     // eprintln!("Hoist: {:?} {:?}", p1, p2);
     poly.vertices_join(p1, p2);
   } else {
@@ -294,6 +316,7 @@ pub mod tests {
 
   use proptest::collection::vec;
   use proptest::prelude::*;
+  use rand::prelude::SliceRandom;
   use rand::rngs::mock::StepRng;
   use rand::SeedableRng;
 
@@ -380,88 +403,113 @@ pub mod tests {
   #[test]
   fn unit_2() {
     let pts: Vec<Point<i8, 2>> = vec![
-      Point { array: [-17, 35] },
-      Point { array: [-43, -87] },
-      Point { array: [-61, -9] },
-      Point { array: [111, -92] },
+      Point { array: [-59, -36] },
+      Point { array: [-62, 88] },
+      Point { array: [8, 124] },
+      Point { array: [110, -81] },
+      Point { array: [-93, 27] },
+      Point { array: [96, 98] },
+      Point { array: [66, 87] },
+      Point { array: [-80, 20] },
+      Point { array: [-21, -17] },
+      Point { array: [-8, 21] },
+      Point { array: [0, -4] },
+      Point { array: [-63, 40] },
+      Point { array: [-24, 78] },
+      Point { array: [83, 23] },
+      Point { array: [0, 93] },
+      Point { array: [57, 52] },
+      Point { array: [-87, -17] },
+      Point { array: [38, 6] },
+      Point { array: [0, -118] },
       Point {
-        array: [-120, -104],
+        array: [-101, -119],
       },
-      Point { array: [-33, 105] },
-      Point { array: [-91, -50] },
-      Point { array: [64, 70] },
-      Point { array: [-94, -72] },
-      Point { array: [-1, 42] },
-      Point { array: [72, -67] },
-      Point { array: [9, 12] },
-      Point { array: [99, 28] },
-      Point { array: [50, -98] },
-      Point { array: [-119, -48] },
-      Point { array: [-65, 9] },
-      Point { array: [107, 28] },
-      Point { array: [52, -38] },
-      Point { array: [-27, 103] },
-      Point { array: [-78, -37] },
-      Point { array: [-107, -52] },
-      Point { array: [108, -88] },
-      Point { array: [29, -114] },
-      Point { array: [-101, 69] },
-      Point { array: [-23, -70] },
-      Point { array: [68, -115] },
-      Point { array: [-13, -41] },
-      Point { array: [16, -128] },
-      Point { array: [45, -91] },
-      Point { array: [-16, -72] },
-      Point { array: [100, 110] },
-      Point { array: [38, -122] },
-      Point { array: [-32, -127] },
-      Point { array: [-42, 96] },
-      Point { array: [124, -118] },
-      Point { array: [77, -50] },
-      Point { array: [15, 97] },
-      Point { array: [23, 14] },
-      Point { array: [-69, -12] },
-      Point { array: [-27, 53] },
-      Point { array: [-58, 91] },
-      Point { array: [58, -21] },
-      Point { array: [-105, 30] },
-      Point { array: [122, -22] },
-      Point { array: [109, 0] },
-      Point { array: [-2, 42] },
-      Point { array: [10, -84] },
-      Point { array: [-87, 8] },
-      Point { array: [53, 26] },
-      Point { array: [112, -27] },
-      Point { array: [-61, 9] },
-      Point { array: [-58, -6] },
-      Point { array: [-76, 8] },
-      Point { array: [63, -82] },
-      Point { array: [96, 106] },
-      Point { array: [72, -123] },
-      Point { array: [-78, -85] },
-      Point { array: [22, 9] },
-      Point { array: [22, 107] },
-      Point { array: [40, -16] },
-      Point { array: [81, -2] },
-      Point { array: [46, 6] },
-      Point { array: [-10, 120] },
-      Point { array: [83, -51] },
-      Point { array: [-54, 27] },
-      Point { array: [-60, -3] },
-      Point { array: [-81, 71] },
-      Point { array: [-3, -80] },
-      Point { array: [92, 39] },
-      Point { array: [-103, 0] },
-      Point { array: [-13, 40] },
-      Point { array: [-110, 45] },
-      Point { array: [96, 64] },
-      Point { array: [-51, 91] },
-      Point { array: [-108, 53] },
-      Point { array: [44, 81] },
-      Point { array: [56, 47] },
+      Point { array: [-30, 90] },
+      Point { array: [0, -83] },
+      Point {
+        array: [-103, -112],
+      },
+      Point { array: [6, 75] },
+      Point { array: [65, -18] },
+      Point { array: [-126, 56] },
+      Point { array: [-86, 97] },
+      Point { array: [42, 44] },
+      Point { array: [-128, 23] },
+      Point { array: [-100, -53] },
+      Point { array: [-85, 96] },
+      Point { array: [120, 24] },
+      Point { array: [74, 98] },
+      Point { array: [63, -43] },
+      Point { array: [-42, 45] },
+      Point { array: [-2, 109] },
+      Point { array: [-107, -94] },
+      Point { array: [-12, 73] },
+      Point { array: [99, 86] },
+      Point { array: [62, 91] },
+      Point { array: [-84, 81] },
+      Point { array: [-128, 76] },
+      Point { array: [-27, -45] },
+      Point { array: [-56, 74] },
+      Point { array: [-2, -59] },
+      Point { array: [-65, 57] },
+      Point { array: [-9, 66] },
+      Point { array: [52, 40] },
+      Point { array: [13, -70] },
+      Point { array: [93, -1] },
+      Point { array: [47, 38] },
+      Point { array: [-85, -119] },
+      Point { array: [-91, 52] },
+      Point { array: [-107, 69] },
+      Point { array: [31, -97] },
+      Point { array: [118, 42] },
+      Point { array: [61, -85] },
+      Point { array: [0, 45] },
+      Point { array: [-128, -48] },
+      Point { array: [-94, 28] },
+      Point { array: [-86, -56] },
+      Point { array: [-128, 55] },
+      Point { array: [0, 58] },
+      Point { array: [75, -45] },
+      Point { array: [-76, -21] },
+      Point { array: [-10, -113] },
+      Point { array: [-96, -21] },
+      Point { array: [-84, 72] },
+      Point { array: [100, -26] },
+      Point { array: [-120, -50] },
+      Point { array: [-94, -19] },
+      Point { array: [17, -4] },
+      Point { array: [56, -23] },
+      Point { array: [11, 43] },
+      Point { array: [-14, 57] },
+      Point { array: [-42, -21] },
+      Point { array: [0, -95] },
+      Point { array: [8, 48] },
+      Point { array: [-21, -46] },
+      Point { array: [16, 81] },
+      Point { array: [0, 120] },
+      Point { array: [26, 27] },
+      Point { array: [-69, -44] },
+      Point { array: [97, 42] },
     ];
-    // let mut rng = StepRng::new(0, 0);
-    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let mut rng = StepRng::new(0, 0);
+    // let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let ret = two_opt_moves(pts, &mut rng);
+
+    assert_eq!(ret.and_then(|val| val.validate()).err(), None);
+  }
+
+  #[test]
+  fn unit_3() {
+    let pts: Vec<Point<i8, 2>> = vec![
+      Point { array: [0, 0] },
+      Point { array: [2, 0] },
+      Point { array: [1, 0] },
+      Point { array: [3, 0] },
+      Point { array: [3, 1] },
+      Point { array: [0, 1] },
+    ];
+    let mut rng = StepRng::new(0, 0);
     let ret = two_opt_moves(pts, &mut rng);
 
     assert_eq!(ret.and_then(|val| val.validate()).err(), None);
@@ -477,6 +525,20 @@ pub mod tests {
         let ret = two_opt_moves(pts, &mut rng);
         prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
       }
+    }
+
+    #[test]
+    fn linear_fuzz(n in 2..10_i8, seed: u64) {
+      let mut linear:Vec<i8> = (0..n).collect();
+      let mut rng = rand::rngs::SmallRng::seed_from_u64(seed);
+      linear.shuffle(&mut rng);
+      let mut pts: Vec<Point<i8,2>> = linear.iter().map(|&n| { Point::new([n,0]) }).collect();
+      pts.push(Point::new([0,1]));
+
+      let mut rng = StepRng::new(0, 0);
+      // dbg!(&linear);
+      let ret = two_opt_moves(pts, &mut rng);
+      prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
     }
   }
 }

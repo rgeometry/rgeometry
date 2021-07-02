@@ -1,0 +1,11 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc cfd406faea1a5e6d3644a1fd2af70e9cc8d80563a251ecc077625cd5f23409db # shrinks to v = Vector([-69, 98]), p1 = Point { array: [88, -75] }, p2 = Point { array: [-102, 126] }
+cc 5233abc9c6091e541f00805f7b462a2cb03d00d0a4529cf66f0473acf4b8b752 # shrinks to v = Vector([72, -113]), p1 = Point { array: [-84, 93] }, p2 = Point { array: [114, -71] }
+cc 0e6787654e6bbddc7e8f6ea454941d427aaf4e8811259295a152db2087589309 # shrinks to p1 = Point { array: [-58, 0] }, p2 = Point { array: [-58, -1] }
+cc 98d8d4938adb1559ef52067ff9ff51398a8b6008be9cb52c158b2bbb8b0d9fe1 # shrinks to p1 = Point { array: [-68, 0] }, p2 = Point { array: [-53, -15] }
+cc 75a97f5fde817cb9e755209f3e8bc7455d463d318432818cf2ab8040ea148f7a # shrinks to v = Vector([0, -128]), p1 = Point { array: [0, 0] }, p2 = Point { array: [0, 0] }
