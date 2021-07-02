@@ -689,7 +689,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cmp_around_fuzz_i8</span>(<span class="ident">pt1</span> <span class="kw">in</span> <span class="ident">any_8</span>(), <span class="ident">pt2</span> <span class="kw">in</span> <span class="ident">any_8</span>(), <span class="ident">pt3</span> <span class="kw">in</span> <span class="ident">any_8</span>()) {
+    <span class="kw">fn</span> <span class="ident">cmp_around_fuzz_i8</span>(<span class="ident">pt1</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">pt2</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">pt3</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>) {
       <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">pt1</span>.<span class="ident">ccw_cmp_around</span>(<span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>);
     }
 
@@ -708,7 +708,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">orientation_reverse</span>(<span class="ident">pt1</span> <span class="kw">in</span> <span class="ident">any_64</span>(), <span class="ident">pt2</span> <span class="kw">in</span> <span class="ident">any_64</span>(), <span class="ident">pt3</span> <span class="kw">in</span> <span class="ident">any_64</span>()) {
+    <span class="kw">fn</span> <span class="ident">orientation_reverse</span>(<span class="ident">pt1</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i64</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">pt2</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i64</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">pt3</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i64</span>,<span class="number">2</span><span class="op">&gt;</span>) {
       <span class="kw">let</span> <span class="ident">abc</span> <span class="op">=</span> <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>);
       <span class="kw">let</span> <span class="ident">cba</span> <span class="op">=</span> <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">pt3</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt1</span>);
       <span class="macro">prop_assert_eq!</span>(<span class="ident">abc</span>, <span class="ident">cba</span>.<span class="ident">reverse</span>())

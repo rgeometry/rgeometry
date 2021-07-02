@@ -976,7 +976,7 @@
 
   <span class="macro">proptest!</span> {
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">points_to_polygon</span>(<span class="kw-2">mut</span> <span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any_8</span>(), <span class="number">3</span>..<span class="number">100</span>)) {
+    <span class="kw">fn</span> <span class="ident">points_to_polygon</span>(<span class="kw-2">mut</span> <span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">3</span>..<span class="number">100</span>)) {
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">set</span> <span class="op">=</span> <span class="ident">BTreeSet::new</span>();
       <span class="ident">pts</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">pt</span><span class="op">|</span> <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">pt</span>.<span class="ident">clone</span>()));
       <span class="kw">if</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span> {

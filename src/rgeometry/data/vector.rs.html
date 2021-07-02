@@ -195,6 +195,53 @@
 <span id="171">171</span>
 <span id="172">172</span>
 <span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -323,6 +370,18 @@
     <span class="ident">pts</span>.<span class="ident">sort_unstable_by</span>(<span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">ccw_cmp_around_with</span>(<span class="kw-2">&amp;</span>[<span class="ident">T::one</span>(), <span class="ident">T::zero</span>()], <span class="kw-2">&amp;</span><span class="ident">origin</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="number">0</span>))
     <span class="comment">// L.sortBy (ccwCmpAround c &lt;&gt; cmpByDistanceTo c)</span>
   }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_along</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="kw">crate</span><span class="ident">::PolygonScalar</span>,
+  {
+    <span class="comment">// Rotate the vector 90 degrees counterclockwise.</span>
+    <span class="kw">match</span> <span class="ident">Orientation::along_perp_vector</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="ident">array</span>, <span class="kw-2">&amp;</span><span class="ident">q</span>.<span class="ident">array</span>) {
+      <span class="ident">Orientation::CounterClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering::Greater</span>,
+      <span class="ident">Orientation::ClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering::Less</span>,
+      <span class="ident">Orientation::CoLinear</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering::Equal</span>,
+    }
+  }
 }
 
 <span class="kw">mod</span> <span class="ident">add</span>;
@@ -367,6 +426,41 @@
   <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span>;
   <span class="kw">fn</span> <span class="ident">neg</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
     <span class="ident">Vector</span>(<span class="ident">array_init</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">index</span>(<span class="ident">i</span>).<span class="ident">clone</span>().<span class="ident">neg</span>()))
+  }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+  <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+  <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::testing</span>::<span class="kw-2">*</span>;
+
+  <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">unit_1</span>() {
+    <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">Vector</span>([<span class="number">72i8</span>, <span class="op">-</span><span class="number">113</span>]);
+    <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">84</span>, <span class="number">93</span>] };
+    <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="number">114</span>, <span class="op">-</span><span class="number">71</span>] };
+    <span class="ident">v</span>.<span class="ident">cmp_along</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>);
+  }
+
+  <span class="macro">proptest!</span> {
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">cmp_along_fuzz</span>(<span class="ident">v</span>: <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">p1</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">p2</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>) {
+      <span class="ident">v</span>.<span class="ident">cmp_along</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">cmp_along_prop_x</span>(<span class="ident">p1</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">p2</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>) {
+      <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">Vector</span>([<span class="number">1</span>,<span class="number">0</span>]);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">v</span>.<span class="ident">cmp_along</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>), <span class="ident">p1</span>.<span class="ident">x_coord</span>().<span class="ident">cmp</span>(<span class="ident">p2</span>.<span class="ident">x_coord</span>()));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">cmp_along_prop_y</span>(<span class="ident">p1</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">p2</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span>) {
+      <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">Vector</span>([<span class="number">0</span>,<span class="number">1</span>]);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">v</span>.<span class="ident">cmp_along</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>), <span class="ident">p1</span>.<span class="ident">y_coord</span>().<span class="ident">cmp</span>(<span class="ident">p2</span>.<span class="ident">y_coord</span>()));
+    }
   }
 }
 </pre></div>

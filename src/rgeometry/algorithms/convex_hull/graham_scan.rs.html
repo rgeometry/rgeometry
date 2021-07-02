@@ -587,7 +587,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">convex_hull_prop_i8</span>(<span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any_8</span>(), <span class="number">0</span>..<span class="number">100</span>)) {
+    <span class="kw">fn</span> <span class="ident">convex_hull_prop_i8</span>(<span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">0</span>..<span class="number">100</span>)) {
       <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">poly</span>) <span class="op">=</span> <span class="ident">convex_hull</span>(<span class="ident">pts</span>.<span class="ident">clone</span>()) {
         <span class="comment">// Prop #1: Results are valid.</span>
         <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
