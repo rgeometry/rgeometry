@@ -368,6 +368,7 @@ mod tests {
 
   #[test]
   fn orientation_limit_2() {
+    // FIXME: Generalize over N iters.
     let slice = &[i8::MIN, i8::MAX, 0, -10, 10];
     for &coord1 in slice {
       for &coord2 in slice {
