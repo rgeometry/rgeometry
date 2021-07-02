@@ -85,6 +85,71 @@ impl Orientation {
       Orientation::CoLinear => Orientation::CoLinear,
     }
   }
+
+  pub fn ccw_cmp_around_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Ordering
+  where
+    T: Clone + Ord + num_traits::NumOps<T, T> + Extended + Signed,
+  {
+    let aq = Orientation::along_vector(z, p, q);
+    let ar = Orientation::along_vector(z, p, r);
+    let on_zero = |d: &[T; 2]| {
+      !((d[0] < p[0] && z[0].is_positive())
+        || (d[1] < p[1] && z[1].is_positive())
+        || (d[0] > p[0] && z[0].is_negative())
+        || (d[1] > p[1] && z[1].is_negative()))
+    };
+    // let on_zero = |d: &[T; 2]| match Orientation::new(p, pb, d) {
+    //   CounterClockWise => false,
+    //   ClockWise => true,
+    //   CoLinear => true,
+    // };
+    let cmp = || match Orientation::new(p, q, r) {
+      CounterClockWise => Ordering::Less,
+      ClockWise => Ordering::Greater,
+      CoLinear => Ordering::Equal,
+    };
+    match (aq, ar) {
+      // Easy cases: Q and R are on either side of the line p->z:
+      (CounterClockWise, ClockWise) => Ordering::Less,
+      (ClockWise, CounterClockWise) => Ordering::Greater,
+      // A CoLinear point may be in front of p->z (0 degree angle) or behind
+      // it (180 degree angle). If the other point is clockwise, it must have an
+      // angle greater than 180 degrees and must therefore be greater than the
+      // colinear point.
+      (CoLinear, ClockWise) => Ordering::Less,
+      (ClockWise, CoLinear) => Ordering::Greater,
+
+      // if Q and R are on the same side of P->Z then the most clockwise point
+      // will have the smallest angle.
+      (CounterClockWise, CounterClockWise) => cmp(),
+      (ClockWise, ClockWise) => cmp(),
+
+      // CoLinear points have an angle of either 0 degrees or 180 degrees. on_zero
+      // can distinguish these two cases:
+      //    on_zero(p) => 0 degrees.
+      //   !on_zero(p) => 180 degrees.
+      (CounterClockWise, CoLinear) => {
+        if on_zero(r) {
+          Ordering::Greater // angle(r) = 0 & 0 < angle(q) < 180. Thus: Q > R
+        } else {
+          Ordering::Less // angle(r) = 180 & 0 < angle(q) < 180. Thus: Q < R
+        }
+      }
+      (CoLinear, CounterClockWise) => {
+        if on_zero(q) {
+          Ordering::Less
+        } else {
+          Ordering::Greater
+        }
+      }
+      (CoLinear, CoLinear) => match (on_zero(q), on_zero(r)) {
+        (true, true) => Ordering::Equal,
+        (false, false) => Ordering::Equal,
+        (true, false) => Ordering::Less,
+        (false, true) => Ordering::Greater,
+      },
+    }
+  }
 }
 
 // How does the line from (0,0) to q to r turn?
@@ -272,71 +337,6 @@ impl Orientation {
 //   }
 // }
 
-pub fn ccw_cmp_around_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Ordering
-where
-  T: Clone + Ord + num_traits::NumOps<T, T> + Extended + Signed,
-{
-  let aq = Orientation::along_vector(z, p, q);
-  let ar = Orientation::along_vector(z, p, r);
-  let on_zero = |d: &[T; 2]| {
-    !((d[0] < p[0] && z[0].is_positive())
-      || (d[1] < p[1] && z[1].is_positive())
-      || (d[0] > p[0] && z[0].is_negative())
-      || (d[1] > p[1] && z[1].is_negative()))
-  };
-  // let on_zero = |d: &[T; 2]| match Orientation::new(p, pb, d) {
-  //   CounterClockWise => false,
-  //   ClockWise => true,
-  //   CoLinear => true,
-  // };
-  let cmp = || match Orientation::new(p, q, r) {
-    CounterClockWise => Ordering::Less,
-    ClockWise => Ordering::Greater,
-    CoLinear => Ordering::Equal,
-  };
-  match (aq, ar) {
-    // Easy cases: Q and R are on either side of the line p->z:
-    (CounterClockWise, ClockWise) => Ordering::Less,
-    (ClockWise, CounterClockWise) => Ordering::Greater,
-    // A CoLinear point may be in front of p->z (0 degree angle) or behind
-    // it (180 degree angle). If the other point is clockwise, it must have an
-    // angle greater than 180 degrees and must therefore be greater than the
-    // colinear point.
-    (CoLinear, ClockWise) => Ordering::Less,
-    (ClockWise, CoLinear) => Ordering::Greater,
-
-    // if Q and R are on the same side of P->Z then the most clockwise point
-    // will have the smallest angle.
-    (CounterClockWise, CounterClockWise) => cmp(),
-    (ClockWise, ClockWise) => cmp(),
-
-    // CoLinear points have an angle of either 0 degrees or 180 degrees. on_zero
-    // can distinguish these two cases:
-    //    on_zero(p) => 0 degrees.
-    //   !on_zero(p) => 180 degrees.
-    (CounterClockWise, CoLinear) => {
-      if on_zero(r) {
-        Ordering::Greater // angle(r) = 0 & 0 < angle(q) < 180. Thus: Q > R
-      } else {
-        Ordering::Less // angle(r) = 180 & 0 < angle(q) < 180. Thus: Q < R
-      }
-    }
-    (CoLinear, CounterClockWise) => {
-      if on_zero(q) {
-        Ordering::Less
-      } else {
-        Ordering::Greater
-      }
-    }
-    (CoLinear, CoLinear) => match (on_zero(q), on_zero(r)) {
-      (true, true) => Ordering::Equal,
-      (false, false) => Ordering::Equal,
-      (true, false) => Ordering::Less,
-      (false, true) => Ordering::Greater,
-    },
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -393,7 +393,7 @@ mod tests {
     let vector = [BigInt::from(1), BigInt::from(0)];
 
     assert_eq!(
-      ccw_cmp_around_with(&vector, &pt1, &pt2, &pt1),
+      Orientation::ccw_cmp_around_with(&vector, &pt1, &pt2, &pt1),
       Ordering::Greater
     );
   }

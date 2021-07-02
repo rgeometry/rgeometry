@@ -10,13 +10,9 @@ use rand::SeedableRng;
 use std::collections::BTreeSet;
 use std::ops::*;
 
-use crate::array::Orientation;
-use crate::data::Point;
-use crate::data::PointLocation;
-use crate::data::TriangleView;
-use crate::data::Vector;
+use crate::data::{Point, PointLocation, TriangleView, Vector};
 use crate::transformation::*;
-use crate::{Error, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar};
 
 use super::Polygon;
 

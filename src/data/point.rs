@@ -13,7 +13,7 @@ use std::ops::Index;
 use std::ops::Neg;
 
 use super::Vector;
-use crate::array::*;
+use crate::Orientation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)] // Required for correctness!
@@ -208,7 +208,7 @@ impl<T> Point<T, 2> {
     T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended + Signed,
     // for<'a> &'a T: Mul<Output = T>,
   {
-    ccw_cmp_around_with(&z.0, &self, &p, &q)
+    Orientation::ccw_cmp_around_with(&z.0, &self, &p, &q)
   }
 }
 

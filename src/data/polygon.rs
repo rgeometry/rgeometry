@@ -5,9 +5,8 @@ use num_traits::*;
 use std::iter::Sum;
 use std::ops::*;
 
-use crate::array::Orientation;
 use crate::data::{DirectedEdge, Point, PointLocation, TriangleView, Vector};
-use crate::{Error, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar};
 
 mod iter;
 pub use iter::*;
