@@ -272,7 +272,7 @@ mod tests {
     }
 
     #[test]
-    fn convex_hull_prop_i8(pts in vec(any_8(), 0..100)) {
+    fn convex_hull_prop_i8(pts in vec(any::<Point<i8,2>>(), 0..100)) {
       if let Ok(poly) = convex_hull(pts.clone()) {
         // Prop #1: Results are valid.
         prop_assert_eq!(poly.validate().err(), None);
