@@ -469,7 +469,7 @@ pub mod tests {
 
   proptest! {
     #[test]
-    fn points_to_polygon(mut pts in vec(any_8(), 3..100)) {
+    fn points_to_polygon(mut pts in vec(any::<Point<i8,2>>(), 3..100)) {
       let mut set = BTreeSet::new();
       pts.retain(|pt| set.insert(pt.clone()));
       if pts.len() >= 3 {

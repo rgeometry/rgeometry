@@ -2,7 +2,7 @@
 //  * points
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
-use crate::data::{Point, PointId, Polygon, PolygonConvex, Triangle};
+use crate::data::{Point, PointId, Polygon, PolygonConvex, Triangle, Vector};
 use crate::PolygonScalar;
 
 use array_init::{array_init, try_array_init};
@@ -10,6 +10,8 @@ use core::ops::Range;
 use num_bigint::BigInt;
 use num_traits::*;
 use ordered_float::NotNan;
+use proptest::arbitrary::*;
+use proptest::collection::*;
 use proptest::prelude::*;
 use proptest::strategy::*;
 use proptest::test_runner::*;
@@ -362,14 +364,34 @@ where
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Point<T::Strategy, N>;
+  // type Strategy = Map<StrategyFor<Vec<T>>, fn(_: Vec<T>) -> Point<T, N>>;
+  type Strategy = Mapped<Vec<T>, Point<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-    Point {
-      array: array_init(|_| T::arbitrary_with(params.clone())),
-    }
+    vec(any_with::<T>(params), N).prop_map(|vec: Vec<T>| Point {
+      array: vec.try_into().unwrap(),
+    })
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary Vector
+
+impl<T: Arbitrary, const N: usize> Arbitrary for Vector<T, N>
+where
+  T::Strategy: Clone,
+  T::Parameters: Clone,
+  T: Clone,
+{
+  type Strategy = Map<StrategyFor<Point<T, N>>, fn(_: Point<T, N>) -> Vector<T, N>>;
+  type Parameters = T::Parameters;
+  fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+    Point::<T, N>::arbitrary_with(params).prop_map(|pt| pt.into())
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Convenience functions
 
 // FIXME: Move this impl to 'ordered_float' crate.
 // impl Arbitrary for NotNan<f64> {
@@ -380,21 +402,23 @@ where
 //   }
 // }
 
+// Arbitrary isn't defined for NotNan.
 pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> {
   any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.try_into().ok())
 }
 
+// Arbitrary isn't defined for BigInt.
 pub fn any_r<const N: usize>() -> impl Strategy<Value = Point<BigInt, N>> {
   any::<Point<isize, N>>().prop_map(|pt| pt.cast(BigInt::from))
 }
 
-pub fn any_64<const N: usize>() -> impl Strategy<Value = Point<i64, N>> {
-  any::<Point<i64, N>>()
-}
+// pub fn any_64<const N: usize>() -> impl Strategy<Value = Point<i64, N>> {
+//   any::<Point<i64, N>>()
+// }
 
-pub fn any_8<const N: usize>() -> impl Strategy<Value = Point<i8, N>> {
-  any::<Point<i8, N>>()
-}
+// pub fn any_8<const N: usize>() -> impl Strategy<Value = Point<i8, N>> {
+//   any::<Point<i8, N>>()
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary triangle

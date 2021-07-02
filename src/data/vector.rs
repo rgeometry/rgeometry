@@ -125,6 +125,18 @@ impl<T> Vector<T, 2> {
     pts.sort_unstable_by(|a, b| ccw_cmp_around_with(&[T::one(), T::zero()], &origin, &a.0, &b.0))
     // L.sortBy (ccwCmpAround c <> cmpByDistanceTo c)
   }
+
+  pub fn cmp_along(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
+  where
+    T: crate::PolygonScalar,
+  {
+    // Rotate the vector 90 degrees counterclockwise.
+    match Orientation::along_perp_vector(&self.0, &p.array, &q.array) {
+      Orientation::CounterClockWise => Ordering::Greater,
+      Orientation::ClockWise => Ordering::Less,
+      Orientation::CoLinear => Ordering::Equal,
+    }
+  }
 }
 
 mod add;
@@ -169,5 +181,40 @@ where
   type Output = Self;
   fn neg(self) -> Self {
     Vector(array_init(|i| self.0.index(i).clone().neg()))
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::testing::*;
+
+  use proptest::prelude::*;
+
+  #[test]
+  fn unit_1() {
+    let v = Vector([72i8, -113]);
+    let p1 = Point { array: [-84, 93] };
+    let p2 = Point { array: [114, -71] };
+    v.cmp_along(&p1, &p2);
+  }
+
+  proptest! {
+    #[test]
+    fn cmp_along_fuzz(v: Vector<i8,2>, p1: Point<i8,2>, p2: Point<i8,2>) {
+      v.cmp_along(&p1, &p2);
+    }
+
+    #[test]
+    fn cmp_along_prop_x(p1: Point<i8,2>, p2: Point<i8,2>) {
+      let v = Vector([1,0]);
+      prop_assert_eq!(v.cmp_along(&p1, &p2), p1.x_coord().cmp(p2.x_coord()));
+    }
+
+    #[test]
+    fn cmp_along_prop_y(p1: Point<i8,2>, p2: Point<i8,2>) {
+      let v = Vector([0,1]);
+      prop_assert_eq!(v.cmp_along(&p1, &p2), p1.y_coord().cmp(p2.y_coord()));
+    }
   }
 }

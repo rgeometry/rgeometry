@@ -281,7 +281,7 @@ pub mod tests {
     }
 
     #[test]
-    fn cmp_around_fuzz_i8(pt1 in any_8(), pt2 in any_8(), pt3 in any_8()) {
+    fn cmp_around_fuzz_i8(pt1: Point<i8,2>, pt2: Point<i8,2>, pt3: Point<i8,2>) {
       let _ = pt1.ccw_cmp_around(&pt2, &pt3);
     }
 
@@ -300,7 +300,7 @@ pub mod tests {
     }
 
     #[test]
-    fn orientation_reverse(pt1 in any_64(), pt2 in any_64(), pt3 in any_64()) {
+    fn orientation_reverse(pt1: Point<i64,2>, pt2: Point<i64,2>, pt3: Point<i64,2>) {
       let abc = Orientation::new(&pt1, &pt2, &pt3);
       let cba = Orientation::new(&pt3, &pt2, &pt1);
       prop_assert_eq!(abc, cba.reverse())
