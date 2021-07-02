@@ -43,7 +43,7 @@ harness = false
 name    = "graham_scan"
 
 [profile.release]
-debug = true
+overflow-checks = true
 
 [profile.test]
 opt-level       = 1
