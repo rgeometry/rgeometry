@@ -153,6 +153,14 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     for elt in a_min.to_inclusive(a_max).chain(b_min.to_inclusive(b_max)) {
       let inner_segment: LineSegmentView<T, 2> = (elt.prev().point()..elt.next().point()).into();
       if elt.orientation() != Orientation::CoLinear || !inner_segment.contains(elt.point()) {
+        // We're either at a corner:
+        //   prev
+        //    \
+        //     x -- next
+        // Or we're at u-turn:
+        //   prev ->  x
+        //   next <-  x
+        // In both cases, the circumference will be shortened if we can remove 'x'.
         kinks.push(elt);
       }
     }
@@ -275,7 +283,7 @@ where
   let a2 = a.next().point();
   let b1 = b.point();
   let b2 = b.next().point();
-  Orientation::is_colinear(a1, a2, b1) && Orientation::is_colinear(a1, a2, b2)
+  Point::orient(a1, a2, b1).is_colinear() && Point::orient(a1, a2, b2).is_colinear()
 }
 
 /// Find the leftmost and rightmost vertices that are not linear.

@@ -20,7 +20,7 @@ where
   }
 
   pub fn new_ccw(mut pts: [Point<T, 2>; 3]) -> Triangle<T> {
-    match Orientation::new(&pts[0], &pts[1], &pts[2]) {
+    match Point::orient(&pts[0], &pts[1], &pts[2]) {
       Orientation::CounterClockWise => Triangle(pts),
       Orientation::ClockWise => {
         pts.swap(0, 2);
@@ -59,7 +59,7 @@ where
   }
 
   pub fn new_ccw(pts: [&'a Point<T, 2>; 3]) -> TriangleView<'a, T> {
-    match Orientation::new(&pts[0], &pts[1], &pts[2]) {
+    match Point::orient(&pts[0], &pts[1], &pts[2]) {
       Orientation::CounterClockWise => TriangleView(pts),
       Orientation::ClockWise => TriangleView([&pts[2], &pts[1], &pts[0]]),
       Orientation::CoLinear => panic!("Cannot orient colinear points."),
@@ -81,7 +81,7 @@ where
 
   pub fn orientation(&self) -> Orientation {
     let arr = &self.0;
-    Orientation::new(&arr[0], &arr[1], &arr[2])
+    Point::orient(&arr[0], &arr[1], &arr[2])
   }
 
   // O(1)
@@ -89,9 +89,9 @@ where
     use Orientation::*;
     debug_assert_ok!(self.validate());
     let [a, b, c] = self.0;
-    let ab = a.orientation(b, pt);
-    let bc = b.orientation(c, pt);
-    let ca = c.orientation(a, pt);
+    let ab = Point::orient(a, b, pt);
+    let bc = Point::orient(b, c, pt);
+    let ca = Point::orient(c, a, pt);
     if ab == ClockWise || bc == ClockWise || ca == ClockWise {
       PointLocation::Outside
     } else if ab == CoLinear || bc == CoLinear || ca == CoLinear {

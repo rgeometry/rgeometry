@@ -11,14 +11,14 @@ use std::iter::Sum;
 use std::ops::*;
 
 pub mod algorithms;
-mod array;
 pub mod data;
 mod intersection;
 mod matrix;
+mod orientation;
 mod transformation;
 mod utils;
 
-pub use array::Orientation;
+pub use orientation::Orientation;
 
 pub use intersection::Intersects;
 

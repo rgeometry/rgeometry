@@ -5,9 +5,8 @@ use num_traits::*;
 use std::iter::Sum;
 use std::ops::*;
 
-use crate::array::Orientation;
 use crate::data::{DirectedEdge, Point, PointLocation, TriangleView, Vector};
-use crate::{Error, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar};
 
 mod iter;
 pub use iter::*;
@@ -557,7 +556,7 @@ impl<'a, T> Cursor<'a, T> {
     let p1 = self.prev().point();
     let p2 = self.point();
     let p3 = self.next().point();
-    Orientation::new(p1, p2, p3)
+    Point::orient(p1, p2, p3)
   }
 
   pub fn is_colinear(&self) -> bool

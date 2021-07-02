@@ -13,9 +13,9 @@ use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
 
-use crate::array::*;
 use crate::data::Point;
 use crate::Extended;
+use crate::Orientation;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
@@ -112,7 +112,7 @@ impl<T> Vector<T, 2> {
   where
     T: Extended + Signed,
   {
-    ccw_cmp_around_with(&z.0, &self.0, &p.0, &q.0)
+    Orientation::ccw_cmp_around_with(z, &self.0, &p.0, &q.0)
   }
 
   // FIXME: rename to sort_around_origin
@@ -122,7 +122,9 @@ impl<T> Vector<T, 2> {
     T: Extended + Signed,
   {
     let origin = [T::zero(), T::zero()];
-    pts.sort_unstable_by(|a, b| ccw_cmp_around_with(&[T::one(), T::zero()], &origin, &a.0, &b.0))
+    pts.sort_unstable_by(|a, b| {
+      Orientation::ccw_cmp_around_with(&Vector([T::one(), T::zero()]), &origin, &a.0, &b.0)
+    })
     // L.sortBy (ccwCmpAround c <> cmpByDistanceTo c)
   }
 
@@ -131,7 +133,7 @@ impl<T> Vector<T, 2> {
     T: crate::PolygonScalar,
   {
     // Rotate the vector 90 degrees counterclockwise.
-    match Orientation::along_perp_vector(&self.0, &p.array, &q.array) {
+    match Orientation::along_perp_vector(&p.array, self, &q.array) {
       Orientation::CounterClockWise => Ordering::Greater,
       Orientation::ClockWise => Ordering::Less,
       Orientation::CoLinear => Ordering::Equal,
