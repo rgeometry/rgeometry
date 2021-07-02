@@ -187,11 +187,11 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 
 // Methods on two-dimensional points.
 impl<T> Point<T, 2> {
-  pub fn orientation(&self, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
+  pub fn orient(p: &Point<T, 2>, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
   where
     T: Clone + NumOps + Ord + crate::Extended,
   {
-    Orientation::new(&self.array, &q.array, &r.array)
+    Orientation::new(&p, &q, &r)
   }
 
   /// Docs?
@@ -208,7 +208,7 @@ impl<T> Point<T, 2> {
     T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended + Signed,
     // for<'a> &'a T: Mul<Output = T>,
   {
-    Orientation::ccw_cmp_around_with(&z.0, &self, &p, &q)
+    Orientation::ccw_cmp_around_with(z, &self, &p, &q)
   }
 }
 
@@ -289,20 +289,20 @@ pub mod tests {
     fn bigint_colinear(pt1 in any_r(), pt2 in any_r()) {
       let diff = &pt2 - &pt1;
       let pt3 = &pt2 + &diff;
-      prop_assert!(Orientation::is_colinear(&pt1, &pt2, &pt3))
+      prop_assert!(Point::orient(&pt1, &pt2, &pt3).is_colinear())
     }
 
     #[test]
     fn bigint_not_colinear(pt1 in any_r(), pt2 in any_r()) {
       let diff = &pt2 - &pt1;
       let pt3 = &pt2 + &diff + &Vector([BigInt::from(1),BigInt::from(1)]);
-      prop_assert!(!Orientation::is_colinear(&pt1, &pt2, &pt3))
+      prop_assert!(!Point::orient(&pt1, &pt2, &pt3).is_colinear())
     }
 
     #[test]
     fn orientation_reverse(pt1: Point<i64,2>, pt2: Point<i64,2>, pt3: Point<i64,2>) {
-      let abc = Orientation::new(&pt1, &pt2, &pt3);
-      let cba = Orientation::new(&pt3, &pt2, &pt1);
+      let abc = Point::orient(&pt1, &pt2, &pt3);
+      let cba = Point::orient(&pt3, &pt2, &pt1);
       prop_assert_eq!(abc, cba.reverse())
     }
   }
@@ -310,7 +310,7 @@ pub mod tests {
   #[test]
   fn test_turns() {
     assert_eq!(
-      Orientation::new(
+      Point::orient(
         &Point::new([0, 0]),
         &Point::new([1, 1]),
         &Point::new([2, 2])
@@ -327,20 +327,36 @@ pub mod tests {
     );
 
     assert_eq!(
-      Point::new([0, 0]).orientation(&Point::new([0, 1]), &Point::new([2, 2])),
+      Point::orient(
+        &Point::new([0, 0]),
+        &Point::new([0, 1]),
+        &Point::new([2, 2])
+      ),
       ClockWise
     );
     assert_eq!(
-      Point::new_nn([0.0, 0.0]).orientation(&Point::new_nn([0.0, 1.0]), &Point::new_nn([2.0, 2.0])),
+      Point::orient(
+        &Point::new_nn([0.0, 0.0]),
+        &Point::new_nn([0.0, 1.0]),
+        &Point::new_nn([2.0, 2.0])
+      ),
       ClockWise
     );
 
     assert_eq!(
-      Point::new([0, 0]).orientation(&Point::new([0, 1]), &Point::new([-2, 2])),
+      Point::orient(
+        &Point::new([0, 0]),
+        &Point::new([0, 1]),
+        &Point::new([-2, 2])
+      ),
       CounterClockWise
     );
     assert_eq!(
-      Point::new([0, 0]).orientation(&Point::new([0, 0]), &Point::new([0, 0])),
+      Point::orient(
+        &Point::new([0, 0]),
+        &Point::new([0, 0]),
+        &Point::new([0, 0])
+      ),
       CoLinear
     );
   }
@@ -348,19 +364,35 @@ pub mod tests {
   #[test]
   fn unit_1() {
     assert_eq!(
-      Point::new([0, 0]).orientation(&Point::new([1, 0]), &Point::new([1, 0])),
+      Point::orient(
+        &Point::new([0, 0]),
+        &Point::new([1, 0]),
+        &Point::new([1, 0])
+      ),
       CoLinear
     );
     assert_eq!(
-      Point::new([0, 0]).orientation(&Point::new([1, 0]), &Point::new([2, 0])),
+      Point::orient(
+        &Point::new([0, 0]),
+        &Point::new([1, 0]),
+        &Point::new([2, 0])
+      ),
       CoLinear
     );
     assert_eq!(
-      Point::new([1, 0]).orientation(&Point::new([2, 0]), &Point::new([0, 0])),
+      Point::orient(
+        &Point::new([1, 0]),
+        &Point::new([2, 0]),
+        &Point::new([0, 0])
+      ),
       CoLinear
     );
     assert_eq!(
-      Point::new([1, 0]).orientation(&Point::new([2, 0]), &Point::new([1, 0])),
+      Point::orient(
+        &Point::new([1, 0]),
+        &Point::new([2, 0]),
+        &Point::new([1, 0])
+      ),
       CoLinear
     );
   }
@@ -368,7 +400,11 @@ pub mod tests {
   #[test]
   fn unit_2() {
     assert_eq!(
-      Point::new([1, 0]).orientation(&Point::new([0, 6]), &Point::new([0, 8])),
+      Point::orient(
+        &Point::new([1, 0]),
+        &Point::new([0, 6]),
+        &Point::new([0, 8])
+      ),
       ClockWise
     );
   }
@@ -376,7 +412,11 @@ pub mod tests {
   #[test]
   fn unit_3() {
     assert_eq!(
-      Point::new([-12_i8, -126]).orientation(&Point::new([-12, -126]), &Point::new([0, -126])),
+      Point::orient(
+        &Point::new([-12_i8, -126]),
+        &Point::new([-12, -126]),
+        &Point::new([0, -126])
+      ),
       CoLinear
     );
   }

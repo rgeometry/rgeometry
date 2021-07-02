@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use std::ops::Mul;
 use std::ops::Sub;
 
+use crate::data::{Point, Vector};
 use crate::Extended;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
@@ -26,49 +27,40 @@ impl Orientation {
     }
   }
 
-  pub fn along_vector<T>(vector: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Orientation
+  pub fn along_vector<T>(vector: &Vector<T, 2>, p: &[T; 2], q: &[T; 2]) -> Orientation
   where
     T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
   {
     // raw_arr_turn(p, q, r)
-    match Extended::cmp_vector_slope(vector, p, q) {
+    match Extended::cmp_vector_slope(&vector.0, p, q) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
       Ordering::Greater => Orientation::CounterClockWise,
     }
   }
 
-  pub fn along_perp_vector<T>(vector: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Orientation
+  pub fn along_perp_vector<T>(vector: &Vector<T, 2>, p: &[T; 2], q: &[T; 2]) -> Orientation
   where
     T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
   {
     // raw_arr_turn(p, q, r)
-    match Extended::cmp_perp_vector_slope(vector, p, q) {
+    match Extended::cmp_perp_vector_slope(&vector.0, p, q) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
       Ordering::Greater => Orientation::CounterClockWise,
     }
   }
 
-  pub fn is_colinear<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> bool
-  where
-    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
-  {
-    Orientation::new(p, q, r) == Orientation::CoLinear
+  pub fn is_colinear(self) -> bool {
+    matches!(self, Orientation::CoLinear)
   }
 
-  pub fn is_ccw<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> bool
-  where
-    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
-  {
-    Orientation::new(p, q, r) == Orientation::CounterClockWise
+  pub fn is_ccw(self) -> bool {
+    matches!(self, Orientation::CounterClockWise)
   }
 
-  pub fn is_cw<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> bool
-  where
-    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
-  {
-    Orientation::new(p, q, r) == Orientation::ClockWise
+  pub fn is_cw(self) -> bool {
+    matches!(self, Orientation::ClockWise)
   }
 
   // pub fn around_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
@@ -86,7 +78,7 @@ impl Orientation {
     }
   }
 
-  pub fn ccw_cmp_around_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Ordering
+  pub fn ccw_cmp_around_with<T>(z: &Vector<T, 2>, p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Ordering
   where
     T: Clone + Ord + num_traits::NumOps<T, T> + Extended + Signed,
   {
@@ -391,7 +383,7 @@ mod tests {
     let pt1 = [BigInt::from(0), BigInt::from(0)];
     let pt2 = [BigInt::from(-1), BigInt::from(1)];
     // let pt2 = [BigInt::from(-717193444810564826_i64), BigInt::from(1)];
-    let vector = [BigInt::from(1), BigInt::from(0)];
+    let vector = Vector([BigInt::from(1), BigInt::from(0)]);
 
     assert_eq!(
       Orientation::ccw_cmp_around_with(&vector, &pt1, &pt2, &pt1),

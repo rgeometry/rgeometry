@@ -49,7 +49,7 @@ where
     let mut upper = vertices.len() - 1;
     while lower + 1 < upper {
       let middle = (lower + upper) / 2;
-      if p0.orientation(&poly.point(vertices[middle]), pt) == Orientation::CounterClockWise {
+      if Point::orient(p0, &poly.point(vertices[middle]), pt) == Orientation::CounterClockWise {
         lower = middle;
       } else {
         upper = middle;

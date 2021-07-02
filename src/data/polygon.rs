@@ -556,7 +556,7 @@ impl<'a, T> Cursor<'a, T> {
     let p1 = self.prev().point();
     let p2 = self.point();
     let p3 = self.next().point();
-    Orientation::new(p1, p2, p3)
+    Point::orient(p1, p2, p3)
   }
 
   pub fn is_colinear(&self) -> bool

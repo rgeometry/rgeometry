@@ -253,7 +253,7 @@ where
   let a2 = a.next().point();
   let b1 = b.point();
   let b2 = b.next().point();
-  Orientation::is_colinear(a1, a2, b1) && Orientation::is_colinear(a1, a2, b2)
+  Point::orient(a1, a2, b1).is_colinear() && Point::orient(a1, a2, b2).is_colinear()
 }
 
 /// Find the leftmost and rightmost vertices that are not linear.
