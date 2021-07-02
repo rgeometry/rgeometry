@@ -1,18 +1,20 @@
 // use claim::debug_assert_ok;
-use num_rational::BigRational;
+use num::BigInt;
+use num::BigRational;
 use num_traits::*;
 use std::iter::Sum;
 use std::ops::*;
 
-use crate::array::Orientation;
 use crate::data::{DirectedEdge, Point, PointLocation, TriangleView, Vector};
-use crate::{Error, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar};
 
 mod iter;
 pub use iter::*;
 
 mod convex;
 pub use convex::*;
+
+use super::Transform;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PositionId(usize);
@@ -213,6 +215,51 @@ impl<T> Polygon<T> {
       .sum();
     let three = T::from_usize(3).unwrap();
     Point::from(xs / (three * self.signed_area_2x()))
+  }
+
+  pub fn bounding_box(&self) -> (Point<T, 2>, Point<T, 2>)
+  where
+    T: PolygonScalar,
+  {
+    assert!(!self.rings[0].is_empty());
+    let mut min_x = self.points[self.rings[0][0].usize()].x_coord().clone();
+    let mut max_x = self.points[self.rings[0][0].usize()].x_coord().clone();
+    let mut min_y = self.points[self.rings[0][0].usize()].y_coord().clone();
+    let mut max_y = self.points[self.rings[0][0].usize()].y_coord().clone();
+    for pt in self.iter_boundary() {
+      if pt.point().x_coord() < &min_x {
+        min_x = pt.point().x_coord().clone();
+      }
+      if pt.point().x_coord() > &max_x {
+        max_x = pt.point().x_coord().clone();
+      }
+      if pt.point().y_coord() < &min_y {
+        min_y = pt.point().y_coord().clone();
+      }
+      if pt.point().y_coord() > &max_y {
+        max_y = pt.point().y_coord().clone();
+      }
+    }
+    (Point::new([min_x, min_y]), Point::new([max_x, max_y]))
+  }
+
+  // Convert to BigRational. Center on <0,0>. Scale size such that max(width,height) = 1.
+  pub fn normalize(&self) -> Polygon<BigRational>
+  where
+    T: PolygonScalar + Into<BigInt>,
+    T::ExtendedSigned: Into<BigInt>,
+  {
+    let (min, max) = self.bounding_box();
+    let [min_x, min_y] = min.array;
+    let [max_x, max_y] = max.array;
+    let width = max_x.extend_signed() - min_x.extend_signed();
+    let height = max_y.extend_signed() - min_y.extend_signed();
+    let ratio = std::cmp::max(width, height);
+    let p = self.clone().cast(|t| BigRational::from(t.into()));
+    let centroid = p.centroid();
+    let t = Transform::translate(-Vector::from(centroid));
+    let s = Transform::uniform_scale(BigRational::new(One::one(), ratio.into()));
+    s * t * p
   }
 
   pub fn signed_area<F>(&self) -> F
@@ -509,7 +556,7 @@ impl<'a, T> Cursor<'a, T> {
     let p1 = self.prev().point();
     let p2 = self.point();
     let p3 = self.next().point();
-    Orientation::new(p1, p2, p3)
+    Point::orient(p1, p2, p3)
   }
 
   pub fn is_colinear(&self) -> bool
@@ -586,6 +633,18 @@ pub mod tests {
     #[test]
     fn random_polygon(poly: Polygon<i8>) {
       prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[cfg(not(debug_assertions))] // proxy for release builds.
+    #[test]
+    fn normalize_props(poly: Polygon<i8>) {
+      // Debug builds are ~50x slower than release builds. Sigh.
+      let norm = poly.normalize();
+      prop_assert_eq!(norm.centroid(), Point::zero());
+      let (min, max) = norm.bounding_box();
+      let width = max.x_coord() - min.x_coord();
+      let height = max.y_coord() - min.y_coord();
+      prop_assert!(width == BigRational::one() || height == BigRational::one());
     }
   }
 }

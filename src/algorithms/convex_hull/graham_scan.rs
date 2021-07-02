@@ -1,6 +1,5 @@
-use crate::array::Orientation;
 use crate::data::{Point, Polygon, PolygonConvex};
-use crate::{Error, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar};
 
 // https://en.wikipedia.org/wiki/Graham_scan
 
@@ -100,8 +99,7 @@ where
   {
     let origin = pts[write_idx - 1].clone();
     while read_idx < pts.len() {
-      let p2 = &pts[write_idx];
-      if origin.orientation(p2, &pts[read_idx]) == Orientation::CoLinear {
+      if Point::orient(&origin, &pts[write_idx], &pts[read_idx]) == Orientation::CoLinear {
         pts.swap(read_idx, write_idx);
         read_idx += 1;
       } else {
@@ -114,7 +112,7 @@ where
     let p1 = &pts[read_idx];
     let p2 = &pts[write_idx];
     let p3 = &pts[write_idx - 1];
-    match p3.orientation(p2, p1) {
+    match Point::orient(p3, p2, p1) {
       Orientation::CounterClockWise => {
         pts.swap(read_idx, write_idx + 1);
         read_idx += 1;
@@ -272,7 +270,7 @@ mod tests {
     }
 
     #[test]
-    fn convex_hull_prop_i8(pts in vec(any_8(), 0..100)) {
+    fn convex_hull_prop_i8(pts in vec(any::<Point<i8,2>>(), 0..100)) {
       if let Ok(poly) = convex_hull(pts.clone()) {
         // Prop #1: Results are valid.
         prop_assert_eq!(poly.validate().err(), None);

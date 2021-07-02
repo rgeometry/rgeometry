@@ -15,13 +15,14 @@ license     = "Unlicense"
 name        = "rgeometry"
 readme      = "README.md"
 repository  = "https://github.com/rgeometry/rgeometry"
-version     = "0.4.0"
+version     = "0.5.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 array-init    = "2.0"
 claim         = "0.5.0"
 getrandom     = { version = "^0.2.3", features = ["js"] }
+num           = "0.4"
 num-bigint    = "0.4"
 num-rational  = "0.4"
 num-traits    = "0.2.*"
@@ -42,7 +43,7 @@ harness = false
 name    = "graham_scan"
 
 [profile.release]
-debug = true
+overflow-checks = true
 
 [profile.test]
 opt-level       = 1
