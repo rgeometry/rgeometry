@@ -34,11 +34,11 @@ impl Orientation {
   /// let p1 = Point::new([ 0, 0 ]);
   /// let p2 = Point::new([ 0, 1 ]); // One unit above p1.
   /// // (0,0) -> (0,1) -> (0,2) == Orientation::CoLinear
-  /// assert!(Orientation::new(&p1,&p2, &Point::new([ 0, 2 ])).is_colinear());
+  /// assert!(Orientation::new(&p1, &p2, &Point::new([ 0, 2 ])).is_colinear());
   /// // (0,0) -> (0,1) -> (-1,2) == Orientation::CounterClockWise
-  /// assert!(Orientation::new(&p1,&p2, &Point::new([ -1, 2 ])).is_ccw());
+  /// assert!(Orientation::new(&p1, &p2, &Point::new([ -1, 2 ])).is_ccw());
   /// // (0,0) -> (0,1) -> (1,2) == Orientation::ClockWise
-  /// assert!(Orientation::new(&p1,&p2, &Point::new([ 1, 2 ])).is_cw());
+  /// assert!(Orientation::new(&p1, &p2, &Point::new([ 1, 2 ])).is_cw());
   /// ```
   ///
   pub fn new<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Orientation
@@ -53,11 +53,30 @@ impl Orientation {
     }
   }
 
-  pub fn along_vector<T>(vector: &Vector<T, 2>, p: &[T; 2], q: &[T; 2]) -> Orientation
+  /// Locate `q` in relation to the line determined by the point `p` and the direction
+  /// vector.
+  ///
+  /// For fixed-precision types (i8,i16,i32,i64,etc), this function is
+  /// guaranteed to work for any input and never cause any arithmetic overflows.
+  ///
+  /// This function is identical to [`Orientation::new`]`(p, p+v, q)` but will never
+  /// cause arithmetic overflows even if `p+v` would overflow.
+  ///
+  /// # Examples
+  ///
+  /// ```rust
+  /// # use rgeometry::data::{Vector,Point};
+  /// # use rgeometry::Orientation;
+  /// let v = Vector([ 1, 1 ]); // Vector pointing to the top-right corner.
+  /// let p1 = Point::new([ 5, 5 ]);
+  /// assert!(Orientation::along_vector(&p1, &v, &Point::new([ 6, 6 ])).is_colinear());
+  /// assert!(Orientation::along_vector(&p1, &v, &Point::new([ 7, 8 ])).is_ccw());
+  /// assert!(Orientation::along_vector(&p1, &v, &Point::new([ 8, 7 ])).is_cw());
+  /// ```
+  pub fn along_vector<T>(p: &[T; 2], vector: &Vector<T, 2>, q: &[T; 2]) -> Orientation
   where
     T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
   {
-    // raw_arr_turn(p, q, r)
     match Extended::cmp_vector_slope(&vector.0, p, q) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
@@ -65,11 +84,10 @@ impl Orientation {
     }
   }
 
-  pub fn along_perp_vector<T>(vector: &Vector<T, 2>, p: &[T; 2], q: &[T; 2]) -> Orientation
+  pub fn along_perp_vector<T>(p: &[T; 2], vector: &Vector<T, 2>, q: &[T; 2]) -> Orientation
   where
     T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
   {
-    // raw_arr_turn(p, q, r)
     match Extended::cmp_perp_vector_slope(&vector.0, p, q) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
@@ -104,23 +122,28 @@ impl Orientation {
     }
   }
 
-  pub fn ccw_cmp_around_with<T>(z: &Vector<T, 2>, p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Ordering
+  pub fn ccw_cmp_around_with<T>(
+    vector: &Vector<T, 2>,
+    p: &[T; 2],
+    q: &[T; 2],
+    r: &[T; 2],
+  ) -> Ordering
   where
     T: Clone + Ord + num_traits::NumOps<T, T> + Extended + Signed,
   {
-    let aq = Orientation::along_vector(z, p, q);
-    let ar = Orientation::along_vector(z, p, r);
-    let on_zero = |d: &[T; 2]| {
-      !((d[0] < p[0] && z[0].is_positive())
-        || (d[1] < p[1] && z[1].is_positive())
-        || (d[0] > p[0] && z[0].is_negative())
-        || (d[1] > p[1] && z[1].is_negative()))
-    };
-    // let on_zero = |d: &[T; 2]| match Orientation::new(p, pb, d) {
-    //   CounterClockWise => false,
-    //   ClockWise => true,
-    //   CoLinear => true,
+    let aq = Orientation::along_vector(p, vector, q);
+    let ar = Orientation::along_vector(p, vector, r);
+    // let on_zero = |d: &[T; 2]| {
+    //   !((d[0] < p[0] && z[0].is_positive())
+    //     || (d[1] < p[1] && z[1].is_positive())
+    //     || (d[0] > p[0] && z[0].is_negative())
+    //     || (d[1] > p[1] && z[1].is_negative()))
     // };
+    let on_zero = |d: &[T; 2]| match Orientation::along_perp_vector(p, vector, d) {
+      CounterClockWise => false,
+      ClockWise => true,
+      CoLinear => true,
+    };
     let cmp = || match Orientation::new(p, q, r) {
       CounterClockWise => Ordering::Less,
       ClockWise => Ordering::Greater,

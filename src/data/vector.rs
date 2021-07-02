@@ -133,7 +133,7 @@ impl<T> Vector<T, 2> {
     T: crate::PolygonScalar,
   {
     // Rotate the vector 90 degrees counterclockwise.
-    match Orientation::along_perp_vector(self, &p.array, &q.array) {
+    match Orientation::along_perp_vector(&p.array, self, &q.array) {
       Orientation::CounterClockWise => Ordering::Greater,
       Orientation::ClockWise => Ordering::Less,
       Orientation::CoLinear => Ordering::Equal,
