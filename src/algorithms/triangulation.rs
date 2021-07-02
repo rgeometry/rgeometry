@@ -5,12 +5,14 @@ pub mod earclip;
 
 // FIXME: impl for PolygonConvex, Triangle, etc.
 pub trait Triangulate {
-  fn triangulate(&self) -> Box<dyn Iterator<Item = (PointId, PointId, PointId)> + '_>;
+  type Iter: Iterator<Item = (PointId, PointId, PointId)>;
+  fn triangulate(self) -> Self::Iter;
 }
 
 // FIXME: Use hashed triangulation by default.
-impl<T: PolygonScalar> Triangulate for Polygon<T> {
-  fn triangulate(&self) -> Box<dyn Iterator<Item = (PointId, PointId, PointId)> + '_> {
+impl<'a, T: PolygonScalar> Triangulate for &'a Polygon<T> {
+  type Iter = Box<dyn Iterator<Item = (PointId, PointId, PointId)> + 'a>;
+  fn triangulate(self) -> Self::Iter {
     Box::new(earclip::earclip(self))
   }
 }
