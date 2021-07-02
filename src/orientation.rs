@@ -15,6 +15,27 @@ pub enum Orientation {
 use Orientation::*;
 
 impl Orientation {
+  /// Determine the direction you have to turn if you walk from `p`
+  /// to `q` to `r`.
+  ///
+  /// For fixed-precision types (i8,i16,i32,i64,etc), this function is
+  /// guaranteed to work for any input and never cause any arithmetic overflows.
+  ///
+  /// # Examples
+  ///
+  /// ```rust
+  /// # use rgeometry::data::Point;
+  /// # use rgeometry::Orientation;
+  /// let p1 = Point::new([ 0, 0 ]);
+  /// let p2 = Point::new([ 0, 1 ]); // One unit above p1.
+  /// // (0,0) -> (0,1) -> (0,2) == Orientation::CoLinear
+  /// assert!(Orientation::new(&p1,&p2, &Point::new([ 0, 2 ])).is_colinear());
+  /// // (0,0) -> (0,1) -> (-1,2) == Orientation::CounterClockWise
+  /// assert!(Orientation::new(&p1,&p2, &Point::new([ -1, 2 ])).is_ccw());
+  /// // (0,0) -> (0,1) -> (1,2) == Orientation::ClockWise
+  /// assert!(Orientation::new(&p1,&p2, &Point::new([ 1, 2 ])).is_cw());
+  /// ```
+  ///
   pub fn new<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Orientation
   where
     T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
