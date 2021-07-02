@@ -26,12 +26,24 @@ impl Orientation {
     }
   }
 
-  pub fn along_vector<T>(p: &[T; 2], q: &[T; 2], r: &[T; 2]) -> Orientation
+  pub fn along_vector<T>(vector: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Orientation
   where
     T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
   {
     // raw_arr_turn(p, q, r)
-    match Extended::cmp_vector_slope(p, q, r) {
+    match Extended::cmp_vector_slope(vector, p, q) {
+      Ordering::Less => Orientation::ClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+      Ordering::Greater => Orientation::CounterClockWise,
+    }
+  }
+
+  pub fn along_perp_vector<T>(vector: &[T; 2], p: &[T; 2], q: &[T; 2]) -> Orientation
+  where
+    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
+  {
+    // raw_arr_turn(p, q, r)
+    match Extended::cmp_perp_vector_slope(vector, p, q) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
       Ordering::Greater => Orientation::CounterClockWise,
@@ -264,8 +276,8 @@ pub fn ccw_cmp_around_with<T>(z: &[T; 2], p: &[T; 2], q: &[T; 2], r: &[T; 2]) ->
 where
   T: Clone + Ord + num_traits::NumOps<T, T> + Extended + Signed,
 {
-  let aq = Orientation::along_vector(p, z, q);
-  let ar = Orientation::along_vector(p, z, r);
+  let aq = Orientation::along_vector(z, p, q);
+  let ar = Orientation::along_vector(z, p, r);
   let on_zero = |d: &[T; 2]| {
     !((d[0] < p[0] && z[0].is_positive())
       || (d[1] < p[1] && z[1].is_positive())
