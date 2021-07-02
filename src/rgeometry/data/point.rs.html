@@ -405,6 +405,67 @@
 <span id="381">381</span>
 <span id="382">382</span>
 <span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -421,7 +482,7 @@
 <span class="kw">use</span> <span class="ident">std::ops::Neg</span>;
 
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::Vector</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::array</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Orientation</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span> <span class="comment">// Required for correctness!</span>
@@ -595,11 +656,32 @@
 
 <span class="comment">// Methods on two-dimensional points.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> {
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">q</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span>
+  <span class="doccomment">/// Determine the direction you have to turn if you walk from `p1`</span>
+  <span class="doccomment">/// to `p2` to `p3`.</span>
+  <span class="doccomment">///</span>
+  <span class="doccomment">/// For fixed-precision types (i8,i16,i32,i64,etc), this function is</span>
+  <span class="doccomment">/// guaranteed to work for any input and never cause any arithmetic overflows.</span>
+  <span class="doccomment">///</span>
+  <span class="doccomment">/// # Examples</span>
+  <span class="doccomment">///</span>
+  <span class="doccomment">/// ```rust</span>
+  <span class="doccomment">/// # use rgeometry::data::Point;</span>
+  <span class="doccomment">/// # use rgeometry::Orientation;</span>
+  <span class="doccomment">/// let p1 = Point::new([ 0, 0 ]);</span>
+  <span class="doccomment">/// let p2 = Point::new([ 0, 1 ]); // One unit above p1.</span>
+  <span class="doccomment">/// // (0,0) -&gt; (0,1) -&gt; (0,2) == Orientation::CoLinear</span>
+  <span class="doccomment">/// assert!(Point::orient(&amp;p1, &amp;p2, &amp;Point::new([ 0, 2 ])).is_colinear());</span>
+  <span class="doccomment">/// // (0,0) -&gt; (0,1) -&gt; (-1,2) == Orientation::CounterClockWise</span>
+  <span class="doccomment">/// assert!(Point::orient(&amp;p1, &amp;p2, &amp;Point::new([ -1, 2 ])).is_ccw());</span>
+  <span class="doccomment">/// // (0,0) -&gt; (0,1) -&gt; (1,2) == Orientation::ClockWise</span>
+  <span class="doccomment">/// assert!(Point::orient(&amp;p1, &amp;p2, &amp;Point::new([ 1, 2 ])).is_cw());</span>
+  <span class="doccomment">/// ```</span>
+  <span class="doccomment">///</span>
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orient</span>(<span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">p3</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="kw">crate</span><span class="ident">::Extended</span>,
   {
-    <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">array</span>, <span class="kw-2">&amp;</span><span class="ident">q</span>.<span class="ident">array</span>, <span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">array</span>)
+    <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>, <span class="kw-2">&amp;</span><span class="ident">p3</span>)
   }
 
   <span class="doccomment">/// Docs?</span>
@@ -616,7 +698,7 @@
     <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Neg</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="kw">crate</span><span class="ident">::Extended</span> <span class="op">+</span> <span class="ident">Signed</span>,
     <span class="comment">// for&lt;&#39;a&gt; &amp;&#39;a T: Mul&lt;Output = T&gt;,</span>
   {
-    <span class="ident">ccw_cmp_around_with</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">q</span>)
+    <span class="ident">Orientation::ccw_cmp_around_with</span>(<span class="ident">z</span>, <span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">q</span>)
   }
 }
 
@@ -697,20 +779,20 @@
     <span class="kw">fn</span> <span class="ident">bigint_colinear</span>(<span class="ident">pt1</span> <span class="kw">in</span> <span class="ident">any_r</span>(), <span class="ident">pt2</span> <span class="kw">in</span> <span class="ident">any_r</span>()) {
       <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pt2</span> <span class="op">-</span> <span class="kw-2">&amp;</span><span class="ident">pt1</span>;
       <span class="kw">let</span> <span class="ident">pt3</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pt2</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">diff</span>;
-      <span class="macro">prop_assert!</span>(<span class="ident">Orientation::is_colinear</span>(<span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>))
+      <span class="macro">prop_assert!</span>(<span class="ident">Point::orient</span>(<span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>).<span class="ident">is_colinear</span>())
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bigint_not_colinear</span>(<span class="ident">pt1</span> <span class="kw">in</span> <span class="ident">any_r</span>(), <span class="ident">pt2</span> <span class="kw">in</span> <span class="ident">any_r</span>()) {
       <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pt2</span> <span class="op">-</span> <span class="kw-2">&amp;</span><span class="ident">pt1</span>;
       <span class="kw">let</span> <span class="ident">pt3</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pt2</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">diff</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">Vector</span>([<span class="ident">BigInt::from</span>(<span class="number">1</span>),<span class="ident">BigInt::from</span>(<span class="number">1</span>)]);
-      <span class="macro">prop_assert!</span>(<span class="op">!</span><span class="ident">Orientation::is_colinear</span>(<span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>))
+      <span class="macro">prop_assert!</span>(<span class="op">!</span><span class="ident">Point::orient</span>(<span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>).<span class="ident">is_colinear</span>())
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">orientation_reverse</span>(<span class="ident">pt1</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i64</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">pt2</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i64</span>,<span class="number">2</span><span class="op">&gt;</span>, <span class="ident">pt3</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i64</span>,<span class="number">2</span><span class="op">&gt;</span>) {
-      <span class="kw">let</span> <span class="ident">abc</span> <span class="op">=</span> <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>);
-      <span class="kw">let</span> <span class="ident">cba</span> <span class="op">=</span> <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">pt3</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt1</span>);
+      <span class="kw">let</span> <span class="ident">abc</span> <span class="op">=</span> <span class="ident">Point::orient</span>(<span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt3</span>);
+      <span class="kw">let</span> <span class="ident">cba</span> <span class="op">=</span> <span class="ident">Point::orient</span>(<span class="kw-2">&amp;</span><span class="ident">pt3</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt1</span>);
       <span class="macro">prop_assert_eq!</span>(<span class="ident">abc</span>, <span class="ident">cba</span>.<span class="ident">reverse</span>())
     }
   }
@@ -718,7 +800,7 @@
   <span class="attribute">#[<span class="ident">test</span>]</span>
   <span class="kw">fn</span> <span class="ident">test_turns</span>() {
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Orientation::new</span>(
+      <span class="ident">Point::orient</span>(
         <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]),
         <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">1</span>]),
         <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">2</span>])
@@ -735,20 +817,36 @@
     );
 
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">1</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">2</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">1</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">2</span>])
+      ),
       <span class="ident">ClockWise</span>
     );
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new_nn</span>([<span class="number">0.0</span>, <span class="number">0.0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new_nn</span>([<span class="number">0.0</span>, <span class="number">1.0</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new_nn</span>([<span class="number">2.0</span>, <span class="number">2.0</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new_nn</span>([<span class="number">0.0</span>, <span class="number">0.0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new_nn</span>([<span class="number">0.0</span>, <span class="number">1.0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new_nn</span>([<span class="number">2.0</span>, <span class="number">2.0</span>])
+      ),
       <span class="ident">ClockWise</span>
     );
 
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">1</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="op">-</span><span class="number">2</span>, <span class="number">2</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">1</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="op">-</span><span class="number">2</span>, <span class="number">2</span>])
+      ),
       <span class="ident">CounterClockWise</span>
     );
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>])
+      ),
       <span class="ident">CoLinear</span>
     );
   }
@@ -756,19 +854,35 @@
   <span class="attribute">#[<span class="ident">test</span>]</span>
   <span class="kw">fn</span> <span class="ident">unit_1</span>() {
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>])
+      ),
       <span class="ident">CoLinear</span>
     );
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">0</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">0</span>])
+      ),
       <span class="ident">CoLinear</span>
     );
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">0</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">0</span>])
+      ),
       <span class="ident">CoLinear</span>
     );
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">0</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">2</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>])
+      ),
       <span class="ident">CoLinear</span>
     );
   }
@@ -776,7 +890,11 @@
   <span class="attribute">#[<span class="ident">test</span>]</span>
   <span class="kw">fn</span> <span class="ident">unit_2</span>() {
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">6</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">8</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">1</span>, <span class="number">0</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">6</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">8</span>])
+      ),
       <span class="ident">ClockWise</span>
     );
   }
@@ -784,7 +902,11 @@
   <span class="attribute">#[<span class="ident">test</span>]</span>
   <span class="kw">fn</span> <span class="ident">unit_3</span>() {
     <span class="macro">assert_eq!</span>(
-      <span class="ident">Point::new</span>([<span class="op">-</span><span class="number">12_i8</span>, <span class="op">-</span><span class="number">126</span>]).<span class="ident">orientation</span>(<span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="op">-</span><span class="number">12</span>, <span class="op">-</span><span class="number">126</span>]), <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="op">-</span><span class="number">126</span>])),
+      <span class="ident">Point::orient</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="op">-</span><span class="number">12_i8</span>, <span class="op">-</span><span class="number">126</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="op">-</span><span class="number">12</span>, <span class="op">-</span><span class="number">126</span>]),
+        <span class="kw-2">&amp;</span><span class="ident">Point::new</span>([<span class="number">0</span>, <span class="op">-</span><span class="number">126</span>])
+      ),
       <span class="ident">CoLinear</span>
     );
   }

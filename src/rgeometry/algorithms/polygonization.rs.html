@@ -566,6 +566,14 @@
 <span id="542">542</span>
 <span id="543">543</span>
 <span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Cursor</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::EndPoint</span>;
@@ -722,6 +730,14 @@
     <span class="kw">for</span> <span class="ident">elt</span> <span class="kw">in</span> <span class="ident">a_min</span>.<span class="ident">to_inclusive</span>(<span class="ident">a_max</span>).<span class="ident">chain</span>(<span class="ident">b_min</span>.<span class="ident">to_inclusive</span>(<span class="ident">b_max</span>)) {
       <span class="kw">let</span> <span class="ident">inner_segment</span>: <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="ident">elt</span>.<span class="ident">prev</span>().<span class="ident">point</span>()..<span class="ident">elt</span>.<span class="ident">next</span>().<span class="ident">point</span>()).<span class="ident">into</span>();
       <span class="kw">if</span> <span class="ident">elt</span>.<span class="ident">orientation</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CoLinear</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">inner_segment</span>.<span class="ident">contains</span>(<span class="ident">elt</span>.<span class="ident">point</span>()) {
+        <span class="comment">// We&#39;re either at a corner:</span>
+        <span class="comment">//   prev</span>
+        <span class="comment">//    \</span>
+        <span class="comment">//     x -- next</span>
+        <span class="comment">// Or we&#39;re at u-turn:</span>
+        <span class="comment">//   prev -&gt;  x</span>
+        <span class="comment">//   next &lt;-  x</span>
+        <span class="comment">// In both cases, the circumference will be shortened if we can remove &#39;x&#39;.</span>
         <span class="ident">kinks</span>.<span class="ident">push</span>(<span class="ident">elt</span>);
       }
     }
@@ -844,7 +860,7 @@
   <span class="kw">let</span> <span class="ident">a2</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">next</span>().<span class="ident">point</span>();
   <span class="kw">let</span> <span class="ident">b1</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">point</span>();
   <span class="kw">let</span> <span class="ident">b2</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">next</span>().<span class="ident">point</span>();
-  <span class="ident">Orientation::is_colinear</span>(<span class="ident">a1</span>, <span class="ident">a2</span>, <span class="ident">b1</span>) <span class="op">&amp;&amp;</span> <span class="ident">Orientation::is_colinear</span>(<span class="ident">a1</span>, <span class="ident">a2</span>, <span class="ident">b2</span>)
+  <span class="ident">Point::orient</span>(<span class="ident">a1</span>, <span class="ident">a2</span>, <span class="ident">b1</span>).<span class="ident">is_colinear</span>() <span class="op">&amp;&amp;</span> <span class="ident">Point::orient</span>(<span class="ident">a1</span>, <span class="ident">a2</span>, <span class="ident">b2</span>).<span class="ident">is_colinear</span>()
 }
 
 <span class="doccomment">/// Find the leftmost and rightmost vertices that are not linear.</span>
