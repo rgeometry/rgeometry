@@ -11,6 +11,7 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
+base64       = "*"
 rand         = "0.8"
 getrandom    = { version="0.2.2", features=["js"] }
 num-traits   = "0.1"
