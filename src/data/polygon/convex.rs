@@ -39,7 +39,6 @@ where
 
   /// $O(\log n)$
   ///
-  /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU="></iframe>
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     // debug_assert_ok!(self.validate());
     let poly = &self.0;
@@ -104,7 +103,7 @@ where
   /// # };
   /// # render_polygon(&convex.normalize());
   /// ```
-  /// <iframe src="https://web.rgeometry.org:20443/loader.html?gist=037a23f8391390df8560a2043a14121e"></iframe>
+  /// <iframe src="https://web.rgeometry.org/wasm/gist/037a23f8391390df8560a2043a14121e"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
   where
     R: Rng + ?Sized,

@@ -13,7 +13,7 @@ where
   I: Send + 'static,
   O: Send + 'static,
 {
-  pub async fn new<F, X>(handler: F) -> Manager<I, O>
+  pub fn new<F, X>(handler: F) -> Manager<I, O>
   where
     F: Fn(I) -> X + Sync + Send + 'static,
     X: Future<Output = O> + Send,

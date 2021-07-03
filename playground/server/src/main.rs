@@ -9,83 +9,79 @@
 // release lock
 // send response with the hash of the file.
 
-use std::error::Error;
-use std::{env, io::Error as IoError, net::SocketAddr, sync::Arc};
-
-use futures_util::{SinkExt, StreamExt};
-
-use tokio::net::{TcpListener, TcpStream};
-use tungstenite::protocol::Message;
+use std::{sync::Arc};
 
 mod manager;
 use manager::Manager;
 
 mod compile;
-use compile::compile;
+use compile::{compile, CompileError};
 
-type Compiler = Manager<String, Result<String, Box<dyn Error + Send + Sync>>>;
+use once_cell::sync::Lazy;
+use std::sync::RwLock;
+use std::collections::HashMap;
+use std::path::PathBuf;
 
-async fn handle_connection(
-  compiler: Arc<Compiler>,
-  raw_stream: TcpStream,
-  addr: SocketAddr,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-  println!("Incoming TCP connection from: {}", addr);
+use rocket::*;
+use rocket::fs::NamedFile;
 
-  let ws_stream = tokio_tungstenite::accept_async(raw_stream)
-    .await
-    .expect("Error during the websocket handshake occurred");
-  println!("WebSocket connection established: {}", addr);
+static GIST_CACHE: Lazy<RwLock<HashMap<String,String>>> = Lazy::new(|| {
+  RwLock::new(HashMap::new())
+});
 
-  let (mut outgoing, mut incoming) = ws_stream.split();
-
-  while let Some(msg) = incoming.next().await {
-    let msg = msg?;
-    if msg.is_close() {
-      break;
-    }
-    let msg = msg.to_text().unwrap();
-    let code = match msg.strip_prefix("gist:") {
-      None => String::from(msg),
-      Some(gist) => {
-        reqwest::get(format!("https://gist.github.com/raw/{}", gist))
-          .await?
-          .text()
-          .await?
-      }
-    };
-    match compiler.run(code).await {
-      Ok(path) => {
-        outgoing
-          .send(Message::text(format!("success\n{}", path)))
-          .await?
-      }
-      Err(fail) => {
-        outgoing
-          .send(Message::text(format!("error\n{}", fail)))
-          .await?
-      }
-    }
-  }
-  Ok(())
+fn query_cache(gist: &str) -> Option<String> {
+  GIST_CACHE.read().unwrap().get(gist).cloned()
 }
 
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<(), IoError> {
-  let compiler = Arc::new(Manager::new(compile).await);
-  let addr = env::args()
-    .nth(1)
-    .unwrap_or_else(|| "0.0.0.0:20162".to_string());
+fn update_cache(gist: &str, code: &str) {
+  let mut cache = GIST_CACHE.write().unwrap();
+  cache.insert(gist.to_string(), code.to_string());
+}
 
-  // Create the event loop and TCP listener we'll accept connections on.
-  let try_socket = TcpListener::bind(&addr).await;
-  let listener = try_socket.expect("Failed to bind");
-  println!("Listening on: {}", addr);
+static COMPILER: Lazy<Arc<Compiler>> = Lazy::new(|| {
+  Arc::new(Manager::new(compile))
+});
 
-  // Let's spawn the handling of each connection in a separate task.
-  while let Ok((stream, addr)) = listener.accept().await {
-    tokio::spawn(handle_connection(compiler.clone(), stream, addr));
-  }
 
-  Ok(())
+type Compiler = Manager<String, Result<PathBuf, CompileError>>;
+
+#[get("/?<code>")]
+async fn compile_code(code: String) -> Result<NamedFile,CompileError> {
+    let path = COMPILER.run(code).await?;
+    Ok(NamedFile::open(path).await?)
+}
+
+async fn fetch_gist(gist: &str) -> Result<String, reqwest::Error> {
+  let code = reqwest::get(format!("https://gist.github.com/raw/{}", gist))
+          .await?
+          .error_for_status()?
+          .text()
+          .await?;
+  eprintln!("Updating cache: {}", &code);
+  update_cache(&gist, &code);
+  Ok(code)
+}
+
+#[get("/gist/<gist>")]
+async fn compile_gist(gist: String) -> Result<NamedFile, CompileError> {
+  let code = match query_cache(&gist) {
+    // Cache hit. Return it immediately and update the cache in the background.
+    Some(code) => {
+      eprintln!("Cache hit: {}", &code);
+      tokio::spawn(async move { fetch_gist(&gist).await });
+      code
+    },
+    // Cache miss. Block until we can request it from github.
+    None => fetch_gist(&gist).await?
+  };
+  let path = COMPILER.run(code).await?;
+  Ok(NamedFile::open(path).await?)
+}
+
+#[launch]
+async fn rocket() -> _ {
+  rocket::build()
+    .attach(rocket::shield::Shield::new())
+    .mount("/", routes![compile_code])
+    .mount("/", routes![compile_gist])
 }
