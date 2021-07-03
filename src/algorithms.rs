@@ -1,9 +1,9 @@
 pub mod convex_hull;
 pub mod intersection;
+pub mod monotone_polygon;
 pub mod polygonization;
 pub mod triangulation;
 pub mod zhash;
-pub mod monotone_polygon;
 
 #[doc(inline)]
 pub use convex_hull::graham_scan::convex_hull;
