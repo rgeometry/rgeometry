@@ -289,43 +289,55 @@ pub mod tests {
   use crate::Orientation::*;
 
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
-  proptest! {
-    #[test]
-    fn squared_euclidean_distance_fuzz(pt1 in any_nn::<2>(), pt2 in any_nn::<2>()) {
-      let _ = pt1.squared_euclidean_distance(&pt2);
-    }
+  #[proptest]
+  fn squared_euclidean_distance_fuzz(
+    #[strategy(any_nn::<2>())] pt1: Point<NotNan<f64>, 2>,
+    #[strategy(any_nn::<2>())] pt2: Point<NotNan<f64>, 2>,
+  ) {
+    let _ = pt1.squared_euclidean_distance(&pt2);
+  }
 
-    #[test]
-    fn cmp_around_fuzz_nn(pt1 in any_nn(), pt2 in any_nn(), pt3 in any_nn()) {
-      let _ = pt1.ccw_cmp_around(&pt2, &pt3);
-    }
+  #[proptest]
+  fn cmp_around_fuzz_nn(
+    #[strategy(any_nn::<2>())] pt1: Point<NotNan<f64>, 2>,
+    #[strategy(any_nn::<2>())] pt2: Point<NotNan<f64>, 2>,
+    #[strategy(any_nn::<2>())] pt3: Point<NotNan<f64>, 2>,
+  ) {
+    let _ = pt1.ccw_cmp_around(&pt2, &pt3);
+  }
 
-    #[test]
-    fn cmp_around_fuzz_i8(pt1: Point<i8,2>, pt2: Point<i8,2>, pt3: Point<i8,2>) {
-      let _ = pt1.ccw_cmp_around(&pt2, &pt3);
-    }
+  #[proptest]
+  fn cmp_around_fuzz_i8(pt1: Point<i8, 2>, pt2: Point<i8, 2>, pt3: Point<i8, 2>) {
+    let _ = pt1.ccw_cmp_around(&pt2, &pt3);
+  }
 
-    #[test]
-    fn bigint_colinear(pt1 in any_r(), pt2 in any_r()) {
-      let diff = &pt2 - &pt1;
-      let pt3 = &pt2 + &diff;
-      prop_assert!(Point::orient(&pt1, &pt2, &pt3).is_colinear())
-    }
+  #[proptest]
+  fn bigint_colinear(
+    #[strategy(any_r::<2>())] pt1: Point<BigInt, 2>,
+    #[strategy(any_r::<2>())] pt2: Point<BigInt, 2>,
+  ) {
+    let diff = &pt2 - &pt1;
+    let pt3 = &pt2 + &diff;
+    prop_assert!(Point::orient(&pt1, &pt2, &pt3).is_colinear())
+  }
 
-    #[test]
-    fn bigint_not_colinear(pt1 in any_r(), pt2 in any_r()) {
-      let diff = &pt2 - &pt1;
-      let pt3 = &pt2 + &diff + &Vector([BigInt::from(1),BigInt::from(1)]);
-      prop_assert!(!Point::orient(&pt1, &pt2, &pt3).is_colinear())
-    }
+  #[proptest]
+  fn bigint_not_colinear(
+    #[strategy(any_r::<2>())] pt1: Point<BigInt, 2>,
+    #[strategy(any_r::<2>())] pt2: Point<BigInt, 2>,
+  ) {
+    let diff = &pt2 - &pt1;
+    let pt3 = &pt2 + &diff + &Vector([BigInt::from(1), BigInt::from(1)]);
+    prop_assert!(!Point::orient(&pt1, &pt2, &pt3).is_colinear())
+  }
 
-    #[test]
-    fn orientation_reverse(pt1: Point<i64,2>, pt2: Point<i64,2>, pt3: Point<i64,2>) {
-      let abc = Point::orient(&pt1, &pt2, &pt3);
-      let cba = Point::orient(&pt3, &pt2, &pt1);
-      prop_assert_eq!(abc, cba.reverse())
-    }
+  #[proptest]
+  fn orientation_reverse(pt1: Point<i64, 2>, pt2: Point<i64, 2>, pt3: Point<i64, 2>) {
+    let abc = Point::orient(&pt1, &pt2, &pt3);
+    let cba = Point::orient(&pt3, &pt2, &pt1);
+    prop_assert_eq!(abc, cba.reverse())
   }
 
   #[test]

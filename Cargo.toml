@@ -32,6 +32,7 @@ rand          = { version = "0.8", features = ["small_rng"] }
 [dev-dependencies]
 criterion      = "0.3"
 proptest       = "1.0.0"
+test-strategy  = "0.1"
 rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
 
 [[bench]]

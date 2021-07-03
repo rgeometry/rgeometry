@@ -327,6 +327,7 @@ pub mod tests {
   use rand::prelude::SliceRandom;
   use rand::rngs::mock::StepRng;
   use rand::SeedableRng;
+  use test_strategy::proptest;
 
   #[test]
   fn unit_1() {
@@ -523,30 +524,29 @@ pub mod tests {
     assert_eq!(ret.and_then(|val| val.validate()).err(), None);
   }
 
-  proptest! {
-    #[test]
-    fn points_to_polygon(mut pts in vec(any::<Point<i8,2>>(), 3..100)) {
-      let mut set = BTreeSet::new();
-      pts.retain(|pt| set.insert(pt.clone()));
-      if pts.len() >= 3 {
-        let mut rng = StepRng::new(0, 0);
-        let ret = two_opt_moves(pts, &mut rng);
-        prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
-      }
-    }
-
-    #[test]
-    fn linear_fuzz(n in 2..10_i8, seed: u64) {
-      let mut linear:Vec<i8> = (0..n).collect();
-      let mut rng = rand::rngs::SmallRng::seed_from_u64(seed);
-      linear.shuffle(&mut rng);
-      let mut pts: Vec<Point<i8,2>> = linear.iter().map(|&n| { Point::new([n,0]) }).collect();
-      pts.push(Point::new([0,1]));
-
+  #[proptest]
+  fn points_to_polygon(#[strategy(vec(any::<Point<i8,2>>(), 3..100))] pts: Vec<Point<i8, 2>>) {
+    let mut pts = pts; // XXX: Missing feature in the 'strategy' attribute.
+    let mut set = BTreeSet::new();
+    pts.retain(|pt| set.insert(pt.clone()));
+    if pts.len() >= 3 {
       let mut rng = StepRng::new(0, 0);
-      // dbg!(&linear);
       let ret = two_opt_moves(pts, &mut rng);
       prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
     }
+  }
+
+  #[proptest]
+  fn linear_fuzz(#[strategy(2..10_i8)] n: i8, seed: u64) {
+    let mut linear: Vec<i8> = (0..n).collect();
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(seed);
+    linear.shuffle(&mut rng);
+    let mut pts: Vec<Point<i8, 2>> = linear.iter().map(|&n| Point::new([n, 0])).collect();
+    pts.push(Point::new([0, 1]));
+
+    let mut rng = StepRng::new(0, 0);
+    // dbg!(&linear);
+    let ret = two_opt_moves(pts, &mut rng);
+    prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
   }
 }

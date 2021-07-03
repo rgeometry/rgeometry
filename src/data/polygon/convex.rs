@@ -226,55 +226,54 @@ mod tests {
 
   use crate::testing::*;
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
-  proptest! {
-    #[test]
-    fn all_random_convex_polygons_are_valid_i8(poly in any_convex::<i8>()) {
-      prop_assert_eq!(poly.validate().err(), None)
-    }
+  #[proptest]
+  fn all_random_convex_polygons_are_valid_i8(poly: PolygonConvex<i8>) {
+    prop_assert_eq!(poly.validate().err(), None)
+  }
 
-    #[test]
-    fn random_convex_prop(poly in any_convex::<i8>()) {
-      let (min, max) = poly.bounding_box();
-      prop_assert_eq!(min.y_coord(), &0);
-      let width = max.x_coord() - min.x_coord();
-      let height = max.y_coord() - min.y_coord();
-      prop_assert_eq!(width, i8::MAX);
-      prop_assert_eq!(height, i8::MAX);
-    }
+  #[proptest]
+  fn random_convex_prop(poly: PolygonConvex<i8>) {
+    let (min, max) = poly.bounding_box();
+    prop_assert_eq!(min.y_coord(), &0);
+    let width = max.x_coord() - min.x_coord();
+    let height = max.y_coord() - min.y_coord();
+    prop_assert_eq!(width, i8::MAX);
+    prop_assert_eq!(height, i8::MAX);
+  }
 
-    #[test]
-    fn all_random_convex_polygons_are_valid_i64(poly in any_convex::<i64>()) {
-      prop_assert_eq!(poly.validate().err(), None)
-    }
+  #[proptest]
+  fn all_random_convex_polygons_are_valid_i64(poly: PolygonConvex<i64>) {
+    prop_assert_eq!(poly.validate().err(), None)
+  }
 
-    #[test]
-    fn sum_to_max(n in 1..1000) {
-      let mut rng = rand::thread_rng();
-      let vecs = random_between_iter::<i8, _>(n as usize, &mut rng);
-      prop_assert_eq!(vecs.sum::<i8>(), i8::MAX);
+  #[proptest]
+  fn sum_to_max(#[strategy(1..1000)] n: i32) {
+    let mut rng = rand::thread_rng();
+    let vecs = random_between_iter::<i8, _>(n as usize, &mut rng);
+    prop_assert_eq!(vecs.sum::<i8>(), i8::MAX);
 
-      let vecs = random_between_iter::<i64, _>(n as usize, &mut rng);
-      prop_assert_eq!(vecs.sum::<i64>(), i64::MAX);
-    }
+    let vecs = random_between_iter::<i64, _>(n as usize, &mut rng);
+    prop_assert_eq!(vecs.sum::<i64>(), i64::MAX);
+  }
 
-    #[test]
-    fn random_between_zero_properties(n in 2..1000) {
-      let mut rng = rand::thread_rng();
-      let vecs: Vec<i8> = random_between_zero(n as usize, &mut rng);
-      prop_assert_eq!(vecs.iter().sum::<i8>(), 0);
-      prop_assert_eq!(vecs.len(), n as usize);
+  #[proptest]
+  fn random_between_zero_properties(#[strategy(2..1000)] n: i32) {
+    let mut rng = rand::thread_rng();
+    let vecs: Vec<i8> = random_between_zero(n as usize, &mut rng);
+    prop_assert_eq!(vecs.iter().sum::<i8>(), 0);
+    prop_assert_eq!(vecs.len(), n as usize);
 
-      let vecs: Vec<i64> = random_between_zero(n as usize, &mut rng);
-      prop_assert_eq!(vecs.iter().sum::<i64>(), 0);
-      prop_assert_eq!(vecs.len(), n as usize);
-    }
+    let vecs: Vec<i64> = random_between_zero(n as usize, &mut rng);
+    prop_assert_eq!(vecs.iter().sum::<i64>(), 0);
+    prop_assert_eq!(vecs.len(), n as usize);
+  }
 
-    #[test]
-    fn sum_to_zero_vector(n in 2..1000) {
-      let mut rng = rand::thread_rng();
-      let vecs: Vec<Vector<i8,2>> = random_vectors(n as usize, &mut rng);
-      prop_assert_eq!(vecs.into_iter().sum::<Vector<i8,2>>(), Vector::zero())
-    }
+  #[proptest]
+  fn sum_to_zero_vector(#[strategy(2..1000)] n: i32) {
+    let mut rng = rand::thread_rng();
+    let vecs: Vec<Vector<i8, 2>> = random_vectors(n as usize, &mut rng);
+    prop_assert_eq!(vecs.into_iter().sum::<Vector<i8, 2>>(), Vector::zero())
   }
 }

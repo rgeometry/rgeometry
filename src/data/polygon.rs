@@ -628,23 +628,22 @@ pub mod tests {
   use super::*;
 
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
-  proptest! {
-    #[test]
-    fn random_polygon(poly: Polygon<i8>) {
-      prop_assert_eq!(poly.validate().err(), None);
-    }
+  #[proptest]
+  fn random_polygon(poly: Polygon<i8>) {
+    prop_assert_eq!(poly.validate().err(), None);
+  }
 
-    #[cfg(not(debug_assertions))] // proxy for release builds.
-    #[test]
-    fn normalize_props(poly: Polygon<i8>) {
-      // Debug builds are ~50x slower than release builds. Sigh.
-      let norm = poly.normalize();
-      prop_assert_eq!(norm.centroid(), Point::zero());
-      let (min, max) = norm.bounding_box();
-      let width = max.x_coord() - min.x_coord();
-      let height = max.y_coord() - min.y_coord();
-      prop_assert!(width == BigRational::one() || height == BigRational::one());
-    }
+  #[cfg(not(debug_assertions))] // proxy for release builds.
+  #[proptest]
+  fn normalize_props(poly: Polygon<i8>) {
+    // Debug builds are ~50x slower than release builds. Sigh.
+    let norm = poly.normalize();
+    prop_assert_eq!(norm.centroid(), Point::zero());
+    let (min, max) = norm.bounding_box();
+    let width = max.x_coord() - min.x_coord();
+    let height = max.y_coord() - min.y_coord();
+    prop_assert!(width == BigRational::one() || height == BigRational::one());
   }
 }
