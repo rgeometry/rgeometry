@@ -17,6 +17,9 @@ tokio-tungstenite = "*"
 directories       = "*"
 git-version       = "*"
 reqwest           = "*"
+once_cell         = "*"
+rocket            = "0.5.0-rc.1"
+
 
 [dev-dependencies]
 quickcheck        = "1"
