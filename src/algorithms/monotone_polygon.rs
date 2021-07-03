@@ -1,7 +1,7 @@
 // https://en.wikipedia.org/wiki/Monotone_polygon
-use crate::data::Point;
-use crate::{Error, PolygonScalar};
-use std::collections::HashMap;
+use crate::data::{Point, Polygon, Vector};
+use crate::{Error, Orientation, PolygonScalar};
+use std::collections::VecDeque;
 use std::vec;
 
 /// Checks if points form a y-monotone polygon, returns its paths if true
@@ -54,6 +54,37 @@ where
   monotone_polygons[1].extend_from_slice(&reordered_polygon[idx - 1..]);
   monotone_polygons[1].push(&points.last().unwrap());
   Ok(monotone_polygons)
+}
+
+/// Generates a monotone polygon from given points around given direction
+pub fn form_monotone_polygon<T>(
+  direction: Vector<T, 2>,
+  mut points: Vec<Point<T, 2>>,
+) -> Result<Polygon<T>, Error>
+where
+  T: PolygonScalar,
+{
+  if points.len() < 3 {
+    return Err(Error::InsufficientVertices);
+  }
+
+  points.sort_by(|prev, curr| direction.cmp_along(prev, curr));
+  let (min_point, max_point) = (
+    points.first().unwrap().clone(),
+    points.last().unwrap().clone(),
+  );
+
+  let mut polygon_points: VecDeque<Point<T, 2>> = VecDeque::new();
+
+  while !points.is_empty() {
+    let curr = points.remove(0);
+    match Orientation::new(&min_point, &max_point, &curr) {
+      Orientation::CounterClockWise => polygon_points.push_front(curr),
+      _ => polygon_points.push_back(curr),
+    }
+  }
+
+  Polygon::new(Vec::from(polygon_points))
 }
 
 //testing
