@@ -156,6 +156,7 @@ mod tests {
 
   use proptest::collection::*;
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
   #[test]
   fn convex_hull_colinear() {
@@ -252,36 +253,34 @@ mod tests {
     assert_ok!(poly.validate());
   }
 
-  proptest! {
-    #[test]
-    fn convex_hull_prop(pts in vec(any_r(), 0..100)) {
-      if let Ok(poly) = convex_hull(pts.clone()) {
-        // Prop #1: Results are valid.
-        prop_assert_eq!(poly.validate().err(), None);
-        // Prop #2: No points from the input set are outside the polygon.
-        for pt in pts.iter() {
-          prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
-        }
-        // Prop #3: All vertices are in the input set.
-        for pt in poly.iter() {
-          prop_assert!(pts.contains(pt))
-        }
+  #[proptest]
+  fn convex_hull_prop(#[strategy(vec(any_r(), 0..100))] pts: Vec<Point<BigInt, 2>>) {
+    if let Ok(poly) = convex_hull(pts.clone()) {
+      // Prop #1: Results are valid.
+      prop_assert_eq!(poly.validate().err(), None);
+      // Prop #2: No points from the input set are outside the polygon.
+      for pt in pts.iter() {
+        prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
+      }
+      // Prop #3: All vertices are in the input set.
+      for pt in poly.iter() {
+        prop_assert!(pts.contains(pt))
       }
     }
+  }
 
-    #[test]
-    fn convex_hull_prop_i8(pts in vec(any::<Point<i8,2>>(), 0..100)) {
-      if let Ok(poly) = convex_hull(pts.clone()) {
-        // Prop #1: Results are valid.
-        prop_assert_eq!(poly.validate().err(), None);
-        // Prop #2: No points from the input set are outside the polygon.
-        for pt in pts.iter() {
-          prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
-        }
-        // Prop #3: All vertices are in the input set.
-        for pt in poly.iter() {
-          prop_assert!(pts.contains(pt))
-        }
+  #[proptest]
+  fn convex_hull_prop_i8(#[strategy(vec(any::<Point<i8,2>>(), 0..100))] pts: Vec<Point<i8, 2>>) {
+    if let Ok(poly) = convex_hull(pts.clone()) {
+      // Prop #1: Results are valid.
+      prop_assert_eq!(poly.validate().err(), None);
+      // Prop #2: No points from the input set are outside the polygon.
+      for pt in pts.iter() {
+        prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
+      }
+      // Prop #3: All vertices are in the input set.
+      for pt in poly.iter() {
+        prop_assert!(pts.contains(pt))
       }
     }
   }
