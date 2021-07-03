@@ -81,6 +81,7 @@ async fn compile_gist(gist: String) -> Result<NamedFile, CompileError> {
 #[launch]
 async fn rocket() -> _ {
   rocket::build()
+    .attach(rocket::shield::Shield::new())
     .mount("/", routes![compile_code])
     .mount("/", routes![compile_gist])
 }
