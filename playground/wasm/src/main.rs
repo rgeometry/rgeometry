@@ -78,7 +78,12 @@ static HTML_TEMPLATE: &'static str = r###"
 
     async function run() {
       const data = "data:application/wasm;base64,WASM_MODULE";
-      await init(data);
+      // Support both --target=web and --target=no-modules
+      if( typeof(init) !== 'undefined' ) {
+        await init(data);
+      } else {
+        await wasm_bindgen(data);
+      }
       ui.innerText = '';
     }
 
