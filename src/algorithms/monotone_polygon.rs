@@ -62,7 +62,7 @@ mod monotone_testing {
     fn convex_polygon_is_montone()
     {
         let mut rng = rand::thread_rng();
-        let convex_polygon = PolygonConvex::random(10,100,&mut rng);
+        let convex_polygon:PolygonConvex<i8> = PolygonConvex::random(10,&mut rng);
         let res = get_y_monotone_polygons(&convex_polygon.points);
         assert!(res.is_ok());
     }
