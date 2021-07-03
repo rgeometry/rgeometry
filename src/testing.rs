@@ -277,15 +277,22 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary convex polygons
 
-pub fn any_convex<T>() -> impl Strategy<Value = PolygonConvex<T>>
+impl<T> Arbitrary for PolygonConvex<T>
 where
   T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
 {
-  (3usize..=100, any::<u64>()).prop_map(|(n, seed)| {
-    let rng = &mut rand::rngs::SmallRng::seed_from_u64(seed);
-    let p = PolygonConvex::random(n, rng);
-    p
-  })
+  type Strategy = Map<(Range<usize>, StrategyFor<u64>), fn(_: (usize, u64)) -> PolygonConvex<T>>;
+  type Parameters = Range<usize>;
+  fn arbitrary_with(mut range: Self::Parameters) -> Self::Strategy {
+    if range.is_empty() {
+      range = 3usize..100;
+    }
+    (range, any::<u64>()).prop_map(|(n, seed)| {
+      let rng = &mut rand::rngs::SmallRng::seed_from_u64(seed);
+      let p = PolygonConvex::random(n.max(3), rng);
+      p
+    })
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -423,29 +430,17 @@ pub fn any_r<const N: usize>() -> impl Strategy<Value = Point<BigInt, N>> {
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary triangle
 
-pub fn any_triangle<T>() -> impl Strategy<Value = Triangle<T>>
+impl<T> Arbitrary for Triangle<T>
 where
   T: Arbitrary + Clone + PolygonScalar,
   <T as Arbitrary>::Strategy: Clone,
   <T as Arbitrary>::Parameters: Clone,
 {
-  any::<[Point<T, 2>; 3]>().prop_filter_map("Ensure CCW", |pts| Triangle::new(pts).ok())
+  type Strategy =
+    FilterMap<StrategyFor<[Point<T, 2>; 3]>, fn(_: [Point<T, 2>; 3]) -> Option<Triangle<T>>>;
+  type Parameters = <Point<T, 2> as Arbitrary>::Parameters;
+  fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+    any_with::<[Point<T, 2>; 3]>(params)
+      .prop_filter_map("Ensure CCW", |pts| Triangle::new(pts).ok())
+  }
 }
-
-// impl<T: Arbitrary> Arbitrary for Triangle<T>
-// where
-//   T::Strategy: Clone,
-//   T::Parameters: Clone,
-//   T: Clone,
-// {
-//   type Strategy = [T::Strategy; 3];
-//   type Parameters = T::Parameters;
-//   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-//     let p1 = T::arbitrary_with(params);
-//     let p2 = T::arbitrary_with(params);
-//     let p3 = T::arbitrary_with(params);
-//     Point {
-//       array: array_init(|_| T::arbitrary_with(params.clone())),
-//     }
-//   }
-// }

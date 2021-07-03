@@ -192,6 +192,7 @@ mod tests {
   use crate::testing::*;
 
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
   #[test]
   fn unit_1() {
@@ -201,22 +202,20 @@ mod tests {
     v.cmp_along(&p1, &p2);
   }
 
-  proptest! {
-    #[test]
-    fn cmp_along_fuzz(v: Vector<i8,2>, p1: Point<i8,2>, p2: Point<i8,2>) {
-      v.cmp_along(&p1, &p2);
-    }
+  #[proptest]
+  fn cmp_along_fuzz(v: Vector<i8, 2>, p1: Point<i8, 2>, p2: Point<i8, 2>) {
+    v.cmp_along(&p1, &p2);
+  }
 
-    #[test]
-    fn cmp_along_prop_x(p1: Point<i8,2>, p2: Point<i8,2>) {
-      let v = Vector([1,0]);
-      prop_assert_eq!(v.cmp_along(&p1, &p2), p1.x_coord().cmp(p2.x_coord()));
-    }
+  #[proptest]
+  fn cmp_along_prop_x(p1: Point<i8, 2>, p2: Point<i8, 2>) {
+    let v = Vector([1, 0]);
+    prop_assert_eq!(v.cmp_along(&p1, &p2), p1.x_coord().cmp(p2.x_coord()));
+  }
 
-    #[test]
-    fn cmp_along_prop_y(p1: Point<i8,2>, p2: Point<i8,2>) {
-      let v = Vector([0,1]);
-      prop_assert_eq!(v.cmp_along(&p1, &p2), p1.y_coord().cmp(p2.y_coord()));
-    }
+  #[proptest]
+  fn cmp_along_prop_y(p1: Point<i8, 2>, p2: Point<i8, 2>) {
+    let v = Vector([0, 1]);
+    prop_assert_eq!(v.cmp_along(&p1, &p2), p1.y_coord().cmp(p2.y_coord()));
   }
 }
