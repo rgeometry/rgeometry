@@ -551,6 +551,7 @@
 <span id="527">527</span>
 <span id="528">528</span>
 <span id="529">529</span>
+<span id="530">530</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std::borrow::BorrowMut</span>;
 
@@ -851,21 +852,22 @@
   }
 
   <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+  <span class="kw">use</span> <span class="ident">test_strategy::proptest</span>;
 
-  <span class="macro">proptest!</span> {
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">equal_area_prop</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>) {
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">signed_area_2x</span>::<span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span>(), <span class="ident">trig_area_2x</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>));
-    }
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">equal_area_prop</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>) {
+    <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">signed_area_2x</span>::<span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span>(), <span class="ident">trig_area_2x</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>));
+  }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">hashed_identity_prop</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng1</span> <span class="op">=</span> <span class="ident">SmallRng::seed_from_u64</span>(<span class="number">0</span>);
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng2</span> <span class="op">=</span> <span class="ident">SmallRng::seed_from_u64</span>(<span class="number">0</span>);
-      <span class="kw">let</span> <span class="ident">not_hashed</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">PointId</span>,<span class="ident">PointId</span>,<span class="ident">PointId</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">triangulate_list</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">points</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">rings</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng1</span>).<span class="ident">collect</span>();
-      <span class="kw">let</span> <span class="ident">hashed</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">PointId</span>,<span class="ident">PointId</span>,<span class="ident">PointId</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">triangulate_list_hashed</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">points</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">rings</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng2</span>).<span class="ident">collect</span>();
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">not_hashed</span>, <span class="ident">hashed</span>);
-    }
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">hashed_identity_prop</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng1</span> <span class="op">=</span> <span class="ident">SmallRng::seed_from_u64</span>(<span class="number">0</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng2</span> <span class="op">=</span> <span class="ident">SmallRng::seed_from_u64</span>(<span class="number">0</span>);
+    <span class="kw">let</span> <span class="ident">not_hashed</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">PointId</span>, <span class="ident">PointId</span>, <span class="ident">PointId</span>)<span class="op">&gt;</span> <span class="op">=</span>
+      <span class="ident">triangulate_list</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">points</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">rings</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng1</span>).<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="ident">hashed</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">PointId</span>, <span class="ident">PointId</span>, <span class="ident">PointId</span>)<span class="op">&gt;</span> <span class="op">=</span>
+      <span class="ident">triangulate_list_hashed</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">points</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>.<span class="ident">rings</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng2</span>).<span class="ident">collect</span>();
+    <span class="macro">prop_assert_eq!</span>(<span class="ident">not_hashed</span>, <span class="ident">hashed</span>);
   }
 }
 

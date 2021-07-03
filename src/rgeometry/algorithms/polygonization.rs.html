@@ -904,6 +904,7 @@
   <span class="kw">use</span> <span class="ident">rand::prelude::SliceRandom</span>;
   <span class="kw">use</span> <span class="ident">rand::rngs::mock::StepRng</span>;
   <span class="kw">use</span> <span class="ident">rand::SeedableRng</span>;
+  <span class="kw">use</span> <span class="ident">test_strategy::proptest</span>;
 
   <span class="attribute">#[<span class="ident">test</span>]</span>
   <span class="kw">fn</span> <span class="ident">unit_1</span>() {
@@ -1100,31 +1101,30 @@
     <span class="macro">assert_eq!</span>(<span class="ident">ret</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">validate</span>()).<span class="ident">err</span>(), <span class="prelude-val">None</span>);
   }
 
-  <span class="macro">proptest!</span> {
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">points_to_polygon</span>(<span class="kw-2">mut</span> <span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">3</span>..<span class="number">100</span>)) {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">set</span> <span class="op">=</span> <span class="ident">BTreeSet::new</span>();
-      <span class="ident">pts</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">pt</span><span class="op">|</span> <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">pt</span>.<span class="ident">clone</span>()));
-      <span class="kw">if</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">StepRng::new</span>(<span class="number">0</span>, <span class="number">0</span>);
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">two_opt_moves</span>(<span class="ident">pts</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-        <span class="macro">prop_assert_eq!</span>(<span class="ident">ret</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">validate</span>()).<span class="ident">err</span>(), <span class="prelude-val">None</span>);
-      }
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">linear_fuzz</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">2</span>..<span class="number">10_i8</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">linear</span>:<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">n</span>).<span class="ident">collect</span>();
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::rngs::SmallRng::seed_from_u64</span>(<span class="ident">seed</span>);
-      <span class="ident">linear</span>.<span class="ident">shuffle</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">linear</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">n</span><span class="op">|</span> { <span class="ident">Point::new</span>([<span class="ident">n</span>,<span class="number">0</span>]) }).<span class="ident">collect</span>();
-      <span class="ident">pts</span>.<span class="ident">push</span>(<span class="ident">Point::new</span>([<span class="number">0</span>,<span class="number">1</span>]));
-
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">points_to_polygon</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">3</span>..<span class="number">100</span>))]</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pts</span> <span class="op">=</span> <span class="ident">pts</span>; <span class="comment">// XXX: Missing feature in the &#39;strategy&#39; attribute.</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">set</span> <span class="op">=</span> <span class="ident">BTreeSet::new</span>();
+    <span class="ident">pts</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">pt</span><span class="op">|</span> <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">pt</span>.<span class="ident">clone</span>()));
+    <span class="kw">if</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span> {
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">StepRng::new</span>(<span class="number">0</span>, <span class="number">0</span>);
-      <span class="comment">// dbg!(&amp;linear);</span>
       <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">two_opt_moves</span>(<span class="ident">pts</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
       <span class="macro">prop_assert_eq!</span>(<span class="ident">ret</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">validate</span>()).<span class="ident">err</span>(), <span class="prelude-val">None</span>);
     }
+  }
+
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">linear_fuzz</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="number">2</span>..<span class="number">10_i8</span>)]</span> <span class="ident">n</span>: <span class="ident">i8</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">linear</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">n</span>).<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::rngs::SmallRng::seed_from_u64</span>(<span class="ident">seed</span>);
+    <span class="ident">linear</span>.<span class="ident">shuffle</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">linear</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">n</span><span class="op">|</span> <span class="ident">Point::new</span>([<span class="ident">n</span>, <span class="number">0</span>])).<span class="ident">collect</span>();
+    <span class="ident">pts</span>.<span class="ident">push</span>(<span class="ident">Point::new</span>([<span class="number">0</span>, <span class="number">1</span>]));
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">StepRng::new</span>(<span class="number">0</span>, <span class="number">0</span>);
+    <span class="comment">// dbg!(&amp;linear);</span>
+    <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">two_opt_moves</span>(<span class="ident">pts</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+    <span class="macro">prop_assert_eq!</span>(<span class="ident">ret</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">validate</span>()).<span class="ident">err</span>(), <span class="prelude-val">None</span>);
   }
 }
 </pre></div>

@@ -309,7 +309,6 @@
 <span id="285">285</span>
 <span id="286">286</span>
 <span id="287">287</span>
-<span id="288">288</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{<span class="ident">Point</span>, <span class="ident">Polygon</span>, <span class="ident">PolygonConvex</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
@@ -469,6 +468,7 @@
 
   <span class="kw">use</span> <span class="ident">proptest::collection</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+  <span class="kw">use</span> <span class="ident">test_strategy::proptest</span>;
 
   <span class="attribute">#[<span class="ident">test</span>]</span>
   <span class="kw">fn</span> <span class="ident">convex_hull_colinear</span>() {
@@ -565,36 +565,34 @@
     <span class="macro">assert_ok!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>());
   }
 
-  <span class="macro">proptest!</span> {
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">convex_hull_prop</span>(<span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any_r</span>(), <span class="number">0</span>..<span class="number">100</span>)) {
-      <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">poly</span>) <span class="op">=</span> <span class="ident">convex_hull</span>(<span class="ident">pts</span>.<span class="ident">clone</span>()) {
-        <span class="comment">// Prop #1: Results are valid.</span>
-        <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
-        <span class="comment">// Prop #2: No points from the input set are outside the polygon.</span>
-        <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">pts</span>.<span class="ident">iter</span>() {
-          <span class="macro">prop_assert_ne!</span>(<span class="ident">poly</span>.<span class="ident">locate</span>(<span class="ident">pt</span>), <span class="ident">PointLocation::Outside</span>)
-        }
-        <span class="comment">// Prop #3: All vertices are in the input set.</span>
-        <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">iter</span>() {
-          <span class="macro">prop_assert!</span>(<span class="ident">pts</span>.<span class="ident">contains</span>(<span class="ident">pt</span>))
-        }
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">convex_hull_prop</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="ident">vec</span>(<span class="ident">any_r</span>(), <span class="number">0</span>..<span class="number">100</span>))]</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">BigInt</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">poly</span>) <span class="op">=</span> <span class="ident">convex_hull</span>(<span class="ident">pts</span>.<span class="ident">clone</span>()) {
+      <span class="comment">// Prop #1: Results are valid.</span>
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
+      <span class="comment">// Prop #2: No points from the input set are outside the polygon.</span>
+      <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">pts</span>.<span class="ident">iter</span>() {
+        <span class="macro">prop_assert_ne!</span>(<span class="ident">poly</span>.<span class="ident">locate</span>(<span class="ident">pt</span>), <span class="ident">PointLocation::Outside</span>)
+      }
+      <span class="comment">// Prop #3: All vertices are in the input set.</span>
+      <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">iter</span>() {
+        <span class="macro">prop_assert!</span>(<span class="ident">pts</span>.<span class="ident">contains</span>(<span class="ident">pt</span>))
       }
     }
+  }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">convex_hull_prop_i8</span>(<span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">0</span>..<span class="number">100</span>)) {
-      <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">poly</span>) <span class="op">=</span> <span class="ident">convex_hull</span>(<span class="ident">pts</span>.<span class="ident">clone</span>()) {
-        <span class="comment">// Prop #1: Results are valid.</span>
-        <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
-        <span class="comment">// Prop #2: No points from the input set are outside the polygon.</span>
-        <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">pts</span>.<span class="ident">iter</span>() {
-          <span class="macro">prop_assert_ne!</span>(<span class="ident">poly</span>.<span class="ident">locate</span>(<span class="ident">pt</span>), <span class="ident">PointLocation::Outside</span>)
-        }
-        <span class="comment">// Prop #3: All vertices are in the input set.</span>
-        <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">iter</span>() {
-          <span class="macro">prop_assert!</span>(<span class="ident">pts</span>.<span class="ident">contains</span>(<span class="ident">pt</span>))
-        }
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">convex_hull_prop_i8</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>,<span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">0</span>..<span class="number">100</span>))]</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">poly</span>) <span class="op">=</span> <span class="ident">convex_hull</span>(<span class="ident">pts</span>.<span class="ident">clone</span>()) {
+      <span class="comment">// Prop #1: Results are valid.</span>
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
+      <span class="comment">// Prop #2: No points from the input set are outside the polygon.</span>
+      <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">pts</span>.<span class="ident">iter</span>() {
+        <span class="macro">prop_assert_ne!</span>(<span class="ident">poly</span>.<span class="ident">locate</span>(<span class="ident">pt</span>), <span class="ident">PointLocation::Outside</span>)
+      }
+      <span class="comment">// Prop #3: All vertices are in the input set.</span>
+      <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">iter</span>() {
+        <span class="macro">prop_assert!</span>(<span class="ident">pts</span>.<span class="ident">contains</span>(<span class="ident">pt</span>))
       }
     }
   }

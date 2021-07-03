@@ -671,7 +671,6 @@
 <span id="647">647</span>
 <span id="648">648</span>
 <span id="649">649</span>
-<span id="650">650</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num::BigInt</span>;
@@ -1303,24 +1302,23 @@
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
   <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+  <span class="kw">use</span> <span class="ident">test_strategy::proptest</span>;
 
-  <span class="macro">proptest!</span> {
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">random_polygon</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
-    }
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">random_polygon</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+    <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
+  }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">debug_assertions</span>))]</span> <span class="comment">// proxy for release builds.</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">normalize_props</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-      <span class="comment">// Debug builds are ~50x slower than release builds. Sigh.</span>
-      <span class="kw">let</span> <span class="ident">norm</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">normalize</span>();
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">norm</span>.<span class="ident">centroid</span>(), <span class="ident">Point::zero</span>());
-      <span class="kw">let</span> (<span class="ident">min</span>, <span class="ident">max</span>) <span class="op">=</span> <span class="ident">norm</span>.<span class="ident">bounding_box</span>();
-      <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">x_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">x_coord</span>();
-      <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">y_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">y_coord</span>();
-      <span class="macro">prop_assert!</span>(<span class="ident">width</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BigRational::one</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">height</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BigRational::one</span>());
-    }
+  <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">debug_assertions</span>))]</span> <span class="comment">// proxy for release builds.</span>
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">normalize_props</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+    <span class="comment">// Debug builds are ~50x slower than release builds. Sigh.</span>
+    <span class="kw">let</span> <span class="ident">norm</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">normalize</span>();
+    <span class="macro">prop_assert_eq!</span>(<span class="ident">norm</span>.<span class="ident">centroid</span>(), <span class="ident">Point::zero</span>());
+    <span class="kw">let</span> (<span class="ident">min</span>, <span class="ident">max</span>) <span class="op">=</span> <span class="ident">norm</span>.<span class="ident">bounding_box</span>();
+    <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">x_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">x_coord</span>();
+    <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">y_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">y_coord</span>();
+    <span class="macro">prop_assert!</span>(<span class="ident">width</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BigRational::one</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">height</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BigRational::one</span>());
   }
 }
 </pre></div>
