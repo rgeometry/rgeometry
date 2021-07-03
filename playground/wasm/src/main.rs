@@ -1,19 +1,21 @@
 use std::fs;
 
 fn main() -> std::io::Result<()> {
-    println!("Packing wasm into single HTML file");
-    println!("Javascript input: <- pkg/wasm.js");
-    let javascript = fs::read_to_string("pkg/wasm.js")?;
-    println!("Wasm module:      <- pkg/wasm_bg.wasm");
-    let module = fs::read("pkg/wasm_bg.wasm")?;
-    let encoded = base64::encode(module);
+  println!("Packing wasm into single HTML file");
+  println!("Javascript input: <- pkg/wasm.js");
+  let javascript = fs::read_to_string("pkg/wasm.js")?;
+  println!("Wasm module:      <- pkg/wasm_bg.wasm");
+  let module = fs::read("pkg/wasm_bg.wasm")?;
+  let encoded = base64::encode(module);
 
-    println!("Html result:      -> rgeometry-wasm.html");
-    fs::write("rgeometry-wasm.html", HTML_TEMPLATE
-        .replace("JAVASCRIPT", &javascript)
-        .replace("WASM_MODULE", &encoded)
-    )?;
-    Ok(())
+  println!("Html result:      -> rgeometry-wasm.html");
+  fs::write(
+    "rgeometry-wasm.html",
+    HTML_TEMPLATE
+      .replace("JAVASCRIPT", &javascript)
+      .replace("WASM_MODULE", &encoded),
+  )?;
+  Ok(())
 }
 
 static HTML_TEMPLATE: &'static str = r###"
