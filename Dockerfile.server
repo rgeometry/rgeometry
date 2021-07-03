@@ -16,6 +16,8 @@ ADD . .
 RUN touch playground/server/src/main.rs
 RUN (cd playground/server && cargo build --release --color never)
 
-RUN (cd playground/wasm && wasm-pack build --target=web)
+RUN (cd playground/wasm && wasm-pack build --target=no-modules)
+
+ENV ROCKET_PORT=20162
 
 ENTRYPOINT playground/server/target/release/server
