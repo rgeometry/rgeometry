@@ -300,7 +300,6 @@
 <span id="276">276</span>
 <span id="277">277</span>
 <span id="278">278</span>
-<span id="279">279</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -343,7 +342,6 @@
 
   <span class="doccomment">/// $O(\log n)$</span>
   <span class="doccomment">///</span>
-  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU=&quot;&gt;&lt;/iframe&gt;</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span> {
     <span class="comment">// debug_assert_ok!(self.validate());</span>
     <span class="kw">let</span> <span class="ident">poly</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
@@ -408,7 +406,7 @@
   <span class="doccomment">/// # };</span>
   <span class="doccomment">/// # render_polygon(&amp;convex.normalize());</span>
   <span class="doccomment">/// ```</span>
-  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org:20443/loader.html?gist=037a23f8391390df8560a2043a14121e&quot;&gt;&lt;/iframe&gt;</span>
+  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org/wasm/gist/037a23f8391390df8560a2043a14121e&quot;&gt;&lt;/iframe&gt;</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
