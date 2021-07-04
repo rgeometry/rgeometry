@@ -9,6 +9,7 @@ use std::{fmt, fs, str};
 use rocket::*;
 use tokio::process::Command;
 use tokio::sync::Mutex;
+use tokio::sync::MutexGuard;
 
 const GIT_VERSION: &str = git_version::git_version!();
 
@@ -74,7 +75,7 @@ pub fn get_cache_dir() -> PathBuf {
 
 pub async fn compile(mut code: String) -> Result<String, CompileError> {
   static LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
-  let guard: MutexGuard<'_, ()> = LOCK.lock().await;
+  let _guard: MutexGuard<'_, ()> = LOCK.lock().await;
   code += "\nmod support;\n";
   let cache_dir = get_cache_dir();
   fs::create_dir_all(&cache_dir)?;
