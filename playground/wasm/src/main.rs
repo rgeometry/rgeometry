@@ -76,17 +76,21 @@ static HTML_TEMPLATE: &'static str = r###"
     JAVASCRIPT
 
     const ui = document.getElementById('ui-message');
-    ui.innerText = 'Loading...';
+    ui.innerText = 'Excuting wasm...';
 
     async function run() {
       const data = "data:application/wasm;base64,WASM_MODULE";
       // Support both --target=web and --target=no-modules
-      if( typeof(init) !== 'undefined' ) {
-        await init(data);
-      } else {
-        await wasm_bindgen(data);
+      try {
+        if( typeof(init) !== 'undefined' ) {
+          await init(data);
+        } else {
+          await wasm_bindgen(data);
+        }
+        ui.innerText = '';
+      } catch(err) {
+        ui.innerText = 'Panic! Check console log for details.';
       }
-      ui.innerText = '';
     }
 
     run();
