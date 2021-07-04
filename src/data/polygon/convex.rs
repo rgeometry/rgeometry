@@ -103,7 +103,7 @@ where
   /// # };
   /// # render_polygon(&convex.normalize());
   /// ```
-  /// <iframe src="https://web.rgeometry.org/wasm/gist/037a23f8391390df8560a2043a14121e"></iframe>
+  /// <iframe src="https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
   where
     R: Rng + ?Sized,
