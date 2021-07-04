@@ -1,4 +1,6 @@
+use array_init::{array_init, try_array_init};
 use rand::Rng;
+use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
 
 pub type SparseIndex = usize;
@@ -110,5 +112,63 @@ impl DenseCollection {
 
   fn iter(&self) -> impl Iterator<Item = Sparse> + '_ {
     self.dense.iter().copied()
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Iterator permutations
+
+pub struct Permutations<T: IntoIterator, const N: usize> {
+  done: bool,
+  src: [T; N],
+  iters: [std::iter::Peekable<<T as IntoIterator>::IntoIter>; N],
+}
+
+impl<T, const N: usize> Iterator for Permutations<T, N>
+where
+  T: IntoIterator + Clone,
+  <T as IntoIterator>::Item: Copy,
+{
+  type Item = [<T as IntoIterator>::Item; N];
+  fn next(&mut self) -> Option<Self::Item> {
+    let mut out: Vec<<T as IntoIterator>::Item> = Vec::new();
+    let mut idx = 0;
+    while idx < N {
+      match self.iters[idx].peek() {
+        Some(val) => {
+          eprintln!("Good value at: {}", idx);
+          out.push(val);
+          idx += 1;
+          break;
+        }
+        None => {
+          eprintln!("Overflow at: {}", idx);
+          self.iters[idx] = self.src[idx].clone().into_iter().peekable();
+          let val = self.iters[idx].next()?;
+          out.push(val);
+          idx += 1;
+          self.done = idx == N;
+        }
+      }
+    }
+    while idx < N {
+      eprintln!("Peeking at: {}", idx);
+      let val = *self.iters[idx].peek()?;
+      out.push(val);
+      idx += 1;
+    }
+    eprintln!("Elements: {}", out.len());
+    out.try_into().ok()
+  }
+}
+
+pub fn permutations<T, const N: usize>(iters: [T; N]) -> Permutations<T, N>
+where
+  T: IntoIterator + Clone,
+{
+  Permutations {
+    done: false,
+    src: iters.clone(),
+    iters: array_init(|i| iters[i].clone().into_iter().peekable()),
   }
 }
