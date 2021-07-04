@@ -12,8 +12,6 @@ lazy_static       = "*"
 futures-channel   = "*"
 futures-util      = "*"
 tokio             = { version = "*", features = ["macros", "rt", "process", "sync"] }
-tungstenite       = "*"
-tokio-tungstenite = "*"
 directories       = "*"
 git-version       = "*"
 reqwest           = "*"
