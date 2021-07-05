@@ -298,8 +298,6 @@
 <span id="274">274</span>
 <span id="275">275</span>
 <span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -385,15 +383,7 @@
   {
     <span class="ident">PolygonConvex::new_unchecked</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">normalize</span>())
   }
-}
 
-<span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
-<span class="comment">// PolygonConvex&lt;BigRational&gt;</span>
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span>,
-{
   <span class="doccomment">/// $O(n \log n)$ Uniformly sample a random convex polygon.</span>
   <span class="doccomment">///</span>
   <span class="doccomment">/// The output polygon is rooted in (0,0), grows upwards, and has a height and width of T::MAX.</span>
@@ -401,37 +391,43 @@
   <span class="doccomment">/// ```no_run</span>
   <span class="doccomment">/// # use rgeometry_wasm::playground::*;</span>
   <span class="doccomment">/// # use rgeometry::data::*;</span>
+  <span class="doccomment">/// # clear_screen();</span>
+  <span class="doccomment">/// # set_viewport(2.0, 2.0);</span>
   <span class="doccomment">/// # let convex: PolygonConvex&lt;i8&gt; = {</span>
   <span class="doccomment">/// PolygonConvex::random(3, &amp;mut rand::thread_rng())</span>
   <span class="doccomment">/// # };</span>
   <span class="doccomment">/// # render_polygon(&amp;convex.normalize());</span>
   <span class="doccomment">/// ```</span>
-  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca&quot;&gt;&lt;/iframe&gt;</span>
+  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2&quot;&gt;&lt;/iframe&gt;</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
   <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
     <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
   {
     <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">n</span>.<span class="ident">max</span>(<span class="number">3</span>);
-    <span class="kw">let</span> <span class="ident">vs</span> <span class="op">=</span> {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vs</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span>, <span class="ident">rng</span>);
-      <span class="ident">Vector::sort_around</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">vs</span>);
-      <span class="ident">vs</span>
-    };
-    <span class="kw">let</span> <span class="ident">vertices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">vs</span>
-      .<span class="ident">into_iter</span>()
-      .<span class="ident">scan</span>(<span class="ident">Point::zero</span>(), <span class="op">|</span><span class="ident">st</span>, <span class="ident">vec</span><span class="op">|</span> {
-        <span class="kw-2">*</span><span class="ident">st</span> <span class="op">+</span><span class="op">=</span> <span class="ident">vec</span>;
-        <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">st</span>)
-      })
-      .<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">n_vertices</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">vertices</span>).<span class="ident">len</span>();
-    <span class="macro">debug_assert_eq!</span>(<span class="ident">n_vertices</span>, <span class="ident">n</span>);
-    <span class="comment">// FIXME: Use the convex hull algorithm for polygons rather than point sets.</span>
-    <span class="comment">//        It runs in O(n) rather than O(n log n). Hasn&#39;t been implemented, yet, though.</span>
-    <span class="kw">match</span> <span class="kw">crate</span><span class="ident">::algorithms::convex_hull</span>(<span class="ident">vertices</span>).<span class="ident">ok</span>() {
+    <span class="kw">loop</span> {
+      <span class="kw">let</span> <span class="ident">vs</span> <span class="op">=</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vs</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span>, <span class="ident">rng</span>);
+        <span class="ident">Vector::sort_around</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">vs</span>);
+        <span class="ident">vs</span>
+      };
+      <span class="kw">let</span> <span class="ident">vertices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">vs</span>
+        .<span class="ident">into_iter</span>()
+        .<span class="ident">scan</span>(<span class="ident">Point::zero</span>(), <span class="op">|</span><span class="ident">st</span>, <span class="ident">vec</span><span class="op">|</span> {
+          <span class="kw-2">*</span><span class="ident">st</span> <span class="op">+</span><span class="op">=</span> <span class="ident">vec</span>;
+          <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">st</span>)
+        })
+        .<span class="ident">collect</span>();
+      <span class="kw">let</span> <span class="ident">n_vertices</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">vertices</span>).<span class="ident">len</span>();
+      <span class="macro">debug_assert_eq!</span>(<span class="ident">n_vertices</span>, <span class="ident">n</span>);
+      <span class="comment">// FIXME: Use the convex hull algorithm for polygons rather than point sets.</span>
+      <span class="comment">//        It runs in O(n) rather than O(n log n). Hasn&#39;t been implemented, yet, though.</span>
       <span class="comment">// If the vertices are all colinear then give up and try again.</span>
-      <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::random</span>(<span class="ident">n</span>, <span class="ident">rng</span>),
-      <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">p</span>,
+      <span class="comment">// FIXME: If the RNG always returns zero then we might loop forever.</span>
+      <span class="comment">//        Maybe limit the number of recursions.</span>
+      <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="kw">crate</span><span class="ident">::algorithms::convex_hull</span>(<span class="ident">vertices</span>) {
+        <span class="kw">return</span> <span class="ident">p</span>;
+      }
     }
   }
 }
@@ -470,7 +466,7 @@
 <span class="comment">// Property: random_between(n, max, &amp;mut rng).sum::&lt;usize&gt;() == max</span>
 <span class="kw">fn</span> <span class="ident">random_between_iter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span>,
+  <span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
   <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
 {
   <span class="kw">let</span> <span class="ident">zero</span>: <span class="ident">T</span> <span class="op">=</span> <span class="ident">Zero::zero</span>();
@@ -492,7 +488,7 @@
 <span class="comment">// Property: random_between_zero(10, 100, &amp;mut rng).iter().sum::&lt;isize&gt;() == 0</span>
 <span class="kw">fn</span> <span class="ident">random_between_zero</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span>,
+  <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
   <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
 {
   <span class="macro">assert!</span>(<span class="ident">n</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">2</span>);
@@ -509,7 +505,7 @@
 <span class="comment">// Random vectors that sum to zero.</span>
 <span class="kw">fn</span> <span class="ident">random_vectors</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BigInt</span><span class="op">&gt;</span>,
+  <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
   <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
 {
   <span class="ident">random_between_zero</span>(<span class="ident">n</span>, <span class="ident">rng</span>)
