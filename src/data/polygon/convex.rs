@@ -90,6 +90,8 @@ where
   /// ```no_run
   /// # use rgeometry_wasm::playground::*;
   /// # use rgeometry::data::*;
+  /// # clear_screen();
+  /// # set_viewport(2.0, 2.0);
   /// # let convex: PolygonConvex<i8> = {
   /// PolygonConvex::random(3, &mut rand::thread_rng())
   /// # };
