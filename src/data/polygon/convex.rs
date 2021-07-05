@@ -82,15 +82,7 @@ where
   {
     PolygonConvex::new_unchecked(self.0.normalize())
   }
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// PolygonConvex<BigRational>
-
-impl<T> PolygonConvex<T>
-where
-  T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
-{
   /// $O(n \log n)$ Uniformly sample a random convex polygon.
   ///
   /// The output polygon is rooted in (0,0), grows upwards, and has a height and width of T::MAX.
@@ -106,29 +98,33 @@ where
   /// <iframe src="https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
   where
+    T: Bounded + PolygonScalar + SampleUniform + Copy,
     R: Rng + ?Sized,
   {
     let n = n.max(3);
-    let vs = {
-      let mut vs = random_vectors(n, rng);
-      Vector::sort_around(&mut vs);
-      vs
-    };
-    let vertices: Vec<Point<T, 2>> = vs
-      .into_iter()
-      .scan(Point::zero(), |st, vec| {
-        *st += vec;
-        Some(*st)
-      })
-      .collect();
-    let n_vertices = (*vertices).len();
-    debug_assert_eq!(n_vertices, n);
-    // FIXME: Use the convex hull algorithm for polygons rather than point sets.
-    //        It runs in O(n) rather than O(n log n). Hasn't been implemented, yet, though.
-    match crate::algorithms::convex_hull(vertices).ok() {
+    loop {
+      let vs = {
+        let mut vs = random_vectors(n, rng);
+        Vector::sort_around(&mut vs);
+        vs
+      };
+      let vertices: Vec<Point<T, 2>> = vs
+        .into_iter()
+        .scan(Point::zero(), |st, vec| {
+          *st += vec;
+          Some(*st)
+        })
+        .collect();
+      let n_vertices = (*vertices).len();
+      debug_assert_eq!(n_vertices, n);
+      // FIXME: Use the convex hull algorithm for polygons rather than point sets.
+      //        It runs in O(n) rather than O(n log n). Hasn't been implemented, yet, though.
       // If the vertices are all colinear then give up and try again.
-      None => Self::random(n, rng),
-      Some(p) => p,
+      // FIXME: If the RNG always returns zero then we might loop forever.
+      //        Maybe limit the number of recursions.
+      if let Some(p) = crate::algorithms::convex_hull(vertices).ok() {
+        return p;
+      }
     }
   }
 }
@@ -167,7 +163,7 @@ impl Distribution<PolygonConvex<isize>> for Standard {
 // Property: random_between(n, max, &mut rng).sum::<usize>() == max
 fn random_between_iter<T, R>(n: usize, rng: &mut R) -> impl Iterator<Item = T>
 where
-  T: PolygonScalar + Bounded + SampleUniform + Copy + Into<BigInt>,
+  T: PolygonScalar + Bounded + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
   let zero: T = Zero::zero();
@@ -189,7 +185,7 @@ where
 // Property: random_between_zero(10, 100, &mut rng).iter().sum::<isize>() == 0
 fn random_between_zero<T, R>(n: usize, rng: &mut R) -> Vec<T>
 where
-  T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
+  T: Bounded + PolygonScalar + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
   assert!(n >= 2);
@@ -206,7 +202,7 @@ where
 // Random vectors that sum to zero.
 fn random_vectors<T, R>(n: usize, rng: &mut R) -> Vec<Vector<T, 2>>
 where
-  T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
+  T: Bounded + PolygonScalar + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
   random_between_zero(n, rng)
