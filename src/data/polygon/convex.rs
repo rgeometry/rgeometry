@@ -26,18 +26,27 @@ impl<T> PolygonConvex<T>
 where
   T: PolygonScalar,
 {
-  /// $O(1)$ Assume that a polygon is convex.
+  /// Assume that a polygon is convex.
   ///
   /// # Safety
   /// The input polygon has to be strictly convex, ie. no vertices are allowed to
   /// be concave or colinear.
+  ///
+  /// # Time complexity
+  /// $O(1)$
   pub fn new_unchecked(poly: Polygon<T>) -> PolygonConvex<T> {
     let convex = PolygonConvex(poly);
     debug_assert_ok!(convex.validate());
     convex
   }
 
+  /// Locate a point relative to a convex polygon.
+  ///
+  /// # Time complexity
   /// $O(\log n)$
+  ///
+  /// # Examples
+  /// <iframe src="https://web.rgeometry.org/wasm/gist/2cb9ff5bd6ce24f395a5ea30280aabee"></iframe>
   ///
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     // debug_assert_ok!(self.validate());
@@ -60,6 +69,11 @@ where
     triangle.locate(pt)
   }
 
+  /// Validates the following properties:
+  ///  * Each vertex is convex, ie. not concave or colinear.
+  ///  * All generate polygon properties hold true (eg. no duplicate points, no self-intersections).
+  ///
+  /// # Time complexity
   /// $O(n \log n)$
   pub fn validate(&self) -> Result<(), Error> {
     for cursor in self.0.iter_boundary() {
@@ -83,10 +97,14 @@ where
     PolygonConvex::new_unchecked(self.0.normalize())
   }
 
-  /// $O(n \log n)$ Uniformly sample a random convex polygon.
+  /// Uniformly sample a random convex polygon.
   ///
-  /// The output polygon is rooted in (0,0), grows upwards, and has a height and width of T::MAX.
+  /// The output polygon is rooted in `(0,0)`, grows upwards, and has a height and width of [`T::max_value()`](Bounded::max_value).
   ///
+  /// # Time complexity
+  /// $O(n \log n)$
+  ///
+  /// # Examples
   /// ```no_run
   /// # use rgeometry_wasm::playground::*;
   /// # use rgeometry::data::*;

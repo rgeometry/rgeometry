@@ -49,7 +49,12 @@ where
 
 // Create list of edges
 // Find all intersections
-/// $O(n^4)$ Generate a random, valid polygon from a set of points.
+/// Generate a valid polygon by connecting a set of points in such a way
+/// that there are no self-intersections.
+/// # Time complexity
+/// $O(n^4)$
+/// # Space complexity
+/// $O(n^2)$
 pub fn two_opt_moves<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar + std::fmt::Debug,

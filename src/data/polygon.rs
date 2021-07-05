@@ -262,6 +262,47 @@ impl<T> Polygon<T> {
     s * t * p
   }
 
+  /// Computes the area of a polygon. If the polygon winds counter-clockwise,
+  /// the area will be a positive number. If the polygon winds clockwise, the area will
+  /// be negative.
+  ///
+  /// # Return type
+  ///
+  /// This function is polymorphic for the same reason as [`signed_area_2x`](Polygon::signed_area_2x).
+  ///
+  /// # Time complexity
+  ///
+  /// $O(n)$
+  ///
+  /// # Examples
+  /// ```rust
+  /// // The area of this polygon is 1/2 and won't fit in an `i32`
+  /// # use rgeometry::data::*;
+  /// # fn main() -> Result<(), rgeometry::Error> {
+  /// let p = Polygon::new(vec![
+  ///   Point::new([0, 0]),
+  ///   Point::new([1, 0]),
+  ///   Point::new([0, 1]),
+  ///  ])?;
+  /// assert_eq!(p.signed_area::<i32>(), 0);
+  /// # Ok(())
+  /// # }
+  /// ```
+  ///
+  /// ```rust
+  /// // The area of this polygon is 1/2 and will fit in a `Ratio<i32>`.
+  /// # use rgeometry::data::*;
+  /// # use num_rational::Ratio;
+  /// # fn main() -> Result<(), rgeometry::Error> {
+  /// let p = Polygon::new(vec![
+  ///   Point::new([0, 0]),
+  ///   Point::new([1, 0]),
+  ///   Point::new([0, 1]),
+  ///  ])?;
+  /// assert_eq!(p.signed_area::<Ratio<i32>>(), Ratio::from((1,2)));
+  /// # Ok(())
+  /// # }
+  /// ```
   pub fn signed_area<F>(&self) -> F
   where
     T: PolygonScalar + Into<F>,
@@ -270,6 +311,57 @@ impl<T> Polygon<T> {
     self.signed_area_2x::<F>() / F::from_usize(2).unwrap()
   }
 
+  /// Compute double the area of a polygon. If the polygon winds counter-clockwise,
+  /// the area will be a positive number. If the polygon winds clockwise, the area will
+  /// be negative.
+  ///
+  /// Why compute double the area? If you are using integer coordinates then the doubled
+  /// area will also be an integer value. Computing the exact requires a division which
+  /// may leave you with a non-integer result.
+  ///
+  /// # Return type
+  ///
+  /// Storing the area of a polygon may require more bits of precision than are used
+  /// for the coordinates. For example, if 32bit integers are used for point coordinates
+  /// then you might need 65 bits to store the area doubled. For this reason, the return
+  /// type is polymorphic and should be selected with care. If you are unsure which type
+  /// is appropriate, use [`BigInt`] or [`BigRational`].
+  ///
+  /// # Time complexity
+  ///
+  /// $O(n)$
+  ///
+  /// # Examples:
+  /// ```rust
+  /// // The area of this polygon is 1/2 and cannot fit in an `i32` variable
+  /// // so lets compute twice the area.
+  /// # use rgeometry::data::*;
+  /// # fn main() -> Result<(), rgeometry::Error> {
+  /// let p = Polygon::new(vec![
+  ///   Point::new([0, 0]),
+  ///   Point::new([1, 0]),
+  ///   Point::new([0, 1]),
+  ///  ])?;
+  /// assert_eq!(p.signed_area_2x::<i32>(), 1);
+  /// # Ok(())
+  /// # }
+  /// ```
+  ///
+  /// ```rust
+  /// // The area of a polygon may require more bits of precision than are
+  /// // used for the coordinates.
+  /// # use num::BigInt;
+  /// # use rgeometry::data::*;
+  /// # fn main() -> Result<(), rgeometry::Error> {
+  /// let p = Polygon::new(vec![
+  ///   Point::new([0, 0]),
+  ///   Point::new([i32::MAX, 0]),
+  ///   Point::new([0, i32::MAX]),
+  ///  ])?;
+  /// assert_eq!(p.signed_area_2x::<i64>(), 4611686014132420609_i64);
+  /// # Ok(())
+  /// # }
+  /// ```
   pub fn signed_area_2x<F>(&self) -> F
   where
     T: PolygonScalar + Into<F>,
@@ -296,11 +388,17 @@ impl<T> Polygon<T> {
     }
   }
 
+  /// Access point of a given vertex.
+  /// # Time complexity
+  /// $O(1)$
   pub fn point(&self, idx: PointId) -> &Point<T, 2> {
     &self.points[idx.0]
   }
 
-  /// O(k) where k is the number of holes.
+  // FIXME: The PointId may not be valid. Return Option<Cursor>.
+  /// Access cursor of a given vertex.
+  /// # Time complexity
+  /// $O(1)$
   pub fn cursor(&self, idx: PointId) -> Cursor<'_, T> {
     let ring_id = self.ring_index[idx.0];
     let position_id = self.position_index[idx.0];

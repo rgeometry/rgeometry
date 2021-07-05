@@ -1,7 +1,10 @@
 use crate::data::LineSegmentView;
 use crate::Intersects;
 
-/// $O(n^2)$ Finds all line segment intersections.
+/// Find all line segment intersections.
+///
+/// # Time complexity
+/// $O(n^2)$
 pub fn segment_intersections<'a, Edge, T: 'a>(
   edges: &'a [Edge],
 ) -> impl Iterator<Item = (&Edge, &Edge)>
