@@ -574,6 +574,11 @@
 <span id="550">550</span>
 <span id="551">551</span>
 <span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Cursor</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::EndPoint</span>;
@@ -626,7 +631,12 @@
 
 <span class="comment">// Create list of edges</span>
 <span class="comment">// Find all intersections</span>
-<span class="doccomment">/// $O(n^4)$ Generate a random, valid polygon from a set of points.</span>
+<span class="doccomment">/// Generate a valid polygon by connecting a set of points in such a way</span>
+<span class="doccomment">/// that there are no self-intersections.</span>
+<span class="doccomment">/// # Time complexity</span>
+<span class="doccomment">/// $O(n^4)$</span>
+<span class="doccomment">/// # Space complexity</span>
+<span class="doccomment">/// $O(n^2)$</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">two_opt_moves</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">std::fmt::Debug</span>,

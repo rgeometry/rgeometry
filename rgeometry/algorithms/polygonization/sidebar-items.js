@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["resolve_self_intersections",""],["two_opt_moves","$O(n^4)$ Generate a random, valid polygon from a set of points."]]});
+initSidebarItems({"fn":[["resolve_self_intersections",""],["two_opt_moves","Generate a valid polygon by connecting a set of points in such a way that there are no self-intersections."]]});

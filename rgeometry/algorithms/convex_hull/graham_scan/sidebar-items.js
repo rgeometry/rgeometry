@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["convex_hull","$O(n \\log n)$ Convex hull of a set of points."]]});
+initSidebarItems({"fn":[["convex_hull","Convex hull of a set of points."]]});
