@@ -95,7 +95,7 @@ where
   /// # };
   /// # render_polygon(&convex.normalize());
   /// ```
-  /// <iframe src="https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca"></iframe>
+  /// <iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
   where
     T: Bounded + PolygonScalar + SampleUniform + Copy,
