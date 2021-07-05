@@ -122,7 +122,7 @@ where
       // If the vertices are all colinear then give up and try again.
       // FIXME: If the RNG always returns zero then we might loop forever.
       //        Maybe limit the number of recursions.
-      if let Some(p) = crate::algorithms::convex_hull(vertices).ok() {
+      if let Ok(p) = crate::algorithms::convex_hull(vertices) {
         return p;
       }
     }
