@@ -309,9 +309,6 @@
 <span id="285">285</span>
 <span id="286">286</span>
 <span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{<span class="ident">Point</span>, <span class="ident">Polygon</span>, <span class="ident">PolygonConvex</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
@@ -375,15 +372,12 @@
 <span class="doccomment">/// #   clear_screen();</span>
 <span class="doccomment">/// #   set_viewport(2., 2.);</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #   let canvas = get_canvas();</span>
-<span class="doccomment">/// #   let context = get_context_2d(&amp;canvas);</span>
-<span class="doccomment">/// #</span>
 <span class="doccomment">/// #   let pts = with_points(7);</span>
 <span class="doccomment">/// #   let points = pts.clone();</span>
 <span class="doccomment">/// if let Ok(convex) = convex_hull(points) {</span>
 <span class="doccomment">///   render_polygon(&amp;convex);</span>
-<span class="doccomment">/// #   context.set_fill_style(&amp;&quot;grey&quot;.into());</span>
-<span class="doccomment">/// #   context.fill();</span>
+<span class="doccomment">/// #   context().set_fill_style(&amp;&quot;grey&quot;.into());</span>
+<span class="doccomment">/// #   context().fill();</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// #   for pt in &amp;pts {</span>
 <span class="doccomment">/// #     render_point(&amp;pt);</span>
