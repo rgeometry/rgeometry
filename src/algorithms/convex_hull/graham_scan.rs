@@ -60,15 +60,12 @@ use crate::{Error, Orientation, PolygonScalar};
 /// #   clear_screen();
 /// #   set_viewport(2., 2.);
 /// #
-/// #   let canvas = get_canvas();
-/// #   let context = get_context_2d(&canvas);
-/// #
 /// #   let pts = with_points(7);
 /// #   let points = pts.clone();
 /// if let Ok(convex) = convex_hull(points) {
 ///   render_polygon(&convex);
-/// #   context.set_fill_style(&"grey".into());
-/// #   context.fill();
+/// #   context().set_fill_style(&"grey".into());
+/// #   context().fill();
 /// }
 /// #   for pt in &pts {
 /// #     render_point(&pt);

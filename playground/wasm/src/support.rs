@@ -71,5 +71,7 @@ fn redraw() {
     .translate(canvas.width() as f64 / 2., canvas.height() as f64 / 2.)
     .unwrap();
 
+  clear_screen();
+
   super::main();
 }
