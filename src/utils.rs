@@ -123,25 +123,19 @@ pub fn permutations<T, const N: usize>(source: [&[T]; N]) -> impl Iterator<Item 
 where
   T: Copy,
 {
-  let mut indices: [usize; N] = [0; N];
-  let mut done = false;
+  let mut nth = 0;
+  let end: usize = source.iter().map(|x| x.len()).product();
   std::iter::from_fn(move || {
-    if done {
-      return None;
+    if nth < end {
+      let mut key = nth;
+      nth += 1;
+      Some(array_init(|i| {
+        let my_index = key % source[i].len();
+        key = key / source[i].len();
+        source[i][my_index]
+      }))
+    } else {
+      None
     }
-    let out = array_init(|i| source[i][indices[i]]);
-    indices[0] += 1;
-    let mut i = 0;
-    while !(indices[i] < source[i].len()) {
-      indices[i] = 0;
-      i += 1;
-      if i == N {
-        done = true;
-        break;
-      } else {
-        indices[i] += 1;
-      }
-    }
-    Some(out)
   })
 }
