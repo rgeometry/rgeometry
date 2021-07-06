@@ -409,27 +409,10 @@ mod tests {
 
   #[test]
   fn orientation_limit_2() {
-    let options = [i8::MIN, i8::MAX, 0, -10, 10];
-    for coords in crate::utils::permutations([options; 2]) {
-      // let [a, b, c, d, e, f] = coords;
-      dbg!(coords);
-      // Extended::cmp_slope(&[a, b], &[c, d], &[e, f]);
+    let options = &[i8::MIN, i8::MAX, 0, -10, 10];
+    for [a, b, c, d, e, f] in crate::utils::permutations([options; 6]) {
+      Extended::cmp_slope(&[a, b], &[c, d], &[e, f]);
     }
-    // FIXME: Generalize over N iters.
-    // let slice = &[i8::MIN, i8::MAX, 0, -10, 10];
-    // for &coord1 in slice {
-    //   for &coord2 in slice {
-    //     for &coord3 in slice {
-    //       for &coord4 in slice {
-    //         for &coord5 in slice {
-    //           for &coord6 in slice {
-    //             Extended::cmp_slope(&[coord1, coord2], &[coord3, coord4], &[coord5, coord6]);
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
   }
 
   #[test]

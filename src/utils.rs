@@ -118,57 +118,30 @@ impl DenseCollection {
 ///////////////////////////////////////////////////////////////////////////////
 // Iterator permutations
 
-pub struct Permutations<T: IntoIterator, const N: usize> {
-  done: bool,
-  src: [T; N],
-  iters: [std::iter::Peekable<<T as IntoIterator>::IntoIter>; N],
-}
-
-impl<T, const N: usize> Iterator for Permutations<T, N>
+#[cfg(test)]
+pub fn permutations<T, const N: usize>(source: [&[T]; N]) -> impl Iterator<Item = [T; N]> + '_
 where
-  T: IntoIterator + Clone,
-  <T as IntoIterator>::Item: Copy,
+  T: Copy,
 {
-  type Item = [<T as IntoIterator>::Item; N];
-  fn next(&mut self) -> Option<Self::Item> {
-    let mut out: Vec<<T as IntoIterator>::Item> = Vec::new();
-    let mut idx = 0;
-    while idx < N {
-      match self.iters[idx].peek() {
-        Some(val) => {
-          eprintln!("Good value at: {}", idx);
-          out.push(val);
-          idx += 1;
-          break;
-        }
-        None => {
-          eprintln!("Overflow at: {}", idx);
-          self.iters[idx] = self.src[idx].clone().into_iter().peekable();
-          let val = self.iters[idx].next()?;
-          out.push(val);
-          idx += 1;
-          self.done = idx == N;
-        }
+  let mut indices: [usize; N] = [0; N];
+  let mut done = false;
+  std::iter::from_fn(move || {
+    if done {
+      return None;
+    }
+    let out = array_init(|i| source[i][indices[i]]);
+    indices[0] += 1;
+    let mut i = 0;
+    while !(indices[i] < source[i].len()) {
+      indices[i] = 0;
+      i += 1;
+      if i == N {
+        done = true;
+        break;
+      } else {
+        indices[i] += 1;
       }
     }
-    while idx < N {
-      eprintln!("Peeking at: {}", idx);
-      let val = *self.iters[idx].peek()?;
-      out.push(val);
-      idx += 1;
-    }
-    eprintln!("Elements: {}", out.len());
-    out.try_into().ok()
-  }
-}
-
-pub fn permutations<T, const N: usize>(iters: [T; N]) -> Permutations<T, N>
-where
-  T: IntoIterator + Clone,
-{
-  Permutations {
-    done: false,
-    src: iters.clone(),
-    iters: array_init(|i| iters[i].clone().into_iter().peekable()),
-  }
+    Some(out)
+  })
 }
