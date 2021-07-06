@@ -29,7 +29,8 @@ extern "C" {
 
 #[wasm_bindgen(start)]
 pub fn run() {
-  log("Can run 'main' without it being pub.");
+  std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+
   let window = web_sys::window().unwrap();
 
   let ev = EventListener::new(&window, "resize", move |_event_| {
