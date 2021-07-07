@@ -2,6 +2,7 @@ use claim::debug_assert_ok;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
+use ordered_float::OrderedFloat;
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::{Distribution, Standard};
 use rand::seq::SliceRandom;
@@ -84,17 +85,16 @@ where
     self.0.validate()
   }
 
+  pub fn to_float(self) -> PolygonConvex<OrderedFloat<f64>>
+  where
+    T: Clone + Into<f64>,
+  {
+    PolygonConvex::new_unchecked(self.0.to_float())
+  }
+
   /// $O(1)$
   pub fn polygon(&self) -> &Polygon<T> {
     self.into()
-  }
-
-  pub fn normalize(&self) -> PolygonConvex<BigRational>
-  where
-    T: PolygonScalar + Into<BigInt>,
-    T::ExtendedSigned: Into<BigInt>,
-  {
-    PolygonConvex::new_unchecked(self.0.normalize())
   }
 
   /// Uniformly sample a random convex polygon.
@@ -113,7 +113,7 @@ where
   /// # let convex: PolygonConvex<i8> = {
   /// PolygonConvex::random(3, &mut rand::thread_rng())
   /// # };
-  /// # render_polygon(&convex.normalize());
+  /// # render_polygon(&convex.to_float().normalize());
   /// ```
   /// <iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
@@ -149,13 +149,19 @@ where
   }
 }
 
+impl PolygonConvex<OrderedFloat<f64>> {
+  pub fn normalize(&self) -> PolygonConvex<OrderedFloat<f64>> {
+    PolygonConvex::new_unchecked(self.0.normalize())
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Trait Implementations
 
-impl<T: PolygonScalar> Deref for PolygonConvex<T> {
+impl<T> Deref for PolygonConvex<T> {
   type Target = Polygon<T>;
   fn deref(&self) -> &Self::Target {
-    self.polygon()
+    &self.0
   }
 }
 

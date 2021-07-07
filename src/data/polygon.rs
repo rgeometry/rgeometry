@@ -2,6 +2,7 @@
 use num::BigInt;
 use num::BigRational;
 use num_traits::*;
+use ordered_float::OrderedFloat;
 use std::iter::Sum;
 use std::ops::*;
 
@@ -253,25 +254,6 @@ impl<T> Polygon<T> {
     (Point::new([min_x, min_y]), Point::new([max_x, max_y]))
   }
 
-  // Convert to BigRational. Center on <0,0>. Scale size such that max(width,height) = 1.
-  pub fn normalize(&self) -> Polygon<BigRational>
-  where
-    T: PolygonScalar + Into<BigInt>,
-    T::ExtendedSigned: Into<BigInt>,
-  {
-    let (min, max) = self.bounding_box();
-    let [min_x, min_y] = min.array;
-    let [max_x, max_y] = max.array;
-    let width = max_x.extend_signed() - min_x.extend_signed();
-    let height = max_y.extend_signed() - min_y.extend_signed();
-    let ratio = std::cmp::max(width, height);
-    let p = self.clone().cast::<BigInt>().cast::<BigRational>();
-    let centroid = p.centroid();
-    let t = Transform::translate(-Vector::from(centroid));
-    let s = Transform::uniform_scale(BigRational::new(One::one(), ratio.into()));
-    s * t * p
-  }
-
   /// Computes the area of a polygon. If the polygon winds counter-clockwise,
   /// the area will be a positive number. If the polygon winds clockwise, the area will
   /// be negative.
@@ -499,6 +481,13 @@ impl<T> Polygon<T> {
     }
   }
 
+  pub fn to_float(self) -> Polygon<OrderedFloat<f64>>
+  where
+    T: Clone + Into<f64>,
+  {
+    self.map(|v| OrderedFloat(v.into()))
+  }
+
   // Reverse all points between p1 and p2, inclusive of p1 and p2.
   // For example: p1, a, b, c, p2 =>
   //              p2, c, b, a, p1
@@ -575,6 +564,22 @@ impl<T> Polygon<T> {
     let pb_point_id: PointId = ring[pb.position_id.0];
     ring.swap(pa.position_id.0, pb.position_id.0);
     self.position_index.swap(pa_point_id.0, pb_point_id.0);
+  }
+}
+
+impl Polygon<OrderedFloat<f64>> {
+  // Center on <0,0>. Scale size such that max(width,height) = 1.
+  pub fn normalize(&self) -> Polygon<OrderedFloat<f64>> {
+    let (min, max) = self.bounding_box();
+    let [min_x, min_y] = min.array;
+    let [max_x, max_y] = max.array;
+    let width = max_x - min_x;
+    let height = max_y - min_y;
+    let ratio = std::cmp::max(width, height);
+    let centroid = self.centroid();
+    let t = Transform::translate(-Vector::from(centroid));
+    let s = Transform::uniform_scale(ratio.recip());
+    s * t * self
   }
 }
 
