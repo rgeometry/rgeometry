@@ -243,6 +243,13 @@
 <span id="219">219</span>
 <span id="220">220</span>
 <span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -299,12 +306,19 @@
     <span class="ident">total</span>
   }
 
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cast</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">N</span><span class="op">&gt;</span>
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">map</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">N</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Clone</span>,
     <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">U</span>,
   {
     <span class="ident">Vector</span>(<span class="ident">array_init</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">f</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="ident">i</span>].<span class="ident">clone</span>())))
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cast</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">N</span><span class="op">&gt;</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>,
+  {
+    <span class="ident">Vector</span>(<span class="ident">array_init</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="self">self</span>.<span class="number">0</span>[<span class="ident">i</span>].<span class="ident">clone</span>().<span class="ident">into</span>()))
   }
 }
 

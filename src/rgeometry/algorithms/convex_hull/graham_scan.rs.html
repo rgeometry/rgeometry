@@ -308,7 +308,6 @@
 <span id="284">284</span>
 <span id="285">285</span>
 <span id="286">286</span>
-<span id="287">287</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{<span class="ident">Point</span>, <span class="ident">Polygon</span>, <span class="ident">PolygonConvex</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
@@ -536,8 +535,7 @@
       <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="number">40</span>, <span class="number">1</span>] },
       <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="number">0</span>, <span class="number">100</span>] },
     ];
-    <span class="kw">let</span> <span class="ident">points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">BigInt</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span>
-      <span class="ident">points</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">pt</span><span class="op">|</span> <span class="ident">pt</span>.<span class="ident">cast</span>(<span class="ident">BigInt::from</span>)).<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="ident">points</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">BigInt</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">points</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">pt</span><span class="op">|</span> <span class="ident">pt</span>.<span class="ident">cast</span>()).<span class="ident">collect</span>();
     <span class="kw">let</span> <span class="ident">poly</span> <span class="op">=</span> <span class="ident">convex_hull</span>(<span class="ident">points</span>).<span class="ident">unwrap</span>();
     <span class="macro">assert_ok!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>());
   }
