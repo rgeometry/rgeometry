@@ -28,7 +28,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
   let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
   // M1:    56ms, 26x
-  // 3950X: 44ms, 16x
+  // 3950X: 39ms, 15x
   c.bench_function("two_opt_moves::<BigInt>", |b| {
     b.iter(|| {
       let mut pts: Vec<Point<BigInt, 2>> = Vec::new();
@@ -41,7 +41,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
   });
 
   // M1:    1.66 s, 783x
-  // 3950X: 1.67 s, 634x
+  // 3950X: 1.63 s, 635x
   let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
   c.bench_function("two_opt_moves::<BigRational>", |b| {
     b.iter(|| {
