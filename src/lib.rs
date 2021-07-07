@@ -3,7 +3,7 @@
 // #![allow(incomplete_features)]
 // #![feature(const_generics)]
 // #![feature(const_evaluatable_checked)]
-#![doc(html_playground_url = "https://rgeometry.org/rgeometry-playground/")]
+#![doc(html_playground_url = "https://rgeometry.org/playground.html")]
 #![doc(test(no_crate_inject))]
 use num_traits::*;
 use std::cmp::Ordering;
@@ -11,14 +11,14 @@ use std::iter::Sum;
 use std::ops::*;
 
 pub mod algorithms;
-mod array;
 pub mod data;
 mod intersection;
 mod matrix;
+mod orientation;
 mod transformation;
 mod utils;
 
-pub use array::Orientation;
+pub use orientation::Orientation;
 
 pub use intersection::Intersects;
 

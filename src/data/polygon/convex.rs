@@ -10,13 +10,9 @@ use rand::SeedableRng;
 use std::collections::BTreeSet;
 use std::ops::*;
 
-use crate::array::Orientation;
-use crate::data::Point;
-use crate::data::PointLocation;
-use crate::data::TriangleView;
-use crate::data::Vector;
+use crate::data::{Point, PointLocation, TriangleView, Vector};
 use crate::transformation::*;
-use crate::{Error, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar};
 
 use super::Polygon;
 
@@ -30,20 +26,28 @@ impl<T> PolygonConvex<T>
 where
   T: PolygonScalar,
 {
-  /// $O(1)$ Assume that a polygon is convex.
+  /// Assume that a polygon is convex.
   ///
   /// # Safety
   /// The input polygon has to be strictly convex, ie. no vertices are allowed to
   /// be concave or colinear.
+  ///
+  /// # Time complexity
+  /// $O(1)$
   pub fn new_unchecked(poly: Polygon<T>) -> PolygonConvex<T> {
     let convex = PolygonConvex(poly);
     debug_assert_ok!(convex.validate());
     convex
   }
 
+  /// Locate a point relative to a convex polygon.
+  ///
+  /// # Time complexity
   /// $O(\log n)$
   ///
-  /// <iframe src="https://web.rgeometry.org:20443/loader.html?hash=mV9xetnc_IU="></iframe>
+  /// # Examples
+  /// <iframe src="https://web.rgeometry.org/wasm/gist/2cb9ff5bd6ce24f395a5ea30280aabee"></iframe>
+  ///
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
     // debug_assert_ok!(self.validate());
     let poly = &self.0;
@@ -53,7 +57,7 @@ where
     let mut upper = vertices.len() - 1;
     while lower + 1 < upper {
       let middle = (lower + upper) / 2;
-      if p0.orientation(&poly.point(vertices[middle]), pt) == Orientation::CounterClockWise {
+      if Point::orient(p0, &poly.point(vertices[middle]), pt) == Orientation::CounterClockWise {
         lower = middle;
       } else {
         upper = middle;
@@ -65,6 +69,11 @@ where
     triangle.locate(pt)
   }
 
+  /// Validates the following properties:
+  ///  * Each vertex is convex, ie. not concave or colinear.
+  ///  * All generate polygon properties hold true (eg. no duplicate points, no self-intersections).
+  ///
+  /// # Time complexity
   /// $O(n \log n)$
   pub fn validate(&self) -> Result<(), Error> {
     for cursor in self.0.iter_boundary() {
@@ -87,53 +96,55 @@ where
   {
     PolygonConvex::new_unchecked(self.0.normalize())
   }
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// PolygonConvex<BigRational>
-
-impl<T> PolygonConvex<T>
-where
-  T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
-{
-  /// $O(n \log n)$ Uniformly sample a random convex polygon.
+  /// Uniformly sample a random convex polygon.
   ///
-  /// The output polygon is rooted in (0,0), grows upwards, and has a height and width of T::MAX.
+  /// The output polygon is rooted in `(0,0)`, grows upwards, and has a height and width of [`T::max_value()`](Bounded::max_value).
   ///
+  /// # Time complexity
+  /// $O(n \log n)$
+  ///
+  /// # Examples
   /// ```no_run
   /// # use rgeometry_wasm::playground::*;
   /// # use rgeometry::data::*;
+  /// # clear_screen();
+  /// # set_viewport(2.0, 2.0);
   /// # let convex: PolygonConvex<i8> = {
   /// PolygonConvex::random(3, &mut rand::thread_rng())
   /// # };
   /// # render_polygon(&convex.normalize());
   /// ```
-  /// <iframe src="https://web.rgeometry.org:20443/loader.html?gist=037a23f8391390df8560a2043a14121e"></iframe>
+  /// <iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
   where
+    T: Bounded + PolygonScalar + SampleUniform + Copy,
     R: Rng + ?Sized,
   {
     let n = n.max(3);
-    let vs = {
-      let mut vs = random_vectors(n, rng);
-      Vector::sort_around(&mut vs);
-      vs
-    };
-    let vertices: Vec<Point<T, 2>> = vs
-      .into_iter()
-      .scan(Point::zero(), |st, vec| {
-        *st += vec;
-        Some(*st)
-      })
-      .collect();
-    let n_vertices = (*vertices).len();
-    debug_assert_eq!(n_vertices, n);
-    // FIXME: Use the convex hull algorithm for polygons rather than point sets.
-    //        It runs in O(n) rather than O(n log n). Hasn't been implemented, yet, though.
-    match crate::algorithms::convex_hull(vertices).ok() {
+    loop {
+      let vs = {
+        let mut vs = random_vectors(n, rng);
+        Vector::sort_around(&mut vs);
+        vs
+      };
+      let vertices: Vec<Point<T, 2>> = vs
+        .into_iter()
+        .scan(Point::zero(), |st, vec| {
+          *st += vec;
+          Some(*st)
+        })
+        .collect();
+      let n_vertices = (*vertices).len();
+      debug_assert_eq!(n_vertices, n);
+      // FIXME: Use the convex hull algorithm for polygons rather than point sets.
+      //        It runs in O(n) rather than O(n log n). Hasn't been implemented, yet, though.
       // If the vertices are all colinear then give up and try again.
-      None => Self::random(n, rng),
-      Some(p) => p,
+      // FIXME: If the RNG always returns zero then we might loop forever.
+      //        Maybe limit the number of recursions.
+      if let Ok(p) = crate::algorithms::convex_hull(vertices) {
+        return p;
+      }
     }
   }
 }
@@ -172,7 +183,7 @@ impl Distribution<PolygonConvex<isize>> for Standard {
 // Property: random_between(n, max, &mut rng).sum::<usize>() == max
 fn random_between_iter<T, R>(n: usize, rng: &mut R) -> impl Iterator<Item = T>
 where
-  T: PolygonScalar + Bounded + SampleUniform + Copy + Into<BigInt>,
+  T: PolygonScalar + Bounded + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
   let zero: T = Zero::zero();
@@ -194,7 +205,7 @@ where
 // Property: random_between_zero(10, 100, &mut rng).iter().sum::<isize>() == 0
 fn random_between_zero<T, R>(n: usize, rng: &mut R) -> Vec<T>
 where
-  T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
+  T: Bounded + PolygonScalar + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
   assert!(n >= 2);
@@ -211,7 +222,7 @@ where
 // Random vectors that sum to zero.
 fn random_vectors<T, R>(n: usize, rng: &mut R) -> Vec<Vector<T, 2>>
 where
-  T: Bounded + PolygonScalar + SampleUniform + Copy + Into<BigInt>,
+  T: Bounded + PolygonScalar + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
   random_between_zero(n, rng)
@@ -230,55 +241,54 @@ mod tests {
 
   use crate::testing::*;
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
-  proptest! {
-    #[test]
-    fn all_random_convex_polygons_are_valid_i8(poly in any_convex::<i8>()) {
-      prop_assert_eq!(poly.validate().err(), None)
-    }
+  #[proptest]
+  fn all_random_convex_polygons_are_valid_i8(poly: PolygonConvex<i8>) {
+    prop_assert_eq!(poly.validate().err(), None)
+  }
 
-    #[test]
-    fn random_convex_prop(poly in any_convex::<i8>()) {
-      let (min, max) = poly.bounding_box();
-      prop_assert_eq!(min.y_coord(), &0);
-      let width = max.x_coord() - min.x_coord();
-      let height = max.y_coord() - min.y_coord();
-      prop_assert_eq!(width, i8::MAX);
-      prop_assert_eq!(height, i8::MAX);
-    }
+  #[proptest]
+  fn random_convex_prop(poly: PolygonConvex<i8>) {
+    let (min, max) = poly.bounding_box();
+    prop_assert_eq!(min.y_coord(), &0);
+    let width = max.x_coord() - min.x_coord();
+    let height = max.y_coord() - min.y_coord();
+    prop_assert_eq!(width, i8::MAX);
+    prop_assert_eq!(height, i8::MAX);
+  }
 
-    #[test]
-    fn all_random_convex_polygons_are_valid_i64(poly in any_convex::<i64>()) {
-      prop_assert_eq!(poly.validate().err(), None)
-    }
+  #[proptest]
+  fn all_random_convex_polygons_are_valid_i64(poly: PolygonConvex<i64>) {
+    prop_assert_eq!(poly.validate().err(), None)
+  }
 
-    #[test]
-    fn sum_to_max(n in 1..1000) {
-      let mut rng = rand::thread_rng();
-      let vecs = random_between_iter::<i8, _>(n as usize, &mut rng);
-      prop_assert_eq!(vecs.sum::<i8>(), i8::MAX);
+  #[proptest]
+  fn sum_to_max(#[strategy(1..1000)] n: i32) {
+    let mut rng = rand::thread_rng();
+    let vecs = random_between_iter::<i8, _>(n as usize, &mut rng);
+    prop_assert_eq!(vecs.sum::<i8>(), i8::MAX);
 
-      let vecs = random_between_iter::<i64, _>(n as usize, &mut rng);
-      prop_assert_eq!(vecs.sum::<i64>(), i64::MAX);
-    }
+    let vecs = random_between_iter::<i64, _>(n as usize, &mut rng);
+    prop_assert_eq!(vecs.sum::<i64>(), i64::MAX);
+  }
 
-    #[test]
-    fn random_between_zero_properties(n in 2..1000) {
-      let mut rng = rand::thread_rng();
-      let vecs: Vec<i8> = random_between_zero(n as usize, &mut rng);
-      prop_assert_eq!(vecs.iter().sum::<i8>(), 0);
-      prop_assert_eq!(vecs.len(), n as usize);
+  #[proptest]
+  fn random_between_zero_properties(#[strategy(2..1000)] n: i32) {
+    let mut rng = rand::thread_rng();
+    let vecs: Vec<i8> = random_between_zero(n as usize, &mut rng);
+    prop_assert_eq!(vecs.iter().sum::<i8>(), 0);
+    prop_assert_eq!(vecs.len(), n as usize);
 
-      let vecs: Vec<i64> = random_between_zero(n as usize, &mut rng);
-      prop_assert_eq!(vecs.iter().sum::<i64>(), 0);
-      prop_assert_eq!(vecs.len(), n as usize);
-    }
+    let vecs: Vec<i64> = random_between_zero(n as usize, &mut rng);
+    prop_assert_eq!(vecs.iter().sum::<i64>(), 0);
+    prop_assert_eq!(vecs.len(), n as usize);
+  }
 
-    #[test]
-    fn sum_to_zero_vector(n in 2..1000) {
-      let mut rng = rand::thread_rng();
-      let vecs: Vec<Vector<i8,2>> = random_vectors(n as usize, &mut rng);
-      prop_assert_eq!(vecs.into_iter().sum::<Vector<i8,2>>(), Vector::zero())
-    }
+  #[proptest]
+  fn sum_to_zero_vector(#[strategy(2..1000)] n: i32) {
+    let mut rng = rand::thread_rng();
+    let vecs: Vec<Vector<i8, 2>> = random_vectors(n as usize, &mut rng);
+    prop_assert_eq!(vecs.into_iter().sum::<Vector<i8, 2>>(), Vector::zero())
   }
 }

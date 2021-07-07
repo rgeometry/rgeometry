@@ -1,6 +1,5 @@
-use crate::array::Orientation;
 use crate::data::{Point, Polygon, PolygonConvex};
-use crate::{Error, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar};
 
 // https://en.wikipedia.org/wiki/Graham_scan
 
@@ -9,7 +8,7 @@ use crate::{Error, PolygonScalar};
 //    No panics.
 //    All Ok results are valid convex polygons.
 //    No points are outside the resulting convex polygon.
-/// $O(n \log n)$ Convex hull of a set of points.
+/// Convex hull of a set of points.
 ///
 /// [Graham scan][wiki] algorithm for finding the smallest convex polygon which
 /// contains all the given points.
@@ -20,6 +19,9 @@ use crate::{Error, PolygonScalar};
 /// # Properties
 /// * No points from the input set will be outside the returned convex polygon.
 /// * All vertices in the convex polygon are from the input set.
+///
+/// # Time complexity
+/// $O(n \log n)$
 ///
 /// # Examples
 ///
@@ -58,15 +60,12 @@ use crate::{Error, PolygonScalar};
 /// #   clear_screen();
 /// #   set_viewport(2., 2.);
 /// #
-/// #   let canvas = get_canvas();
-/// #   let context = get_context_2d(&canvas);
-/// #
 /// #   let pts = with_points(7);
 /// #   let points = pts.clone();
 /// if let Ok(convex) = convex_hull(points) {
 ///   render_polygon(&convex);
-/// #   context.set_fill_style(&"grey".into());
-/// #   context.fill();
+/// #   context().set_fill_style(&"grey".into());
+/// #   context().fill();
 /// }
 /// #   for pt in &pts {
 /// #     render_point(&pt);
@@ -74,7 +73,7 @@ use crate::{Error, PolygonScalar};
 /// # }
 /// ```
 ///
-/// <iframe src="https://web.rgeometry.org:20443/loader.html?gist=eac484cd855d001815d23a053919b5ca"></iframe>
+/// <iframe src="https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca"></iframe>
 ///
 /// [wiki]: https://en.wikipedia.org/wiki/Graham_scan
 pub fn convex_hull<T>(mut pts: Vec<Point<T, 2>>) -> Result<PolygonConvex<T>, Error>
@@ -100,8 +99,7 @@ where
   {
     let origin = pts[write_idx - 1].clone();
     while read_idx < pts.len() {
-      let p2 = &pts[write_idx];
-      if origin.orientation(p2, &pts[read_idx]) == Orientation::CoLinear {
+      if Point::orient(&origin, &pts[write_idx], &pts[read_idx]) == Orientation::CoLinear {
         pts.swap(read_idx, write_idx);
         read_idx += 1;
       } else {
@@ -114,7 +112,7 @@ where
     let p1 = &pts[read_idx];
     let p2 = &pts[write_idx];
     let p3 = &pts[write_idx - 1];
-    match p3.orientation(p2, p1) {
+    match Point::orient(p3, p2, p1) {
       Orientation::CounterClockWise => {
         pts.swap(read_idx, write_idx + 1);
         read_idx += 1;
@@ -158,6 +156,7 @@ mod tests {
 
   use proptest::collection::*;
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
   #[test]
   fn convex_hull_colinear() {
@@ -254,36 +253,34 @@ mod tests {
     assert_ok!(poly.validate());
   }
 
-  proptest! {
-    #[test]
-    fn convex_hull_prop(pts in vec(any_r(), 0..100)) {
-      if let Ok(poly) = convex_hull(pts.clone()) {
-        // Prop #1: Results are valid.
-        prop_assert_eq!(poly.validate().err(), None);
-        // Prop #2: No points from the input set are outside the polygon.
-        for pt in pts.iter() {
-          prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
-        }
-        // Prop #3: All vertices are in the input set.
-        for pt in poly.iter() {
-          prop_assert!(pts.contains(pt))
-        }
+  #[proptest]
+  fn convex_hull_prop(#[strategy(vec(any_r(), 0..100))] pts: Vec<Point<BigInt, 2>>) {
+    if let Ok(poly) = convex_hull(pts.clone()) {
+      // Prop #1: Results are valid.
+      prop_assert_eq!(poly.validate().err(), None);
+      // Prop #2: No points from the input set are outside the polygon.
+      for pt in pts.iter() {
+        prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
+      }
+      // Prop #3: All vertices are in the input set.
+      for pt in poly.iter() {
+        prop_assert!(pts.contains(pt))
       }
     }
+  }
 
-    #[test]
-    fn convex_hull_prop_i8(pts in vec(any::<Point<i8,2>>(), 0..100)) {
-      if let Ok(poly) = convex_hull(pts.clone()) {
-        // Prop #1: Results are valid.
-        prop_assert_eq!(poly.validate().err(), None);
-        // Prop #2: No points from the input set are outside the polygon.
-        for pt in pts.iter() {
-          prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
-        }
-        // Prop #3: All vertices are in the input set.
-        for pt in poly.iter() {
-          prop_assert!(pts.contains(pt))
-        }
+  #[proptest]
+  fn convex_hull_prop_i8(#[strategy(vec(any::<Point<i8,2>>(), 0..100))] pts: Vec<Point<i8, 2>>) {
+    if let Ok(poly) = convex_hull(pts.clone()) {
+      // Prop #1: Results are valid.
+      prop_assert_eq!(poly.validate().err(), None);
+      // Prop #2: No points from the input set are outside the polygon.
+      for pt in pts.iter() {
+        prop_assert_ne!(poly.locate(pt), PointLocation::Outside)
+      }
+      // Prop #3: All vertices are in the input set.
+      for pt in poly.iter() {
+        prop_assert!(pts.contains(pt))
       }
     }
   }

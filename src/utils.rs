@@ -1,4 +1,6 @@
+use array_init::{array_init, try_array_init};
 use rand::Rng;
+use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
 
 pub type SparseIndex = usize;
@@ -111,4 +113,22 @@ impl DenseCollection {
   fn iter(&self) -> impl Iterator<Item = Sparse> + '_ {
     self.dense.iter().copied()
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Iterator permutations
+
+#[cfg(test)]
+pub fn permutations<T, const N: usize>(source: [&[T]; N]) -> impl Iterator<Item = [T; N]> + '_
+where
+  T: Copy,
+{
+  let end: usize = source.iter().map(|x| x.len()).product();
+  (0..end).into_iter().map(move |mut nth| {
+    array_init(|i| {
+      let my_index = nth % source[i].len();
+      nth = nth / source[i].len();
+      source[i][my_index]
+    })
+  })
 }

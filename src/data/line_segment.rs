@@ -256,10 +256,10 @@ where
     let a2 = self.max.inner();
     let b1 = other.min.inner();
     let b2 = other.max.inner();
-    let l1_to_b1 = Orientation::new(a1, a2, b1);
-    let l1_to_b2 = Orientation::new(a1, a2, b2);
-    let l2_to_a1 = Orientation::new(b1, b2, a1);
-    let l2_to_a2 = Orientation::new(b1, b2, a2);
+    let l1_to_b1 = Point::orient(a1, a2, b1);
+    let l1_to_b2 = Point::orient(a1, a2, b2);
+    let l2_to_a1 = Point::orient(b1, b2, a1);
+    let l2_to_a2 = Point::orient(b1, b2, a2);
     // dbg!(
     //   a1,
     //   a2,
@@ -367,15 +367,14 @@ mod tests {
   use ILineSegment::*;
 
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
-  proptest! {
-    #[test]
-    fn flip_intersects_prop(pts: [i8; 8]) {
-      let [a,b,c,d,e,f,g,h] = pts;
-      let l1 = LineSegment::from((a, b)..(c, d));
-      let l2 = LineSegment::from((e, f)..(g, h));
-      assert_eq!(l1.intersect(&l2), l2.intersect(&l1));
-    }
+  #[proptest]
+  fn flip_intersects_prop(pts: [i8; 8]) {
+    let [a, b, c, d, e, f, g, h] = pts;
+    let l1 = LineSegment::from((a, b)..(c, d));
+    let l2 = LineSegment::from((e, f)..(g, h));
+    assert_eq!(l1.intersect(&l2), l2.intersect(&l1));
   }
 
   //             P6

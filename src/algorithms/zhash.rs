@@ -142,49 +142,48 @@ mod tests {
 
   use proptest::prelude::*;
   use rand::SeedableRng;
+  use test_strategy::proptest;
 
-  proptest! {
-    #[test]
-    fn hash_unhash_prop(a in any::<u32>(), b in any::<u32>()) {
-      prop_assert_eq!(zunhash_pair(zhash_pair(a,b)), (a,b))
-    }
+  #[proptest]
+  fn hash_unhash_prop(a: u32, b: u32) {
+    prop_assert_eq!(zunhash_pair(zhash_pair(a, b)), (a, b))
+  }
 
-    #[test]
-    fn cmp_prop_i8(trig in any_triangle::<i8>()) {
-      let (min, max) = trig.view().bounding_box();
-      let zbox = ZHashBox {
-        min_x: min.x_coord(),
-        max_x: max.x_coord(),
-        min_y: min.y_coord(),
-        max_y: max.y_coord(),
-      };
-      let key = ZHashable::zhash_key(zbox);
-      let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
-      let middle = trig.view().rejection_sampling(&mut rng);
-      let min_hash = ZHashable::zhash_fn(key, &min);
-      let max_hash = ZHashable::zhash_fn(key, &max);
-      let mid_hash = ZHashable::zhash_fn(key, &middle);
-      prop_assert!( min_hash <= mid_hash );
-      prop_assert!( mid_hash <= max_hash );
-    }
+  #[proptest]
+  fn cmp_prop_i8(trig: Triangle<i8>) {
+    let (min, max) = trig.view().bounding_box();
+    let zbox = ZHashBox {
+      min_x: min.x_coord(),
+      max_x: max.x_coord(),
+      min_y: min.y_coord(),
+      max_y: max.y_coord(),
+    };
+    let key = ZHashable::zhash_key(zbox);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let middle = trig.view().rejection_sampling(&mut rng);
+    let min_hash = ZHashable::zhash_fn(key, &min);
+    let max_hash = ZHashable::zhash_fn(key, &max);
+    let mid_hash = ZHashable::zhash_fn(key, &middle);
+    prop_assert!(min_hash <= mid_hash);
+    prop_assert!(mid_hash <= max_hash);
+  }
 
-    #[test]
-    fn cmp_prop_i64(trig in any_triangle::<i64>()) {
-      let (min, max) = trig.view().bounding_box();
-      let zbox = ZHashBox {
-        min_x: min.x_coord(),
-        max_x: max.x_coord(),
-        min_y: min.y_coord(),
-        max_y: max.y_coord(),
-      };
-      let key = ZHashable::zhash_key(zbox);
-      let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
-      let middle = trig.view().rejection_sampling(&mut rng);
-      let min_hash = ZHashable::zhash_fn(key, &min);
-      let max_hash = ZHashable::zhash_fn(key, &max);
-      let mid_hash = ZHashable::zhash_fn(key, &middle);
-      prop_assert!( min_hash <= mid_hash );
-      prop_assert!( mid_hash <= max_hash );
-    }
+  #[proptest]
+  fn cmp_prop_i64(trig: Triangle<i64>) {
+    let (min, max) = trig.view().bounding_box();
+    let zbox = ZHashBox {
+      min_x: min.x_coord(),
+      max_x: max.x_coord(),
+      min_y: min.y_coord(),
+      max_y: max.y_coord(),
+    };
+    let key = ZHashable::zhash_key(zbox);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let middle = trig.view().rejection_sampling(&mut rng);
+    let min_hash = ZHashable::zhash_fn(key, &min);
+    let max_hash = ZHashable::zhash_fn(key, &max);
+    let mid_hash = ZHashable::zhash_fn(key, &middle);
+    prop_assert!(min_hash <= mid_hash);
+    prop_assert!(mid_hash <= max_hash);
   }
 }

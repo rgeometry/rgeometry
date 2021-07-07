@@ -328,20 +328,22 @@ mod tests {
   }
 
   use proptest::prelude::*;
+  use test_strategy::proptest;
 
-  proptest! {
-    #[test]
-    fn equal_area_prop(poly: Polygon<i64>) {
-      prop_assert_eq!(poly.signed_area_2x::<BigInt>(), trig_area_2x(&poly));
-    }
+  #[proptest]
+  fn equal_area_prop(poly: Polygon<i64>) {
+    prop_assert_eq!(poly.signed_area_2x::<BigInt>(), trig_area_2x(&poly));
+  }
 
-    #[test]
-    fn hashed_identity_prop(poly: Polygon<i8>) {
-      let rng = SmallRng::seed_from_u64(0);
-      let not_hashed: Vec<(PointId,PointId,PointId)> = triangulate_list(&poly.points, &poly.rings[0], rng.clone()).collect();
-      let hashed: Vec<(PointId,PointId,PointId)> = triangulate_list_hashed(&poly.points, &poly.rings[0], rng).collect();
-      prop_assert_eq!(not_hashed, hashed);
-    }
+  #[proptest]
+  fn hashed_identity_prop(poly: Polygon<i8>) {
+    let mut rng1 = SmallRng::seed_from_u64(0);
+    let mut rng2 = SmallRng::seed_from_u64(0);
+    let not_hashed: Vec<(PointId, PointId, PointId)> =
+      triangulate_list(&poly.points, &poly.rings[0], &mut rng1).collect();
+    let hashed: Vec<(PointId, PointId, PointId)> =
+      triangulate_list_hashed(&poly.points, &poly.rings[0], &mut rng2).collect();
+    prop_assert_eq!(not_hashed, hashed);
   }
 }
 

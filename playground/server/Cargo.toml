@@ -12,11 +12,12 @@ lazy_static       = "*"
 futures-channel   = "*"
 futures-util      = "*"
 tokio             = { version = "*", features = ["macros", "rt", "process", "sync"] }
-tungstenite       = "*"
-tokio-tungstenite = "*"
 directories       = "*"
 git-version       = "*"
 reqwest           = "*"
+once_cell         = "*"
+rocket            = "0.5.0-rc.1"
+
 
 [dev-dependencies]
 quickcheck        = "1"
