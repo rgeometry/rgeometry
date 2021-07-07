@@ -18,6 +18,7 @@ jobs:
         with:
           command: check
       - run: cd playground/wasm/ && cargo check
+      - run: cd playground/server/ && cargo check
 
   test:
     name: Test Suite
