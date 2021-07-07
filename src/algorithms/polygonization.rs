@@ -37,7 +37,7 @@ where
       }
     }
   }
-  sanity_check(&poly, &isects);
+  // sanity_check(&poly, &isects);
   // dbg!(isects.to_vec());
   while let Some(isect) = isects.random(rng) {
     untangle(poly, &mut isects, isect)

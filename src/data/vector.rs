@@ -53,12 +53,19 @@ where
     total
   }
 
-  pub fn cast<U, F>(&self, f: F) -> Vector<U, N>
+  pub fn map<U, F>(&self, f: F) -> Vector<U, N>
   where
     T: Clone,
     F: Fn(T) -> U,
   {
     Vector(array_init(|i| f(self.0[i].clone())))
+  }
+
+  pub fn cast<U>(&self) -> Vector<U, N>
+  where
+    T: Clone + Into<U>,
+  {
+    Vector(array_init(|i| self.0[i].clone().into()))
   }
 }
 

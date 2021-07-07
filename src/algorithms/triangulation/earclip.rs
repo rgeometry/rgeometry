@@ -1,12 +1,43 @@
 use std::borrow::BorrowMut;
 
 use crate::algorithms::zhash::{ZHashBox, ZHashable};
-use crate::data::{Point, PointId, PointLocation, TriangleView};
+use crate::data::{Point, PointId, PointLocation, Polygon, TriangleView};
 use crate::Orientation;
 use crate::PolygonScalar;
 
 use num_traits::Zero;
+use rand::rngs::mock::StepRng;
+use rand::rngs::SmallRng;
 use rand::Rng;
+use rand::SeedableRng;
+
+/// $O(n^2)$ Polygon triangulation. Ears are selected in a pseudo-random manner.
+pub fn earclip<T>(poly: &Polygon<T>) -> impl Iterator<Item = (PointId, PointId, PointId)> + '_
+where
+  T: PolygonScalar,
+{
+  // FIXME: Support holes.
+  assert!(poly.rings.len() == 1);
+  // let rng = StepRng::new(0, 0);
+  let rng = SmallRng::seed_from_u64(0xDEADBEEF);
+  triangulate_list(&poly.points, &poly.rings[0], rng)
+}
+
+/// $O(n)$ Polygon triangulation. Ears are selected in a pseudo-random manner.
+///
+/// $O(n^2)$ worst case complexity. Expected time is linear.
+pub fn earclip_hashed<T>(
+  poly: &Polygon<T>,
+) -> impl Iterator<Item = (PointId, PointId, PointId)> + '_
+where
+  T: PolygonScalar + ZHashable,
+{
+  // FIXME: Support holes.
+  assert!(poly.rings.len() == 1);
+  // let rng = StepRng::new(0, 0);
+  let rng = SmallRng::seed_from_u64(0xDEADBEEF);
+  triangulate_list_hashed(&poly.points, &poly.rings[0], rng)
+}
 
 // triangulate: Vec<Point<T,2>> + Vec<PointId> -> Vec<(PointId,PointId,PointId)>
 // triangulate: Polygon -> Vec<Polygon>
@@ -24,11 +55,11 @@ use rand::Rng;
 pub fn triangulate_list<'a, T, R>(
   points: &'a [Point<T, 2>],
   order: &'a [PointId],
-  rng: &'a mut R,
+  mut rng: R,
 ) -> impl Iterator<Item = (PointId, PointId, PointId)> + 'a
 where
   T: PolygonScalar,
-  R: Rng + ?Sized,
+  R: Rng + 'static,
 {
   let mut len = order.len();
   let mut vertices = List::new(points, order);
@@ -36,7 +67,7 @@ where
   std::iter::from_fn(move || match len {
     0..=2 => None,
     _ => loop {
-      let focus = vertices.cursor(possible_ears.pop(rng).unwrap());
+      let focus = vertices.cursor(possible_ears.pop(&mut rng).unwrap());
       let prev = focus.prev();
       let next = focus.next();
       if is_ear(prev, focus, next) {
@@ -77,11 +108,11 @@ where
 pub fn triangulate_list_hashed<'a, T, R>(
   points: &'a [Point<T, 2>],
   order: &'a [PointId],
-  rng: &'a mut R,
+  mut rng: R,
 ) -> impl Iterator<Item = (PointId, PointId, PointId)> + 'a
 where
   T: PolygonScalar + ZHashable,
-  R: Rng + ?Sized,
+  R: Rng + 'static,
 {
   let mut len = order.len();
   let mut vertices = List::new(points, order);
@@ -98,7 +129,7 @@ where
   std::iter::from_fn(move || match len {
     0..=2 => None,
     _ => loop {
-      let focus = possible_ears.pop(rng).unwrap();
+      let focus = possible_ears.pop(&mut rng).unwrap();
       let prev = vertices.prev(focus);
       let next = vertices.next(focus);
       if is_ear_hashed(
@@ -231,8 +262,8 @@ mod tests {
   fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
     let mut trig_area_2x = BigInt::zero();
     // let mut rng = StepRng::new(0,0);
-    let mut rng = SmallRng::seed_from_u64(0);
-    for (a, b, c) in triangulate_list(&p.points, &p.rings[0], &mut rng) {
+    let rng = SmallRng::seed_from_u64(0);
+    for (a, b, c) in triangulate_list(&p.points, &p.rings[0], rng) {
       let trig = TriangleView::new_unchecked([p.point(a), p.point(b), p.point(c)]);
       trig_area_2x += trig.signed_area_2x::<BigInt>();
     }
@@ -268,7 +299,7 @@ mod tests {
 
   #[test]
   fn basic_3() {
-    let mut rng2 = SmallRng::seed_from_u64(0);
+    let rng = SmallRng::seed_from_u64(0);
     let p: Polygon<i8> = Polygon::new(vec![
       Point { array: [-44, -11] },
       Point { array: [-43, 23] },
@@ -278,12 +309,12 @@ mod tests {
     ])
     .unwrap();
 
-    triangulate_list_hashed(&p.points, &p.rings[0], &mut rng2).count();
+    triangulate_list_hashed(&p.points, &p.rings[0], rng).count();
   }
 
   #[test]
   fn basic_4() {
-    let mut rng2 = SmallRng::seed_from_u64(0);
+    let rng = SmallRng::seed_from_u64(0);
     let p: Polygon<i8> = Polygon::new(vec![
       Point { array: [12, 5] },   // 0
       Point { array: [0, 8] },    // 1
@@ -293,7 +324,7 @@ mod tests {
     ])
     .unwrap();
 
-    triangulate_list_hashed(&p.points, &p.rings[0], &mut rng2).count();
+    triangulate_list_hashed(&p.points, &p.rings[0], rng).count();
   }
 
   use proptest::prelude::*;
@@ -306,12 +337,11 @@ mod tests {
 
   #[proptest]
   fn hashed_identity_prop(poly: Polygon<i8>) {
-    let mut rng1 = SmallRng::seed_from_u64(0);
-    let mut rng2 = SmallRng::seed_from_u64(0);
+    let rng = SmallRng::seed_from_u64(0);
     let not_hashed: Vec<(PointId, PointId, PointId)> =
-      triangulate_list(&poly.points, &poly.rings[0], &mut rng1).collect();
+      triangulate_list(&poly.points, &poly.rings[0], rng.clone()).collect();
     let hashed: Vec<(PointId, PointId, PointId)> =
-      triangulate_list_hashed(&poly.points, &poly.rings[0], &mut rng2).collect();
+      triangulate_list_hashed(&poly.points, &poly.rings[0], rng).collect();
     prop_assert_eq!(not_hashed, hashed);
   }
 }

@@ -224,8 +224,7 @@ mod tests {
       Point { array: [40, 1] },
       Point { array: [0, 100] },
     ];
-    let points: Vec<Point<BigInt, 2>> =
-      points.into_iter().map(|pt| pt.cast(BigInt::from)).collect();
+    let points: Vec<Point<BigInt, 2>> = points.into_iter().map(|pt| pt.cast()).collect();
     let poly = convex_hull(points).unwrap();
     assert_ok!(poly.validate());
   }

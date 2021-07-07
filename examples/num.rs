@@ -39,7 +39,7 @@ fn main() {
     // Point::new([0, 1]),
   ])
   .unwrap();
-  let p2 = p.cast(|v| BigRational::from_i32(v).unwrap());
+  let p2: Polygon<BigInt> = p.cast();
   dbg!(p2.centroid());
   // let a: Array2<BigRational> = unimplemented!();
   // let b = array![7, 8, 9];
