@@ -218,8 +218,8 @@ impl<T> Polygon<T> {
     let xs: Vector<T, 2> = self
       .iter_boundary_edges()
       .map(|edge| {
-        let p = &edge.src.as_vec().cast(|v| v);
-        let q = &edge.dst.as_vec().cast(|v| v);
+        let p = edge.src.as_vec();
+        let q = edge.dst.as_vec();
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
@@ -265,7 +265,7 @@ impl<T> Polygon<T> {
     let width = max_x.extend_signed() - min_x.extend_signed();
     let height = max_y.extend_signed() - min_y.extend_signed();
     let ratio = std::cmp::max(width, height);
-    let p = self.clone().cast(|t| BigRational::from(t.into()));
+    let p = self.clone().cast::<BigInt>().cast::<BigRational>();
     let centroid = p.centroid();
     let t = Transform::translate(-Vector::from(centroid));
     let s = Transform::uniform_scale(BigRational::new(One::one(), ratio.into()));
@@ -471,13 +471,26 @@ impl<T> Polygon<T> {
     }
   }
 
-  pub fn cast<U, F>(self, f: F) -> Polygon<U>
+  pub fn map<U, F>(self, f: F) -> Polygon<U>
   where
     T: Clone,
     U: Clone,
     F: Fn(T) -> U + Clone,
   {
-    let pts = self.points.into_iter().map(|p| p.cast(f.clone())).collect();
+    let pts = self.points.into_iter().map(|p| p.map(f.clone())).collect();
+    Polygon {
+      points: pts,
+      ring_index: self.ring_index,
+      position_index: self.position_index,
+      rings: self.rings,
+    }
+  }
+
+  pub fn cast<U>(self) -> Polygon<U>
+  where
+    T: Clone + Into<U>,
+  {
+    let pts = self.points.into_iter().map(|p| p.cast()).collect();
     Polygon {
       points: pts,
       ring_index: self.ring_index,
@@ -562,29 +575,6 @@ impl<T> Polygon<T> {
     let pb_point_id: PointId = ring[pb.position_id.0];
     ring.swap(pa.position_id.0, pb.position_id.0);
     self.position_index.swap(pa_point_id.0, pb_point_id.0);
-  }
-}
-
-impl From<Polygon<BigRational>> for Polygon<f64> {
-  fn from(p: Polygon<BigRational>) -> Polygon<f64> {
-    p.cast(|r| r.to_f64().unwrap())
-  }
-}
-impl<'a> From<&'a Polygon<BigRational>> for Polygon<f64> {
-  fn from(p: &Polygon<BigRational>) -> Polygon<f64> {
-    p.clone().into()
-  }
-}
-
-impl From<Polygon<f64>> for Polygon<BigRational> {
-  fn from(p: Polygon<f64>) -> Polygon<BigRational> {
-    p.cast(|f| BigRational::from_float(f).unwrap())
-  }
-}
-
-impl<'a> From<&'a Polygon<f64>> for Polygon<BigRational> {
-  fn from(p: &Polygon<f64>) -> Polygon<BigRational> {
-    p.clone().into()
   }
 }
 
