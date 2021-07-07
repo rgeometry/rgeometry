@@ -1,0 +1,62 @@
+use criterion::{criterion_group, criterion_main, Criterion};
+use rgeometry::algorithms::polygonization::two_opt_moves;
+use rgeometry::data::*;
+
+use num::BigInt;
+use num::BigRational;
+
+use rand::distributions::Standard;
+use rand::Rng;
+use rand::SeedableRng;
+
+const SET_SIZE: usize = 100;
+
+pub fn criterion_benchmark(c: &mut Criterion) {
+  let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
+  // 2.1ms, 1x
+  c.bench_function("two_opt_moves::<isize>", |b| {
+    b.iter(|| {
+      let mut pts = Vec::new();
+      while pts.len() < SET_SIZE {
+        let pt: Point<isize, 2> = rng.sample(Standard);
+        pts.push(pt)
+      }
+      two_opt_moves(pts, &mut rng)
+    })
+  });
+
+  let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
+  // 56ms, 26x
+  // OLD: 89ms
+  c.bench_function("two_opt_moves::<BigInt>", |b| {
+    b.iter(|| {
+      let mut pts: Vec<Point<BigInt, 2>> = Vec::new();
+      while pts.len() < SET_SIZE {
+        let pt: Point<i64, 2> = rng.sample(Standard);
+        pts.push(pt.cast())
+      }
+      two_opt_moves(pts, &mut rng)
+    })
+  });
+
+  // 1.6 s, 777x
+  // OLD: 1.6
+  let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
+  c.bench_function("two_opt_moves::<BigRational>", |b| {
+    b.iter(|| {
+      let mut pts: Vec<Point<BigRational, 2>> = Vec::new();
+      while pts.len() < SET_SIZE {
+        let pt: Point<i64, 2> = rng.sample(Standard);
+        let pt: Point<BigInt, 2> = pt.cast();
+        pts.push(pt.cast())
+      }
+      two_opt_moves(pts, &mut rng)
+    })
+  });
+  // c.bench_function("two_opt_moves::<BigInt>", |b| {
+  //   b.iter(|| PolygonConvex::<i64>::random(1000, &mut rng))
+  // });
+}
+
+criterion_group!(benches, criterion_benchmark);
+criterion_main!(benches);
