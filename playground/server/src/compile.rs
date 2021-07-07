@@ -77,6 +77,8 @@ pub async fn compile(mut code: String) -> Result<String, CompileError> {
   static LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
   let _guard: MutexGuard<'_, ()> = LOCK.lock().await;
   code += "\nmod support;\n";
+  code += "use rgeometry::{data::*, *};\n"
+  code += "use rgeometry_wasm::playground::*;\n"
   let cache_dir = get_cache_dir();
   fs::create_dir_all(&cache_dir)?;
   let hash = hash_code(&code);
