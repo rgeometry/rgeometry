@@ -416,7 +416,7 @@ pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> 
 
 // Arbitrary isn't defined for BigInt.
 pub fn any_r<const N: usize>() -> impl Strategy<Value = Point<BigInt, N>> {
-  any::<Point<isize, N>>().prop_map(|pt| pt.cast(BigInt::from))
+  any::<Point<isize, N>>().prop_map(|pt| pt.cast())
 }
 
 // pub fn any_64<const N: usize>() -> impl Strategy<Value = Point<i64, N>> {

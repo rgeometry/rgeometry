@@ -2,6 +2,7 @@ use array_init::{array_init, try_array_init};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
+use ordered_float::OrderedFloat;
 use ordered_float::{FloatIsNan, NotNan};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
@@ -90,7 +91,7 @@ impl<T, const N: usize> Point<T, N> {
     }
   }
 
-  pub fn cast<U, F>(&self, f: F) -> Point<U, N>
+  pub fn map<U, F>(&self, f: F) -> Point<U, N>
   where
     T: Clone,
     F: Fn(T) -> U,
@@ -98,6 +99,22 @@ impl<T, const N: usize> Point<T, N> {
     Point {
       array: array_init(|i| f(self.array[i].clone())),
     }
+  }
+
+  pub fn cast<U>(&self) -> Point<U, N>
+  where
+    T: Clone + Into<U>,
+  {
+    Point {
+      array: array_init(|i| self.array[i].clone().into()),
+    }
+  }
+
+  pub fn to_float(&self) -> Point<OrderedFloat<f64>, N>
+  where
+    T: Clone + Into<f64>,
+  {
+    self.map(|v| OrderedFloat(v.into()))
   }
 }
 
