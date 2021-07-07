@@ -776,6 +776,11 @@
 <span id="752">752</span>
 <span id="753">753</span>
 <span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num::BigInt</span>;
@@ -978,6 +983,16 @@
       <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SelfIntersections</span>);
     }
     <span class="prelude-val">Ok</span>(())
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">triangulate</span>(
+    <span class="kw-2">&amp;</span><span class="self">self</span>,
+  ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>)<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+  {
+    <span class="kw">crate</span><span class="ident">::algorithms::triangulation::earclip::earclip</span>(<span class="self">self</span>)
+      .<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">p1</span>, <span class="ident">p2</span>, <span class="ident">p3</span>)<span class="op">|</span> (<span class="self">self</span>.<span class="ident">cursor</span>(<span class="ident">p1</span>), <span class="self">self</span>.<span class="ident">cursor</span>(<span class="ident">p2</span>), <span class="self">self</span>.<span class="ident">cursor</span>(<span class="ident">p3</span>)))
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">centroid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>
@@ -1501,11 +1516,6 @@
     }
   }
 }
-
-<span class="comment">// pub trait Triangulate {</span>
-<span class="comment">//   type Iter: Iterator&lt;Item = (VertexId, VertexId, VertexId)&gt;;</span>
-<span class="comment">//   fn triangulate(&amp;self) -&gt; Self::Iter;</span>
-<span class="comment">// }</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
