@@ -1,8 +1,14 @@
 // https://en.wikipedia.org/wiki/Monotone_polygon
 use crate::data::{Point, Polygon, Vector};
 use crate::{Error, Orientation, PolygonScalar};
+use rand::SeedableRng;
+
 use std::collections::VecDeque;
 use std::vec;
+
+// fn is_monotone(poly: Polygon, direction: Vector) -> bool {
+//   todo!()
+// }
 
 /// Checks if points form a y-monotone polygon, returns its paths if true
 pub fn get_y_monotone_polygons<T>(points: &[Point<T, 2>]) -> Result<[Vec<&Point<T, 2>>; 2], Error>
@@ -68,7 +74,10 @@ where
     return Err(Error::InsufficientVertices);
   }
 
-  points.sort_by(|prev, curr| direction.cmp_along(prev, curr));
+  // First compare along the direction vector.
+  // Then compare the x-component.
+  // Then compare the y-component.
+  points.sort_by(|prev, curr| direction.cmp_along(prev, curr).then(prev.cmp(&curr)));
   let (min_point, max_point) = (
     points.first().unwrap().clone(),
     points.last().unwrap().clone(),
@@ -76,30 +85,39 @@ where
 
   let mut polygon_points: VecDeque<Point<T, 2>> = VecDeque::new();
 
-  while !points.is_empty() {
-    let curr = points.remove(0);
+  // points.reverse();
+  while let Some(curr) = points.pop() {
+    // let curr = points.remove(0);
+    // let curr = points.pop();
     match Orientation::new(&min_point, &max_point, &curr) {
-      Orientation::CounterClockWise => polygon_points.push_front(curr),
+      Orientation::ClockWise => polygon_points.push_front(curr),
       _ => polygon_points.push_back(curr),
     }
   }
+  let vec = Vec::from(polygon_points);
 
-  Polygon::new(Vec::from(polygon_points))
+  Polygon::new(vec)
 }
 
 //testing
 #[cfg(test)]
 mod monotone_testing {
-  use crate::algorithms::monotone_polygon::get_y_monotone_polygons;
-  use crate::data::{Point, Polygon, PolygonConvex};
+  use crate::algorithms::monotone_polygon;
+  use crate::data::{Point, Polygon, PolygonConvex, Vector};
+  use crate::Orientation;
+  use proptest::collection::vec;
+  use proptest::prelude::*;
+  use rand::prelude::SliceRandom;
+  use rand::SeedableRng;
   use std::assert;
+  use test_strategy::proptest;
 
-  #[test]
-  fn convex_polygon_is_montone() {
-    let mut rng = rand::thread_rng();
-    let convex_polygon: PolygonConvex<i8> = PolygonConvex::random(10, &mut rng);
-    let res = get_y_monotone_polygons(&convex_polygon.points);
-    assert!(res.is_ok());
+  #[proptest]
+  fn convex_polygon_is_montone(convex_polygon: PolygonConvex<i8>) {
+    prop_assert_eq!(
+      monotone_polygon::get_y_monotone_polygons(&convex_polygon.points).err(),
+      None
+    );
   }
 
   #[test]
@@ -113,7 +131,7 @@ mod monotone_testing {
       Point::new([-1, 2]),
     ])
     .unwrap();
-    let res = get_y_monotone_polygons(&polygon.points);
+    let res = monotone_polygon::get_y_monotone_polygons(&polygon.points);
     assert!(res.is_err());
   }
   #[test]
@@ -127,7 +145,7 @@ mod monotone_testing {
       Point::new([-1, 2]),
     ])
     .unwrap();
-    let res = get_y_monotone_polygons(&polygon.points);
+    let res = monotone_polygon::get_y_monotone_polygons(&polygon.points);
     assert!(res.is_ok());
     let res_paths = res.unwrap();
     assert_eq!(res_paths[0].len(), 4);
@@ -142,10 +160,66 @@ mod monotone_testing {
       Point::new([0, -3]),
     ])
     .unwrap();
-    let res = get_y_monotone_polygons(&polygon.points);
+    let res = monotone_polygon::get_y_monotone_polygons(&polygon.points);
     assert!(res.is_ok());
     let res_paths = res.unwrap();
     assert_eq!(res_paths[0].len(), 4);
     assert_eq!(res_paths[1].len(), 2);
+  }
+
+  #[proptest]
+  fn generate_y_monotone(polygon: Polygon<i8>) {
+    let mut points = polygon.points;
+    points.shuffle(&mut rand::thread_rng());
+
+    let res = monotone_polygon::form_monotone_polygon(Vector::from(Point::new([0, 1])), points);
+
+    prop_assert!(res.is_ok());
+  }
+  #[test]
+  fn generate_y_monotone_1() {
+    let polygon = Polygon::new(vec![
+      Point { array: [-54, 94] },
+      Point { array: [-15, 55] },
+      Point { array: [75, -1] },
+      Point { array: [94, -4] },
+      Point { array: [98, -9] },
+      Point { array: [16, -5] },
+      Point { array: [33, -33] },
+      Point { array: [-30, -7] },
+      Point { array: [-57, 30] },
+      Point { array: [-60, 3] },
+      Point { array: [-80, -55] },
+      Point { array: [-23, -66] },
+      Point { array: [-91, -59] },
+      Point { array: [-105, -90] },
+      Point { array: [-17, -67] },
+      Point { array: [-29, -37] },
+      Point { array: [2, -66] },
+      Point { array: [25, -79] },
+      Point { array: [24, -73] },
+      Point { array: [25, -70] },
+      Point { array: [52, -109] },
+      Point { array: [61, -127] },
+      Point { array: [85, -85] },
+      Point { array: [65, -40] },
+      Point { array: [112, -43] },
+      Point { array: [89, 96] },
+      Point { array: [104, 28] },
+      Point { array: [125, 103] },
+      Point { array: [82, 123] },
+      Point { array: [28, 95] },
+      Point { array: [12, 101] },
+      Point { array: [-50, 101] },
+      Point { array: [-89, 120] },
+      Point { array: [-81, 101] },
+    ])
+    .expect("Invalid Polygon");
+    let mut points = polygon.points;
+    points.shuffle(&mut rand::thread_rng());
+
+    let res = monotone_polygon::form_monotone_polygon(Vector::from(Point::new([0, 1])), points);
+
+    assert!(res.is_ok());
   }
 }
