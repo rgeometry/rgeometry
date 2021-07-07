@@ -44,6 +44,7 @@ impl std::fmt::Display for Error {
   }
 }
 
+// FIXME: Should include ZHashable.
 pub trait PolygonScalar<T = Self, Output = Self>:
   PolygonScalarRef<T, Output>
   + AddAssign<Output>
@@ -244,8 +245,8 @@ fixed_precision!(i64, u64, i128, u128);
 fixed_precision!(isize, usize, i128, u128);
 arbitrary_precision!(num_bigint::BigInt);
 arbitrary_precision!(num_rational::BigRational);
-// arbitrary_precision!(ordered_float::OrderedFloat<f32>);
-// arbitrary_precision!(ordered_float::OrderedFloat<f64>);
+arbitrary_precision!(ordered_float::OrderedFloat<f32>);
+arbitrary_precision!(ordered_float::OrderedFloat<f64>);
 arbitrary_precision!(ordered_float::NotNan<f32>);
 arbitrary_precision!(ordered_float::NotNan<f64>);
 

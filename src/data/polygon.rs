@@ -201,6 +201,16 @@ impl<T> Polygon<T> {
     Ok(())
   }
 
+  pub fn triangulate(
+    &self,
+  ) -> impl Iterator<Item = (Cursor<'_, T>, Cursor<'_, T>, Cursor<'_, T>)> + '_
+  where
+    T: PolygonScalar,
+  {
+    crate::algorithms::triangulation::earclip::earclip(self)
+      .map(move |(p1, p2, p3)| (self.cursor(p1), self.cursor(p2), self.cursor(p3)))
+  }
+
   pub fn centroid(&self) -> Point<T, 2>
   where
     T: PolygonScalar,
@@ -722,11 +732,6 @@ impl Position {
     }
   }
 }
-
-// pub trait Triangulate {
-//   type Iter: Iterator<Item = (VertexId, VertexId, VertexId)>;
-//   fn triangulate(&self) -> Self::Iter;
-// }
 
 #[cfg(test)]
 pub mod tests {
