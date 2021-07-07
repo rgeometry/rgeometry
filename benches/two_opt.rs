@@ -13,7 +13,8 @@ const SET_SIZE: usize = 100;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
   let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
-  // 2.1ms, 1x
+  // M1:    2.1ms, 1x
+  // 3950X: 2.6ms, 1x
   c.bench_function("two_opt_moves::<isize>", |b| {
     b.iter(|| {
       let mut pts = Vec::new();
@@ -26,27 +27,27 @@ pub fn criterion_benchmark(c: &mut Criterion) {
   });
 
   let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
-  // 56ms, 26x
-  // OLD: 89ms
+  // M1:    56ms, 26x
+  // 3950X: 44ms, 16x
   c.bench_function("two_opt_moves::<BigInt>", |b| {
     b.iter(|| {
       let mut pts: Vec<Point<BigInt, 2>> = Vec::new();
       while pts.len() < SET_SIZE {
-        let pt: Point<i64, 2> = rng.sample(Standard);
+        let pt: Point<isize, 2> = rng.sample(Standard);
         pts.push(pt.cast())
       }
       two_opt_moves(pts, &mut rng)
     })
   });
 
-  // 1.6 s, 777x
-  // OLD: 1.6
+  // M1:    1.66 s, 783x
+  // 3950X: 1.67 s, 634x
   let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
   c.bench_function("two_opt_moves::<BigRational>", |b| {
     b.iter(|| {
       let mut pts: Vec<Point<BigRational, 2>> = Vec::new();
       while pts.len() < SET_SIZE {
-        let pt: Point<i64, 2> = rng.sample(Standard);
+        let pt: Point<isize, 2> = rng.sample(Standard);
         let pt: Point<BigInt, 2> = pt.cast();
         pts.push(pt.cast())
       }
