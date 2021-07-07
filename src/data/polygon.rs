@@ -201,6 +201,13 @@ impl<T> Polygon<T> {
     Ok(())
   }
 
+  pub fn triangulate(&self) -> impl Iterator<Item = (PointId, PointId, PointId)> + '_
+  where
+    T: PolygonScalar,
+  {
+    crate::algorithms::triangulation::earclip::earclip(self)
+  }
+
   pub fn centroid(&self) -> Point<T, 2>
   where
     T: PolygonScalar,

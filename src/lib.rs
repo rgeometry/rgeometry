@@ -44,6 +44,7 @@ impl std::fmt::Display for Error {
   }
 }
 
+// FIXME: Should include ZHashable.
 pub trait PolygonScalar<T = Self, Output = Self>:
   PolygonScalarRef<T, Output>
   + AddAssign<Output>
