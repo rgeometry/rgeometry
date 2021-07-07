@@ -584,6 +584,13 @@ pub struct Cursor<'a, T> {
   pub(crate) position: Position,
 }
 
+impl<'a, T> Deref for Cursor<'a, T> {
+  type Target = Point<T, 2>;
+  fn deref(&self) -> &Self::Target {
+    self.point()
+  }
+}
+
 impl<'a, T> PartialEq for Cursor<'a, T> {
   fn eq(&self, other: &Cursor<'a, T>) -> bool {
     self.position == other.position
