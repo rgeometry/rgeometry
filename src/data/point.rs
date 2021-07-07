@@ -110,7 +110,7 @@ impl<T, const N: usize> Point<T, N> {
     }
   }
 
-  pub fn to_float(self) -> Point<OrderedFloat<f64>, N>
+  pub fn to_float(&self) -> Point<OrderedFloat<f64>, N>
   where
     T: Clone + Into<f64>,
   {

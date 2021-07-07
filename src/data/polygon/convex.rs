@@ -85,11 +85,11 @@ where
     self.0.validate()
   }
 
-  pub fn to_float(self) -> PolygonConvex<OrderedFloat<f64>>
+  pub fn float(self) -> PolygonConvex<OrderedFloat<f64>>
   where
     T: Clone + Into<f64>,
   {
-    PolygonConvex::new_unchecked(self.0.to_float())
+    PolygonConvex::new_unchecked(self.0.float())
   }
 
   /// $O(1)$
@@ -113,7 +113,7 @@ where
   /// # let convex: PolygonConvex<i8> = {
   /// PolygonConvex::random(3, &mut rand::thread_rng())
   /// # };
-  /// # render_polygon(&convex.to_float().normalize());
+  /// # render_polygon(&convex.float().normalize());
   /// ```
   /// <iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>

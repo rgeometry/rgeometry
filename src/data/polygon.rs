@@ -481,7 +481,7 @@ impl<T> Polygon<T> {
     }
   }
 
-  pub fn to_float(self) -> Polygon<OrderedFloat<f64>>
+  pub fn float(self) -> Polygon<OrderedFloat<f64>>
   where
     T: Clone + Into<f64>,
   {
