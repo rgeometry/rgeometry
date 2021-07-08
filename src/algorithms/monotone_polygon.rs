@@ -1,5 +1,5 @@
 // https://en.wikipedia.org/wiki/Monotone_polygon
-use crate::data::{Point, Polygon, Vector};
+use crate::data::{Cursor, Point, Polygon, Vector};
 use crate::{Error, Orientation, PolygonScalar};
 use rand::SeedableRng;
 
@@ -9,47 +9,79 @@ use std::process::exit;
 use std::vec;
 
 ///Check if the given polyon is monotone with resprect to given direction
-pub fn is_monotone<T>(poly: Polygon<T>, direction: &Vector<T, 2>) -> Result<bool, Error>
+pub fn is_monotone<T>(poly: &Polygon<T>, direction: &Vector<T, 2>) -> bool
 where
   T: PolygonScalar,
 {
-  if poly.points.len() < 3 {
-    return Err(Error::InsufficientVertices);
+  // We can only check polygons without. It would be nice to enforce this with types.
+  assert_eq!(poly.rings.len(), 1);
+
+  let cmp_cursors = |a: &Cursor<'_, T>, b: &Cursor<'_, T>| direction.cmp_along(a, b).then(a.cmp(b));
+  // XXX: Is there a way to get both the min and max element at the same time?
+  let max_cursor = {
+    match poly.iter_boundary().max_by(cmp_cursors) {
+      Some(c) => c,
+      None => return false,
+    }
+  };
+  let min_cursor = {
+    match poly.iter_boundary().min_by(cmp_cursors) {
+      Some(c) => c,
+      None => return false,
+    }
+  };
+
+  // All points going counter-clockwise from min_cursor to max_cursor must be
+  // less-than or equal to the next point in the chain along the direction vector.
+  for pt in min_cursor.to(max_cursor) {
+    if direction.cmp_along(&pt, &pt.next()) == Ordering::Greater {
+      return false;
+    }
   }
 
-  let mut points = poly.points;
-  let max_index = points
-    .iter()
-    .enumerate()
-    .max_by(|(_, curr_val), (_, nxt_val)| {
-      direction
-        .cmp_along(curr_val, nxt_val)
-        .then(curr_val.cmp(nxt_val))
-    })
-    .map(|(idx, _)| idx)
-    .unwrap();
+  // Walking down the other chain, the condition is opposite: All points
+  // must be greater-than or equal to the next point in the chain along the direction vector.
+  for pt in max_cursor.to(min_cursor) {
+    if direction.cmp_along(&pt, &pt.next()) == Ordering::Less {
+      return false;
+    }
+  }
 
-  points.rotate_left(max_index);
+  true
 
-  let min_index = points
-    .iter()
-    .enumerate()
-    .min_by(|(_, curr_val), (_, nxt_val)| {
-      direction
-        .cmp_along(curr_val, nxt_val)
-        .then(curr_val.cmp(nxt_val))
-    })
-    .map(|(idx, _)| idx)
-    .unwrap();
+  // let mut points = poly.points.clone();
+  // let max_index = points
+  //   .iter()
+  //   .enumerate()
+  //   .max_by(|(_, curr_val), (_, nxt_val)| {
+  //     direction
+  //       .cmp_along(curr_val, nxt_val)
+  //       .then(curr_val.cmp(nxt_val))
+  //   })
+  //   .map(|(idx, _)| idx)
+  //   .unwrap();
 
-  Ok(
-    points[..min_index]
-      .windows(2)
-      .all(|pair| direction.cmp_along(&pair[1], &pair[0]) != Ordering::Greater)
-      && points[min_index..]
-        .windows(2)
-        .all(|pair| direction.cmp_along(&pair[1], &pair[0]) != Ordering::Less),
-  )
+  // points.rotate_left(max_index);
+
+  // let min_index = points
+  //   .iter()
+  //   .enumerate()
+  //   .min_by(|(_, curr_val), (_, nxt_val)| {
+  //     direction
+  //       .cmp_along(curr_val, nxt_val)
+  //       .then(curr_val.cmp(nxt_val))
+  //   })
+  //   .map(|(idx, _)| idx)
+  //   .unwrap();
+
+  // Ok(
+  //   points[..min_index]
+  //     .windows(2)
+  //     .all(|pair| direction.cmp_along(&pair[1], &pair[0]) != Ordering::Greater)
+  //     && points[min_index..]
+  //       .windows(2)
+  //       .all(|pair| direction.cmp_along(&pair[1], &pair[0]) != Ordering::Less),
+  // )
 }
 
 /// Generates a monotone polygon from given points with respect to given direction
@@ -102,7 +134,7 @@ mod monotone_testing {
   #[proptest]
   fn convex_polygon_is_montone(convex_polygon: PolygonConvex<i8>, direction: Vector<i8, 2>) {
     prop_assert_eq!(
-      monotone_polygon::is_monotone(convex_polygon.polygon().clone(), &direction).unwrap(),
+      monotone_polygon::is_monotone(&convex_polygon.polygon(), &direction),
       true
     );
   }
@@ -120,7 +152,7 @@ mod monotone_testing {
     ])
     .unwrap();
     assert_eq!(
-      monotone_polygon::is_monotone(polygon, &Vector::from(Point::new([0, 1]))).unwrap(),
+      monotone_polygon::is_monotone(&polygon, &Vector::from(Point::new([0, 1]))),
       false
     );
   }
@@ -135,23 +167,15 @@ mod monotone_testing {
     ])
     .unwrap();
     assert_eq!(
-      monotone_polygon::is_monotone(polygon, &Vector::from(Point::new([0, 1]))).unwrap(),
+      monotone_polygon::is_monotone(&polygon, &Vector::from(Point::new([0, 1]))),
       true
     );
   }
 
   #[proptest]
-  fn generate_monotone(polygon: Polygon<i8>, direction: Vector<i8, 2>) {
-    let mut points = polygon.points;
-    points.shuffle(&mut rand::thread_rng());
-
-    let res = monotone_polygon::form_monotone_polygon(points, &direction);
-
-    prop_assert!(res.is_ok());
-
-    prop_assert_eq!(
-      monotone_polygon::is_monotone(res.unwrap(), &direction).unwrap(),
-      true
-    );
+  fn generate_monotone(points: Vec<Point<i8, 2>>, direction: Vector<i8, 2>) {
+    if let Ok(p) = monotone_polygon::form_monotone_polygon(points, &direction) {
+      prop_assert!(monotone_polygon::is_monotone(&p, &direction));
+    }
   }
 }
