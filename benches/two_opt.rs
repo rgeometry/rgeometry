@@ -4,6 +4,7 @@ use rgeometry::data::*;
 
 use num::BigInt;
 use num::BigRational;
+use ordered_float::OrderedFloat;
 
 use rand::distributions::Standard;
 use rand::Rng;
@@ -20,6 +21,18 @@ pub fn criterion_benchmark(c: &mut Criterion) {
       let mut pts = Vec::new();
       while pts.len() < SET_SIZE {
         let pt: Point<isize, 2> = rng.sample(Standard);
+        pts.push(pt)
+      }
+      two_opt_moves(pts, &mut rng)
+    })
+  });
+
+  let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
+  c.bench_function("two_opt_moves::<f64>", |b| {
+    b.iter(|| {
+      let mut pts = Vec::new();
+      while pts.len() < SET_SIZE {
+        let pt: Point<OrderedFloat<f64>, 2> = rng.sample(Standard);
         pts.push(pt)
       }
       two_opt_moves(pts, &mut rng)
