@@ -1,5 +1,6 @@
 pub mod convex_hull;
 pub mod intersection;
+pub mod monotone_polygon;
 pub mod polygonization;
 pub mod triangulation;
 pub mod zhash;

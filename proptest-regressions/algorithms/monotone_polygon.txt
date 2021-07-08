@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 79f4ad3382229f8f2833ab150d67651eead36f4cba64482f709b40e6ff5d6dae # shrinks to input = _GenerateYMonotoneArgs { polygon: Polygon { points: [Point { array: [0, 66] }, Point { array: [-82, 76] }, Point { array: [-15, 55] }, Point { array: [82, 123] }, Point { array: [28, 95] }, Point { array: [-50, 101] }, Point { array: [-81, 101] }], ring_index: [RingId(0), RingId(0), RingId(0), RingId(0), RingId(0), RingId(0), RingId(0)], position_index: [PositionId(0), PositionId(1), PositionId(2), PositionId(3), PositionId(4), PositionId(5), PositionId(6)], rings: [[0, 1, 2, 3, 4, 5, 6]] } }
+cc b450bc14d07f24d9ac76cf45be0658e22f5aeabff30387aec22614a9228bcfd8 # shrinks to input = _ValidMonotoneArgs { points: [Point { array: [-15, 19] }, Point { array: [-15, 19] }, Point { array: [0, 0] }, Point { array: [0, 1] }], direction: Vector([0, 0]) }
+cc dfa8ad142f28ad57337adae5d7216c65012ba240c2f26b421084ef8c060e8ece # shrinks to input = _MonotoneIsMonotonePropArgs { points: [Point { array: [-126, -99] }, Point { array: [-126, -99] }, Point { array: [0, 0] }], direction: Vector([0, 0]) }
