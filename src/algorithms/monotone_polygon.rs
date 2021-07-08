@@ -48,40 +48,6 @@ where
   }
 
   true
-
-  // let mut points = poly.points.clone();
-  // let max_index = points
-  //   .iter()
-  //   .enumerate()
-  //   .max_by(|(_, curr_val), (_, nxt_val)| {
-  //     direction
-  //       .cmp_along(curr_val, nxt_val)
-  //       .then(curr_val.cmp(nxt_val))
-  //   })
-  //   .map(|(idx, _)| idx)
-  //   .unwrap();
-
-  // points.rotate_left(max_index);
-
-  // let min_index = points
-  //   .iter()
-  //   .enumerate()
-  //   .min_by(|(_, curr_val), (_, nxt_val)| {
-  //     direction
-  //       .cmp_along(curr_val, nxt_val)
-  //       .then(curr_val.cmp(nxt_val))
-  //   })
-  //   .map(|(idx, _)| idx)
-  //   .unwrap();
-
-  // Ok(
-  //   points[..min_index]
-  //     .windows(2)
-  //     .all(|pair| direction.cmp_along(&pair[1], &pair[0]) != Ordering::Greater)
-  //     && points[min_index..]
-  //       .windows(2)
-  //       .all(|pair| direction.cmp_along(&pair[1], &pair[0]) != Ordering::Less),
-  // )
 }
 
 /// Generates a monotone polygon from given points with respect to given direction
