@@ -133,10 +133,10 @@ mod monotone_testing {
 
   #[proptest]
   fn convex_polygon_is_montone(convex_polygon: PolygonConvex<i8>, direction: Vector<i8, 2>) {
-    prop_assert_eq!(
-      monotone_polygon::is_monotone(&convex_polygon.polygon(), &direction),
-      true
-    );
+    prop_assert!(monotone_polygon::is_monotone(
+      &convex_polygon.polygon(),
+      &direction
+    ));
   }
 
   #[test]
@@ -151,10 +151,10 @@ mod monotone_testing {
       Point::new([-1, 2]),
     ])
     .unwrap();
-    assert_eq!(
-      monotone_polygon::is_monotone(&polygon, &Vector::from(Point::new([0, 1]))),
-      false
-    );
+    assert!(!monotone_polygon::is_monotone(
+      &polygon,
+      &Vector::from(Point::new([0, 1]))
+    ));
   }
 
   #[test]
@@ -166,10 +166,10 @@ mod monotone_testing {
       Point::new([0, -3]),
     ])
     .unwrap();
-    assert_eq!(
-      monotone_polygon::is_monotone(&polygon, &Vector::from(Point::new([0, 1]))),
-      true
-    );
+    assert!(monotone_polygon::is_monotone(
+      &polygon,
+      &Vector::from(Point::new([0, 1]))
+    ));
   }
 
   #[proptest]
