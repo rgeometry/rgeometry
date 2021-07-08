@@ -95,6 +95,7 @@ mod monotone_testing {
   use rand::prelude::SliceRandom;
   use rand::SeedableRng;
   use std::assert;
+  use std::collections::BTreeSet;
   use test_strategy::proptest;
 
   #[proptest]
@@ -139,9 +140,29 @@ mod monotone_testing {
   }
 
   #[proptest]
-  fn generate_monotone(points: Vec<Point<i8, 2>>, direction: Vector<i8, 2>) {
+  fn monotone_is_monotone_prop(points: Vec<Point<i8, 2>>, direction: Vector<i8, 2>) {
     if let Ok(p) = monotone_polygon::form_monotone_polygon(points, &direction) {
       prop_assert!(monotone_polygon::is_monotone(&p, &direction));
+      prop_assert_eq!(p.validate().err(), None);
+    }
+  }
+
+  #[proptest]
+  fn valid_monotone(points: Vec<Point<i8, 2>>, direction: Vector<i8, 2>) {
+    // dedup points
+    let mut points = points;
+    let mut set = BTreeSet::new();
+    points.retain(|pt| set.insert(pt.clone()));
+    // If we have at least three, non-colinear points, then we must be able to
+    // create a monotone polygon.
+    if !points
+      .windows(3)
+      .all(|window| Orientation::new(&window[0], &window[1], &window[2]).is_colinear())
+    {
+      let res = monotone_polygon::form_monotone_polygon(points, &direction)
+        .and_then(|p| Ok(monotone_polygon::is_monotone(&p, &direction)));
+
+      prop_assert_eq!(res, Ok(true));
     }
   }
 }
