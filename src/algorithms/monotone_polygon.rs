@@ -87,23 +87,16 @@ where
 //testing
 #[cfg(test)]
 mod monotone_testing {
-  use crate::algorithms::monotone_polygon;
+  use super::*;
   use crate::data::{Point, Polygon, PolygonConvex, Vector};
   use crate::Orientation;
-  use proptest::collection::vec;
   use proptest::prelude::*;
-  use rand::prelude::SliceRandom;
-  use rand::SeedableRng;
-  use std::assert;
   use std::collections::BTreeSet;
   use test_strategy::proptest;
 
   #[proptest]
   fn convex_polygon_is_montone(convex_polygon: PolygonConvex<i8>, direction: Vector<i8, 2>) {
-    prop_assert!(monotone_polygon::is_monotone(
-      &convex_polygon.polygon(),
-      &direction
-    ));
+    prop_assert!(is_monotone(&convex_polygon.polygon(), &direction));
   }
 
   #[test]
@@ -118,10 +111,7 @@ mod monotone_testing {
       Point::new([-1, 2]),
     ])
     .unwrap();
-    assert!(!monotone_polygon::is_monotone(
-      &polygon,
-      &Vector::from(Point::new([0, 1]))
-    ));
+    assert!(!is_monotone(&polygon, &Vector::from(Point::new([0, 1]))));
   }
 
   #[test]
@@ -133,16 +123,13 @@ mod monotone_testing {
       Point::new([0, -3]),
     ])
     .unwrap();
-    assert!(monotone_polygon::is_monotone(
-      &polygon,
-      &Vector::from(Point::new([0, 1]))
-    ));
+    assert!(is_monotone(&polygon, &Vector::from(Point::new([0, 1]))));
   }
 
   #[proptest]
   fn monotone_is_monotone_prop(points: Vec<Point<i8, 2>>, direction: Vector<i8, 2>) {
-    if let Ok(p) = monotone_polygon::form_monotone_polygon(points, &direction) {
-      prop_assert!(monotone_polygon::is_monotone(&p, &direction));
+    if let Ok(p) = form_monotone_polygon(points, &direction) {
+      prop_assert!(is_monotone(&p, &direction));
       prop_assert_eq!(p.validate().err(), None);
     }
   }
@@ -159,10 +146,9 @@ mod monotone_testing {
       .windows(3)
       .all(|window| Orientation::new(&window[0], &window[1], &window[2]).is_colinear())
     {
-      let res = monotone_polygon::form_monotone_polygon(points, &direction)
-        .and_then(|p| Ok(monotone_polygon::is_monotone(&p, &direction)));
-
-      prop_assert_eq!(res, Ok(true));
+      let p = form_monotone_polygon(points, &direction).unwrap();
+      prop_assert!(is_monotone(&p, &direction));
+      prop_assert_eq!(p.validate().err(), None);
     }
   }
 }
