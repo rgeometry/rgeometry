@@ -51,21 +51,22 @@ where
 }
 
 /// Generates a monotone polygon from given points with respect to given direction
-pub fn form_monotone_polygon<T>(
+pub fn new_monotone_polygon<T>(
   mut points: Vec<Point<T, 2>>,
   direction: &Vector<T, 2>,
 ) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar,
 {
+  // First compare along the direction vector.
+  // If two points are the same distance along the vector, compare their X and Y components.
+  points.sort_by(|prev, curr| direction.cmp_along(prev, curr).then(prev.cmp(&curr)));
+
+  points.dedup();
   if points.len() < 3 {
     return Err(Error::InsufficientVertices);
   }
 
-  // First compare along the direction vector.
-  // Then compare the x-component.
-  // Then compare the y-component.
-  points.sort_by(|prev, curr| direction.cmp_along(prev, curr).then(prev.cmp(&curr)));
   let (min_point, max_point) = (
     points.first().unwrap().clone(),
     points.last().unwrap().clone(),
@@ -128,7 +129,7 @@ mod monotone_testing {
 
   #[proptest]
   fn monotone_is_monotone_prop(points: Vec<Point<i8, 2>>, direction: Vector<i8, 2>) {
-    if let Ok(p) = form_monotone_polygon(points, &direction) {
+    if let Ok(p) = new_monotone_polygon(points, &direction) {
       prop_assert!(is_monotone(&p, &direction));
       prop_assert_eq!(p.validate().err(), None);
     }
@@ -146,7 +147,7 @@ mod monotone_testing {
       .windows(3)
       .all(|window| Orientation::new(&window[0], &window[1], &window[2]).is_colinear())
     {
-      let p = form_monotone_polygon(points, &direction).unwrap();
+      let p = new_monotone_polygon(points, &direction).unwrap();
       prop_assert!(is_monotone(&p, &direction));
       prop_assert_eq!(p.validate().err(), None);
     }
