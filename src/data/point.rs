@@ -22,6 +22,12 @@ pub struct Point<T, const N: usize> {
   pub array: [T; N],
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct PointSoS<'a, T, const N: usize> {
+  pub index: u32,
+  pub point: &'a Point<T, N>,
+}
+
 // Random sampling.
 impl<T, const N: usize> Distribution<Point<T, N>> for Standard
 where

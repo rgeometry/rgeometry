@@ -14,6 +14,15 @@ pub enum Orientation {
 }
 use Orientation::*;
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
+pub enum SoS {
+  CounterClockWise,
+  ClockWise,
+}
+
+// let slope1 = (2^q - 2^r) * (p - q);
+// let slope2 = (2^q - 2^p) * (r - q);
+
 impl Orientation {
   /// Determine the direction you have to turn if you walk from `p1`
   /// to `p2` to `p3`.
@@ -105,6 +114,14 @@ impl Orientation {
 
   pub fn is_cw(self) -> bool {
     matches!(self, Orientation::ClockWise)
+  }
+
+  pub fn break_ties(self, a: u32, b: u32, c: u32) -> SoS {
+    match self {
+      CounterClockWise => SoS::CounterClockWise,
+      ClockWise => SoS::ClockWise,
+      CoLinear => SoS::new(a, b, c),
+    }
   }
 
   // pub fn around_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
@@ -378,9 +395,57 @@ impl Orientation {
 //   }
 // }
 
+// https://arxiv.org/abs/math/9410209
+// Simulation of Simplicity.
+// Break ties (ie colinear orientations) in an arbitrary but consistent way.
+impl SoS {
+  // p: Point::new([a, 2^a])
+  // q: Point::new([b, 2^b])
+  // r: Point::new([c, 2^c])
+  // new(a,b,c) == Orientation::new(p, q, r)
+  pub fn new(a: u32, b: u32, c: u32) -> SoS {
+    assert_ne!(a, b);
+    assert_ne!(b, c);
+    assert_ne!(c, a);
+    if a < b {
+      if a < c && c < b {
+        SoS::ClockWise
+      } else {
+        SoS::CounterClockWise
+      }
+    } else {
+      if b < c && c < a {
+        SoS::CounterClockWise
+      } else {
+        SoS::ClockWise
+      }
+    }
+  }
+
+  pub fn orient(self) -> Orientation {
+    match self {
+      SoS::CounterClockWise => Orientation::CounterClockWise,
+      SoS::ClockWise => Orientation::ClockWise,
+    }
+  }
+
+  pub fn reverse(self) -> SoS {
+    match self {
+      SoS::CounterClockWise => SoS::ClockWise,
+      SoS::ClockWise => SoS::CounterClockWise,
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  use crate::testing::*;
+  use num::traits::Pow;
+  use num::BigInt;
+  use proptest::prelude::*;
+  use test_strategy::proptest;
 
   #[test]
   fn orientation_limit_1() {
@@ -427,5 +492,46 @@ mod tests {
       Orientation::ccw_cmp_around_with(&vector, &pt1, &pt2, &pt1),
       Ordering::Greater
     );
+  }
+
+  #[test]
+  fn sos_unit1() {
+    assert_eq!(SoS::new(0, 1, 2), SoS::CounterClockWise)
+  }
+
+  #[test]
+  #[should_panic]
+  fn sos_unit2() {
+    SoS::new(0, 0, 1);
+  }
+
+  #[test]
+  fn sos_unit3() {
+    assert_eq!(SoS::new(99, 0, 1), SoS::CounterClockWise);
+  }
+
+  #[proptest]
+  fn sos_eq_prop(a: u8, b: u8, c: u8) {
+    if a != b && b != c && c != a {
+      let (a, b, c) = (a as u32, b as u32, c as u32);
+      let one = &BigInt::from(1);
+      let big_a = BigInt::from(a);
+      let big_b = BigInt::from(b);
+      let big_c = BigInt::from(c);
+      let p = Point::new([big_a, one << a]);
+      let q = Point::new([big_b, one << b]);
+      let r = Point::new([big_c, one << c]);
+      prop_assert_eq!(SoS::new(a, b, c).orient(), Orientation::new(&p, &q, &r));
+    }
+  }
+
+  #[proptest]
+  fn sos_rev_prop(a: u32, b: u32, c: u32) {
+    if a != b && b != c && c != a {
+      prop_assert_eq!(SoS::new(a, b, c), SoS::new(c, b, a).reverse());
+      prop_assert_eq!(SoS::new(a, b, c), SoS::new(a, c, b).reverse());
+      prop_assert_eq!(SoS::new(a, b, c), SoS::new(b, a, c).reverse());
+      prop_assert_eq!(SoS::new(a, b, c), SoS::new(b, c, a));
+    }
   }
 }
