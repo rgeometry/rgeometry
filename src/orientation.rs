@@ -407,19 +407,35 @@ impl SoS {
     assert_ne!(a, b);
     assert_ne!(b, c);
     assert_ne!(c, a);
-    if a < b {
-      if a < c && c < b {
-        SoS::ClockWise
-      } else {
-        SoS::CounterClockWise
-      }
+
+    // Combinations:
+    //               a<b a<c c<b
+    // b a c => CW    _   X   _
+    // c b a => CW    _   _   X
+    // a c b => CW    X   X   X
+    // b c a => CCW   _   _   _
+    // c a b => CCW   X   _   X
+    // a b c => CCW   X   X   _
+
+    let ab = a < b;
+    let ac = a < c;
+    let cb = c < b;
+    if ab ^ ac ^ cb {
+      SoS::ClockWise
     } else {
-      if b < c && c < a {
-        SoS::CounterClockWise
-      } else {
-        SoS::ClockWise
-      }
+      SoS::CounterClockWise
     }
+    // if a < b {
+    //   if a < c && c < b {
+    //     SoS::ClockWise // a c b
+    //   } else {
+    //     SoS::CounterClockWise // a b c, c a b
+    //   }
+    // } else if b < c && c < a {
+    //   SoS::CounterClockWise // b c a
+    // } else {
+    //   SoS::ClockWise // b a c, c b a
+    // }
   }
 
   pub fn orient(self) -> Orientation {
