@@ -43,6 +43,10 @@ name    = "convex_polygon"
 harness = false
 name    = "graham_scan"
 
+[[bench]]
+harness = false
+name    = "two_opt"
+
 [profile.release]
 overflow-checks = true
 
