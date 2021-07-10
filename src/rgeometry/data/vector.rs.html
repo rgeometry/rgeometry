@@ -258,6 +258,7 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
+<span id="237">237</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -366,6 +367,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> {
+  <span class="comment">// Unit vector pointing to the right.</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unit_right</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">One</span> <span class="op">+</span> <span class="ident">Zero</span>,
