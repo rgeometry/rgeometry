@@ -13,10 +13,13 @@ use std::cmp::Ordering;
 // Line
 
 #[allow(dead_code)]
+#[derive(Debug, Clone)]
 pub struct Line<T, const N: usize> {
-  origin: Point<T, N>,
-  direction: Direction<T, N>,
+  pub origin: Point<T, N>,
+  pub direction: Direction<T, N>,
 }
+
+#[derive(Debug, Clone)]
 pub enum Direction<T, const N: usize> {
   Vector(Vector<T, N>),
   Through(Point<T, N>),
@@ -25,6 +28,7 @@ pub enum Direction<T, const N: usize> {
 ///////////////////////////////////////////////////////////////////////////////
 // Line SoS
 
+#[derive(Debug, Clone)]
 pub struct LineSoS<T, const N: usize> {
   pub origin: Point<T, N>,
   pub direction: Direction<T, N>,
@@ -46,32 +50,28 @@ where
 {
   type Result = ILineLineSegmentSoS;
   fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
+    let b1 = other.min.inner();
+    let b2 = other.max.inner();
     let origin = &self.origin;
+    let l1_to_b1;
+    let l1_to_b2;
     match &self.direction {
       Direction::Vector(direction) => {
-        let b1 = other.min.inner();
-        let b2 = other.max.inner();
-        let l1_to_b1 =
+        l1_to_b1 =
           Point::orient_along_vector(origin, direction, b1).then(Orientation::CounterClockWise);
-        let l1_to_b2 =
+        l1_to_b2 =
           Point::orient_along_vector(origin, direction, b2).then(Orientation::CounterClockWise);
-        if l1_to_b1 == l1_to_b2.reverse() {
-          Some(ILineLineSegmentSoS::Crossing)
-        } else {
-          None
-        }
       }
       Direction::Through(through) => {
-        let b1 = other.min.inner();
-        let b2 = other.max.inner();
-        let l1_to_b1 = Point::orient(origin, through, b1).then(Orientation::CounterClockWise);
-        let l1_to_b2 = Point::orient(origin, through, b2).then(Orientation::CounterClockWise);
-        if l1_to_b1 == l1_to_b2.reverse() {
-          Some(ILineLineSegmentSoS::Crossing)
-        } else {
-          None
-        }
+        l1_to_b1 = Point::orient(origin, through, b1).then(Orientation::CounterClockWise);
+        l1_to_b2 = Point::orient(origin, through, b2).then(Orientation::CounterClockWise);
       }
+    }
+    // If b1 and b2 are on opposite sides of the line then there's an intersection.
+    if l1_to_b1 == l1_to_b2.reverse() {
+      Some(ILineLineSegmentSoS::Crossing)
+    } else {
+      None
     }
   }
 }
@@ -139,7 +139,10 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::data::LineSegment;
+  use crate::data::{LineSegment, Polygon};
+
+  use proptest::prelude::*;
+  use test_strategy::proptest;
 
   #[test]
   fn ray_intersect_unit_1() {
@@ -167,5 +170,17 @@ mod tests {
     };
 
     assert_eq!(ray.intersect(line.as_ref()), None);
+  }
+
+  #[proptest]
+  fn raw_intersection_count_prop(poly: Polygon<i8>, line: LineSoS<i8, 2>) {
+    let mut intersections = 0;
+    for edge in poly.iter_boundary_edges() {
+      let edge: LineSegment<i8, 2> = edge.into();
+      if line.intersect(edge.as_ref()).is_some() {
+        intersections += 1;
+      }
+    }
+    prop_assert_eq!(intersections % 2, 0);
   }
 }
