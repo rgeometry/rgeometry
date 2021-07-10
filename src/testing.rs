@@ -230,31 +230,37 @@ where
   type Value = Polygon<T::Value>;
   fn new_tree(&self, runner: &mut TestRunner) -> Result<Self::Tree, Reason> {
     let n = runner.rng().gen_range(self.1.clone()).max(3);
-    let mut points = Vec::with_capacity(n);
-    let mut set = BTreeSet::new();
-    let mut actual = Vec::new();
-    while actual.len() < n {
-      let pt = Point::new([self.0.clone(), self.0.clone()]).new_tree(runner)?;
-      let current = pt.current();
-      if set.insert(current.clone()) {
-        points.push(pt);
-        actual.push(current)
+    loop {
+      let mut points = Vec::with_capacity(n);
+      let mut set = BTreeSet::new();
+      let mut actual = Vec::new();
+      while actual.len() < n {
+        let pt = Point::new([self.0.clone(), self.0.clone()]).new_tree(runner)?;
+        let current = pt.current();
+        if set.insert(current.clone()) {
+          points.push(pt);
+          actual.push(current)
+        }
+      }
+      // eprintln!("Generated points: {}/{}", points.len(), n);
+      // eprintln!("Generating poly: {:?}", &actual);
+      let rng = &mut rand::rngs::SmallRng::seed_from_u64(0);
+      // If all the points are colinear then two_opt_moves will fail.
+      match crate::algorithms::two_opt_moves(actual, rng).map_err(|err| err.to_string()) {
+        Err(_err) => continue,
+        Ok(poly) => {
+          assert_eq!(poly.rings[0].len(), points.len());
+          // eprintln!("Re-ordering points");
+          // FIXME: Super ugly:
+          let mut new_points = Vec::new();
+          for &pid in poly.rings[0].iter() {
+            new_points.push(points[pid.usize()].clone());
+          }
+
+          return Ok(ShrinkablePolygon::new(new_points));
+        }
       }
     }
-    // eprintln!("Generated points: {}/{}", points.len(), n);
-    // eprintln!("Generating poly: {:?}", &actual);
-    let rng = &mut rand::rngs::SmallRng::seed_from_u64(0);
-    let poly = crate::algorithms::two_opt_moves(actual, rng).map_err(|err| err.to_string())?;
-
-    assert_eq!(poly.rings[0].len(), points.len());
-    // eprintln!("Re-ordering points");
-    // FIXME: Super ugly:
-    let mut new_points = Vec::new();
-    for &pid in poly.rings[0].iter() {
-      new_points.push(points[pid.usize()].clone());
-    }
-
-    Ok(ShrinkablePolygon::new(new_points))
   }
 }
 
