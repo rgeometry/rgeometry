@@ -87,8 +87,7 @@ pub trait Extended: NumOps<Self, Self> + Ord + Clone {
     + FromPrimitive
     + NumAssignOps
     + Signed;
-  fn extend_signed(self) -> Self::ExtendedSigned;
-  fn truncate_signed(val: Self::ExtendedSigned) -> Self;
+  fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_perp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
@@ -98,15 +97,27 @@ macro_rules! fixed_precision {
   ( $ty:ty, $uty:ty, $long:ty, $ulong: ty ) => {
     impl Extended for $ty {
       type ExtendedSigned = $long;
-      fn extend_signed(self) -> Self::ExtendedSigned {
-        self as Self::ExtendedSigned
-      }
-      fn truncate_signed(val: Self::ExtendedSigned) -> Self {
-        val as Self
-      }
 
-      // FIXME: These functions should be defined in terms of 'extend_signed' and
-      // 'extend_unsigned'.
+      fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        fn diff(a: $ty, b: $ty) -> $ulong {
+          if b > a {
+            b.wrapping_sub(a) as $uty as $ulong
+          } else {
+            a.wrapping_sub(b) as $uty as $ulong
+          }
+        }
+        let pq_x = diff(p[0], q[0]);
+        let pq_y = diff(p[1], q[1]);
+        let (pq_dist_squared, pq_overflow) = (pq_x * pq_x).overflowing_add(pq_y * pq_y);
+        let pr_x = diff(p[0], r[0]);
+        let pr_y = diff(p[1], r[1]);
+        let (pr_dist_squared, pr_overflow) = (pr_x * pr_x).overflowing_add(pr_y * pr_y);
+        match (pq_overflow, pr_overflow) {
+          (true, false) => Ordering::Greater,
+          (false, true) => Ordering::Less,
+          _ => pq_dist_squared.cmp(&pr_dist_squared),
+        }
+      }
 
       fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
         // Return the absolute difference along with its sign.
@@ -209,12 +220,16 @@ macro_rules! arbitrary_precision {
     $(
       impl Extended for $ty {
       type ExtendedSigned = $ty;
-      fn extend_signed(self) -> Self::ExtendedSigned {
-        self
+      fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        let pq_x = &p[0] - &q[0];
+        let pq_y = &p[1] - &q[1];
+        let pq_dist_squared: Self = &pq_x*&pq_x + &pq_y*&pq_y;
+        let pr_x = &p[0] - &r[0];
+        let pr_y = &p[1] - &r[1];
+        let pr_dist_squared: Self = &pr_x*&pr_x + &pr_y*&pr_y;
+        pq_dist_squared.cmp(&pr_dist_squared)
       }
-      fn truncate_signed(val: Self::ExtendedSigned) -> Self {
-        val
-      }
+
       fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
         let slope1 = (&r[1] - &q[1]) * (&q[0] - &p[0]);
         let slope2 = (&q[1] - &p[1]) * (&r[0] - &q[0]);

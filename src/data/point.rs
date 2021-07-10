@@ -9,12 +9,13 @@ use rand::Rng;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Debug;
+use std::iter::Sum;
 use std::ops::Deref;
 use std::ops::Index;
 use std::ops::Neg;
 
 use super::Vector;
-use crate::Orientation;
+use crate::{Extended, Orientation};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)] // Required for correctness!
@@ -62,26 +63,18 @@ impl<T, const N: usize> Point<T, N> {
   }
 
   // Warning: May cause arithmetic overflow.
-  pub fn cmp_distance_to(&self, p: &Point<T, N>, q: &Point<T, N>) -> Ordering
+  // See `cmp_distance_to` for a safe way to compare distances in 2D.
+  pub fn squared_euclidean_distance<F>(&self, rhs: &Point<T, N>) -> F
   where
-    T: Clone + Zero + Ord + NumOps + crate::Extended,
-  {
-    self
-      .squared_euclidean_distance(p)
-      .cmp(&self.squared_euclidean_distance(q))
-  }
-
-  // Warning: May cause arithmetic overflow.
-  pub fn squared_euclidean_distance(&self, rhs: &Point<T, N>) -> T::ExtendedSigned
-  where
-    T: Clone + Zero + NumOps + crate::Extended,
+    T: Clone + Into<F>,
+    F: NumOps + Clone + Sum,
   {
     self
       .array
       .iter()
       .zip(rhs.array.iter())
       .map(|(a, b)| {
-        let diff = a.clone().extend_signed() - b.clone().extend_signed();
+        let diff = a.clone().into() - b.clone().into();
         diff.clone() * diff
       })
       .sum()
@@ -210,6 +203,13 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 
 // Methods on two-dimensional points.
 impl<T> Point<T, 2> {
+  pub fn cmp_distance_to(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
+  where
+    T: Extended,
+  {
+    Extended::cmp_dist(&self, &p, &q)
+  }
+
   /// Determine the direction you have to turn if you walk from `p1`
   /// to `p2` to `p3`.
   ///
@@ -326,11 +326,27 @@ pub mod tests {
   use test_strategy::proptest;
 
   #[proptest]
+  fn cmp_dist_i8_fuzz(pt1: Point<i8, 2>, pt2: Point<i8, 2>, pt3: Point<i8, 2>) {
+    let pt1_big: Point<BigInt, 2> = pt1.cast();
+    let pt2_big: Point<BigInt, 2> = pt2.cast();
+    let pt3_big: Point<BigInt, 2> = pt3.cast();
+    prop_assert_eq!(
+      pt1.cmp_distance_to(&pt2, &pt3),
+      pt1_big.cmp_distance_to(&pt2_big, &pt3_big)
+    );
+  }
+
+  #[proptest]
   fn squared_euclidean_distance_fuzz(
     #[strategy(any_nn::<2>())] pt1: Point<NotNan<f64>, 2>,
     #[strategy(any_nn::<2>())] pt2: Point<NotNan<f64>, 2>,
   ) {
-    let _ = pt1.squared_euclidean_distance(&pt2);
+    let _out: f64 = pt1.squared_euclidean_distance(&pt2);
+  }
+
+  #[proptest]
+  fn squared_euclidean_distance_i8_fuzz(pt1: Point<i8, 2>, pt2: Point<i8, 2>) {
+    let _out: i64 = pt1.squared_euclidean_distance(&pt2);
   }
 
   #[proptest]
@@ -365,6 +381,34 @@ pub mod tests {
     let diff = &pt2 - &pt1;
     let pt3 = &pt2 + &diff + &Vector([BigInt::from(1), BigInt::from(1)]);
     prop_assert!(!Point::orient(&pt1, &pt2, &pt3).is_colinear())
+  }
+
+  // i8 and BigInt uses different algorithms for computing orientation but the results
+  // should be identical.
+  #[proptest]
+  fn orient_bigint_i8_prop(pt1: Point<i8, 2>, pt2: Point<i8, 2>, pt3: Point<i8, 2>) {
+    let pt1_big: Point<BigInt, 2> = pt1.cast();
+    let pt2_big: Point<BigInt, 2> = pt2.cast();
+    let pt3_big: Point<BigInt, 2> = pt3.cast();
+
+    prop_assert_eq!(
+      Point::orient(&pt1, &pt2, &pt3),
+      Point::orient(&pt1_big, &pt2_big, &pt3_big)
+    )
+  }
+
+  // i8 and f64 uses different algorithms for computing orientation but the results
+  // should be identical.
+  #[proptest]
+  fn orient_f64_i8_prop(pt1: Point<i8, 2>, pt2: Point<i8, 2>, pt3: Point<i8, 2>) {
+    let pt1_big: Point<OrderedFloat<f64>, 2> = pt1.to_float();
+    let pt2_big: Point<OrderedFloat<f64>, 2> = pt2.to_float();
+    let pt3_big: Point<OrderedFloat<f64>, 2> = pt3.to_float();
+
+    prop_assert_eq!(
+      Point::orient(&pt1, &pt2, &pt3),
+      Point::orient(&pt1_big, &pt2_big, &pt3_big)
+    )
   }
 
   #[proptest]
