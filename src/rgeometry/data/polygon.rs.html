@@ -847,6 +847,12 @@
 <span id="823">823</span>
 <span id="824">824</span>
 <span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num::BigInt</span>;
@@ -854,6 +860,7 @@
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">ordered_float::OrderedFloat</span>;
 <span class="kw">use</span> <span class="ident">std::iter::Sum</span>;
+<span class="kw">use</span> <span class="ident">std::ops::Bound</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::line</span>::<span class="kw-2">*</span>;
@@ -1528,7 +1535,7 @@
     <span class="kw">let</span> <span class="ident">trig</span> <span class="op">=</span>
       <span class="ident">TriangleView::new_unchecked</span>([<span class="self">self</span>.<span class="ident">prev</span>().<span class="ident">point</span>(), <span class="self">self</span>.<span class="ident">point</span>(), <span class="self">self</span>.<span class="ident">next</span>().<span class="ident">point</span>()]);
     <span class="kw">if</span> <span class="ident">trig</span>.<span class="ident">orientation</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
-      <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">next</span>().<span class="ident">next</span>().<span class="ident">to</span>(<span class="self">self</span>.<span class="ident">prev</span>()) {
+      <span class="kw">for</span> <span class="ident">pt</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">next</span>().<span class="ident">next</span>().<span class="ident">to</span>(<span class="ident">Excluded</span>(<span class="self">self</span>.<span class="ident">prev</span>())) {
         <span class="kw">if</span> <span class="ident">trig</span>.<span class="ident">locate</span>(<span class="ident">pt</span>.<span class="ident">point</span>()) <span class="op">!</span><span class="op">=</span> <span class="ident">PointLocation::Outside</span> {
           <span class="kw">return</span> <span class="bool-val">false</span>;
         }
@@ -1556,19 +1563,24 @@
     <span class="self">self</span>.<span class="ident">orientation</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">Orientation::CoLinear</span>
   }
 
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to</span>(<span class="self">self</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">end</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span> {
-    <span class="ident">CursorIter</span> {
-      <span class="ident">cursor_head</span>: <span class="self">self</span>,
-      <span class="ident">cursor_tail</span>: <span class="ident">end</span>.<span class="ident">prev</span>(),
-      <span class="ident">exhausted</span>: <span class="bool-val">false</span>,
-    }
-  }
-
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_inclusive</span>(<span class="self">self</span>, <span class="ident">end</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CursorIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">CursorIter</span> {
-      <span class="ident">cursor_head</span>: <span class="self">self</span>,
-      <span class="ident">cursor_tail</span>: <span class="ident">end</span>,
-      <span class="ident">exhausted</span>: <span class="bool-val">false</span>,
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to</span>(<span class="self">self</span>: <span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">end</span>: <span class="ident">Bound</span><span class="op">&lt;</span><span class="ident">Cursor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CursorIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="comment">// FIXME: Check that self and end point to the same polygon.</span>
+    <span class="kw">match</span> <span class="ident">end</span> {
+      <span class="ident">Bound::Unbounded</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CursorIter</span> {
+        <span class="ident">cursor_head</span>: <span class="self">self</span>,
+        <span class="ident">cursor_tail</span>: <span class="self">self</span>.<span class="ident">prev</span>(),
+        <span class="ident">exhausted</span>: <span class="bool-val">false</span>,
+      },
+      <span class="ident">Bound::Included</span>(<span class="ident">end</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CursorIter</span> {
+        <span class="ident">cursor_head</span>: <span class="self">self</span>,
+        <span class="ident">cursor_tail</span>: <span class="ident">end</span>,
+        <span class="ident">exhausted</span>: <span class="bool-val">false</span>,
+      },
+      <span class="ident">Bound::Excluded</span>(<span class="ident">end</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">CursorIter</span> {
+        <span class="ident">cursor_head</span>: <span class="self">self</span>,
+        <span class="ident">cursor_tail</span>: <span class="ident">end</span>.<span class="ident">prev</span>(),
+        <span class="ident">exhausted</span>: <span class="bool-val">false</span>,
+      },
     }
   }
 }

@@ -579,6 +579,7 @@
 <span id="555">555</span>
 <span id="556">556</span>
 <span id="557">557</span>
+<span id="558">558</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::Cursor</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::EndPoint</span>;
@@ -593,6 +594,7 @@
 
 <span class="kw">use</span> <span class="ident">rand::Rng</span>;
 <span class="kw">use</span> <span class="ident">std::collections::BTreeSet</span>;
+<span class="kw">use</span> <span class="ident">std::ops::Bound</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Orientation</span>;
 
@@ -737,7 +739,7 @@
     <span class="comment">// If we can find a kink and an edge which contains it then we can move it</span>
     <span class="comment">// and shorten the circumference.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kinks</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="kw">for</span> <span class="ident">elt</span> <span class="kw">in</span> <span class="ident">a_min</span>.<span class="ident">to_inclusive</span>(<span class="ident">a_max</span>).<span class="ident">chain</span>(<span class="ident">b_min</span>.<span class="ident">to_inclusive</span>(<span class="ident">b_max</span>)) {
+    <span class="kw">for</span> <span class="ident">elt</span> <span class="kw">in</span> <span class="ident">a_min</span>.<span class="ident">to</span>(<span class="ident">Included</span>(<span class="ident">a_max</span>)).<span class="ident">chain</span>(<span class="ident">b_min</span>.<span class="ident">to</span>(<span class="ident">Included</span>(<span class="ident">b_max</span>))) {
       <span class="kw">let</span> <span class="ident">inner_segment</span>: <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="ident">elt</span>.<span class="ident">prev</span>().<span class="ident">point</span>()..<span class="ident">elt</span>.<span class="ident">next</span>().<span class="ident">point</span>()).<span class="ident">into</span>();
       <span class="kw">if</span> <span class="ident">elt</span>.<span class="ident">orientation</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CoLinear</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">inner_segment</span>.<span class="ident">contains</span>(<span class="ident">elt</span>.<span class="ident">point</span>()) {
         <span class="comment">// We&#39;re either at a corner:</span>
@@ -753,7 +755,7 @@
     }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mergable</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-    <span class="lifetime">&#39;outer</span>: <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="ident">a_min</span>.<span class="ident">to</span>(<span class="ident">a_max</span>).<span class="ident">chain</span>(<span class="ident">b_min</span>.<span class="ident">to</span>(<span class="ident">b_max</span>)) {
+    <span class="lifetime">&#39;outer</span>: <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="ident">a_min</span>.<span class="ident">to</span>(<span class="ident">Excluded</span>(<span class="ident">a_max</span>)).<span class="ident">chain</span>(<span class="ident">b_min</span>.<span class="ident">to</span>(<span class="ident">Excluded</span>(<span class="ident">b_max</span>))) {
       <span class="kw">let</span> <span class="ident">segment</span> <span class="op">=</span> <span class="ident">LineSegmentView::new</span>(
         <span class="ident">EndPoint::Exclusive</span>(<span class="ident">edge</span>.<span class="ident">point</span>()),
         <span class="ident">EndPoint::Exclusive</span>(<span class="ident">edge</span>.<span class="ident">next</span>().<span class="ident">point</span>()),
