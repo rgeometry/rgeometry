@@ -5,6 +5,7 @@ use rand::SeedableRng;
 
 use std::cmp::Ordering;
 use std::collections::VecDeque;
+use std::ops::Bound::*;
 use std::process::exit;
 use std::vec;
 
@@ -33,7 +34,7 @@ where
 
   // All points going counter-clockwise from min_cursor to max_cursor must be
   // less-than or equal to the next point in the chain along the direction vector.
-  for pt in min_cursor.to(max_cursor) {
+  for pt in min_cursor.to(Excluded(max_cursor)) {
     if direction.cmp_along(&pt, &pt.next()) == Ordering::Greater {
       return false;
     }
@@ -41,7 +42,7 @@ where
 
   // Walking down the other chain, the condition is opposite: All points
   // must be greater-than or equal to the next point in the chain along the direction vector.
-  for pt in max_cursor.to(min_cursor) {
+  for pt in max_cursor.to(Excluded(min_cursor)) {
     if direction.cmp_along(&pt, &pt.next()) == Ordering::Less {
       return false;
     }

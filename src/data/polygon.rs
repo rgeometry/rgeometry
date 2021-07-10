@@ -4,6 +4,7 @@ use num::BigRational;
 use num_traits::*;
 use ordered_float::OrderedFloat;
 use std::iter::Sum;
+use std::ops::Bound::*;
 use std::ops::*;
 
 use crate::data::line::*;
@@ -678,7 +679,7 @@ impl<'a, T> Cursor<'a, T> {
     let trig =
       TriangleView::new_unchecked([self.prev().point(), self.point(), self.next().point()]);
     if trig.orientation() == Orientation::CounterClockWise {
-      for pt in self.next().next().to(self.prev()) {
+      for pt in self.next().next().to(Excluded(self.prev())) {
         if trig.locate(pt.point()) != PointLocation::Outside {
           return false;
         }
@@ -706,19 +707,24 @@ impl<'a, T> Cursor<'a, T> {
     self.orientation() == Orientation::CoLinear
   }
 
-  pub fn to(self: Cursor<'a, T>, end: Cursor<'a, T>) -> impl Iterator<Item = Cursor<'a, T>> + 'a {
-    CursorIter {
-      cursor_head: self,
-      cursor_tail: end.prev(),
-      exhausted: false,
-    }
-  }
-
-  pub fn to_inclusive(self, end: Cursor<'a, T>) -> CursorIter<'a, T> {
-    CursorIter {
-      cursor_head: self,
-      cursor_tail: end,
-      exhausted: false,
+  pub fn to(self: Cursor<'a, T>, end: Bound<Cursor<'a, T>>) -> CursorIter<'a, T> {
+    // FIXME: Check that self and end point to the same polygon.
+    match end {
+      Bound::Unbounded => CursorIter {
+        cursor_head: self,
+        cursor_tail: self.prev(),
+        exhausted: false,
+      },
+      Bound::Included(end) => CursorIter {
+        cursor_head: self,
+        cursor_tail: end,
+        exhausted: false,
+      },
+      Bound::Excluded(end) => CursorIter {
+        cursor_head: self,
+        cursor_tail: end.prev(),
+        exhausted: false,
+      },
     }
   }
 }
