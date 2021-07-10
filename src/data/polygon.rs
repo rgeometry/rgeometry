@@ -795,20 +795,31 @@ pub mod tests {
     assert_eq!(poly.locate(&origin), PointLocation::Outside);
   }
 
-  #[proptest]
-  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8, 2>) {
-    let fast = poly.locate(&origin);
-    let mut slow = PointLocation::Outside;
-
-    for (a, b, c) in poly.triangulate() {
-      let trig = TriangleView::new([&a, &b, &c]).expect("valid triangle");
-      if trig.locate(&origin) != PointLocation::Outside {
-        slow = PointLocation::Inside;
-        break;
+  // Locate a point relative to a polygon. Should be identical to
+  // Polygon::locate but slower.
+  fn locate_by_triangulation<T>(poly: &Polygon<T>, origin: &Point<T, 2>) -> PointLocation
+  where
+    T: PolygonScalar,
+  {
+    for edge in poly.iter_boundary_edges() {
+      if edge.contains(origin) {
+        return PointLocation::OnBoundary;
       }
     }
-    if fast != PointLocation::OnBoundary {
-      prop_assert_eq!(fast, slow);
+    for (a, b, c) in poly.triangulate() {
+      let trig = TriangleView::new([&a, &b, &c]).expect("valid triangle");
+      if trig.locate(origin) == PointLocation::Inside {
+        return PointLocation::Inside;
+      }
     }
+    return PointLocation::Outside;
+  }
+
+  #[proptest]
+  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8, 2>) {
+    prop_assert_eq!(
+      locate_by_triangulation(&poly, &origin),
+      poly.locate(&origin)
+    )
   }
 }
