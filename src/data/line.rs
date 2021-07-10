@@ -35,6 +35,20 @@ pub struct LineSoS<T, const N: usize> {
   pub direction: Direction<T, N>,
 }
 
+impl<T, const N: usize> LineSoS<T, N> {
+  pub fn new(origin: Point<T, N>, direction: Direction<T, N>) -> LineSoS<T, N> {
+    LineSoS { origin, direction }
+  }
+
+  pub fn new_directed(origin: Point<T, N>, vector: Vector<T, N>) -> LineSoS<T, N> {
+    LineSoS::new(origin, Direction::Vector(vector))
+  }
+
+  pub fn new_through(origin: Point<T, N>, through: Point<T, N>) -> LineSoS<T, N> {
+    LineSoS::new(origin, Direction::Through(through))
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Line SoS intersection
 
@@ -82,6 +96,26 @@ where
 
 pub struct HalfLineSoS<T, const N: usize> {
   pub line: LineSoS<T, N>,
+}
+
+impl<T, const N: usize> HalfLineSoS<T, N> {
+  pub fn new(origin: Point<T, N>, direction: Direction<T, N>) -> HalfLineSoS<T, N> {
+    HalfLineSoS {
+      line: LineSoS::new(origin, direction),
+    }
+  }
+
+  pub fn new_directed(origin: Point<T, N>, vector: Vector<T, N>) -> HalfLineSoS<T, N> {
+    HalfLineSoS {
+      line: LineSoS::new_directed(origin, vector),
+    }
+  }
+
+  pub fn new_through(origin: Point<T, N>, through: Point<T, N>) -> HalfLineSoS<T, N> {
+    HalfLineSoS {
+      line: LineSoS::new_through(origin, through),
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

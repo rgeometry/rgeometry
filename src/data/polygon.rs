@@ -215,13 +215,7 @@ impl<T> Polygon<T> {
     if self.rings.len() != 1 {
       panic!("FIXME: Polygon::locate should support polygons with holes.");
     }
-    let direction = Vector([T::one(), T::zero()]);
-    let ray = HalfLineSoS {
-      line: LineSoS {
-        origin: origin.clone(),
-        direction: Direction::Vector(direction),
-      },
-    };
+    let ray = HalfLineSoS::new_directed(origin.clone(), Vector::unit_right());
     let mut intersections = 0;
     for edge in self.iter_boundary_edges() {
       if edge.contains(origin) {
