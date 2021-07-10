@@ -22,6 +22,12 @@ pub struct Point<T, const N: usize> {
   pub array: [T; N],
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct PointSoS<'a, T, const N: usize> {
+  pub index: u32,
+  pub point: &'a Point<T, N>,
+}
+
 // Random sampling.
 impl<T, const N: usize> Distribution<Point<T, N>> for Standard
 where
@@ -230,6 +236,17 @@ impl<T> Point<T, 2> {
     T: Clone + NumOps + Ord + crate::Extended,
   {
     Orientation::new(&p1, &p2, &p3)
+  }
+
+  pub fn orient_along_vector(
+    p1: &Point<T, 2>,
+    vector: &Vector<T, 2>,
+    p2: &Point<T, 2>,
+  ) -> Orientation
+  where
+    T: Clone + NumOps + Ord + crate::Extended,
+  {
+    Orientation::along_vector(&p1, &vector, &p2)
   }
 
   /// Docs?

@@ -2,7 +2,9 @@
 //  * points
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
-use crate::data::{Point, PointId, Polygon, PolygonConvex, Triangle, Vector};
+use crate::data::{
+  Direction, Line, LineSoS, Point, PointId, Polygon, PolygonConvex, Triangle, Vector,
+};
 use crate::PolygonScalar;
 
 use array_init::{array_init, try_array_init};
@@ -22,6 +24,9 @@ use std::convert::TryInto;
 use std::fmt::Debug;
 use std::ops::Index;
 use std::ops::IndexMut;
+
+type Mapped<I, O> = Map<StrategyFor<I>, fn(_: I) -> O>;
+type FilterMapped<I, O> = FilterMap<StrategyFor<I>, fn(_: I) -> Option<O>>;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Shrinkable polygons
@@ -225,31 +230,37 @@ where
   type Value = Polygon<T::Value>;
   fn new_tree(&self, runner: &mut TestRunner) -> Result<Self::Tree, Reason> {
     let n = runner.rng().gen_range(self.1.clone()).max(3);
-    let mut points = Vec::with_capacity(n);
-    let mut set = BTreeSet::new();
-    let mut actual = Vec::new();
-    while actual.len() < n {
-      let pt = Point::new([self.0.clone(), self.0.clone()]).new_tree(runner)?;
-      let current = pt.current();
-      if set.insert(current.clone()) {
-        points.push(pt);
-        actual.push(current)
+    loop {
+      let mut points = Vec::with_capacity(n);
+      let mut set = BTreeSet::new();
+      let mut actual = Vec::new();
+      while actual.len() < n {
+        let pt = Point::new([self.0.clone(), self.0.clone()]).new_tree(runner)?;
+        let current = pt.current();
+        if set.insert(current.clone()) {
+          points.push(pt);
+          actual.push(current)
+        }
+      }
+      // eprintln!("Generated points: {}/{}", points.len(), n);
+      // eprintln!("Generating poly: {:?}", &actual);
+      let rng = &mut rand::rngs::SmallRng::seed_from_u64(0);
+      // If all the points are colinear then two_opt_moves will fail.
+      match crate::algorithms::two_opt_moves(actual, rng).map_err(|err| err.to_string()) {
+        Err(_err) => continue,
+        Ok(poly) => {
+          assert_eq!(poly.rings[0].len(), points.len());
+          // eprintln!("Re-ordering points");
+          // FIXME: Super ugly:
+          let mut new_points = Vec::new();
+          for &pid in poly.rings[0].iter() {
+            new_points.push(points[pid.usize()].clone());
+          }
+
+          return Ok(ShrinkablePolygon::new(new_points));
+        }
       }
     }
-    // eprintln!("Generated points: {}/{}", points.len(), n);
-    // eprintln!("Generating poly: {:?}", &actual);
-    let rng = &mut rand::rngs::SmallRng::seed_from_u64(0);
-    let poly = crate::algorithms::two_opt_moves(actual, rng).map_err(|err| err.to_string())?;
-
-    assert_eq!(poly.rings[0].len(), points.len());
-    // eprintln!("Re-ordering points");
-    // FIXME: Super ugly:
-    let mut new_points = Vec::new();
-    for &pid in poly.rings[0].iter() {
-      new_points.push(points[pid.usize()].clone());
-    }
-
-    Ok(ShrinkablePolygon::new(new_points))
   }
 }
 
@@ -371,7 +382,6 @@ where
   T::Parameters: Clone,
   T: Clone,
 {
-  // type Strategy = Map<StrategyFor<Vec<T>>, fn(_: Vec<T>) -> Point<T, N>>;
   type Strategy = Mapped<Vec<T>, Point<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
@@ -390,10 +400,66 @@ where
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Map<StrategyFor<Point<T, N>>, fn(_: Point<T, N>) -> Vector<T, N>>;
+  type Strategy = Mapped<Point<T, N>, Vector<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     Point::<T, N>::arbitrary_with(params).prop_map(|pt| pt.into())
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary Direction
+
+impl<T: Arbitrary, const N: usize> Arbitrary for Direction<T, N>
+where
+  T::Strategy: Clone,
+  T::Parameters: Clone,
+  T: Clone,
+{
+  type Strategy = Mapped<(bool, Point<T, N>), Direction<T, N>>;
+  type Parameters = T::Parameters;
+  fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+    (any::<bool>(), Point::<T, N>::arbitrary_with(params)).prop_map(|(is_pt, pt)| {
+      if is_pt {
+        Direction::Through(pt)
+      } else {
+        Direction::Vector(pt.into())
+      }
+    })
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary Line
+
+impl<T: Arbitrary, const N: usize> Arbitrary for Line<T, N>
+where
+  T::Strategy: Clone,
+  T::Parameters: Clone,
+  T: Clone,
+{
+  type Strategy = Mapped<(Point<T, N>, Direction<T, N>), Line<T, N>>;
+  type Parameters = T::Parameters;
+  fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+    any_with::<(Point<T, N>, Direction<T, N>)>((params.clone(), params))
+      .prop_map(|(origin, direction)| Line { origin, direction })
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary LineSoS
+
+impl<T: Arbitrary, const N: usize> Arbitrary for LineSoS<T, N>
+where
+  T::Strategy: Clone,
+  T::Parameters: Clone,
+  T: Clone,
+{
+  type Strategy = Mapped<Line<T, N>, LineSoS<T, N>>;
+  type Parameters = T::Parameters;
+  fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+    any_with::<Line<T, N>>(params)
+      .prop_map(|Line { origin, direction }| LineSoS { origin, direction })
   }
 }
 
@@ -436,8 +502,7 @@ where
   <T as Arbitrary>::Strategy: Clone,
   <T as Arbitrary>::Parameters: Clone,
 {
-  type Strategy =
-    FilterMap<StrategyFor<[Point<T, 2>; 3]>, fn(_: [Point<T, 2>; 3]) -> Option<Triangle<T>>>;
+  type Strategy = FilterMapped<[Point<T, 2>; 3], Triangle<T>>;
   type Parameters = <Point<T, 2> as Arbitrary>::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     any_with::<[Point<T, 2>; 3]>(params)

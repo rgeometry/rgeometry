@@ -1,5 +1,6 @@
 use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
+use num_traits::identities::One;
 use num_traits::identities::Zero;
 use num_traits::{NumOps, Signed};
 use rand::distributions::{Distribution, Standard};
@@ -104,6 +105,13 @@ impl<'a, const N: usize> TryFrom<Vector<f64, N>> for Vector<BigRational, N> {
 }
 
 impl<T> Vector<T, 2> {
+  pub fn unit_right() -> Vector<T, 2>
+  where
+    T: One + Zero,
+  {
+    Vector([T::one(), T::zero()])
+  }
+
   pub fn ccw_cmp_around(&self, p: &Vector<T, 2>, q: &Vector<T, 2>) -> Ordering
   where
     T: Extended + Signed,

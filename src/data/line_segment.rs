@@ -8,6 +8,7 @@ use std::ops::RangeInclusive;
 
 use super::Point;
 
+use crate::data::point::PointSoS;
 use crate::Intersects;
 use crate::Orientation;
 use Orientation::*;
@@ -129,7 +130,7 @@ impl<T, const N: usize> LineSegment<T, N> {
     }
   }
 
-  fn as_ref(&self) -> LineSegmentView<'_, T, N> {
+  pub fn as_ref(&self) -> LineSegmentView<'_, T, N> {
     LineSegmentView {
       min: self.min.as_ref(),
       max: self.max.as_ref(),
@@ -174,6 +175,12 @@ impl<T: Ord, const N: usize> From<RangeInclusive<Point<T, N>>> for LineSegment<T
 pub struct LineSegmentView<'a, T, const N: usize> {
   pub min: EndPoint<&'a Point<T, N>>,
   pub max: EndPoint<&'a Point<T, N>>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct LineSegmentSoS<'a, T, const N: usize> {
+  pub min: EndPoint<PointSoS<'a, T, N>>,
+  pub max: EndPoint<PointSoS<'a, T, N>>,
 }
 
 impl<'a, T, const N: usize> Clone for LineSegmentView<'a, T, N> {

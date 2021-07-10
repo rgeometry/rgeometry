@@ -42,5 +42,7 @@ pub fn run() {
 fn redraw() {
   clear_screen();
 
+  context().save();
   super::main();
+  context().restore();
 }
