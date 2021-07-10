@@ -101,9 +101,9 @@ macro_rules! fixed_precision {
       fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
         fn diff(a: $ty, b: $ty) -> $ulong {
           if b > a {
-            (b.wrapping_sub(a) as $uty as $ulong)
+            b.wrapping_sub(a) as $uty as $ulong
           } else {
-            (a.wrapping_sub(b) as $uty as $ulong)
+            a.wrapping_sub(b) as $uty as $ulong
           }
         }
         let pq_x = diff(p[0], q[0]);
