@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc c559b8769a32f962df8daa3f0359a5cdb68f9fe0afa39fe315596201bec86de0 # shrinks to input = _SosEqPropArgs { a: 98, b: 0, c: 0 }
