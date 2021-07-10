@@ -1,3 +1,4 @@
+use super::DirectedEdge;
 use super::LineSegmentSoS;
 use super::LineSegmentView;
 use super::Point;
@@ -133,6 +134,17 @@ where
       // There is definitely no intersection.
       None
     }
+  }
+}
+
+impl<T> Intersects<&DirectedEdge<T, 2>> for &HalfLineSoS<T, 2>
+where
+  T: Clone + PolygonScalar + Ord + std::fmt::Debug + crate::Extended,
+{
+  type Result = IHalfLineLineSegmentSoS;
+  fn intersect(self, other: &DirectedEdge<T, 2>) -> Option<Self::Result> {
+    let line: LineSegmentView<'_, T, 2> = other.into();
+    self.intersect(line)
   }
 }
 

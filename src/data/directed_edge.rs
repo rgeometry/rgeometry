@@ -7,11 +7,20 @@ use super::LineSegmentView;
 use super::Point;
 use crate::Intersects;
 
-#[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 // Directed edge from A to B, including A and excluding B.
 pub struct DirectedEdge<T, const N: usize> {
   pub src: Point<T, N>,
   pub dst: Point<T, N>,
+}
+
+impl<T> DirectedEdge<T, 2> {
+  pub fn contains(&self, pt: &Point<T, 2>) -> bool
+  where
+    T: Ord + PartialOrd,
+  {
+    LineSegmentView::from(self).contains(pt)
+  }
 }
 
 impl<T: Ord, const N: usize> From<DirectedEdge<T, N>> for LineSegment<T, N> {

@@ -224,13 +224,10 @@ impl<T> Polygon<T> {
     };
     let mut intersections = 0;
     for edge in self.iter_boundary_edges() {
-      let edge: LineSegment<T, 2> = edge.into();
-      let edge: LineSegmentView<'_, T, 2> = edge.as_ref();
       if edge.contains(origin) {
         return PointLocation::OnBoundary;
       }
-      if let Some(IHalfLineLineSegmentSoS::Crossing) = ray.intersect(edge) {
-        dbg!(edge);
+      if ray.intersect(&edge).is_some() {
         intersections += 1;
       }
     }
