@@ -11,6 +11,7 @@ use crate::{Error, PolygonScalar};
 
 use rand::Rng;
 use std::collections::BTreeSet;
+use std::ops::Bound::*;
 
 use crate::Orientation;
 
@@ -155,7 +156,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     // If we can find a kink and an edge which contains it then we can move it
     // and shorten the circumference.
     let mut kinks = Vec::new();
-    for elt in a_min.to_inclusive(a_max).chain(b_min.to_inclusive(b_max)) {
+    for elt in a_min.to(Included(a_max)).chain(b_min.to(Included(b_max))) {
       let inner_segment: LineSegmentView<T, 2> = (elt.prev().point()..elt.next().point()).into();
       if elt.orientation() != Orientation::CoLinear || !inner_segment.contains(elt.point()) {
         // We're either at a corner:
@@ -171,7 +172,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     }
 
     let mut mergable = None;
-    'outer: for edge in a_min.to(a_max).chain(b_min.to(b_max)) {
+    'outer: for edge in a_min.to(Excluded(a_max)).chain(b_min.to(Excluded(b_max))) {
       let segment = LineSegmentView::new(
         EndPoint::Exclusive(edge.point()),
         EndPoint::Exclusive(edge.next().point()),
