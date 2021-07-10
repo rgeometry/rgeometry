@@ -231,8 +231,8 @@ macro_rules! arbitrary_precision {
       }
 
       fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
-        let slope1 = (r[1].clone() - q[1].clone()) * (q[0].clone() - p[0].clone());
-        let slope2 = (q[1].clone() - p[1].clone()) * (r[0].clone() - q[0].clone());
+        let slope1 = (&r[1] - &q[1]) * (&q[0] - &p[0]);
+        let slope2 = (&q[1] - &p[1]) * (&r[0] - &q[0]);
         slope1.cmp(&slope2)
       }
       fn cmp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
