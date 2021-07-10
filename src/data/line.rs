@@ -12,29 +12,22 @@ use std::cmp::Ordering;
 ///////////////////////////////////////////////////////////////////////////////
 // Line
 
-pub enum Line<T, const N: usize> {
-  Line {
-    origin: Point<T, N>,
-    direction: Vector<T, N>,
-  },
-  LineThrough {
-    origin: Point<T, N>,
-    through: Point<T, N>,
-  },
+#[allow(dead_code)]
+pub struct Line<T, const N: usize> {
+  origin: Point<T, N>,
+  direction: Direction<T, N>,
+}
+pub enum Direction<T, const N: usize> {
+  Vector(Vector<T, N>),
+  Through(Point<T, N>),
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Line SoS
 
-pub enum LineSoS<T, const N: usize> {
-  Line {
-    origin: Point<T, N>,
-    direction: Vector<T, N>,
-  },
-  LineThrough {
-    origin: Point<T, N>,
-    through: Point<T, N>,
-  },
+pub struct LineSoS<T, const N: usize> {
+  pub origin: Point<T, N>,
+  pub direction: Direction<T, N>,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,8 +46,9 @@ where
 {
   type Result = ILineLineSegmentSoS;
   fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
-    match self {
-      LineSoS::Line { origin, direction } => {
+    let origin = &self.origin;
+    match &self.direction {
+      Direction::Vector(direction) => {
         let b1 = other.min.inner();
         let b2 = other.max.inner();
         let l1_to_b1 =
@@ -67,7 +61,7 @@ where
           None
         }
       }
-      LineSoS::LineThrough { origin, through } => {
+      Direction::Through(through) => {
         let b1 = other.min.inner();
         let b2 = other.max.inner();
         let l1_to_b1 = Point::orient(origin, through, b1).then(Orientation::CounterClockWise);
@@ -86,12 +80,13 @@ where
 // Half-Line SoS
 
 pub struct HalfLineSoS<T, const N: usize> {
-  line: LineSoS<T, N>,
+  pub line: LineSoS<T, N>,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Line SoS intersection
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum IHalfLineLineSegmentSoS {
   Crossing,
 }
@@ -105,48 +100,72 @@ where
 {
   type Result = IHalfLineLineSegmentSoS;
   fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
-    let ILineLineSegmentSoS::Crossing = self.line.intersect(other)?;
-    match &self.line {
-      LineSoS::Line { origin, direction } => {
-        let mut b1 = other.min.inner();
-        let mut b2 = other.max.inner();
-        if direction.cmp_along(b1, b2) == Ordering::Greater {
-          std::mem::swap(&mut b1, &mut b2);
-        }
-        if Point::orient(b1, b2, origin) == Orientation::ClockWise {
-          Some(IHalfLineLineSegmentSoS::Crossing)
-        } else {
-          None
-        }
+    let b1 = other.min.inner();
+    let b2 = other.max.inner();
+
+    let origin = &self.line.origin;
+
+    let l1_to_b1;
+    let l1_to_b2;
+    match &self.line.direction {
+      Direction::Vector(direction) => {
+        l1_to_b1 =
+          Point::orient_along_vector(origin, direction, b1).then(Orientation::CounterClockWise);
+        l1_to_b2 =
+          Point::orient_along_vector(origin, direction, b2).then(Orientation::CounterClockWise);
       }
-      LineSoS::LineThrough { origin, through } => {
-        let b1 = other.min.inner();
-        let b2 = other.max.inner();
-        let l1_to_b1 = Point::orient(origin, through, b1).then(Orientation::CounterClockWise);
-        let l1_to_b2 = Point::orient(origin, through, b2).then(Orientation::CounterClockWise);
-        let l2_to_a1 = Point::orient(b1, b2, origin).then(Orientation::CounterClockWise);
-        let l2_to_a2 = Point::orient(b1, b2, through).then(Orientation::CounterClockWise);
-        // l1_to_b1 != l1_to_b2, this is checked earlier.
-        // if l1_to_b1 == l1_to_b2 {
-        //   return None; // b1 and b2 are on the same side of the line, no crossing.
-        // }
-        // If HalfLineSegment crosses origin->through, return Some(Crossing)
-        if l2_to_a1 == l2_to_a2.reverse() {
-          // the line-segment crosses the line between origin and through.
-          return Some(IHalfLineLineSegmentSoS::Crossing);
-        }
-        if l2_to_a2 == l1_to_b1.reverse() {
-          // either: origin -> through -> line-segment
-          // or:     line-segment <- through <- origin
-          return Some(IHalfLineLineSegmentSoS::Crossing);
-        }
-        return None;
-        // If HalfLineSegment is on the left of through, check that b1->origin->through is CCW.
-        // If so, return Some(Crossing)
-        // If HalfLineSegment is on the right of through, check that b1->origin->through is CW.
-        // If so, return Some(Crossing)
-        // Otherwise, return None.
+      Direction::Through(through) => {
+        l1_to_b1 = Point::orient(origin, through, b1).then(Orientation::CounterClockWise);
+        l1_to_b2 = Point::orient(origin, through, b2).then(Orientation::CounterClockWise);
       }
     }
+
+    if l1_to_b1 == l1_to_b2.reverse() {
+      // b1 and b2 are on opposite sides of the line.
+      let l2_to_a1 = Point::orient(b1, b2, origin).then(Orientation::CounterClockWise);
+      if l1_to_b1 == l2_to_a1.reverse() {
+        Some(IHalfLineLineSegmentSoS::Crossing)
+      } else {
+        None
+      }
+    } else {
+      // b1 and b2 are on the same side of the line.
+      // There is definitely no intersection.
+      None
+    }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::data::LineSegment;
+
+  #[test]
+  fn ray_intersect_unit_1() {
+    let line: LineSegment<i8, 2> = LineSegment::from((-1, 127)..(-5, 48));
+    let direction: Vector<i8, 2> = Vector([1, 0]);
+    let ray = HalfLineSoS {
+      line: LineSoS {
+        origin: Point::new([79, 108]),
+        direction: Direction::Vector(direction),
+      },
+    };
+
+    assert_eq!(ray.intersect(line.as_ref()), None);
+  }
+
+  #[test]
+  fn ray_intersect_unit_2() {
+    let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(-1, 127));
+    let direction: Vector<i8, 2> = Vector([1, 0]);
+    let ray = HalfLineSoS {
+      line: LineSoS {
+        origin: Point::new([79, 108]),
+        direction: Direction::Vector(direction),
+      },
+    };
+
+    assert_eq!(ray.intersect(line.as_ref()), None);
   }
 }

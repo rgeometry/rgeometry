@@ -6,7 +6,12 @@ use ordered_float::OrderedFloat;
 use std::iter::Sum;
 use std::ops::*;
 
-use crate::data::{DirectedEdge, Point, PointLocation, TriangleView, Vector};
+use crate::data::line::*;
+use crate::data::{
+  DirectedEdge, HalfLineSoS, LineSegment, LineSegmentView, LineSoS, Point, PointLocation, Triangle,
+  TriangleView, Vector,
+};
+use crate::intersection::*;
 use crate::{Error, Orientation, PolygonScalar};
 
 mod iter;
@@ -200,6 +205,40 @@ impl<T> Polygon<T> {
       return Err(Error::SelfIntersections);
     }
     Ok(())
+  }
+
+  pub fn locate(&self, origin: &Point<T, 2>) -> PointLocation
+  where
+    T: PolygonScalar,
+  {
+    // FIXME: Support polygons with holes.
+    if self.rings.len() != 1 {
+      panic!("FIXME: Polygon::locate should support polygons with holes.");
+    }
+    let direction = Vector([T::one(), T::zero()]);
+    let ray = HalfLineSoS {
+      line: LineSoS {
+        origin: origin.clone(),
+        direction: Direction::Vector(direction),
+      },
+    };
+    let mut intersections = 0;
+    for edge in self.iter_boundary_edges() {
+      let edge: LineSegment<T, 2> = edge.into();
+      let edge: LineSegmentView<'_, T, 2> = edge.as_ref();
+      if edge.contains(origin) {
+        return PointLocation::OnBoundary;
+      }
+      if let Some(IHalfLineLineSegmentSoS::Crossing) = ray.intersect(edge) {
+        dbg!(edge);
+        intersections += 1;
+      }
+    }
+    if intersections % 2 == 0 {
+      PointLocation::Outside
+    } else {
+      PointLocation::Inside
+    }
   }
 
   pub fn triangulate(
@@ -751,4 +790,34 @@ pub mod tests {
   //   let height = max.y_coord() - min.y_coord();
   //   // prop_assert!(width == OrderedFloat(1.0) || height == OrderedFloat(1.0));
   // }
+
+  #[test]
+  fn locate_unit_1() {
+    let poly: Polygon<i8> = Polygon::new(vec![
+      Point { array: [0, 0] },
+      Point { array: [-1, 127] },
+      Point { array: [-50, 48] },
+    ])
+    .expect("valid polygon");
+    let origin = Point { array: [79, 108] };
+
+    assert_eq!(poly.locate(&origin), PointLocation::Outside);
+  }
+
+  #[proptest]
+  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8, 2>) {
+    let fast = poly.locate(&origin);
+    let mut slow = PointLocation::Outside;
+
+    for (a, b, c) in poly.triangulate() {
+      let trig = TriangleView::new([&a, &b, &c]).expect("valid triangle");
+      if trig.locate(&origin) != PointLocation::Outside {
+        slow = PointLocation::Inside;
+        break;
+      }
+    }
+    if fast != PointLocation::OnBoundary {
+      prop_assert_eq!(fast, slow);
+    }
+  }
 }

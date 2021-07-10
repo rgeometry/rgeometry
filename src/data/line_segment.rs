@@ -130,7 +130,7 @@ impl<T, const N: usize> LineSegment<T, N> {
     }
   }
 
-  fn as_ref(&self) -> LineSegmentView<'_, T, N> {
+  pub fn as_ref(&self) -> LineSegmentView<'_, T, N> {
     LineSegmentView {
       min: self.min.as_ref(),
       max: self.max.as_ref(),
