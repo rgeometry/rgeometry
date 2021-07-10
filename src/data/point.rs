@@ -238,6 +238,17 @@ impl<T> Point<T, 2> {
     Orientation::new(&p1, &p2, &p3)
   }
 
+  pub fn orient_along_vector(
+    p1: &Point<T, 2>,
+    vector: &Vector<T, 2>,
+    p2: &Point<T, 2>,
+  ) -> Orientation
+  where
+    T: Clone + NumOps + Ord + crate::Extended,
+  {
+    Orientation::along_vector(&p1, &vector, &p2)
+  }
+
   /// Docs?
   pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where

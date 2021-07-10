@@ -116,6 +116,13 @@ impl Orientation {
     matches!(self, Orientation::ClockWise)
   }
 
+  pub fn then(self, other: Orientation) -> Orientation {
+    match self {
+      Orientation::CoLinear => other,
+      _ => self,
+    }
+  }
+
   pub fn break_ties(self, a: u32, b: u32, c: u32) -> SoS {
     match self {
       CounterClockWise => SoS::CounterClockWise,
