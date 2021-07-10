@@ -453,6 +453,135 @@
 <span id="429">429</span>
 <span id="430">430</span>
 <span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">num_traits::Signed</span>;
 <span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
@@ -469,6 +598,15 @@
   <span class="ident">CoLinear</span>,
 }
 <span class="kw">use</span> <span class="ident">Orientation</span>::<span class="kw-2">*</span>;
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SoS</span> {
+  <span class="ident">CounterClockWise</span>,
+  <span class="ident">ClockWise</span>,
+}
+
+<span class="comment">// let slope1 = (2^q - 2^r) * (p - q);</span>
+<span class="comment">// let slope2 = (2^q - 2^p) * (r - q);</span>
 
 <span class="kw">impl</span> <span class="ident">Orientation</span> {
   <span class="doccomment">/// Determine the direction you have to turn if you walk from `p1`</span>
@@ -561,6 +699,21 @@
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_cw</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="macro">matches!</span>(<span class="self">self</span>, <span class="ident">Orientation::ClockWise</span>)
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">then</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="ident">Orientation</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span> {
+    <span class="kw">match</span> <span class="self">self</span> {
+      <span class="ident">Orientation::CoLinear</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">other</span>,
+      <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>,
+    }
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">break_ties</span>(<span class="self">self</span>, <span class="ident">a</span>: <span class="ident">u32</span>, <span class="ident">b</span>: <span class="ident">u32</span>, <span class="ident">c</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SoS</span> {
+    <span class="kw">match</span> <span class="self">self</span> {
+      <span class="ident">CounterClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SoS::CounterClockWise</span>,
+      <span class="ident">ClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SoS::ClockWise</span>,
+      <span class="ident">CoLinear</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SoS::new</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>),
+    }
   }
 
   <span class="comment">// pub fn around_origin&lt;T&gt;(q: &amp;[T; 2], r: &amp;[T; 2]) -&gt; Orientation</span>
@@ -834,9 +987,73 @@
 <span class="comment">//   }</span>
 <span class="comment">// }</span>
 
+<span class="comment">// https://arxiv.org/abs/math/9410209</span>
+<span class="comment">// Simulation of Simplicity.</span>
+<span class="comment">// Break ties (ie colinear orientations) in an arbitrary but consistent way.</span>
+<span class="kw">impl</span> <span class="ident">SoS</span> {
+  <span class="comment">// p: Point::new([a, 2^a])</span>
+  <span class="comment">// q: Point::new([b, 2^b])</span>
+  <span class="comment">// r: Point::new([c, 2^c])</span>
+  <span class="comment">// new(a,b,c) == Orientation::new(p, q, r)</span>
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">a</span>: <span class="ident">u32</span>, <span class="ident">b</span>: <span class="ident">u32</span>, <span class="ident">c</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SoS</span> {
+    <span class="macro">assert_ne!</span>(<span class="ident">a</span>, <span class="ident">b</span>);
+    <span class="macro">assert_ne!</span>(<span class="ident">b</span>, <span class="ident">c</span>);
+    <span class="macro">assert_ne!</span>(<span class="ident">c</span>, <span class="ident">a</span>);
+
+    <span class="comment">// Combinations:</span>
+    <span class="comment">//               a&lt;b a&lt;c c&lt;b</span>
+    <span class="comment">// b a c =&gt; CW    _   X   _</span>
+    <span class="comment">// c b a =&gt; CW    _   _   X</span>
+    <span class="comment">// a c b =&gt; CW    X   X   X</span>
+    <span class="comment">// b c a =&gt; CCW   _   _   _</span>
+    <span class="comment">// c a b =&gt; CCW   X   _   X</span>
+    <span class="comment">// a b c =&gt; CCW   X   X   _</span>
+
+    <span class="kw">let</span> <span class="ident">ab</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">&lt;</span> <span class="ident">b</span>;
+    <span class="kw">let</span> <span class="ident">ac</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">&lt;</span> <span class="ident">c</span>;
+    <span class="kw">let</span> <span class="ident">cb</span> <span class="op">=</span> <span class="ident">c</span> <span class="op">&lt;</span> <span class="ident">b</span>;
+    <span class="kw">if</span> <span class="ident">ab</span> <span class="op">^</span> <span class="ident">ac</span> <span class="op">^</span> <span class="ident">cb</span> {
+      <span class="ident">SoS::ClockWise</span>
+    } <span class="kw">else</span> {
+      <span class="ident">SoS::CounterClockWise</span>
+    }
+    <span class="comment">// if a &lt; b {</span>
+    <span class="comment">//   if a &lt; c &amp;&amp; c &lt; b {</span>
+    <span class="comment">//     SoS::ClockWise // a c b</span>
+    <span class="comment">//   } else {</span>
+    <span class="comment">//     SoS::CounterClockWise // a b c, c a b</span>
+    <span class="comment">//   }</span>
+    <span class="comment">// } else if b &lt; c &amp;&amp; c &lt; a {</span>
+    <span class="comment">//   SoS::CounterClockWise // b c a</span>
+    <span class="comment">// } else {</span>
+    <span class="comment">//   SoS::ClockWise // b a c, c b a</span>
+    <span class="comment">// }</span>
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orient</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span> {
+    <span class="kw">match</span> <span class="self">self</span> {
+      <span class="ident">SoS::CounterClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Orientation::CounterClockWise</span>,
+      <span class="ident">SoS::ClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Orientation::ClockWise</span>,
+    }
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reverse</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SoS</span> {
+    <span class="kw">match</span> <span class="self">self</span> {
+      <span class="ident">SoS::CounterClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SoS::ClockWise</span>,
+      <span class="ident">SoS::ClockWise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SoS::CounterClockWise</span>,
+    }
+  }
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+
+  <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::testing</span>::<span class="kw-2">*</span>;
+  <span class="kw">use</span> <span class="ident">num::traits::Pow</span>;
+  <span class="kw">use</span> <span class="ident">num::BigInt</span>;
+  <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+  <span class="kw">use</span> <span class="ident">test_strategy::proptest</span>;
 
   <span class="attribute">#[<span class="ident">test</span>]</span>
   <span class="kw">fn</span> <span class="ident">orientation_limit_1</span>() {
@@ -883,6 +1100,47 @@
       <span class="ident">Orientation::ccw_cmp_around_with</span>(<span class="kw-2">&amp;</span><span class="ident">vector</span>, <span class="kw-2">&amp;</span><span class="ident">pt1</span>, <span class="kw-2">&amp;</span><span class="ident">pt2</span>, <span class="kw-2">&amp;</span><span class="ident">pt1</span>),
       <span class="ident">Ordering::Greater</span>
     );
+  }
+
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">sos_unit1</span>() {
+    <span class="macro">assert_eq!</span>(<span class="ident">SoS::new</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>), <span class="ident">SoS::CounterClockWise</span>)
+  }
+
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+  <span class="kw">fn</span> <span class="ident">sos_unit2</span>() {
+    <span class="ident">SoS::new</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+  }
+
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">sos_unit3</span>() {
+    <span class="macro">assert_eq!</span>(<span class="ident">SoS::new</span>(<span class="number">99</span>, <span class="number">0</span>, <span class="number">1</span>), <span class="ident">SoS::CounterClockWise</span>);
+  }
+
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">sos_eq_prop</span>(<span class="ident">a</span>: <span class="ident">u8</span>, <span class="ident">b</span>: <span class="ident">u8</span>, <span class="ident">c</span>: <span class="ident">u8</span>) {
+    <span class="kw">if</span> <span class="ident">a</span> <span class="op">!</span><span class="op">=</span> <span class="ident">b</span> <span class="op">&amp;&amp;</span> <span class="ident">b</span> <span class="op">!</span><span class="op">=</span> <span class="ident">c</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="ident">a</span> {
+      <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>) <span class="op">=</span> (<span class="ident">a</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">b</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">c</span> <span class="kw">as</span> <span class="ident">u32</span>);
+      <span class="kw">let</span> <span class="ident">one</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">BigInt::from</span>(<span class="number">1</span>);
+      <span class="kw">let</span> <span class="ident">big_a</span> <span class="op">=</span> <span class="ident">BigInt::from</span>(<span class="ident">a</span>);
+      <span class="kw">let</span> <span class="ident">big_b</span> <span class="op">=</span> <span class="ident">BigInt::from</span>(<span class="ident">b</span>);
+      <span class="kw">let</span> <span class="ident">big_c</span> <span class="op">=</span> <span class="ident">BigInt::from</span>(<span class="ident">c</span>);
+      <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Point::new</span>([<span class="ident">big_a</span>, <span class="ident">one</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">a</span>]);
+      <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">Point::new</span>([<span class="ident">big_b</span>, <span class="ident">one</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">b</span>]);
+      <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">Point::new</span>([<span class="ident">big_c</span>, <span class="ident">one</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">c</span>]);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">SoS::new</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>).<span class="ident">orient</span>(), <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">q</span>, <span class="kw-2">&amp;</span><span class="ident">r</span>));
+    }
+  }
+
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">sos_rev_prop</span>(<span class="ident">a</span>: <span class="ident">u32</span>, <span class="ident">b</span>: <span class="ident">u32</span>, <span class="ident">c</span>: <span class="ident">u32</span>) {
+    <span class="kw">if</span> <span class="ident">a</span> <span class="op">!</span><span class="op">=</span> <span class="ident">b</span> <span class="op">&amp;&amp;</span> <span class="ident">b</span> <span class="op">!</span><span class="op">=</span> <span class="ident">c</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="ident">a</span> {
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">SoS::new</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>), <span class="ident">SoS::new</span>(<span class="ident">c</span>, <span class="ident">b</span>, <span class="ident">a</span>).<span class="ident">reverse</span>());
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">SoS::new</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>), <span class="ident">SoS::new</span>(<span class="ident">a</span>, <span class="ident">c</span>, <span class="ident">b</span>).<span class="ident">reverse</span>());
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">SoS::new</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>), <span class="ident">SoS::new</span>(<span class="ident">b</span>, <span class="ident">a</span>, <span class="ident">c</span>).<span class="ident">reverse</span>());
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">SoS::new</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>), <span class="ident">SoS::new</span>(<span class="ident">b</span>, <span class="ident">c</span>, <span class="ident">a</span>));
+    }
   }
 }
 </pre></div>

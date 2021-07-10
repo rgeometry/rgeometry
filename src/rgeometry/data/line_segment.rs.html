@@ -581,6 +581,13 @@
 <span id="557">557</span>
 <span id="558">558</span>
 <span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::cmp::Eq</span>;
@@ -592,6 +599,7 @@
 
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::Point</span>;
 
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::point::PointSoS</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Intersects</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Orientation</span>;
 <span class="kw">use</span> <span class="ident">Orientation</span>::<span class="kw-2">*</span>;
@@ -713,7 +721,7 @@
     }
   }
 
-  <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
     <span class="ident">LineSegmentView</span> {
       <span class="ident">min</span>: <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">as_ref</span>(),
       <span class="ident">max</span>: <span class="self">self</span>.<span class="ident">max</span>.<span class="ident">as_ref</span>(),
@@ -758,6 +766,12 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="ident">min</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
   <span class="kw">pub</span> <span class="ident">max</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegmentSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
+  <span class="kw">pub</span> <span class="ident">min</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">PointSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+  <span class="kw">pub</span> <span class="ident">max</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">PointSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {

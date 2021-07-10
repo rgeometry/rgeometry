@@ -495,6 +495,23 @@
 <span id="471">471</span>
 <span id="472">472</span>
 <span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -518,6 +535,12 @@
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span> <span class="comment">// Required for correctness!</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="ident">array</span>: [<span class="ident">T</span>; <span class="ident">N</span>],
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PointSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
+  <span class="kw">pub</span> <span class="ident">index</span>: <span class="ident">u32</span>,
+  <span class="kw">pub</span> <span class="ident">point</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>,
 }
 
 <span class="comment">// Random sampling.</span>
@@ -728,6 +751,17 @@
     <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="kw">crate</span><span class="ident">::Extended</span>,
   {
     <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>, <span class="kw-2">&amp;</span><span class="ident">p3</span>)
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orient_along_vector</span>(
+    <span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+    <span class="ident">vector</span>: <span class="kw-2">&amp;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+    <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+  ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="kw">crate</span><span class="ident">::Extended</span>,
+  {
+    <span class="ident">Orientation::along_vector</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">vector</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>)
   }
 
   <span class="doccomment">/// Docs?</span>

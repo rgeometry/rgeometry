@@ -776,6 +776,77 @@
 <span id="752">752</span>
 <span id="753">753</span>
 <span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num::BigInt</span>;
@@ -785,7 +856,12 @@
 <span class="kw">use</span> <span class="ident">std::iter::Sum</span>;
 <span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{<span class="ident">DirectedEdge</span>, <span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">TriangleView</span>, <span class="ident">Vector</span>};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data::line</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{
+  <span class="ident">DirectedEdge</span>, <span class="ident">HalfLineSoS</span>, <span class="ident">LineSegment</span>, <span class="ident">LineSegmentView</span>, <span class="ident">LineSoS</span>, <span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">Triangle</span>,
+  <span class="ident">TriangleView</span>, <span class="ident">Vector</span>,
+};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::intersection</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
 
 <span class="kw">mod</span> <span class="ident">iter</span>;
@@ -979,6 +1055,31 @@
       <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SelfIntersections</span>);
     }
     <span class="prelude-val">Ok</span>(())
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">origin</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+  {
+    <span class="comment">// FIXME: Support polygons with holes.</span>
+    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rings</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+      <span class="macro">panic!</span>(<span class="string">&quot;FIXME: Polygon::locate should support polygons with holes.&quot;</span>);
+    }
+    <span class="kw">let</span> <span class="ident">ray</span> <span class="op">=</span> <span class="ident">HalfLineSoS::new_directed</span>(<span class="ident">origin</span>.<span class="ident">clone</span>(), <span class="ident">Vector::unit_right</span>());
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">intersections</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter_boundary_edges</span>() {
+      <span class="kw">if</span> <span class="ident">edge</span>.<span class="ident">contains</span>(<span class="ident">origin</span>) {
+        <span class="kw">return</span> <span class="ident">PointLocation::OnBoundary</span>;
+      }
+      <span class="kw">if</span> <span class="ident">ray</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">edge</span>).<span class="ident">is_some</span>() {
+        <span class="ident">intersections</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+      }
+    }
+    <span class="kw">if</span> <span class="ident">intersections</span> <span class="op">%</span> <span class="number">2</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+      <span class="ident">PointLocation::Outside</span>
+    } <span class="kw">else</span> {
+      <span class="ident">PointLocation::Inside</span>
+    }
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">triangulate</span>(
@@ -1530,6 +1631,47 @@
   <span class="comment">//   let height = max.y_coord() - min.y_coord();</span>
   <span class="comment">//   // prop_assert!(width == OrderedFloat(1.0) || height == OrderedFloat(1.0));</span>
   <span class="comment">// }</span>
+
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">locate_unit_1</span>() {
+    <span class="kw">let</span> <span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Polygon::new</span>(<span class="macro">vec!</span>[
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="number">0</span>, <span class="number">0</span>] },
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">1</span>, <span class="number">127</span>] },
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">50</span>, <span class="number">48</span>] },
+    ])
+    .<span class="ident">expect</span>(<span class="string">&quot;valid polygon&quot;</span>);
+    <span class="kw">let</span> <span class="ident">origin</span> <span class="op">=</span> <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="number">79</span>, <span class="number">108</span>] };
+
+    <span class="macro">assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="ident">origin</span>), <span class="ident">PointLocation::Outside</span>);
+  }
+
+  <span class="comment">// Locate a point relative to a polygon. Should be identical to</span>
+  <span class="comment">// Polygon::locate but slower.</span>
+  <span class="kw">fn</span> <span class="ident">locate_by_triangulation</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">poly</span>: <span class="kw-2">&amp;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">origin</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span>
+  <span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+  {
+    <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">iter_boundary_edges</span>() {
+      <span class="kw">if</span> <span class="ident">edge</span>.<span class="ident">contains</span>(<span class="ident">origin</span>) {
+        <span class="kw">return</span> <span class="ident">PointLocation::OnBoundary</span>;
+      }
+    }
+    <span class="kw">for</span> (<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>) <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">triangulate</span>() {
+      <span class="kw">let</span> <span class="ident">trig</span> <span class="op">=</span> <span class="ident">TriangleView::new</span>([<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>]).<span class="ident">expect</span>(<span class="string">&quot;valid triangle&quot;</span>);
+      <span class="kw">if</span> <span class="ident">trig</span>.<span class="ident">locate</span>(<span class="ident">origin</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">PointLocation::Inside</span> {
+        <span class="kw">return</span> <span class="ident">PointLocation::Inside</span>;
+      }
+    }
+    <span class="kw">return</span> <span class="ident">PointLocation::Outside</span>;
+  }
+
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">locate_id_prop</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>, <span class="ident">origin</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span>) {
+    <span class="macro">prop_assert_eq!</span>(
+      <span class="ident">locate_by_triangulation</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>, <span class="kw-2">&amp;</span><span class="ident">origin</span>),
+      <span class="ident">poly</span>.<span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="ident">origin</span>)
+    )
+  }
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rgeometry" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
