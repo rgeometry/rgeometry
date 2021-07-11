@@ -70,6 +70,8 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
   #[cfg(feature = "rug")]
   {
+    // M1:    54ms
+    // 3950X: 29ms
     let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
     c.bench_function("two_opt_moves::<rug::Integer>", |b| {
       b.iter(|| {
