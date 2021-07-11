@@ -131,6 +131,14 @@ impl Orientation {
     }
   }
 
+  pub fn sos(self, other: SoS) -> SoS {
+    match self {
+      CounterClockWise => SoS::CounterClockWise,
+      ClockWise => SoS::ClockWise,
+      CoLinear => other,
+    }
+  }
+
   // pub fn around_origin<T>(q: &[T; 2], r: &[T; 2]) -> Orientation
   // where
   //   T: Ord + Mul<Output = T> + Clone + Extended,
