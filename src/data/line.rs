@@ -5,7 +5,7 @@ use super::Point;
 use super::Vector;
 use crate::data::point::PointSoS;
 use crate::Intersects;
-use crate::{Orientation, PolygonScalar};
+use crate::{Orientation, PolygonScalar, SoS};
 
 use num::traits::*;
 use std::cmp::Ordering;
@@ -95,24 +95,28 @@ where
 // Half-Line SoS
 
 pub struct HalfLineSoS<T, const N: usize> {
+  pub lean: SoS,
   pub line: LineSoS<T, N>,
 }
 
 impl<T, const N: usize> HalfLineSoS<T, N> {
   pub fn new(origin: Point<T, N>, direction: Direction<T, N>) -> HalfLineSoS<T, N> {
     HalfLineSoS {
+      lean: SoS::CounterClockWise,
       line: LineSoS::new(origin, direction),
     }
   }
 
   pub fn new_directed(origin: Point<T, N>, vector: Vector<T, N>) -> HalfLineSoS<T, N> {
     HalfLineSoS {
+      lean: SoS::CounterClockWise,
       line: LineSoS::new_directed(origin, vector),
     }
   }
 
   pub fn new_through(origin: Point<T, N>, through: Point<T, N>) -> HalfLineSoS<T, N> {
     HalfLineSoS {
+      lean: SoS::CounterClockWise,
       line: LineSoS::new_through(origin, through),
     }
   }
@@ -144,21 +148,20 @@ where
     let l1_to_b2;
     match &self.line.direction {
       Direction::Vector(direction) => {
-        l1_to_b1 =
-          Point::orient_along_vector(origin, direction, b1).then(Orientation::CounterClockWise);
-        l1_to_b2 =
-          Point::orient_along_vector(origin, direction, b2).then(Orientation::CounterClockWise);
+        l1_to_b1 = Point::orient_along_vector(origin, direction, b1).sos(self.lean.reverse());
+        l1_to_b2 = Point::orient_along_vector(origin, direction, b2).sos(self.lean.reverse());
       }
       Direction::Through(through) => {
-        l1_to_b1 = Point::orient(origin, through, b1).then(Orientation::CounterClockWise);
-        l1_to_b2 = Point::orient(origin, through, b2).then(Orientation::CounterClockWise);
+        l1_to_b1 = Point::orient(origin, through, b1).sos(self.lean.reverse());
+        l1_to_b2 = Point::orient(origin, through, b2).sos(self.lean.reverse());
       }
     }
 
     if l1_to_b1 == l1_to_b2.reverse() {
       // b1 and b2 are on opposite sides of the line.
-      let l2_to_a1 = Point::orient(b1, b2, origin).then(Orientation::CounterClockWise);
-      if l1_to_b1 == l2_to_a1.reverse() {
+      // FIXME: What is the right lean direction here?
+      let l2_to_a1 = Point::orient(b1, b2, origin);
+      if l1_to_b1.orient() == l2_to_a1.reverse() {
         Some(IHalfLineLineSegmentSoS::Crossing)
       } else {
         None
@@ -195,6 +198,7 @@ mod tests {
     let line: LineSegment<i8, 2> = LineSegment::from((-1, 127)..(-5, 48));
     let direction: Vector<i8, 2> = Vector([1, 0]);
     let ray = HalfLineSoS {
+      lean: SoS::CounterClockWise,
       line: LineSoS {
         origin: Point::new([79, 108]),
         direction: Direction::Vector(direction),
@@ -209,6 +213,7 @@ mod tests {
     let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(-1, 127));
     let direction: Vector<i8, 2> = Vector([1, 0]);
     let ray = HalfLineSoS {
+      lean: SoS::CounterClockWise,
       line: LineSoS {
         origin: Point::new([79, 108]),
         direction: Direction::Vector(direction),

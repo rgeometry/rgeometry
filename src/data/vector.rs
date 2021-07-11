@@ -105,6 +105,7 @@ impl<'a, const N: usize> TryFrom<Vector<f64, N>> for Vector<BigRational, N> {
 }
 
 impl<T> Vector<T, 2> {
+  // Unit vector pointing to the right.
   pub fn unit_right() -> Vector<T, 2>
   where
     T: One + Zero,
