@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Error",""],["Orientation",""]],"mod":[["algorithms",""],["data",""]],"trait":[["Extended",""],["Intersects",""],["PolygonScalar",""],["PolygonScalarRef",""]]});
+initSidebarItems({"enum":[["Error",""],["Orientation",""],["SoS",""]],"mod":[["algorithms",""],["data",""]],"trait":[["Extended",""],["Intersects",""],["PolygonScalar",""],["PolygonScalarRef",""]]});
