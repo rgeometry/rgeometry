@@ -18,7 +18,7 @@ mod orientation;
 mod transformation;
 mod utils;
 
-pub use orientation::Orientation;
+pub use orientation::{Orientation, SoS};
 
 pub use intersection::Intersects;
 
