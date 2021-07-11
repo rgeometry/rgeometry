@@ -26,16 +26,16 @@ use crate::{Error, PolygonScalar};
 //   then sort them around the point of origin to generate the polygon.
 //
 // Algorithm overview:
-//   For each vertex in the polygon (including outer boundary and any holes):
-//     1. Shoot a right-leaning SoS ray towards the vertex and record the intersection
-//        point closest to the origin. Note: The SoS ray might not hit the vertex.
-//     2. Shoot a left-leaning SoS ray towards the vertex and record the intersection
-//        point closest to the origin. This point may or may not be the same as the point
-//        in step 1.
-//     3. Sort all the intersection points counter-clockwise around the point of origin.
-//     4. If two points are at the same angle then sort according to the leaning of the
-//        ray that generated the intersection point. Ie. a point from a left-leaning ray
-//        should be Ordering::Greater than a point from a right-leaning ray.
+//   1. For each vertex in the polygon (including outer boundary and any holes):
+//     1.A Shoot a right-leaning SoS ray towards the vertex and record the intersection
+//         point closest to the origin. Note: The SoS ray might not hit the vertex.
+//     1.B Shoot a left-leaning SoS ray towards the vertex and record the intersection
+//         point closest to the origin. This point may or may not be the same as the point
+//         in step 1.A.
+//   2. Sort all the intersection points counter-clockwise around the point of origin.
+//   3. If two points are at the same angle then sort according to the leaning of the
+//      ray that generated the intersection point. Ie. a point from a left-leaning ray
+//      should be Ordering::Greater than a point from a right-leaning ray.
 //
 // Pseudo code:
 //   for vertex in poly.vertex {
@@ -53,15 +53,15 @@ use crate::{Error, PolygonScalar};
 //
 //   Input            Output
 //
-//  /-----\ /----\  /-----\
-//  |     | |    |  |     |
-//  |  x  \-/ /--/  |  x  \---\
+//  /-----\ /----\  /-----\ /----\
+//  |     | |    |  |     | |    |
+//  |  x  \-/ /--/  |  x  \---\--/
 //  |         |     |         |
 //  \---------/     \---------/
 //
 //
-//  /-----\ /----\  /-----\
-//  |     | |    |  |     |
+//  /-----\ /----\  /-----\ /----\
+//  |     | |    |  |     | |    |
 //  |  x  \-/    |  |  x  \------\
 //  |            |  |            |
 //  \------------/  \------------/
