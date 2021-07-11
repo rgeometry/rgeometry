@@ -67,6 +67,22 @@ pub fn criterion_benchmark(c: &mut Criterion) {
       two_opt_moves(pts, &mut rng)
     })
   });
+
+  #[cfg(feature = "rug")]
+  {
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
+    c.bench_function("two_opt_moves::<rug::Integer>", |b| {
+      b.iter(|| {
+        let mut pts: Vec<Point<rug::Integer, 2>> = Vec::new();
+        while pts.len() < SET_SIZE {
+          let pt: Point<isize, 2> = rng.sample(Standard);
+          // let pt: Point<BigInt, 2> = pt.cast();
+          pts.push(pt.cast())
+        }
+        two_opt_moves(pts, &mut rng)
+      })
+    });
+  }
   // c.bench_function("two_opt_moves::<BigInt>", |b| {
   //   b.iter(|| PolygonConvex::<i64>::random(1000, &mut rng))
   // });

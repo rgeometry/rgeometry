@@ -161,7 +161,7 @@ impl Orientation {
     p3: &[T; 2],
   ) -> Ordering
   where
-    T: Clone + Ord + num_traits::NumOps<T, T> + Extended + Signed,
+    T: Clone + Ord + num_traits::NumOps<T, T> + Extended,
   {
     let aq = Orientation::along_vector(p1, vector, p2);
     let ar = Orientation::along_vector(p1, vector, p3);
