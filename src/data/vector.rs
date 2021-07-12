@@ -13,8 +13,7 @@ use std::ops::Neg;
 use std::ops::Sub;
 
 use crate::data::Point;
-use crate::Extended;
-use crate::Orientation;
+use crate::{Orientation, PolygonScalar};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
@@ -102,14 +101,14 @@ impl<T> Vector<T, 2> {
   // Unit vector pointing to the right.
   pub fn unit_right() -> Vector<T, 2>
   where
-    T: Extended,
+    T: PolygonScalar,
   {
     Vector([T::from_constant(1), T::from_constant(0)])
   }
 
   pub fn ccw_cmp_around(&self, p: &Vector<T, 2>, q: &Vector<T, 2>) -> Ordering
   where
-    T: Extended,
+    T: PolygonScalar,
   {
     self.ccw_cmp_around_with(&Vector([T::from_constant(1), T::from_constant(0)]), p, q)
   }
@@ -120,7 +119,7 @@ impl<T> Vector<T, 2> {
     q: &Vector<T, 2>,
   ) -> Ordering
   where
-    T: Extended,
+    T: PolygonScalar,
   {
     Orientation::ccw_cmp_around_with(z, &self.0, &p.0, &q.0)
   }
@@ -129,7 +128,7 @@ impl<T> Vector<T, 2> {
   // FIXME: sort by magnitude if two vectors have the same angle.
   pub fn sort_around(pts: &mut Vec<Vector<T, 2>>)
   where
-    T: Extended,
+    T: PolygonScalar,
   {
     let origin = [T::from_constant(0), T::from_constant(0)];
     pts.sort_unstable_by(|a, b| {
@@ -145,7 +144,7 @@ impl<T> Vector<T, 2> {
 
   pub fn cmp_along(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: crate::PolygonScalar,
+    T: PolygonScalar,
   {
     // Rotate the vector 90 degrees counterclockwise.
     match Orientation::along_perp_vector(&p.array, self, &q.array) {

@@ -5,7 +5,7 @@ use super::ILineSegment;
 use super::LineSegment;
 use super::LineSegmentView;
 use super::Point;
-use crate::Intersects;
+use crate::{Intersects, PolygonScalar};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 // Directed edge from A to B, including A and excluding B.
@@ -40,7 +40,7 @@ impl<'a, T: Ord, const N: usize> From<&'a DirectedEdge<T, N>> for LineSegmentVie
 
 impl<'a, T> Intersects for &'a DirectedEdge<T, 2>
 where
-  T: Clone + Num + Ord + std::fmt::Debug + crate::Extended,
+  T: PolygonScalar,
 {
   type Result = ILineSegment<'a, T>;
   fn intersect(self, other: &'a DirectedEdge<T, 2>) -> Option<Self::Result> {

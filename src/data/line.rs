@@ -61,7 +61,7 @@ pub enum ILineLineSegmentSoS {
 // will be considered to be to the left of the line.
 impl<T> Intersects<LineSegmentView<'_, T, 2>> for &LineSoS<T, 2>
 where
-  T: Clone + NumOps<T, T> + Ord + std::fmt::Debug + crate::Extended,
+  T: PolygonScalar,
 {
   type Result = ILineLineSegmentSoS;
   fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
@@ -135,7 +135,7 @@ pub enum IHalfLineLineSegmentSoS {
 // will be considered to be to the left of the line.
 impl<T> Intersects<LineSegmentView<'_, T, 2>> for &HalfLineSoS<T, 2>
 where
-  T: Clone + PolygonScalar + Ord + std::fmt::Debug + crate::Extended,
+  T: PolygonScalar,
 {
   type Result = IHalfLineLineSegmentSoS;
   fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
@@ -176,7 +176,7 @@ where
 
 impl<T> Intersects<&DirectedEdge<T, 2>> for &HalfLineSoS<T, 2>
 where
-  T: Clone + PolygonScalar + Ord + std::fmt::Debug + crate::Extended,
+  T: PolygonScalar,
 {
   type Result = IHalfLineLineSegmentSoS;
   fn intersect(self, other: &DirectedEdge<T, 2>) -> Option<Self::Result> {

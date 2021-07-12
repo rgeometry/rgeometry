@@ -15,7 +15,7 @@ use std::ops::Index;
 use std::ops::Neg;
 
 use super::Vector;
-use crate::{Extended, Orientation};
+use crate::{Orientation, PolygonScalar};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)] // Required for correctness!
@@ -202,12 +202,9 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 // }
 
 // Methods on two-dimensional points.
-impl<T> Point<T, 2> {
-  pub fn cmp_distance_to(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
-  where
-    T: Extended,
-  {
-    Extended::cmp_dist(&self, &p, &q)
+impl<T: PolygonScalar> Point<T, 2> {
+  pub fn cmp_distance_to(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering {
+    T::cmp_dist(&self, &p, &q)
   }
 
   /// Determine the direction you have to turn if you walk from `p1`
@@ -231,10 +228,7 @@ impl<T> Point<T, 2> {
   /// assert!(Point::orient(&p1, &p2, &Point::new([ 1, 2 ])).is_cw());
   /// ```
   ///
-  pub fn orient(p1: &Point<T, 2>, p2: &Point<T, 2>, p3: &Point<T, 2>) -> Orientation
-  where
-    T: Clone + NumOps + Ord + crate::Extended,
-  {
+  pub fn orient(p1: &Point<T, 2>, p2: &Point<T, 2>, p3: &Point<T, 2>) -> Orientation {
     Orientation::new(&p1, &p2, &p3)
   }
 
@@ -242,27 +236,21 @@ impl<T> Point<T, 2> {
     p1: &Point<T, 2>,
     vector: &Vector<T, 2>,
     p2: &Point<T, 2>,
-  ) -> Orientation
-  where
-    T: Clone + NumOps + Ord + crate::Extended,
-  {
+  ) -> Orientation {
     Orientation::along_vector(&p1, &vector, &p2)
   }
 
   /// Docs?
-  pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
-  where
-    T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended,
-    // for<'a> &'a T: Mul<&'a T, Output = T>,
-  {
+  pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering {
     self.ccw_cmp_around_with(&Vector([T::from_constant(1), T::from_constant(0)]), p, q)
   }
 
-  pub fn ccw_cmp_around_with(&self, z: &Vector<T, 2>, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
-  where
-    T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended,
-    // for<'a> &'a T: Mul<Output = T>,
-  {
+  pub fn ccw_cmp_around_with(
+    &self,
+    z: &Vector<T, 2>,
+    p: &Point<T, 2>,
+    q: &Point<T, 2>,
+  ) -> Ordering {
     Orientation::ccw_cmp_around_with(z, &self, &p, &q)
   }
 }

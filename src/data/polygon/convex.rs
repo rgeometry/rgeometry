@@ -192,7 +192,7 @@ where
   T: PolygonScalar + Bounded + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
-  let zero: T = crate::Extended::from_constant(0);
+  let zero: T = T::from_constant(0);
   let max: T = Bounded::max_value();
   assert!(n > 0);
   let mut pts = Vec::with_capacity(n);

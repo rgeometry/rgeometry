@@ -255,7 +255,7 @@ impl<T> Polygon<T> {
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
-    let three: T = crate::Extended::from_constant(3);
+    let three = T::from_constant(3);
     Point::from(xs / (three * self.signed_area_2x()))
   }
 
