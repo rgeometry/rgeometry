@@ -1,13 +1,10 @@
 // https://en.wikipedia.org/wiki/Monotone_polygon
 use crate::data::{Cursor, Point, Polygon, Vector};
 use crate::{Error, Orientation, PolygonScalar};
-use rand::SeedableRng;
 
 use std::cmp::Ordering;
 use std::collections::VecDeque;
 use std::ops::Bound::*;
-use std::process::exit;
-use std::vec;
 
 ///Check if the given polyon is monotone with resprect to given direction
 pub fn is_monotone<T>(poly: &Polygon<T>, direction: &Vector<T, 2>) -> bool

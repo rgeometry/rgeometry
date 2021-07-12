@@ -1,6 +1,6 @@
 use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
-use num_traits::{NumOps, Signed};
+use num_traits::NumOps;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use std::cmp::Ordering;
@@ -190,7 +190,6 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::testing::*;
 
   use proptest::prelude::*;
   use test_strategy::proptest;

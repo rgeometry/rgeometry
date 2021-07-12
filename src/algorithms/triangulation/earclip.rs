@@ -1,11 +1,9 @@
-use std::borrow::BorrowMut;
-
 use crate::algorithms::zhash::{ZHashBox, ZHashable};
 use crate::data::{Point, PointId, PointLocation, Polygon, TriangleView};
 use crate::Orientation;
 use crate::PolygonScalar;
 
-use rand::rngs::mock::StepRng;
+// use rand::rngs::mock::StepRng;
 use rand::rngs::SmallRng;
 use rand::Rng;
 use rand::SeedableRng;
@@ -254,7 +252,6 @@ mod tests {
   use super::*;
   use crate::data::*;
   use num_bigint::BigInt;
-  use num_traits::Zero;
   use rand::rngs::SmallRng;
   use rand::SeedableRng;
 

@@ -1,5 +1,3 @@
-use num_traits::*;
-
 use super::EndPoint;
 use super::ILineSegment;
 use super::LineSegment;

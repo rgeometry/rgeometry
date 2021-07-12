@@ -1,9 +1,6 @@
-use num_traits::Signed;
 use std::cmp::Ordering;
-use std::ops::Mul;
-use std::ops::Sub;
 
-use crate::data::{Point, Vector};
+use crate::data::Vector;
 use crate::PolygonScalar;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
@@ -472,8 +469,7 @@ impl SoS {
 mod tests {
   use super::*;
 
-  use crate::testing::*;
-  use num::traits::Pow;
+  use crate::data::Point;
   use num::BigInt;
   use proptest::prelude::*;
   use test_strategy::proptest;

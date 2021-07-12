@@ -12,7 +12,6 @@ use std::fmt::Debug;
 use std::iter::Sum;
 use std::ops::Deref;
 use std::ops::Index;
-use std::ops::Neg;
 
 use super::Vector;
 use crate::{Orientation, PolygonScalar};

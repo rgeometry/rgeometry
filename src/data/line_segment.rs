@@ -1,4 +1,3 @@
-use num_traits::*;
 use std::cmp::Eq;
 use std::cmp::Ord;
 use std::cmp::Ordering;
@@ -373,7 +372,6 @@ mod tests {
   use crate::Intersects;
   use ILineSegment::*;
 
-  use proptest::prelude::*;
   use test_strategy::proptest;
 
   #[proptest]

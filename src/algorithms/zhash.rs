@@ -136,9 +136,7 @@ fn zhash_u32(w: u32) -> u64 {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::data::Point;
   use crate::data::Triangle;
-  use crate::testing::*;
 
   use proptest::prelude::*;
   use rand::SeedableRng;

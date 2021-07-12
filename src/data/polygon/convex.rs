@@ -1,18 +1,13 @@
 use claim::debug_assert_ok;
-use num_bigint::BigInt;
-use num_rational::BigRational;
 use num_traits::*;
 use ordered_float::OrderedFloat;
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::{Distribution, Standard};
 use rand::seq::SliceRandom;
 use rand::Rng;
-use rand::SeedableRng;
-use std::collections::BTreeSet;
 use std::ops::*;
 
 use crate::data::{Point, PointLocation, TriangleView, Vector};
-use crate::transformation::*;
 use crate::{Error, Orientation, PolygonScalar};
 
 use super::Polygon;
@@ -245,7 +240,6 @@ where
 mod tests {
   use super::*;
 
-  use crate::testing::*;
   use proptest::prelude::*;
   use test_strategy::proptest;
 

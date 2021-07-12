@@ -1,14 +1,9 @@
 use super::DirectedEdge;
-use super::LineSegmentSoS;
 use super::LineSegmentView;
 use super::Point;
 use super::Vector;
-use crate::data::point::PointSoS;
 use crate::Intersects;
 use crate::{Orientation, PolygonScalar, SoS};
-
-use num::traits::*;
-use std::cmp::Ordering;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Line
