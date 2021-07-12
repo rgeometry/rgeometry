@@ -578,18 +578,13 @@
 <span id="554">554</span>
 <span id="555">555</span>
 <span id="556">556</span>
-<span id="557">557</span>
-<span id="558">558</span>
-<span id="559">559</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std::borrow::BorrowMut</span>;
-
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::algorithms::zhash</span>::{<span class="ident">ZHashBox</span>, <span class="ident">ZHashable</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{<span class="ident">Point</span>, <span class="ident">PointId</span>, <span class="ident">PointLocation</span>, <span class="ident">Polygon</span>, <span class="ident">TriangleView</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Orientation</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::PolygonScalar</span>;
 
-<span class="kw">use</span> <span class="ident">rand::rngs::mock::StepRng</span>;
+<span class="comment">// use rand::rngs::mock::StepRng;</span>
 <span class="kw">use</span> <span class="ident">rand::rngs::SmallRng</span>;
 <span class="kw">use</span> <span class="ident">rand::Rng</span>;
 <span class="kw">use</span> <span class="ident">rand::SeedableRng</span>;
@@ -838,7 +833,6 @@
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
-  <span class="kw">use</span> <span class="ident">num_traits::Zero</span>;
   <span class="kw">use</span> <span class="ident">rand::rngs::SmallRng</span>;
   <span class="kw">use</span> <span class="ident">rand::SeedableRng</span>;
 

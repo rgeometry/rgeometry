@@ -299,39 +299,8 @@
 <span id="275">275</span>
 <span id="276">276</span>
 <span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="comment">// #![deny(warnings)]</span>
 <span class="attribute">#![<span class="ident">doc</span>(<span class="ident">test</span>(<span class="ident">no_crate_inject</span>))]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="comment">// #![allow(incomplete_features)]</span>
@@ -379,38 +348,9 @@
 }
 
 <span class="comment">// FIXME: Should include ZHashable.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PolygonScalar</span><span class="op">&lt;</span><span class="ident">T</span> <span class="op">=</span> <span class="self">Self</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span><span class="op">&gt;</span>:
-  <span class="ident">PolygonScalarRef</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Output</span><span class="op">&gt;</span>
-  <span class="op">+</span> <span class="ident">AddAssign</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">&gt;</span>
-  <span class="op">+</span> <span class="ident">MulAssign</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">&gt;</span>
-  <span class="op">+</span> <span class="ident">Sum</span>
-  <span class="op">+</span> <span class="ident">Ord</span>
-  <span class="op">+</span> <span class="ident">Neg</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span><span class="op">&gt;</span>
-  <span class="op">+</span> <span class="ident">std::fmt::Debug</span>
-  <span class="op">+</span> <span class="ident">Extended</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PolygonScalar</span>:
+  <span class="ident">std::fmt::Debug</span> <span class="op">+</span> <span class="ident">Neg</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">NumAssignOps</span> <span class="op">+</span> <span class="ident">NumOps</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Sum</span> <span class="op">+</span> <span class="ident">Clone</span>
 {
-}
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Rhs</span>, <span class="ident">Output</span><span class="op">&gt;</span> <span class="ident">PolygonScalar</span><span class="op">&lt;</span><span class="ident">Rhs</span>, <span class="ident">Output</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">T</span> <span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">PolygonScalarRef</span><span class="op">&lt;</span><span class="ident">Rhs</span>, <span class="ident">Output</span><span class="op">&gt;</span>
-    <span class="op">+</span> <span class="ident">AddAssign</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">&gt;</span>
-    <span class="op">+</span> <span class="ident">MulAssign</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">&gt;</span>
-    <span class="op">+</span> <span class="ident">Sum</span>
-    <span class="op">+</span> <span class="ident">Ord</span>
-    <span class="op">+</span> <span class="ident">Neg</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span><span class="op">&gt;</span>
-    <span class="op">+</span> <span class="ident">std::fmt::Debug</span>
-    <span class="op">+</span> <span class="ident">Extended</span>
-{
-}
-
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PolygonScalarRef</span><span class="op">&lt;</span><span class="ident">T</span> <span class="op">=</span> <span class="self">Self</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span><span class="op">&gt;</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">NumOps</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Output</span><span class="op">&gt;</span> {}
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Rhs</span>, <span class="ident">Output</span><span class="op">&gt;</span> <span class="ident">PolygonScalarRef</span><span class="op">&lt;</span><span class="ident">Rhs</span>, <span class="ident">Output</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">T</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">NumOps</span><span class="op">&lt;</span><span class="ident">Rhs</span>, <span class="ident">Output</span><span class="op">&gt;</span> {}
-
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Extended</span>: <span class="ident">NumOps</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> {
-  <span class="kw">type</span> <span class="ident">ExtendedSigned</span>: <span class="ident">Clone</span>
-    <span class="op">+</span> <span class="ident">NumOps</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::ExtendedSigned</span>, <span class="self">Self</span><span class="ident">::ExtendedSigned</span><span class="op">&gt;</span>
-    <span class="op">+</span> <span class="ident">Ord</span>
-    <span class="op">+</span> <span class="ident">Sum</span>
-    <span class="op">+</span> <span class="ident">NumAssignOps</span>;
   <span class="kw">fn</span> <span class="ident">from_constant</span>(<span class="ident">val</span>: <span class="ident">i8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
   <span class="kw">fn</span> <span class="ident">cmp_dist</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">r</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::cmp::Ordering</span>;
   <span class="kw">fn</span> <span class="ident">cmp_slope</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">r</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::cmp::Ordering</span>;
@@ -420,9 +360,7 @@
 
 <span class="macro">macro_rules!</span> <span class="ident">fixed_precision</span> {
   ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">uty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">long</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ulong</span>: <span class="ident">ty</span> ) <span class="op">=</span><span class="op">&gt;</span> {
-    <span class="kw">impl</span> <span class="ident">Extended</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-      <span class="kw">type</span> <span class="ident">ExtendedSigned</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">long</span>;
-
+    <span class="kw">impl</span> <span class="ident">PolygonScalar</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
       <span class="kw">fn</span> <span class="ident">from_constant</span>(<span class="ident">val</span>: <span class="ident">i8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">val</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>
       }
@@ -546,8 +484,7 @@
 <span class="macro">macro_rules!</span> <span class="ident">arbitrary_precision</span> {
   ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span> ),<span class="op">*</span> ) <span class="op">=</span><span class="op">&gt;</span> {
     $(
-      <span class="kw">impl</span> <span class="ident">Extended</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-      <span class="kw">type</span> <span class="ident">ExtendedSigned</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>;
+      <span class="kw">impl</span> <span class="ident">PolygonScalar</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
       <span class="kw">fn</span> <span class="ident">from_constant</span>(<span class="ident">val</span>: <span class="ident">i8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span><span class="ident">::from_i8</span>(<span class="ident">val</span>).<span class="ident">unwrap</span>()
       }
@@ -567,14 +504,14 @@
         <span class="ident">slope1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">slope2</span>)
       }
       <span class="kw">fn</span> <span class="ident">cmp_vector_slope</span>(<span class="ident">vector</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>;<span class="number">2</span>], <span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::cmp::Ordering</span> {
-        <span class="ident">Extended::cmp_slope</span>(
+        <span class="ident">PolygonScalar::cmp_slope</span>(
           <span class="ident">p</span>,
           <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">0</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">1</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">1</span>]],
           <span class="ident">q</span>
         )
       }
       <span class="kw">fn</span> <span class="ident">cmp_perp_vector_slope</span>(<span class="ident">vector</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>;<span class="number">2</span>], <span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::cmp::Ordering</span> {
-        <span class="ident">Extended::cmp_slope</span>(
+        <span class="ident">PolygonScalar::cmp_slope</span>(
           <span class="ident">p</span>,
           <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">0</span>] <span class="op">-</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">1</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">0</span>]],
           <span class="ident">q</span>
@@ -597,8 +534,7 @@
 <span class="macro">arbitrary_precision!</span>(<span class="ident">ordered_float::NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>);
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rug&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Extended</span> <span class="kw">for</span> <span class="ident">rug::Integer</span> {
-  <span class="kw">type</span> <span class="ident">ExtendedSigned</span> <span class="op">=</span> <span class="ident">rug::Integer</span>;
+<span class="kw">impl</span> <span class="ident">PolygonScalar</span> <span class="kw">for</span> <span class="ident">rug::Integer</span> {
   <span class="kw">fn</span> <span class="ident">from_constant</span>(<span class="ident">val</span>: <span class="ident">i8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
     <span class="ident">rug::Integer::from</span>(<span class="ident">val</span>)
   }
@@ -630,12 +566,12 @@
   <span class="kw">fn</span> <span class="ident">cmp_vector_slope</span>(<span class="ident">vector</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::cmp::Ordering</span> {
     <span class="kw">let</span> <span class="ident">new_x</span> <span class="op">=</span> <span class="ident">rug::Integer::from</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">0</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">0</span>]);
     <span class="kw">let</span> <span class="ident">new_y</span> <span class="op">=</span> <span class="ident">rug::Integer::from</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">1</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">1</span>]);
-    <span class="ident">Extended::cmp_slope</span>(<span class="ident">p</span>, <span class="kw-2">&amp;</span>[<span class="ident">new_x</span>, <span class="ident">new_y</span>], <span class="ident">q</span>)
+    <span class="ident">PolygonScalar::cmp_slope</span>(<span class="ident">p</span>, <span class="kw-2">&amp;</span>[<span class="ident">new_x</span>, <span class="ident">new_y</span>], <span class="ident">q</span>)
   }
   <span class="kw">fn</span> <span class="ident">cmp_perp_vector_slope</span>(<span class="ident">vector</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::cmp::Ordering</span> {
     <span class="kw">let</span> <span class="ident">new_x</span> <span class="op">=</span> <span class="ident">rug::Integer::from</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">0</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">1</span>]);
     <span class="kw">let</span> <span class="ident">new_y</span> <span class="op">=</span> <span class="ident">rug::Integer::from</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">1</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">0</span>]);
-    <span class="ident">Extended::cmp_slope</span>(<span class="ident">p</span>, <span class="kw-2">&amp;</span>[<span class="ident">new_x</span>, <span class="ident">new_y</span>], <span class="ident">q</span>)
+    <span class="ident">PolygonScalar::cmp_slope</span>(<span class="ident">p</span>, <span class="kw-2">&amp;</span>[<span class="ident">new_x</span>, <span class="ident">new_y</span>], <span class="ident">q</span>)
   }
 }
 
