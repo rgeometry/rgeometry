@@ -1,18 +1,13 @@
 use claim::debug_assert_ok;
-use num_bigint::BigInt;
-use num_rational::BigRational;
 use num_traits::*;
 use ordered_float::OrderedFloat;
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::{Distribution, Standard};
 use rand::seq::SliceRandom;
 use rand::Rng;
-use rand::SeedableRng;
-use std::collections::BTreeSet;
 use std::ops::*;
 
 use crate::data::{Point, PointLocation, TriangleView, Vector};
-use crate::transformation::*;
 use crate::{Error, Orientation, PolygonScalar};
 
 use super::Polygon;
@@ -192,7 +187,7 @@ where
   T: PolygonScalar + Bounded + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
-  let zero: T = crate::Extended::from_constant(0);
+  let zero: T = T::from_constant(0);
   let max: T = Bounded::max_value();
   assert!(n > 0);
   let mut pts = Vec::with_capacity(n);
@@ -245,7 +240,6 @@ where
 mod tests {
   use super::*;
 
-  use crate::testing::*;
   use proptest::prelude::*;
   use test_strategy::proptest;
 

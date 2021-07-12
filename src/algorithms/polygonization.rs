@@ -326,7 +326,6 @@ fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
 #[cfg(test)]
 pub mod tests {
   use super::*;
-  use crate::testing::*;
 
   use proptest::collection::vec;
   use proptest::prelude::*;

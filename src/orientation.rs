@@ -1,10 +1,7 @@
-use num_traits::Signed;
 use std::cmp::Ordering;
-use std::ops::Mul;
-use std::ops::Sub;
 
-use crate::data::{Point, Vector};
-use crate::Extended;
+use crate::data::Vector;
+use crate::PolygonScalar;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
 pub enum Orientation {
@@ -52,10 +49,10 @@ impl Orientation {
   ///
   pub fn new<T>(p1: &[T; 2], p2: &[T; 2], p3: &[T; 2]) -> Orientation
   where
-    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
+    T: PolygonScalar,
   {
     // raw_arr_turn(p, q, r)
-    match Extended::cmp_slope(p1, p2, p3) {
+    match T::cmp_slope(p1, p2, p3) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
       Ordering::Greater => Orientation::CounterClockWise,
@@ -84,9 +81,9 @@ impl Orientation {
   /// ```
   pub fn along_vector<T>(p1: &[T; 2], vector: &Vector<T, 2>, p2: &[T; 2]) -> Orientation
   where
-    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
+    T: PolygonScalar,
   {
-    match Extended::cmp_vector_slope(&vector.0, p1, p2) {
+    match T::cmp_vector_slope(&vector.0, p1, p2) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
       Ordering::Greater => Orientation::CounterClockWise,
@@ -95,9 +92,9 @@ impl Orientation {
 
   pub fn along_perp_vector<T>(p1: &[T; 2], vector: &Vector<T, 2>, p2: &[T; 2]) -> Orientation
   where
-    T: Clone + Mul<T, Output = T> + Sub<Output = T> + Ord + Extended,
+    T: PolygonScalar,
   {
-    match Extended::cmp_perp_vector_slope(&vector.0, p1, p2) {
+    match T::cmp_perp_vector_slope(&vector.0, p1, p2) {
       Ordering::Less => Orientation::ClockWise,
       Ordering::Equal => Orientation::CoLinear,
       Ordering::Greater => Orientation::CounterClockWise,
@@ -161,7 +158,7 @@ impl Orientation {
     p3: &[T; 2],
   ) -> Ordering
   where
-    T: Clone + Ord + num_traits::NumOps<T, T> + Extended,
+    T: PolygonScalar,
   {
     let aq = Orientation::along_vector(p1, vector, p2);
     let ar = Orientation::along_vector(p1, vector, p3);
@@ -472,15 +469,14 @@ impl SoS {
 mod tests {
   use super::*;
 
-  use crate::testing::*;
-  use num::traits::Pow;
+  use crate::data::Point;
   use num::BigInt;
   use proptest::prelude::*;
   use test_strategy::proptest;
 
   #[test]
   fn orientation_limit_1() {
-    Extended::cmp_slope(
+    PolygonScalar::cmp_slope(
       &[i8::MAX, i8::MAX],
       &[i8::MIN, i8::MIN],
       &[i8::MIN, i8::MIN],
@@ -490,7 +486,7 @@ mod tests {
   #[test]
   fn cmp_slope_1() {
     assert_eq!(
-      Extended::cmp_slope(&[0i8, 0], &[1, 1], &[2, 2],),
+      PolygonScalar::cmp_slope(&[0i8, 0], &[1, 1], &[2, 2],),
       Ordering::Equal
     );
   }
@@ -507,7 +503,7 @@ mod tests {
   fn orientation_limit_2() {
     let options = &[i8::MIN, i8::MAX, 0, -10, 10];
     for [a, b, c, d, e, f] in crate::utils::permutations([options; 6]) {
-      Extended::cmp_slope(&[a, b], &[c, d], &[e, f]);
+      PolygonScalar::cmp_slope(&[a, b], &[c, d], &[e, f]);
     }
   }
 

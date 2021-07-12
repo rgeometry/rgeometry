@@ -1,3 +1,4 @@
+// #![deny(warnings)]
 #![doc(test(no_crate_inject))]
 #![allow(unused_imports)]
 // #![allow(incomplete_features)]
@@ -45,38 +46,9 @@ impl std::fmt::Display for Error {
 }
 
 // FIXME: Should include ZHashable.
-pub trait PolygonScalar<T = Self, Output = Self>:
-  PolygonScalarRef<T, Output>
-  + AddAssign<Output>
-  + MulAssign<Output>
-  + Sum
-  + Ord
-  + Neg<Output = Self>
-  + std::fmt::Debug
-  + Extended
+pub trait PolygonScalar:
+  std::fmt::Debug + Neg<Output = Self> + NumAssignOps + NumOps<Self, Self> + Ord + Sum + Clone
 {
-}
-impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
-  T: PolygonScalarRef<Rhs, Output>
-    + AddAssign<Output>
-    + MulAssign<Output>
-    + Sum
-    + Ord
-    + Neg<Output = Self>
-    + std::fmt::Debug
-    + Extended
-{
-}
-
-pub trait PolygonScalarRef<T = Self, Output = Self>: Clone + NumOps<T, Output> {}
-impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where T: Clone + NumOps<Rhs, Output> {}
-
-pub trait Extended: NumOps<Self, Self> + Ord + Clone {
-  type ExtendedSigned: Clone
-    + NumOps<Self::ExtendedSigned, Self::ExtendedSigned>
-    + Ord
-    + Sum
-    + NumAssignOps;
   fn from_constant(val: i8) -> Self;
   fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
@@ -86,9 +58,7 @@ pub trait Extended: NumOps<Self, Self> + Ord + Clone {
 
 macro_rules! fixed_precision {
   ( $ty:ty, $uty:ty, $long:ty, $ulong: ty ) => {
-    impl Extended for $ty {
-      type ExtendedSigned = $long;
-
+    impl PolygonScalar for $ty {
       fn from_constant(val: i8) -> Self {
         val as $ty
       }
@@ -212,8 +182,7 @@ macro_rules! fixed_precision {
 macro_rules! arbitrary_precision {
   ( $( $ty:ty ),* ) => {
     $(
-      impl Extended for $ty {
-      type ExtendedSigned = $ty;
+      impl PolygonScalar for $ty {
       fn from_constant(val: i8) -> Self {
         <$ty>::from_i8(val).unwrap()
       }
@@ -233,14 +202,14 @@ macro_rules! arbitrary_precision {
         slope1.cmp(&slope2)
       }
       fn cmp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
-        Extended::cmp_slope(
+        PolygonScalar::cmp_slope(
           p,
           &[&p[0] + &vector[0], &p[1] + &vector[1]],
           q
         )
       }
       fn cmp_perp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
-        Extended::cmp_slope(
+        PolygonScalar::cmp_slope(
           p,
           &[&p[0] - &vector[1], &p[1] + &vector[0]],
           q
@@ -263,8 +232,7 @@ arbitrary_precision!(ordered_float::NotNan<f32>);
 arbitrary_precision!(ordered_float::NotNan<f64>);
 
 #[cfg(feature = "rug")]
-impl Extended for rug::Integer {
-  type ExtendedSigned = rug::Integer;
+impl PolygonScalar for rug::Integer {
   fn from_constant(val: i8) -> Self {
     rug::Integer::from(val)
   }
@@ -296,12 +264,12 @@ impl Extended for rug::Integer {
   fn cmp_vector_slope(vector: &[Self; 2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
     let new_x = rug::Integer::from(&p[0] + &vector[0]);
     let new_y = rug::Integer::from(&p[1] + &vector[1]);
-    Extended::cmp_slope(p, &[new_x, new_y], q)
+    PolygonScalar::cmp_slope(p, &[new_x, new_y], q)
   }
   fn cmp_perp_vector_slope(vector: &[Self; 2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
     let new_x = rug::Integer::from(&p[0] + &vector[1]);
     let new_y = rug::Integer::from(&p[1] + &vector[0]);
-    Extended::cmp_slope(p, &[new_x, new_y], q)
+    PolygonScalar::cmp_slope(p, &[new_x, new_y], q)
   }
 }
 
