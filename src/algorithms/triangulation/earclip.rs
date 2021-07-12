@@ -1,12 +1,9 @@
-use std::borrow::BorrowMut;
-
 use crate::algorithms::zhash::{ZHashBox, ZHashable};
 use crate::data::{Point, PointId, PointLocation, Polygon, TriangleView};
 use crate::Orientation;
 use crate::PolygonScalar;
 
-use num_traits::Zero;
-use rand::rngs::mock::StepRng;
+// use rand::rngs::mock::StepRng;
 use rand::rngs::SmallRng;
 use rand::Rng;
 use rand::SeedableRng;
@@ -255,12 +252,11 @@ mod tests {
   use super::*;
   use crate::data::*;
   use num_bigint::BigInt;
-  use num_traits::Zero;
   use rand::rngs::SmallRng;
   use rand::SeedableRng;
 
   fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
-    let mut trig_area_2x = BigInt::zero();
+    let mut trig_area_2x = BigInt::from(0);
     // let mut rng = StepRng::new(0,0);
     let rng = SmallRng::seed_from_u64(0);
     for (a, b, c) in triangulate_list(&p.points, &p.rings[0], rng) {

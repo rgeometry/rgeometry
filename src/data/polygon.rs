@@ -1,17 +1,11 @@
 // use claim::debug_assert_ok;
-use num::BigInt;
-use num::BigRational;
 use num_traits::*;
 use ordered_float::OrderedFloat;
 use std::iter::Sum;
 use std::ops::Bound::*;
 use std::ops::*;
 
-use crate::data::line::*;
-use crate::data::{
-  DirectedEdge, HalfLineSoS, LineSegment, LineSegmentView, LineSoS, Point, PointLocation, Triangle,
-  TriangleView, Vector,
-};
+use crate::data::{DirectedEdge, HalfLineSoS, Point, PointLocation, TriangleView, Vector};
 use crate::intersection::*;
 use crate::{Error, Orientation, PolygonScalar};
 
@@ -255,7 +249,7 @@ impl<T> Polygon<T> {
         (p + q) * (p.0[0].clone() * q.0[1].clone() - q.0[0].clone() * p.0[1].clone())
       })
       .sum();
-    let three = T::from_usize(3).unwrap();
+    let three = T::from_constant(3);
     Point::from(xs / (three * self.signed_area_2x()))
   }
 

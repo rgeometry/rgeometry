@@ -1,6 +1,4 @@
-use array_init::{array_init, try_array_init};
 use rand::Rng;
-use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
 
 pub type SparseIndex = usize;
@@ -125,7 +123,7 @@ where
 {
   let end: usize = source.iter().map(|x| x.len()).product();
   (0..end).into_iter().map(move |mut nth| {
-    array_init(|i| {
+    array_init::array_init(|i| {
       let my_index = nth % source[i].len();
       nth = nth / source[i].len();
       source[i][my_index]
