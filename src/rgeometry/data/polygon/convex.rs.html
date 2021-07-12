@@ -517,7 +517,7 @@
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
   <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
 {
-  <span class="kw">let</span> <span class="ident">zero</span>: <span class="ident">T</span> <span class="op">=</span> <span class="ident">Zero::zero</span>();
+  <span class="kw">let</span> <span class="ident">zero</span>: <span class="ident">T</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::Extended::from_constant</span>(<span class="number">0</span>);
   <span class="kw">let</span> <span class="ident">max</span>: <span class="ident">T</span> <span class="op">=</span> <span class="ident">Bounded::max_value</span>();
   <span class="macro">assert!</span>(<span class="ident">n</span> <span class="op">&gt;</span> <span class="number">0</span>);
   <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pts</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">n</span>);
@@ -620,7 +620,7 @@
   <span class="kw">fn</span> <span class="ident">sum_to_zero_vector</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="number">2</span>..<span class="number">1000</span>)]</span> <span class="ident">n</span>: <span class="ident">i32</span>) {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
     <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">into_iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="ident">Vector::zero</span>())
+    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">into_iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="ident">Vector</span>([<span class="number">0</span>, <span class="number">0</span>]))
   }
 }
 </pre></div>

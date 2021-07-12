@@ -245,25 +245,9 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
-<span class="kw">use</span> <span class="ident">num_traits::identities::One</span>;
-<span class="kw">use</span> <span class="ident">num_traits::identities::Zero</span>;
 <span class="kw">use</span> <span class="ident">num_traits</span>::{<span class="ident">NumOps</span>, <span class="ident">Signed</span>};
 <span class="kw">use</span> <span class="ident">rand::distributions</span>::{<span class="ident">Distribution</span>, <span class="ident">Standard</span>};
 <span class="kw">use</span> <span class="ident">rand::Rng</span>;
@@ -306,14 +290,10 @@
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">squared_magnitude</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
   <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Zero</span> <span class="op">+</span> <span class="ident">AddAssign</span>,
+    <span class="ident">T</span>: <span class="ident">Sum</span> <span class="op">+</span> <span class="ident">AddAssign</span>,
     <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>: <span class="ident">Sub</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Mul</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
   {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span> <span class="op">=</span> <span class="ident">T::zero</span>();
-    <span class="kw">for</span> <span class="ident">elt</span> <span class="kw">in</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>() {
-      <span class="ident">total</span> <span class="op">+</span><span class="op">=</span> <span class="ident">elt</span> <span class="op">*</span> <span class="ident">elt</span>;
-    }
-    <span class="ident">total</span>
+    <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">elt</span><span class="op">|</span> <span class="ident">elt</span> <span class="op">*</span> <span class="ident">elt</span>).<span class="ident">sum</span>()
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">map</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">N</span><span class="op">&gt;</span>
@@ -370,16 +350,16 @@
   <span class="comment">// Unit vector pointing to the right.</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unit_right</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>
   <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">One</span> <span class="op">+</span> <span class="ident">Zero</span>,
+    <span class="ident">T</span>: <span class="ident">Extended</span>,
   {
-    <span class="ident">Vector</span>([<span class="ident">T::one</span>(), <span class="ident">T::zero</span>()])
+    <span class="ident">Vector</span>([<span class="ident">T::from_constant</span>(<span class="number">1</span>), <span class="ident">T::from_constant</span>(<span class="number">0</span>)])
   }
 
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ccw_cmp_around</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="kw-2">&amp;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span>
   <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Extended</span> <span class="op">+</span> <span class="ident">Signed</span>,
+    <span class="ident">T</span>: <span class="ident">Extended</span>,
   {
-    <span class="self">self</span>.<span class="ident">ccw_cmp_around_with</span>(<span class="kw-2">&amp;</span><span class="ident">Vector</span>([<span class="ident">T::one</span>(), <span class="ident">T::zero</span>()]), <span class="ident">p</span>, <span class="ident">q</span>)
+    <span class="self">self</span>.<span class="ident">ccw_cmp_around_with</span>(<span class="kw-2">&amp;</span><span class="ident">Vector</span>([<span class="ident">T::from_constant</span>(<span class="number">1</span>), <span class="ident">T::from_constant</span>(<span class="number">0</span>)]), <span class="ident">p</span>, <span class="ident">q</span>)
   }
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ccw_cmp_around_with</span>(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -388,7 +368,7 @@
     <span class="ident">q</span>: <span class="kw-2">&amp;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
   ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span>
   <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Extended</span> <span class="op">+</span> <span class="ident">Signed</span>,
+    <span class="ident">T</span>: <span class="ident">Extended</span>,
   {
     <span class="ident">Orientation::ccw_cmp_around_with</span>(<span class="ident">z</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">q</span>.<span class="number">0</span>)
   }
@@ -397,11 +377,16 @@
   <span class="comment">// FIXME: sort by magnitude if two vectors have the same angle.</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sort_around</span>(<span class="ident">pts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>)
   <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Extended</span> <span class="op">+</span> <span class="ident">Signed</span>,
+    <span class="ident">T</span>: <span class="ident">Extended</span>,
   {
-    <span class="kw">let</span> <span class="ident">origin</span> <span class="op">=</span> [<span class="ident">T::zero</span>(), <span class="ident">T::zero</span>()];
+    <span class="kw">let</span> <span class="ident">origin</span> <span class="op">=</span> [<span class="ident">T::from_constant</span>(<span class="number">0</span>), <span class="ident">T::from_constant</span>(<span class="number">0</span>)];
     <span class="ident">pts</span>.<span class="ident">sort_unstable_by</span>(<span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span><span class="op">|</span> {
-      <span class="ident">Orientation::ccw_cmp_around_with</span>(<span class="kw-2">&amp;</span><span class="ident">Vector</span>([<span class="ident">T::one</span>(), <span class="ident">T::zero</span>()]), <span class="kw-2">&amp;</span><span class="ident">origin</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="number">0</span>)
+      <span class="ident">Orientation::ccw_cmp_around_with</span>(
+        <span class="kw-2">&amp;</span><span class="ident">Vector</span>([<span class="ident">T::from_constant</span>(<span class="number">1</span>), <span class="ident">T::from_constant</span>(<span class="number">0</span>)]),
+        <span class="kw-2">&amp;</span><span class="ident">origin</span>,
+        <span class="kw-2">&amp;</span><span class="ident">a</span>.<span class="number">0</span>,
+        <span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="number">0</span>,
+      )
     })
     <span class="comment">// L.sortBy (ccwCmpAround c &lt;&gt; cmpByDistanceTo c)</span>
   }
@@ -424,29 +409,16 @@
 <span class="kw">mod</span> <span class="ident">mul</span>;
 <span class="kw">mod</span> <span class="ident">sub</span>;
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Zero</span> <span class="kw">for</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span> <span class="op">+</span> <span class="ident">Clone</span>,
-  <span class="comment">// for&lt;&#39;c&gt; &amp;&#39;c T: Add&lt;&amp;&#39;c T, Output = T&gt;,</span>
-{
-  <span class="kw">fn</span> <span class="ident">zero</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
-    <span class="ident">Vector</span>(<span class="ident">array_init</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Zero::zero</span>()))
-  }
-  <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-    <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">all</span>(<span class="ident">Zero::is_zero</span>)
-  }
-}
-
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Sum</span> <span class="kw">for</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span> <span class="op">+</span> <span class="ident">AddAssign</span> <span class="op">+</span> <span class="ident">Clone</span>,
+  <span class="ident">T</span>: <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">AddAssign</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Sum</span>,
   <span class="comment">// for&lt;&#39;c&gt; &amp;&#39;c T: Add&lt;&amp;&#39;c T, Output = T&gt;,</span>
 {
   <span class="kw">fn</span> <span class="ident">sum</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">iter</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
   <span class="kw">where</span>
     <span class="ident">I</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
   {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acc</span> <span class="op">=</span> <span class="ident">Zero::zero</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acc</span> <span class="op">=</span> <span class="ident">Vector</span>(<span class="ident">array_init</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">std::iter::empty</span>().<span class="ident">sum</span>()));
     <span class="kw">for</span> <span class="ident">vec</span> <span class="kw">in</span> <span class="ident">iter</span> {
       <span class="ident">acc</span> <span class="op">+</span><span class="op">=</span> <span class="ident">vec</span>;
     }
