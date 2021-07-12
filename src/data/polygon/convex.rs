@@ -192,7 +192,7 @@ where
   T: PolygonScalar + Bounded + SampleUniform + Copy,
   R: Rng + ?Sized,
 {
-  let zero: T = Zero::zero();
+  let zero: T = crate::Extended::from_constant(0);
   let max: T = Bounded::max_value();
   assert!(n > 0);
   let mut pts = Vec::with_capacity(n);
@@ -295,6 +295,6 @@ mod tests {
   fn sum_to_zero_vector(#[strategy(2..1000)] n: i32) {
     let mut rng = rand::thread_rng();
     let vecs: Vec<Vector<i8, 2>> = random_vectors(n as usize, &mut rng);
-    prop_assert_eq!(vecs.into_iter().sum::<Vector<i8, 2>>(), Vector::zero())
+    prop_assert_eq!(vecs.into_iter().sum::<Vector<i8, 2>>(), Vector([0, 0]))
   }
 }

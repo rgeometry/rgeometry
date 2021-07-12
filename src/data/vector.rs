@@ -1,7 +1,5 @@
 use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
-use num_traits::identities::One;
-use num_traits::identities::Zero;
 use num_traits::{NumOps, Signed};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
@@ -44,14 +42,10 @@ where
 
   pub fn squared_magnitude(&self) -> T
   where
-    T: Zero + AddAssign,
+    T: Sum + AddAssign,
     for<'a> &'a T: Sub<&'a T, Output = T> + Mul<&'a T, Output = T>,
   {
-    let mut total = T::zero();
-    for elt in self.0.iter() {
-      total += elt * elt;
-    }
-    total
+    self.0.iter().map(|elt| elt * elt).sum()
   }
 
   pub fn map<U, F>(&self, f: F) -> Vector<U, N>
@@ -108,16 +102,16 @@ impl<T> Vector<T, 2> {
   // Unit vector pointing to the right.
   pub fn unit_right() -> Vector<T, 2>
   where
-    T: One + Zero,
+    T: Extended,
   {
-    Vector([T::one(), T::zero()])
+    Vector([T::from_constant(1), T::from_constant(0)])
   }
 
   pub fn ccw_cmp_around(&self, p: &Vector<T, 2>, q: &Vector<T, 2>) -> Ordering
   where
-    T: Extended + Signed,
+    T: Extended,
   {
-    self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
+    self.ccw_cmp_around_with(&Vector([T::from_constant(1), T::from_constant(0)]), p, q)
   }
   pub fn ccw_cmp_around_with(
     &self,
@@ -126,7 +120,7 @@ impl<T> Vector<T, 2> {
     q: &Vector<T, 2>,
   ) -> Ordering
   where
-    T: Extended + Signed,
+    T: Extended,
   {
     Orientation::ccw_cmp_around_with(z, &self.0, &p.0, &q.0)
   }
@@ -135,11 +129,16 @@ impl<T> Vector<T, 2> {
   // FIXME: sort by magnitude if two vectors have the same angle.
   pub fn sort_around(pts: &mut Vec<Vector<T, 2>>)
   where
-    T: Extended + Signed,
+    T: Extended,
   {
-    let origin = [T::zero(), T::zero()];
+    let origin = [T::from_constant(0), T::from_constant(0)];
     pts.sort_unstable_by(|a, b| {
-      Orientation::ccw_cmp_around_with(&Vector([T::one(), T::zero()]), &origin, &a.0, &b.0)
+      Orientation::ccw_cmp_around_with(
+        &Vector([T::from_constant(1), T::from_constant(0)]),
+        &origin,
+        &a.0,
+        &b.0,
+      )
     })
     // L.sortBy (ccwCmpAround c <> cmpByDistanceTo c)
   }
@@ -162,29 +161,16 @@ mod div;
 mod mul;
 mod sub;
 
-impl<T, const N: usize> Zero for Vector<T, N>
-where
-  T: NumOps + Zero + Clone,
-  // for<'c> &'c T: Add<&'c T, Output = T>,
-{
-  fn zero() -> Vector<T, N> {
-    Vector(array_init(|_| Zero::zero()))
-  }
-  fn is_zero(&self) -> bool {
-    self.0.iter().all(Zero::is_zero)
-  }
-}
-
 impl<T, const N: usize> Sum for Vector<T, N>
 where
-  T: NumOps + Zero + AddAssign + Clone,
+  T: NumOps + AddAssign + Clone + Sum,
   // for<'c> &'c T: Add<&'c T, Output = T>,
 {
   fn sum<I>(iter: I) -> Vector<T, N>
   where
     I: Iterator<Item = Vector<T, N>>,
   {
-    let mut acc = Zero::zero();
+    let mut acc = Vector(array_init(|_| std::iter::empty().sum()));
     for vec in iter {
       acc += vec;
     }

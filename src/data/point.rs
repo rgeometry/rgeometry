@@ -83,10 +83,10 @@ impl<T, const N: usize> Point<T, N> {
   // Similar to num_traits::identities::Zero but doesn't require an Add impl.
   pub fn zero() -> Self
   where
-    T: Zero,
+    T: Sum,
   {
     Point {
-      array: array_init(|_| Zero::zero()),
+      array: array_init(|_| std::iter::empty().sum()),
     }
   }
 
@@ -252,15 +252,15 @@ impl<T> Point<T, 2> {
   /// Docs?
   pub fn ccw_cmp_around(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Clone + Ord + NumOps + Zero + One + Neg<Output = T> + crate::Extended + Signed,
+    T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended,
     // for<'a> &'a T: Mul<&'a T, Output = T>,
   {
-    self.ccw_cmp_around_with(&Vector([T::one(), T::zero()]), p, q)
+    self.ccw_cmp_around_with(&Vector([T::from_constant(1), T::from_constant(0)]), p, q)
   }
 
   pub fn ccw_cmp_around_with(&self, z: &Vector<T, 2>, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering
   where
-    T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended + Signed,
+    T: Clone + Ord + NumOps + Neg<Output = T> + crate::Extended,
     // for<'a> &'a T: Mul<Output = T>,
   {
     Orientation::ccw_cmp_around_with(z, &self, &p, &q)
@@ -302,19 +302,6 @@ impl<T, const N: usize> Deref for Point<T, N> {
 
 mod add;
 mod sub;
-
-// // Sigh, should relax Copy to Clone.
-// impl<T, const N: usize> Zero for Point<T, N>
-// where
-//   T: Zero + Copy + Add + Add<Output = T>,
-// {
-//   fn zero() -> Point<T, N> {
-//     Point([Zero::zero(); N])
-//   }
-//   fn is_zero(&self) -> bool {
-//     self.0.iter().all(Zero::is_zero)
-//   }
-// }
 
 #[cfg(test)]
 pub mod tests {
