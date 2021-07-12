@@ -45,32 +45,6 @@ impl std::fmt::Display for Error {
 }
 
 // FIXME: Should include ZHashable.
-// pub trait PolygonScalar<T = Self, Output = Self>:
-//   PolygonScalarRef<T, Output>
-//   + AddAssign<Output>
-//   + MulAssign<Output>
-//   + Sum
-//   + Ord
-//   + Neg<Output = Self>
-//   + std::fmt::Debug
-//   + Extended
-// {
-// }
-// impl<T, Rhs, Output> PolygonScalar<Rhs, Output> for T where
-//   T: PolygonScalarRef<Rhs, Output>
-//     + AddAssign<Output>
-//     + MulAssign<Output>
-//     + Sum
-//     + Ord
-//     + Neg<Output = Self>
-//     + std::fmt::Debug
-//     + Extended
-// {
-// }
-
-// pub trait PolygonScalarRef<T = Self, Output = Self>: Clone + NumOps<T, Output> {}
-// impl<T, Rhs, Output> PolygonScalarRef<Rhs, Output> for T where T: Clone + NumOps<Rhs, Output> {}
-
 pub trait PolygonScalar:
   std::fmt::Debug + Neg<Output = Self> + NumAssignOps + NumOps<Self, Self> + Ord + Sum + Clone
 {
