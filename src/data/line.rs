@@ -218,6 +218,21 @@ mod tests {
     assert_eq!(ray.intersect(line.as_ref()), None);
   }
 
+  #[test]
+  fn ray_intersect_unit_3() {
+    let line: LineSegment<i8, 2> = LineSegment::from((4, 3)..(4, 6));
+    let through: Point<i8, 2> = Point::new([4, 3]);
+    let ray = HalfLineSoS {
+      lean: SoS::ClockWise,
+      line: LineSoS {
+        origin: Point::new([2, 3]),
+        direction: Direction::Through(through),
+      },
+    };
+
+    assert_eq!(ray.intersect(line.as_ref()), None);
+  }
+
   #[proptest]
   fn raw_intersection_count_prop(poly: Polygon<i8>, line: LineSoS<i8, 2>) {
     let mut intersections = 0;
