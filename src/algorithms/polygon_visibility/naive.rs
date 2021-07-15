@@ -88,9 +88,6 @@ where
   vertices.sort_by(|a, b| point.ccw_cmp_around(a, b));
   let polygon_edges: Vec<DirectedEdge<T, 2>> = polygon.iter_boundary_edges().collect();
 
-  //Remove Collinear points
-  vertices.dedup_by(|prev, nxt| point.ccw_cmp_around(prev, nxt) == Ordering::Equal);
-
   let mut polygon_points = Vec::new();
   for vertex in vertices {
     let right_sos = HalfLineSoS {
@@ -118,17 +115,26 @@ where
       .iter()
       .min_by(|curr, next| point.cmp_distance_to(curr, next))
     {
-      Some(interesction) => resolve_point(interesction, &mut polygon_points),
+      Some(interesction) => {
+        if point.cmp_distance_to(interesction, &vertex) != Ordering::Less {
+          polygon_points.push(interesction.clone());
+        }
+      }
       None => return Option::None,
     };
     match left_intersections
       .iter()
       .min_by(|curr, next| point.cmp_distance_to(curr, next))
     {
-      Some(interesction) => resolve_point(interesction, &mut polygon_points),
+      Some(interesction) => {
+        if point.cmp_distance_to(interesction, &vertex) != Ordering::Less {
+          polygon_points.push(interesction.clone());
+        }
+      }
       None => return Option::None,
     };
   }
+  polygon_points.dedup();
 
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
 }
@@ -150,27 +156,6 @@ where
     .expect("LinesMustIntersect")
 }
 
-/// Checks for duplicate before adding and removes collinar point
-// makes sure polygon_points are duplicate free and produces simpilified polygon
-fn resolve_point<T>(new_point: &Point<T, 2>, points: &mut Vec<Point<T, 2>>)
-where
-  T: PolygonScalar,
-{
-  if let Some(point) = points.last() {
-    if point.eq(new_point) {
-      return;
-    }
-  }
-  if points.len() > 1 {
-    let last_point = &points[points.len() - 1];
-    let cmp_point = &points[points.len() - 2];
-
-    if cmp_point.ccw_cmp_around(last_point, new_point) == Ordering::Equal {
-      points.pop();
-    }
-  }
-  points.push(new_point.clone());
-}
 #[cfg(test)]
 mod naive_testing {
   use super::*;
