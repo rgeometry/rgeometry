@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 ### Added
+### Changed
+
+## [0.7.0] 2021-07-15
+### Added
 - Cursors can be deref'ed to Points for convenience.
 - Add implementation agnostic Polygon::triangulate method.
 - Generation of monotone polygons (Thanks to Omar Bayomy).
