@@ -86,6 +86,7 @@ where
 {
   let mut vertices: Vec<Cursor<'_, T>> = polygon.iter_boundary().collect();
   vertices.sort_by(|a, b| point.ccw_cmp_around(a, b));
+  let polygon_edges: Vec<DirectedEdge<T, 2>> = polygon.iter_boundary_edges().collect();
 
   //Remove Collinear points
   vertices.dedup_by(|prev, nxt| point.ccw_cmp_around(prev, nxt) == Ordering::Equal);
@@ -104,12 +105,12 @@ where
     let mut right_intersections = Vec::new();
     let mut left_intersections = Vec::new();
 
-    polygon.iter_boundary_edges().for_each(|edge| {
-      if right_sos.intersect(&edge).is_some() {
-        right_intersections.push(get_intersection(&right_sos, &edge));
+    polygon_edges.iter().for_each(|edge| {
+      if right_sos.intersect(edge).is_some() {
+        right_intersections.push(get_intersection(&right_sos, edge));
       }
-      if left_sos.intersect(&edge).is_some() {
-        left_intersections.push(get_intersection(&left_sos, &edge));
+      if left_sos.intersect(edge).is_some() {
+        left_intersections.push(get_intersection(&left_sos, edge));
       }
     });
 
