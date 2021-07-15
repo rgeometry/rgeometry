@@ -100,7 +100,7 @@ where
       line: LineSoS::new_through(point.clone(), vertex.point().clone()),
       lean: SoS::CounterClockWise,
     };
-
+    //ToDo: rest of the loop exactly replicated for each side, is there a better way?
     let mut right_intersections = Vec::new();
     let mut left_intersections = Vec::new();
 
@@ -149,7 +149,8 @@ where
     .expect("LinesMustIntersect")
 }
 
-///Checks for duplicate before adding and removes collinar point
+/// Checks for duplicate before adding and removes collinar point
+// makes sure polygon_points are duplicate free and produces simpilified polygon
 fn resolve_point<T>(new_point: &Point<T, 2>, points: &mut Vec<Point<T, 2>>)
 where
   T: PolygonScalar,
@@ -173,6 +174,64 @@ where
 mod naive_testing {
   use super::*;
 
+  //     x
+  //  /---------\
+  //  |         |
+  //  |         |
+  //  \---------/
+  #[test]
+  fn point_outside_polygon() {
+    let point = Point::new([2, 8]);
+    let input_polygon = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([8, 0]),
+      Point::new([8, 6]),
+      Point::new([0, 6]),
+    ])
+    .unwrap();
+    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+
+    assert!(out_polygon.is_none())
+  }
+  //  /-----\ /----\  /-----\ /----\
+  //  |     | |    |  |     | |    |
+  //  |  x  \-/ /--/  |  x  \---\--/
+  //  |         |     |         |
+  //  \---------/     \---------/
+  #[test]
+  fn case_1() {
+    let point = Point::new([2, 3]);
+    let input_polygon = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([8, 0]),
+      Point::new([8, 3]),
+      Point::new([10, 3]),
+      Point::new([10, 6]),
+      Point::new([6, 6]),
+      Point::new([6, 3]),
+      Point::new([4, 3]),
+      Point::new([4, 6]),
+      Point::new([0, 6]),
+    ])
+    .unwrap();
+    let out_test_points = vec![
+      Point::new([0, 0]),
+      Point::new([8, 0]),
+      Point::new([8, 3]),
+      Point::new([4, 3]),
+      Point::new([4, 6]),
+      Point::new([0, 6]),
+    ];
+    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+    match out_polygon {
+      Some(polygon) => {
+        //ToDo: find a better way to compare polygons (maybe pairwise comparison of the points)
+        assert_eq!(out_test_points.len(), polygon.points.len())
+      }
+      None => panic!(),
+    }
+  }
+
   //   Input            Output
   //  /-----\ /----\  /-----\ /----\
   //  |     | |    |  |     | |    |
@@ -180,7 +239,7 @@ mod naive_testing {
   //  |            |  |            |
   //  \------------/  \------------/
   #[test]
-  fn case_1() {
+  fn case_2() {
     let point = Point::new([2, 3]);
     let input_polygon = Polygon::new(vec![
       Point::new([0, 0]),
