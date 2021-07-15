@@ -1,10 +1,12 @@
+use std::cmp::Ordering;
+use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::panic::Location;
 
 use crate::algorithms::monotone_polygon::new_monotone_polygon;
 use crate::data::{
-  Direction, EndPoint, HalfLineSoS, Line, LineSegment, LineSegmentView, LineSoS, Point,
-  PointLocation, Polygon,
+  point, Cursor, DirectedEdge, Direction, EndPoint, HalfLineSoS, Line, LineSegment,
+  LineSegmentView, LineSoS, Point, PointLocation, Polygon, Vector,
 };
 use crate::{Intersects, Orientation, PolygonScalar, SoS};
 
@@ -77,75 +79,66 @@ use crate::{Intersects, Orientation, PolygonScalar, SoS};
 //  |   \-/   |     |   \ /   |
 //  |    x    |     |    x    |
 //  \---------/     \---------/
-
+/// Naive alogrithn for calculating visibility polygon
 pub fn get_visibility_polygon<T>(point: &Point<T, 2>, polygon: &Polygon<T>) -> Option<Polygon<T>>
 where
   T: PolygonScalar,
 {
-  //check whether the point is in the polygon or not
-  if polygon.locate(point) == PointLocation::Outside {
-    return Option::None;
-  }
+  let mut vertices: Vec<Cursor<'_, T>> = polygon.iter_boundary().collect();
+  vertices.sort_by(|a, b| point.ccw_cmp_around(a, b));
 
-  let polygon_segments: Vec<LineSegment<T, 2>> = polygon
-    .points
-    .windows(2)
-    .map(|pair| {
-      LineSegment::new(
-        EndPoint::Inclusive(pair[0].clone()),
-        EndPoint::Inclusive(pair[1].clone()),
-      )
-    })
-    .collect();
+  //Remove Collinear points
+  vertices.dedup_by(|prev, nxt| point.ccw_cmp_around(prev, nxt) == Ordering::Equal);
 
   let mut polygon_points = Vec::new();
-  for vertex in &polygon.points {
+  for vertex in vertices {
     let right_sos = HalfLineSoS {
-      line: LineSoS::new_through(point.clone(), vertex.clone()),
+      line: LineSoS::new_through(point.clone(), vertex.point().clone()),
       lean: SoS::ClockWise,
     };
     let left_sos = HalfLineSoS {
-      line: LineSoS::new_through(point.clone(), vertex.clone()),
+      line: LineSoS::new_through(point.clone(), vertex.point().clone()),
       lean: SoS::CounterClockWise,
     };
 
     let mut right_intersections = Vec::new();
     let mut left_intersections = Vec::new();
 
-    polygon_segments.iter().for_each(|segment| {
-      if right_sos.intersect(segment.as_ref()).is_some() {
-        right_intersections.push(get_intersection(&right_sos, segment));
+    polygon.iter_boundary_edges().for_each(|edge| {
+      if right_sos.intersect(&edge).is_some() {
+        right_intersections.push(get_intersection(&right_sos, &edge));
       }
-      if left_sos.intersect(segment.as_ref()).is_some() {
-        left_intersections.push(get_intersection(&left_sos, segment));
+      if left_sos.intersect(&edge).is_some() {
+        left_intersections.push(get_intersection(&left_sos, &edge));
       }
     });
 
-    if let Some(point) = right_intersections
+    match right_intersections
       .iter()
-      .max_by(|curr, next| point.cmp_distance_to(curr, next))
+      .min_by(|curr, next| point.cmp_distance_to(curr, next))
     {
-      polygon_points.push(point.clone());
+      Some(interesction) => resolve_point(interesction, &mut polygon_points),
+      None => return Option::None,
     };
-    if let Some(point) = left_intersections
+    match left_intersections
       .iter()
-      .max_by(|curr, next| point.cmp_distance_to(curr, next))
+      .min_by(|curr, next| point.cmp_distance_to(curr, next))
     {
-      polygon_points.push(point.clone());
+      Some(interesction) => resolve_point(interesction, &mut polygon_points),
+      None => return Option::None,
     };
   }
-  polygon_points.sort_by(|curr, nxt| point.ccw_cmp_around(curr, nxt));
-  polygon_points.dedup();
+
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
 }
 
-fn get_intersection<T>(sos_line: &HalfLineSoS<T, 2>, segment: &LineSegment<T, 2>) -> Point<T, 2>
+fn get_intersection<T>(sos_line: &HalfLineSoS<T, 2>, edge: &DirectedEdge<T, 2>) -> Point<T, 2>
 where
   T: PolygonScalar,
 {
   let segment_line = Line {
-    origin: segment.min.inner().clone(),
-    direction: Direction::Through(segment.max.inner().clone()),
+    origin: edge.src.clone(),
+    direction: Direction::Through(edge.dst.clone()),
   };
   let sos_line = Line {
     origin: sos_line.line.origin.clone(),
@@ -154,6 +147,27 @@ where
   sos_line
     .intersection_point(&segment_line)
     .expect("LinesMustIntersect")
+}
+
+///Checks for duplicate before adding and removes collinar point
+fn resolve_point<T>(new_point: &Point<T, 2>, points: &mut Vec<Point<T, 2>>)
+where
+  T: PolygonScalar,
+{
+  if let Some(point) = points.last() {
+    if point.eq(new_point) {
+      return;
+    }
+  }
+  if points.len() > 1 {
+    let last_point = &points[points.len() - 1];
+    let cmp_point = &points[points.len() - 2];
+
+    if cmp_point.ccw_cmp_around(last_point, new_point) == Ordering::Equal {
+      points.pop();
+    }
+  }
+  points.push(new_point.clone());
 }
 #[cfg(test)]
 mod naive_testing {
