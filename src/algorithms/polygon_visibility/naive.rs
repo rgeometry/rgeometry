@@ -84,6 +84,7 @@ pub fn get_visibility_polygon<T>(point: &Point<T, 2>, polygon: &Polygon<T>) -> O
 where
   T: PolygonScalar,
 {
+  // FIXME: We want to iterate over all vertices, not just boundary vertices.
   let mut vertices: Vec<Cursor<'_, T>> = polygon.iter_boundary().collect();
   vertices.sort_by(|a, b| point.ccw_cmp_around(a, b));
 
@@ -101,6 +102,7 @@ where
     let mut right_intersections = Vec::new();
     let mut left_intersections = Vec::new();
 
+    // FIXME: We want to iterate over all edges, not just boundary edges.
     for edge in polygon.iter_boundary_edges() {
       if right_sos.intersect(&edge).is_some() {
         right_intersections.push(get_intersection(&right_sos, &edge));
