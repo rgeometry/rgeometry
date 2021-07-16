@@ -5,7 +5,9 @@ use std::iter::Sum;
 use std::ops::Bound::*;
 use std::ops::*;
 
-use crate::data::{DirectedEdge, HalfLineSoS, Point, PointLocation, TriangleView, Vector};
+use crate::data::{
+  DirectedEdge, HalfLineSoS, IHalfLineLineSegmentSoS::*, Point, PointLocation, TriangleView, Vector,
+};
 use crate::intersection::*;
 use crate::{Error, Orientation, PolygonScalar};
 
@@ -194,9 +196,9 @@ impl<T> Polygon<T> {
     }
     // Has no self intersections.
     // XXX: Hm, allow overlapping (but not crossing) edges in the weakly check?
-    let edges: Vec<DirectedEdge<T, 2>> = self.iter_boundary_edges().collect();
-    let isects = crate::algorithms::segment_intersections(&edges).next();
-    if isects.is_some() {
+    let edges: Vec<DirectedEdge<'_, T, 2>> = self.iter_boundary_edges().collect();
+    let mut isects = crate::algorithms::segment_intersections(&edges);
+    if isects.next().is_some() {
       return Err(Error::SelfIntersections);
     }
     Ok(())
@@ -210,14 +212,19 @@ impl<T> Polygon<T> {
     if self.rings.len() != 1 {
       panic!("FIXME: Polygon::locate should support polygons with holes.");
     }
-    let ray = HalfLineSoS::new_directed(origin.clone(), Vector::unit_right());
+    let direction = Vector::unit_right();
+    let ray = HalfLineSoS::new_directed(origin, &direction);
     let mut intersections = 0;
     for edge in self.iter_boundary_edges() {
       if edge.contains(origin) {
         return PointLocation::OnBoundary;
       }
-      if ray.intersect(&edge).is_some() {
-        intersections += 1;
+      if let Some(Crossing(lean)) = ray.intersect(edge) {
+        // Only count crossing that aren't leaning to the right.
+        dbg!(lean, intersections, edge);
+        if !lean.is_cw() {
+          intersections += 1;
+        }
       }
     }
     if intersections % 2 == 0 {

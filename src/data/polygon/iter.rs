@@ -30,11 +30,11 @@ pub struct EdgeIter<'a, T: 'a> {
 }
 
 impl<'a, T: Clone> Iterator for EdgeIter<'a, T> {
-  type Item = DirectedEdge<T, 2>;
-  fn next(&mut self) -> Option<DirectedEdge<T, 2>> {
+  type Item = DirectedEdge<'a, T, 2>;
+  fn next(&mut self) -> Option<Self::Item> {
     let cursor = self.iter.next()?;
-    let this_point = cursor.point().clone();
-    let next_point = cursor.next().point().clone();
+    let this_point = cursor.point();
+    let next_point = cursor.next().point();
     Some(DirectedEdge {
       src: this_point,
       dst: next_point,
