@@ -23,6 +23,7 @@ mod simple_polygon_testing {
 
   #[proptest]
   fn test_no_holes(polygon: Polygon<i8>, point: Point<i8, 2>) {
+    // FIXME: get_visibility_polygon overflows
     let naive_polygon = get_visibility_polygon(&point, &polygon);
     let new_polygon = get_visibility_polygon_simple(&point, &polygon);
 
