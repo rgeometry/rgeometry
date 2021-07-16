@@ -29,8 +29,8 @@ impl Orientation {
   ///
   /// # Polymorphism
   ///
-  /// This function works with both [Points](Point) and [Vectors](Vector). You should prefer to
-  /// use [Point::orient] when possible.
+  /// This function works with both [Points](crate::data::Point) and [Vectors](Vector). You should prefer to
+  /// use [Point::orient](crate::data::Point::orient) when possible.
   ///
   /// # Examples
   ///
