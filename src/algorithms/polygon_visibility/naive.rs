@@ -5,8 +5,8 @@ use std::panic::Location;
 
 use crate::algorithms::monotone_polygon::new_monotone_polygon;
 use crate::data::{
-  point, Cursor, DirectedEdge, Direction, EndPoint, HalfLineSoS, Line, LineSegment,
-  LineSegmentView, LineSoS, Point, PointLocation, Polygon, Vector,
+  point, Cursor, DirectedEdge, Direction, EndPoint, HalfLineSoS, IHalfLineLineSegmentSoS, Line,
+  LineSegment, LineSegmentView, LineSoS, Point, PointLocation, Polygon, Vector,
 };
 use crate::{Intersects, Orientation, PolygonScalar, SoS};
 
@@ -27,6 +27,20 @@ use crate::{Intersects, Orientation, PolygonScalar, SoS};
 //   'a' and 'b' rather than hitting 'a' directly.
 //   If it leans to the right then it'll miss the 'a'-'b' edge altogether.
 //   SoS rays are essential for dealing correctly with colinear vertices.
+//
+//                 a
+//   SoS ray --->  |      => Crossing(CoLinear), ray completely blocked.
+//                 b
+//
+//   SoS ray --->  a      => Crossing(ClockWise), ray blocked on the right side.
+//                / \
+//               b   c
+//
+//               b   c
+//                \ /
+//   SoS ray --->  a      => Crossing(CounterClockWise), ray blocked on the left side.
+//
+//   SoS ray --->  a-b    => None, ray not blocked at all.
 //
 // Note about visibility polygons:
 //   Visibility polygons are always star-shaped: All vertices are visible from the point
@@ -90,46 +104,47 @@ where
 
   let mut polygon_points = Vec::new();
   for vertex in vertices {
-    let right_sos = HalfLineSoS {
-      line: LineSoS::new_through(point.clone(), vertex.point().clone()),
-      lean: SoS::ClockWise,
+    let ray_sos = HalfLineSoS {
+      line: LineSoS::new_through(point, vertex.point()),
     };
-    let left_sos = HalfLineSoS {
-      line: LineSoS::new_through(point.clone(), vertex.point().clone()),
-      lean: SoS::CounterClockWise,
-    };
-    //ToDo: rest of the loop exactly replicated for each side, is there a better way?
-    let mut right_intersections = Vec::new();
-    let mut left_intersections = Vec::new();
+    let mut right_intersection = NearestIntersection::new(point);
+    let mut left_intersection = NearestIntersection::new(point);
 
     // FIXME: We want to iterate over all edges, not just boundary edges.
     for edge in polygon.iter_boundary_edges() {
-      if right_sos.intersect(&edge).is_some() {
-        right_intersections.push(get_intersection(&right_sos, &edge));
-      }
-      if left_sos.intersect(&edge).is_some() {
-        left_intersections.push(get_intersection(&left_sos, &edge));
+      use IHalfLineLineSegmentSoS::*;
+      use Orientation::*;
+      match ray_sos.intersect(edge) {
+        None => (),
+        // CoLinear crosing blocks the ray both to the left and to the right
+        Some(Crossing(CoLinear)) => {
+          let isect = get_intersection(&ray_sos, edge);
+          left_intersection.push(isect.clone());
+          right_intersection.push(isect);
+        }
+        // Ray blocked on the left side.
+        Some(Crossing(CounterClockWise)) => {
+          left_intersection.push(get_intersection(&ray_sos, edge));
+        }
+        // Ray blocked on the right side.
+        Some(Crossing(ClockWise)) => {
+          right_intersection.push(get_intersection(&ray_sos, edge));
+        }
       }
     }
 
-    match right_intersections
-      .iter()
-      .min_by(|curr, next| point.cmp_distance_to(curr, next))
-    {
+    match right_intersection.take() {
       Some(interesction) => {
-        if point.cmp_distance_to(interesction, &vertex) != Ordering::Less {
-          polygon_points.push(interesction.clone());
+        if point.cmp_distance_to(&interesction, &vertex) != Ordering::Less {
+          polygon_points.push(interesction);
         }
       }
       None => return Option::None,
     };
-    match left_intersections
-      .iter()
-      .min_by(|curr, next| point.cmp_distance_to(curr, next))
-    {
+    match left_intersection.take() {
       Some(interesction) => {
-        if point.cmp_distance_to(interesction, &vertex) != Ordering::Less {
-          polygon_points.push(interesction.clone());
+        if point.cmp_distance_to(&interesction, &vertex) != Ordering::Less {
+          polygon_points.push(interesction);
         }
       }
       None => return Option::None,
@@ -140,21 +155,54 @@ where
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
 }
 
-fn get_intersection<T>(sos_line: &HalfLineSoS<T, 2>, edge: &DirectedEdge<T, 2>) -> Point<T, 2>
+fn get_intersection<T>(sos_line: &HalfLineSoS<T, 2>, edge: DirectedEdge<'_, T, 2>) -> Point<T, 2>
 where
   T: PolygonScalar,
 {
   let segment_line = Line {
-    origin: edge.src.clone(),
-    direction: Direction::Through(edge.dst.clone()),
+    origin: edge.src,
+    direction: Direction::Through(edge.dst),
   };
   let sos_line = Line {
-    origin: sos_line.line.origin.clone(),
-    direction: sos_line.line.direction.clone(),
+    origin: sos_line.line.origin,
+    direction: sos_line.line.direction,
   };
   sos_line
     .intersection_point(&segment_line)
     .expect("LinesMustIntersect")
+}
+
+// Container for intersections that only store the nearest point to some origin.
+struct NearestIntersection<'a, T> {
+  origin: &'a Point<T, 2>,
+  nearest_intersection: Option<Point<T, 2>>,
+}
+
+impl<'a, T> NearestIntersection<'a, T>
+where
+  T: PolygonScalar,
+{
+  fn new(origin: &'a Point<T, 2>) -> NearestIntersection<'a, T> {
+    NearestIntersection {
+      origin,
+      nearest_intersection: None,
+    }
+  }
+
+  fn push(&mut self, mut intersection: Point<T, 2>) {
+    match self.nearest_intersection.as_mut() {
+      None => self.nearest_intersection = Some(intersection),
+      Some(previous) => {
+        if self.origin.cmp_distance_to(&intersection, previous) == Ordering::Less {
+          std::mem::swap(previous, &mut intersection);
+        }
+      }
+    }
+  }
+
+  fn take(self) -> Option<Point<T, 2>> {
+    self.nearest_intersection
+  }
 }
 
 #[cfg(test)]
