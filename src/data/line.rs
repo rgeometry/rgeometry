@@ -234,7 +234,7 @@ impl<'a, T, const N: usize> From<LineSoS<'a, T, N>> for HalfLineSoS<'a, T, N> {
 
 impl<'a, T, const N: usize> From<Line<'a, T, N>> for HalfLineSoS<'a, T, N> {
   fn from(line: Line<'a, T, N>) -> HalfLineSoS<'a, T, N> {
-    HalfLineSoS { line: line }
+    HalfLineSoS { line }
   }
 }
 
@@ -246,7 +246,7 @@ impl<'a, T, const N: usize> From<HalfLineSoS<'a, T, N>> for LineSoS<'a, T, N> {
 
 impl<'a, T, const N: usize> From<HalfLineSoS<'a, T, N>> for Line<'a, T, N> {
   fn from(ray: HalfLineSoS<'a, T, N>) -> Line<'a, T, N> {
-    ray.line.into()
+    ray.line
   }
 }
 
