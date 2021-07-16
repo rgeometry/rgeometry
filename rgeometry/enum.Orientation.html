@@ -33,8 +33,8 @@ to <code>p2</code> to <code>p3</code>.</p>
 <p>For fixed-precision types (i8,i16,i32,i64,etc), this function is
 guaranteed to work for any input and never cause any arithmetic overflows.</p>
 <h1 id="polymorphism" class="section-header"><a href="#polymorphism">Polymorphism</a></h1>
-<p>This function works with both <a href="Point">Points</a> and <a href="data/struct.Vector.html">Vectors</a>. You should prefer to
-use [Point::orient] when possible.</p>
+<p>This function works with both <a href="data/struct.Point.html">Points</a> and <a href="data/struct.Vector.html">Vectors</a>. You should prefer to
+use <a href="data/struct.Point.html#method.orient">Point::orient</a> when possible.</p>
 <h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1>
 <div class="example-wrap"><pre class="rust rust-example-rendered">
 <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">Point::new</span>([ <span class="number">0</span>, <span class="number">0</span> ]);
