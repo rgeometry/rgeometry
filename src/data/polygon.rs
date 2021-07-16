@@ -221,7 +221,6 @@ impl<T> Polygon<T> {
       }
       if let Some(Crossing(lean)) = ray.intersect(edge) {
         // Only count crossing that aren't leaning to the right.
-        dbg!(lean, intersections, edge);
         if !lean.is_cw() {
           intersections += 1;
         }
@@ -802,6 +801,24 @@ pub mod tests {
     assert_eq!(poly.locate(&origin), PointLocation::Outside);
   }
 
+  #[test]
+  fn locate_unit_2() {
+    let poly: Polygon<i8> = Polygon::new(vec![
+      Point { array: [-9, 83] },
+      Point { array: [-28, 88] },
+      Point { array: [-9, -75] },
+      Point { array: [-2, -6] },
+      Point { array: [-2, 11] },
+    ])
+    .expect("valid polygon");
+    let origin = Point { array: [-9, 0] };
+
+    assert_eq!(
+      locate_by_triangulation(&poly, &origin),
+      poly.locate(&origin)
+    );
+  }
+
   // Locate a point relative to a polygon. Should be identical to
   // Polygon::locate but slower.
   fn locate_by_triangulation<T>(poly: &Polygon<T>, origin: &Point<T, 2>) -> PointLocation
@@ -815,7 +832,7 @@ pub mod tests {
     }
     for (a, b, c) in poly.triangulate() {
       let trig = TriangleView::new([&a, &b, &c]).expect("valid triangle");
-      if trig.locate(origin) == PointLocation::Inside {
+      if trig.locate(origin) != PointLocation::Outside {
         return PointLocation::Inside;
       }
     }
