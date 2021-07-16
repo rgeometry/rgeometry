@@ -280,6 +280,48 @@
 <span id="256">256</span>
 <span id="257">257</span>
 <span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
 <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
@@ -288,8 +330,8 @@
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::algorithms::monotone_polygon::new_monotone_polygon</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{
-  <span class="ident">point</span>, <span class="ident">Cursor</span>, <span class="ident">DirectedEdge</span>, <span class="ident">Direction</span>, <span class="ident">EndPoint</span>, <span class="ident">HalfLineSoS</span>, <span class="ident">Line</span>, <span class="ident">LineSegment</span>,
-  <span class="ident">LineSegmentView</span>, <span class="ident">LineSoS</span>, <span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">Polygon</span>, <span class="ident">Vector</span>,
+  <span class="ident">point</span>, <span class="ident">Cursor</span>, <span class="ident">DirectedEdge</span>, <span class="ident">Direction</span>, <span class="ident">EndPoint</span>, <span class="ident">HalfLineSoS</span>, <span class="ident">IHalfLineLineSegmentSoS</span>, <span class="ident">Line</span>,
+  <span class="ident">LineSegment</span>, <span class="ident">LineSegmentView</span>, <span class="ident">LineSoS</span>, <span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">Polygon</span>, <span class="ident">Vector</span>,
 };
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Intersects</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>, <span class="ident">SoS</span>};
 
@@ -310,6 +352,20 @@
 <span class="comment">//   &#39;a&#39; and &#39;b&#39; rather than hitting &#39;a&#39; directly.</span>
 <span class="comment">//   If it leans to the right then it&#39;ll miss the &#39;a&#39;-&#39;b&#39; edge altogether.</span>
 <span class="comment">//   SoS rays are essential for dealing correctly with colinear vertices.</span>
+<span class="comment">//</span>
+<span class="comment">//                 a</span>
+<span class="comment">//   SoS ray ---&gt;  |      =&gt; Crossing(CoLinear), ray completely blocked.</span>
+<span class="comment">//                 b</span>
+<span class="comment">//</span>
+<span class="comment">//   SoS ray ---&gt;  a      =&gt; Crossing(ClockWise), ray blocked on the right side.</span>
+<span class="comment">//                / \</span>
+<span class="comment">//               b   c</span>
+<span class="comment">//</span>
+<span class="comment">//               b   c</span>
+<span class="comment">//                \ /</span>
+<span class="comment">//   SoS ray ---&gt;  a      =&gt; Crossing(CounterClockWise), ray blocked on the left side.</span>
+<span class="comment">//</span>
+<span class="comment">//   SoS ray ---&gt;  a-b    =&gt; None, ray not blocked at all.</span>
 <span class="comment">//</span>
 <span class="comment">// Note about visibility polygons:</span>
 <span class="comment">//   Visibility polygons are always star-shaped: All vertices are visible from the point</span>
@@ -373,46 +429,45 @@
 
   <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">polygon_points</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
   <span class="kw">for</span> <span class="ident">vertex</span> <span class="kw">in</span> <span class="ident">vertices</span> {
-    <span class="kw">let</span> <span class="ident">right_sos</span> <span class="op">=</span> <span class="ident">HalfLineSoS</span> {
-      <span class="ident">line</span>: <span class="ident">LineSoS::new_through</span>(<span class="ident">point</span>.<span class="ident">clone</span>(), <span class="ident">vertex</span>.<span class="ident">point</span>().<span class="ident">clone</span>()),
-      <span class="ident">lean</span>: <span class="ident">SoS::ClockWise</span>,
-    };
-    <span class="kw">let</span> <span class="ident">left_sos</span> <span class="op">=</span> <span class="ident">HalfLineSoS</span> {
-      <span class="ident">line</span>: <span class="ident">LineSoS::new_through</span>(<span class="ident">point</span>.<span class="ident">clone</span>(), <span class="ident">vertex</span>.<span class="ident">point</span>().<span class="ident">clone</span>()),
-      <span class="ident">lean</span>: <span class="ident">SoS::CounterClockWise</span>,
-    };
-    <span class="comment">//ToDo: rest of the loop exactly replicated for each side, is there a better way?</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">right_intersections</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">left_intersections</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+    <span class="kw">let</span> <span class="ident">ray_sos</span> <span class="op">=</span> <span class="ident">HalfLineSoS::new_through</span>(<span class="ident">point</span>, <span class="ident">vertex</span>.<span class="ident">point</span>());
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">right_intersection</span> <span class="op">=</span> <span class="ident">NearestIntersection::new</span>(<span class="ident">point</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">left_intersection</span> <span class="op">=</span> <span class="ident">NearestIntersection::new</span>(<span class="ident">point</span>);
 
     <span class="comment">// FIXME: We want to iterate over all edges, not just boundary edges.</span>
     <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="ident">polygon</span>.<span class="ident">iter_boundary_edges</span>() {
-      <span class="kw">if</span> <span class="ident">right_sos</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">edge</span>).<span class="ident">is_some</span>() {
-        <span class="ident">right_intersections</span>.<span class="ident">push</span>(<span class="ident">get_intersection</span>(<span class="kw-2">&amp;</span><span class="ident">right_sos</span>, <span class="kw-2">&amp;</span><span class="ident">edge</span>));
-      }
-      <span class="kw">if</span> <span class="ident">left_sos</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">edge</span>).<span class="ident">is_some</span>() {
-        <span class="ident">left_intersections</span>.<span class="ident">push</span>(<span class="ident">get_intersection</span>(<span class="kw-2">&amp;</span><span class="ident">left_sos</span>, <span class="kw-2">&amp;</span><span class="ident">edge</span>));
+      <span class="kw">use</span> <span class="ident">IHalfLineLineSegmentSoS</span>::<span class="kw-2">*</span>;
+      <span class="kw">use</span> <span class="ident">Orientation</span>::<span class="kw-2">*</span>;
+      <span class="kw">match</span> <span class="ident">ray_sos</span>.<span class="ident">intersect</span>(<span class="ident">edge</span>) {
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (),
+        <span class="comment">// CoLinear crosing blocks the ray both to the left and to the right</span>
+        <span class="prelude-val">Some</span>(<span class="ident">Crossing</span>(<span class="ident">CoLinear</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+          <span class="kw">let</span> <span class="ident">isect</span> <span class="op">=</span> <span class="ident">get_intersection</span>(<span class="ident">ray_sos</span>, <span class="ident">edge</span>);
+          <span class="ident">left_intersection</span>.<span class="ident">push</span>(<span class="ident">isect</span>.<span class="ident">clone</span>());
+          <span class="ident">right_intersection</span>.<span class="ident">push</span>(<span class="ident">isect</span>);
+        }
+        <span class="comment">// Ray blocked on the left side.</span>
+        <span class="prelude-val">Some</span>(<span class="ident">Crossing</span>(<span class="ident">CounterClockWise</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+          <span class="ident">left_intersection</span>.<span class="ident">push</span>(<span class="ident">get_intersection</span>(<span class="ident">ray_sos</span>, <span class="ident">edge</span>));
+        }
+        <span class="comment">// Ray blocked on the right side.</span>
+        <span class="prelude-val">Some</span>(<span class="ident">Crossing</span>(<span class="ident">ClockWise</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+          <span class="ident">right_intersection</span>.<span class="ident">push</span>(<span class="ident">get_intersection</span>(<span class="ident">ray_sos</span>, <span class="ident">edge</span>));
+        }
       }
     }
 
-    <span class="kw">match</span> <span class="ident">right_intersections</span>
-      .<span class="ident">iter</span>()
-      .<span class="ident">min_by</span>(<span class="op">|</span><span class="ident">curr</span>, <span class="ident">next</span><span class="op">|</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="ident">curr</span>, <span class="ident">next</span>))
-    {
+    <span class="kw">match</span> <span class="ident">right_intersection</span>.<span class="ident">take</span>() {
       <span class="prelude-val">Some</span>(<span class="ident">interesction</span>) <span class="op">=</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="ident">interesction</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
-          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">interesction</span>.<span class="ident">clone</span>());
+        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="kw-2">&amp;</span><span class="ident">interesction</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
+          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">interesction</span>);
         }
       }
       <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">Option::None</span>,
     };
-    <span class="kw">match</span> <span class="ident">left_intersections</span>
-      .<span class="ident">iter</span>()
-      .<span class="ident">min_by</span>(<span class="op">|</span><span class="ident">curr</span>, <span class="ident">next</span><span class="op">|</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="ident">curr</span>, <span class="ident">next</span>))
-    {
+    <span class="kw">match</span> <span class="ident">left_intersection</span>.<span class="ident">take</span>() {
       <span class="prelude-val">Some</span>(<span class="ident">interesction</span>) <span class="op">=</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="ident">interesction</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
-          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">interesction</span>.<span class="ident">clone</span>());
+        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="kw-2">&amp;</span><span class="ident">interesction</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
+          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">interesction</span>);
         }
       }
       <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">Option::None</span>,
@@ -423,21 +478,50 @@
   <span class="prelude-val">Some</span>(<span class="ident">Polygon::new</span>(<span class="ident">polygon_points</span>).<span class="ident">expect</span>(<span class="string">&quot;Polygon Creation failed&quot;</span>))
 }
 
-<span class="kw">fn</span> <span class="ident">get_intersection</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">sos_line</span>: <span class="kw-2">&amp;</span><span class="ident">HalfLineSoS</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">edge</span>: <span class="kw-2">&amp;</span><span class="ident">DirectedEdge</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">get_intersection</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">sos_line</span>: <span class="ident">HalfLineSoS</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">edge</span>: <span class="ident">DirectedEdge</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
 {
   <span class="kw">let</span> <span class="ident">segment_line</span> <span class="op">=</span> <span class="ident">Line</span> {
-    <span class="ident">origin</span>: <span class="ident">edge</span>.<span class="ident">src</span>.<span class="ident">clone</span>(),
-    <span class="ident">direction</span>: <span class="ident">Direction::Through</span>(<span class="ident">edge</span>.<span class="ident">dst</span>.<span class="ident">clone</span>()),
+    <span class="ident">origin</span>: <span class="ident">edge</span>.<span class="ident">src</span>,
+    <span class="ident">direction</span>: <span class="ident">Direction::Through</span>(<span class="ident">edge</span>.<span class="ident">dst</span>),
   };
-  <span class="kw">let</span> <span class="ident">sos_line</span> <span class="op">=</span> <span class="ident">Line</span> {
-    <span class="ident">origin</span>: <span class="ident">sos_line</span>.<span class="ident">line</span>.<span class="ident">origin</span>.<span class="ident">clone</span>(),
-    <span class="ident">direction</span>: <span class="ident">sos_line</span>.<span class="ident">line</span>.<span class="ident">direction</span>.<span class="ident">clone</span>(),
-  };
-  <span class="ident">sos_line</span>
+  <span class="ident">Line::from</span>(<span class="ident">sos_line</span>)
     .<span class="ident">intersection_point</span>(<span class="kw-2">&amp;</span><span class="ident">segment_line</span>)
     .<span class="ident">expect</span>(<span class="string">&quot;LinesMustIntersect&quot;</span>)
+}
+
+<span class="comment">// Container for intersections that only store the nearest point to some origin.</span>
+<span class="kw">struct</span> <span class="ident">NearestIntersection</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+  <span class="ident">origin</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+  <span class="ident">nearest_intersection</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">NearestIntersection</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+  <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+{
+  <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">origin</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">NearestIntersection</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="ident">NearestIntersection</span> {
+      <span class="ident">origin</span>,
+      <span class="ident">nearest_intersection</span>: <span class="prelude-val">None</span>,
+    }
+  }
+
+  <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">intersection</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) {
+    <span class="kw">match</span> <span class="self">self</span>.<span class="ident">nearest_intersection</span>.<span class="ident">as_mut</span>() {
+      <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">nearest_intersection</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">intersection</span>),
+      <span class="prelude-val">Some</span>(<span class="ident">previous</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">origin</span>.<span class="ident">cmp_distance_to</span>(<span class="kw-2">&amp;</span><span class="ident">intersection</span>, <span class="ident">previous</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
+          <span class="ident">std::mem::swap</span>(<span class="ident">previous</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">intersection</span>);
+        }
+      }
+    }
+  }
+
+  <span class="kw">fn</span> <span class="ident">take</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="self">self</span>.<span class="ident">nearest_intersection</span>
+  }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>

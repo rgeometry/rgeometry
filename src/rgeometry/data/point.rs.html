@@ -530,6 +530,25 @@
 <span id="506">506</span>
 <span id="507">507</span>
 <span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
@@ -546,7 +565,7 @@
 <span class="kw">use</span> <span class="ident">std::ops::Deref</span>;
 <span class="kw">use</span> <span class="ident">std::ops::Index</span>;
 
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::Vector</span>;
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Direction</span>, <span class="ident">Vector</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
@@ -764,12 +783,31 @@
     <span class="ident">Orientation::new</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>, <span class="kw-2">&amp;</span><span class="ident">p3</span>)
   }
 
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orient_along_direction</span>(
+    <span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+    <span class="ident">direction</span>: <span class="ident">Direction</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+    <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+  ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span> {
+    <span class="kw">match</span> <span class="ident">direction</span> {
+      <span class="ident">Direction::Vector</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Orientation::along_vector</span>(<span class="ident">p1</span>, <span class="ident">v</span>, <span class="ident">p2</span>),
+      <span class="ident">Direction::Through</span>(<span class="ident">p</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Orientation::new</span>(<span class="ident">p1</span>, <span class="ident">p</span>, <span class="ident">p2</span>),
+    }
+  }
+
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orient_along_vector</span>(
     <span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
     <span class="ident">vector</span>: <span class="kw-2">&amp;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
     <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
   ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span> {
     <span class="ident">Orientation::along_vector</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">vector</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>)
+  }
+
+  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">orient_along_perp_vector</span>(
+    <span class="ident">p1</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+    <span class="ident">vector</span>: <span class="kw-2">&amp;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+    <span class="ident">p2</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>,
+  ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Orientation</span> {
+    <span class="ident">Orientation::along_perp_vector</span>(<span class="kw-2">&amp;</span><span class="ident">p1</span>, <span class="kw-2">&amp;</span><span class="ident">vector</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>)
   }
 
   <span class="doccomment">/// Docs?</span>

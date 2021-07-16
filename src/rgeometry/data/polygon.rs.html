@@ -847,6 +847,30 @@
 <span id="823">823</span>
 <span id="824">824</span>
 <span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
@@ -855,7 +879,9 @@
 <span class="kw">use</span> <span class="ident">std::ops::Bound</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{<span class="ident">DirectedEdge</span>, <span class="ident">HalfLineSoS</span>, <span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">TriangleView</span>, <span class="ident">Vector</span>};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::data</span>::{
+  <span class="ident">DirectedEdge</span>, <span class="ident">HalfLineSoS</span>, <span class="ident">IHalfLineLineSegmentSoS</span>::<span class="kw-2">*</span>, <span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">TriangleView</span>, <span class="ident">Vector</span>,
+};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::intersection</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
 
@@ -1044,9 +1070,9 @@
     }
     <span class="comment">// Has no self intersections.</span>
     <span class="comment">// XXX: Hm, allow overlapping (but not crossing) edges in the weakly check?</span>
-    <span class="kw">let</span> <span class="ident">edges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DirectedEdge</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">iter_boundary_edges</span>().<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">isects</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::algorithms::segment_intersections</span>(<span class="kw-2">&amp;</span><span class="ident">edges</span>).<span class="ident">next</span>();
-    <span class="kw">if</span> <span class="ident">isects</span>.<span class="ident">is_some</span>() {
+    <span class="kw">let</span> <span class="ident">edges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DirectedEdge</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">iter_boundary_edges</span>().<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">isects</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::algorithms::segment_intersections</span>(<span class="kw-2">&amp;</span><span class="ident">edges</span>);
+    <span class="kw">if</span> <span class="ident">isects</span>.<span class="ident">next</span>().<span class="ident">is_some</span>() {
       <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SelfIntersections</span>);
     }
     <span class="prelude-val">Ok</span>(())
@@ -1060,14 +1086,18 @@
     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rings</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
       <span class="macro">panic!</span>(<span class="string">&quot;FIXME: Polygon::locate should support polygons with holes.&quot;</span>);
     }
-    <span class="kw">let</span> <span class="ident">ray</span> <span class="op">=</span> <span class="ident">HalfLineSoS::new_directed</span>(<span class="ident">origin</span>.<span class="ident">clone</span>(), <span class="ident">Vector::unit_right</span>());
+    <span class="kw">let</span> <span class="ident">direction</span> <span class="op">=</span> <span class="ident">Vector::unit_right</span>();
+    <span class="kw">let</span> <span class="ident">ray</span> <span class="op">=</span> <span class="ident">HalfLineSoS::new_directed</span>(<span class="ident">origin</span>, <span class="kw-2">&amp;</span><span class="ident">direction</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">intersections</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">for</span> <span class="ident">edge</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter_boundary_edges</span>() {
       <span class="kw">if</span> <span class="ident">edge</span>.<span class="ident">contains</span>(<span class="ident">origin</span>) {
         <span class="kw">return</span> <span class="ident">PointLocation::OnBoundary</span>;
       }
-      <span class="kw">if</span> <span class="ident">ray</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">edge</span>).<span class="ident">is_some</span>() {
-        <span class="ident">intersections</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+      <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Crossing</span>(<span class="ident">lean</span>)) <span class="op">=</span> <span class="ident">ray</span>.<span class="ident">intersect</span>(<span class="ident">edge</span>) {
+        <span class="comment">// Only count crossing that aren&#39;t leaning to the right.</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">lean</span>.<span class="ident">is_cw</span>() {
+          <span class="ident">intersections</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        }
       }
     }
     <span class="kw">if</span> <span class="ident">intersections</span> <span class="op">%</span> <span class="number">2</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -1645,6 +1675,24 @@
     <span class="macro">assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="ident">origin</span>), <span class="ident">PointLocation::Outside</span>);
   }
 
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">locate_unit_2</span>() {
+    <span class="kw">let</span> <span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Polygon::new</span>(<span class="macro">vec!</span>[
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">9</span>, <span class="number">83</span>] },
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">28</span>, <span class="number">88</span>] },
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">9</span>, <span class="op">-</span><span class="number">75</span>] },
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">2</span>, <span class="op">-</span><span class="number">6</span>] },
+      <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">2</span>, <span class="number">11</span>] },
+    ])
+    .<span class="ident">expect</span>(<span class="string">&quot;valid polygon&quot;</span>);
+    <span class="kw">let</span> <span class="ident">origin</span> <span class="op">=</span> <span class="ident">Point</span> { <span class="ident">array</span>: [<span class="op">-</span><span class="number">9</span>, <span class="number">0</span>] };
+
+    <span class="macro">assert_eq!</span>(
+      <span class="ident">locate_by_triangulation</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>, <span class="kw-2">&amp;</span><span class="ident">origin</span>),
+      <span class="ident">poly</span>.<span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="ident">origin</span>)
+    );
+  }
+
   <span class="comment">// Locate a point relative to a polygon. Should be identical to</span>
   <span class="comment">// Polygon::locate but slower.</span>
   <span class="kw">fn</span> <span class="ident">locate_by_triangulation</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">poly</span>: <span class="kw-2">&amp;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">origin</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PointLocation</span>
@@ -1658,7 +1706,7 @@
     }
     <span class="kw">for</span> (<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>) <span class="kw">in</span> <span class="ident">poly</span>.<span class="ident">triangulate</span>() {
       <span class="kw">let</span> <span class="ident">trig</span> <span class="op">=</span> <span class="ident">TriangleView::new</span>([<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="ident">c</span>]).<span class="ident">expect</span>(<span class="string">&quot;valid triangle&quot;</span>);
-      <span class="kw">if</span> <span class="ident">trig</span>.<span class="ident">locate</span>(<span class="ident">origin</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">PointLocation::Inside</span> {
+      <span class="kw">if</span> <span class="ident">trig</span>.<span class="ident">locate</span>(<span class="ident">origin</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">PointLocation::Outside</span> {
         <span class="kw">return</span> <span class="ident">PointLocation::Inside</span>;
       }
     }
