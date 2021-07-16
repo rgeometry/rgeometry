@@ -8,7 +8,6 @@ use crate::{Orientation, PolygonScalar, SoS};
 ///////////////////////////////////////////////////////////////////////////////
 // Line
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Line<'a, T, const N: usize> {
   pub origin: &'a Point<T, N>,
@@ -36,10 +35,6 @@ impl<'a, T, const N: usize> Line<'a, T, N> {
 
   pub fn new_through(origin: &'a Point<T, N>, through: &'a Point<T, N>) -> Line<'a, T, N> {
     Line::new(origin, Direction::Through(through))
-  }
-
-  pub fn sos(self) -> LineSoS<'a, T, N> {
-    LineSoS { line: self }
   }
 }
 
@@ -140,6 +135,12 @@ pub struct LineSoS<'a, T, const N: usize> {
 impl<'a, T, const N: usize> From<LineSoS<'a, T, N>> for Line<'a, T, N> {
   fn from(sos: LineSoS<'a, T, N>) -> Line<'a, T, N> {
     sos.line
+  }
+}
+
+impl<'a, T, const N: usize> From<Line<'a, T, N>> for LineSoS<'a, T, N> {
+  fn from(line: Line<'a, T, N>) -> LineSoS<'a, T, N> {
+    LineSoS { line }
   }
 }
 
@@ -246,7 +247,7 @@ impl<'a, T, const N: usize> From<Line<'a, T, N>> for HalfLineSoS<'a, T, N> {
 
 impl<'a, T, const N: usize> From<HalfLineSoS<'a, T, N>> for LineSoS<'a, T, N> {
   fn from(ray: HalfLineSoS<'a, T, N>) -> LineSoS<'a, T, N> {
-    ray.line.sos()
+    ray.line.into()
   }
 }
 
