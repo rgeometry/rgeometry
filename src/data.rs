@@ -2,6 +2,7 @@ mod directed_edge;
 mod intersection_set;
 mod line;
 mod line_segment;
+pub mod planar_graph;
 pub(crate) mod point;
 pub mod polygon;
 mod triangle;
@@ -11,6 +12,8 @@ pub use directed_edge::*;
 pub use intersection_set::*;
 pub use line::*;
 pub use line_segment::*;
+#[doc(inline)]
+pub use planar_graph::PlanarGraph;
 pub use triangle::*;
 
 // pub use crate::polygon::EdgeIter as testing;
