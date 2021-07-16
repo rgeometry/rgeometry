@@ -52,7 +52,6 @@ name    = "two_opt"
 overflow-checks = true
 
 [profile.test]
-opt-level       = 1
 overflow-checks = true
 
 [profile.bench]

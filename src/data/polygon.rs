@@ -5,7 +5,9 @@ use std::iter::Sum;
 use std::ops::Bound::*;
 use std::ops::*;
 
-use crate::data::{DirectedEdge, HalfLineSoS, Point, PointLocation, TriangleView, Vector};
+use crate::data::{
+  DirectedEdge, HalfLineSoS, IHalfLineLineSegmentSoS::*, Point, PointLocation, TriangleView, Vector,
+};
 use crate::intersection::*;
 use crate::{Error, Orientation, PolygonScalar};
 
@@ -194,9 +196,9 @@ impl<T> Polygon<T> {
     }
     // Has no self intersections.
     // XXX: Hm, allow overlapping (but not crossing) edges in the weakly check?
-    let edges: Vec<DirectedEdge<T, 2>> = self.iter_boundary_edges().collect();
-    let isects = crate::algorithms::segment_intersections(&edges).next();
-    if isects.is_some() {
+    let edges: Vec<DirectedEdge<'_, T, 2>> = self.iter_boundary_edges().collect();
+    let mut isects = crate::algorithms::segment_intersections(&edges);
+    if isects.next().is_some() {
       return Err(Error::SelfIntersections);
     }
     Ok(())
@@ -210,14 +212,18 @@ impl<T> Polygon<T> {
     if self.rings.len() != 1 {
       panic!("FIXME: Polygon::locate should support polygons with holes.");
     }
-    let ray = HalfLineSoS::new_directed(origin.clone(), Vector::unit_right());
+    let direction = Vector::unit_right();
+    let ray = HalfLineSoS::new_directed(origin, &direction);
     let mut intersections = 0;
     for edge in self.iter_boundary_edges() {
       if edge.contains(origin) {
         return PointLocation::OnBoundary;
       }
-      if ray.intersect(&edge).is_some() {
-        intersections += 1;
+      if let Some(Crossing(lean)) = ray.intersect(edge) {
+        // Only count crossing that aren't leaning to the right.
+        if !lean.is_cw() {
+          intersections += 1;
+        }
       }
     }
     if intersections % 2 == 0 {
@@ -795,6 +801,24 @@ pub mod tests {
     assert_eq!(poly.locate(&origin), PointLocation::Outside);
   }
 
+  #[test]
+  fn locate_unit_2() {
+    let poly: Polygon<i8> = Polygon::new(vec![
+      Point { array: [-9, 83] },
+      Point { array: [-28, 88] },
+      Point { array: [-9, -75] },
+      Point { array: [-2, -6] },
+      Point { array: [-2, 11] },
+    ])
+    .expect("valid polygon");
+    let origin = Point { array: [-9, 0] };
+
+    assert_eq!(
+      locate_by_triangulation(&poly, &origin),
+      poly.locate(&origin)
+    );
+  }
+
   // Locate a point relative to a polygon. Should be identical to
   // Polygon::locate but slower.
   fn locate_by_triangulation<T>(poly: &Polygon<T>, origin: &Point<T, 2>) -> PointLocation
@@ -808,7 +832,7 @@ pub mod tests {
     }
     for (a, b, c) in poly.triangulate() {
       let trig = TriangleView::new([&a, &b, &c]).expect("valid triangle");
-      if trig.locate(origin) == PointLocation::Inside {
+      if trig.locate(origin) != PointLocation::Outside {
         return PointLocation::Inside;
       }
     }

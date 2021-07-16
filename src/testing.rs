@@ -3,7 +3,8 @@
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
 use crate::data::{
-  Direction, Line, LineSoS, Point, PointId, Polygon, PolygonConvex, Triangle, Vector,
+  Direction, Direction_, Line, LineSoS, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex,
+  Triangle, Vector,
 };
 use crate::PolygonScalar;
 
@@ -131,24 +132,30 @@ where
 
     // No more ears can be cut. Let's try simplifying points:
     // eprintln!("Shrinking point: {}", self.next_shrink);
-    while self.next_shrink < poly.rings[0].len()
-      && !self.points[poly.rings[0][self.next_shrink].usize()].simplify()
-    {
-      self.next_shrink += 1;
-      // eprintln!("Shrink next point: {}", self.shrink);
-    }
-    if self.next_shrink < poly.rings[0].len() {
-      while self.polygon().validate().is_err() {
-        // eprintln!("Bad point shrink. Undo: {}", self.next_shrink);
-        if !self.points[poly.rings[0][self.next_shrink].usize()].complicate() {
-          // eprintln!("Cannot undo. Abort");
-          self.next_shrink = usize::MAX;
-          return true;
-        }
+    let shrink_points = false;
+    if shrink_points {
+      while self.next_shrink < poly.rings[0].len()
+        && !self.points[poly.rings[0][self.next_shrink].usize()].simplify()
+      {
+        self.next_shrink += 1;
+        // eprintln!("Shrink next point: {}", self.shrink);
       }
-      // eprintln!("Phew. Fixed: {}", self.next_shrink);
-      self.prev_shrink = Some(self.next_shrink);
-      return true;
+      if self.next_shrink < poly.rings[0].len() {
+        while self.polygon().validate().is_err() {
+          // eprintln!("Bad point shrink. Undo: {}", self.next_shrink);
+          if !self.points[poly.rings[0][self.next_shrink].usize()].complicate() {
+            // eprintln!("Cannot undo. Abort");
+            self.next_shrink = usize::MAX;
+            return true;
+          }
+        }
+        // eprintln!("Phew. Fixed: {}", self.next_shrink);
+        self.prev_shrink = Some(self.next_shrink);
+        return true;
+      } else {
+        self.done = true;
+        return false;
+      }
     } else {
       self.done = true;
       return false;
@@ -410,20 +417,20 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary Direction
 
-impl<T: Arbitrary, const N: usize> Arbitrary for Direction<T, N>
+impl<T: Arbitrary, const N: usize> Arbitrary for Direction_<T, N>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Mapped<(bool, Point<T, N>), Direction<T, N>>;
+  type Strategy = Mapped<(bool, Point<T, N>), Direction_<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     (any::<bool>(), Point::<T, N>::arbitrary_with(params)).prop_map(|(is_pt, pt)| {
       if is_pt {
-        Direction::Through(pt)
+        Direction_::Through(pt)
       } else {
-        Direction::Vector(pt.into())
+        Direction_::Vector(pt.into())
       }
     })
   }
@@ -432,34 +439,33 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary Line
 
-impl<T: Arbitrary, const N: usize> Arbitrary for Line<T, N>
+impl<T: Arbitrary, const N: usize> Arbitrary for Line_<T, N>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Mapped<(Point<T, N>, Direction<T, N>), Line<T, N>>;
+  type Strategy = Mapped<(Point<T, N>, Direction_<T, N>), Line_<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-    any_with::<(Point<T, N>, Direction<T, N>)>((params.clone(), params))
-      .prop_map(|(origin, direction)| Line { origin, direction })
+    any_with::<(Point<T, N>, Direction_<T, N>)>((params.clone(), params))
+      .prop_map(|(origin, direction)| Line_ { origin, direction })
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary LineSoS
 
-impl<T: Arbitrary, const N: usize> Arbitrary for LineSoS<T, N>
+impl<T: Arbitrary, const N: usize> Arbitrary for LineSoS_<T, N>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Mapped<Line<T, N>, LineSoS<T, N>>;
+  type Strategy = Mapped<Line_<T, N>, LineSoS_<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-    any_with::<Line<T, N>>(params)
-      .prop_map(|Line { origin, direction }| LineSoS { origin, direction })
+    any_with::<Line_<T, N>>(params).prop_map(|line| line.into())
   }
 }
 

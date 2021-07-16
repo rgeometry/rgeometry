@@ -12,6 +12,9 @@ use crate::Intersects;
 use crate::{Orientation, PolygonScalar};
 use Orientation::*;
 
+///////////////////////////////////////////////////////////////////////////////
+// EndPoint
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum EndPoint<T> {
   Exclusive(T),
@@ -109,6 +112,9 @@ fn inner_between<T: PartialOrd>(inner: &T, a: EndPoint<&T>, b: EndPoint<&T>) -> 
   lhs && rhs
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// LineSegment
+
 #[derive(Debug, Clone, Copy)]
 pub struct LineSegment<T, const N: usize> {
   pub min: EndPoint<Point<T, N>>,
@@ -139,7 +145,7 @@ impl<T, const N: usize> LineSegment<T, N> {
 impl<T> LineSegment<T, 2> {
   pub fn contains(&self, pt: &Point<T, 2>) -> bool
   where
-    T: PartialOrd,
+    T: PolygonScalar,
   {
     self.as_ref().contains(pt)
   }
@@ -169,6 +175,9 @@ impl<T: Ord, const N: usize> From<RangeInclusive<Point<T, N>>> for LineSegment<T
     LineSegment::new(EndPoint::Inclusive(start), EndPoint::Inclusive(end))
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// LineSegmentView
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct LineSegmentView<'a, T, const N: usize> {
@@ -211,9 +220,10 @@ impl<'a, T, const N: usize> LineSegmentView<'a, T, N> {
 impl<'a, T> LineSegmentView<'a, T, 2> {
   pub fn contains(&self, pt: &Point<T, 2>) -> bool
   where
-    T: PartialOrd,
+    T: PolygonScalar,
   {
-    inner_between(pt, self.min, self.max)
+    Point::orient(self.min.inner(), self.max.inner(), pt).is_colinear()
+      && inner_between(pt, self.min, self.max)
   }
 }
 
@@ -246,11 +256,17 @@ impl<'a, T: Ord, const N: usize> From<&'a RangeInclusive<Point<T, N>>>
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ILineSegment
+
 #[derive(Debug, Eq, PartialEq)]
 pub enum ILineSegment<'a, T> {
   Crossing,                           // Lines touch but are not parallel.
   Overlap(LineSegmentView<'a, T, 2>), // Lines touch and are parallel.
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Intersects
 
 impl<'a, T> Intersects for LineSegmentView<'a, T, 2>
 where
@@ -364,6 +380,9 @@ where
     LineSegmentView::from(self).intersect(LineSegmentView::from(other))
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Tests
 
 #[cfg(test)]
 mod tests {

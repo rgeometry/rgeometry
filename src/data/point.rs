@@ -13,7 +13,7 @@ use std::iter::Sum;
 use std::ops::Deref;
 use std::ops::Index;
 
-use super::Vector;
+use super::{Direction, Vector};
 use crate::{Orientation, PolygonScalar};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -231,12 +231,31 @@ impl<T: PolygonScalar> Point<T, 2> {
     Orientation::new(&p1, &p2, &p3)
   }
 
+  pub fn orient_along_direction(
+    p1: &Point<T, 2>,
+    direction: Direction<'_, T, 2>,
+    p2: &Point<T, 2>,
+  ) -> Orientation {
+    match direction {
+      Direction::Vector(v) => Orientation::along_vector(p1, v, p2),
+      Direction::Through(p) => Orientation::new(p1, p, p2),
+    }
+  }
+
   pub fn orient_along_vector(
     p1: &Point<T, 2>,
     vector: &Vector<T, 2>,
     p2: &Point<T, 2>,
   ) -> Orientation {
     Orientation::along_vector(&p1, &vector, &p2)
+  }
+
+  pub fn orient_along_perp_vector(
+    p1: &Point<T, 2>,
+    vector: &Vector<T, 2>,
+    p2: &Point<T, 2>,
+  ) -> Orientation {
+    Orientation::along_perp_vector(&p1, &vector, &p2)
   }
 
   /// Docs?
