@@ -244,18 +244,8 @@ where
 
     let origin = &self.line.origin;
 
-    let l1_to_b1;
-    let l1_to_b2;
-    match self.line.direction {
-      Direction::Vector(direction) => {
-        l1_to_b1 = Point::orient_along_vector(origin, direction, b1);
-        l1_to_b2 = Point::orient_along_vector(origin, direction, b2);
-      }
-      Direction::Through(through) => {
-        l1_to_b1 = Point::orient(origin, through, b1);
-        l1_to_b2 = Point::orient(origin, through, b2);
-      }
-    }
+    let l1_to_b1 = Point::orient_along_direction(origin, self.line.direction, b1);
+    let l1_to_b2 = Point::orient_along_direction(origin, self.line.direction, b2);
 
     use IHalfLineLineSegmentSoS::*;
     use Orientation::*;
