@@ -132,24 +132,30 @@ where
 
     // No more ears can be cut. Let's try simplifying points:
     // eprintln!("Shrinking point: {}", self.next_shrink);
-    while self.next_shrink < poly.rings[0].len()
-      && !self.points[poly.rings[0][self.next_shrink].usize()].simplify()
-    {
-      self.next_shrink += 1;
-      // eprintln!("Shrink next point: {}", self.shrink);
-    }
-    if self.next_shrink < poly.rings[0].len() {
-      while self.polygon().validate().is_err() {
-        // eprintln!("Bad point shrink. Undo: {}", self.next_shrink);
-        if !self.points[poly.rings[0][self.next_shrink].usize()].complicate() {
-          // eprintln!("Cannot undo. Abort");
-          self.next_shrink = usize::MAX;
-          return true;
-        }
+    let shrink_points = false;
+    if shrink_points {
+      while self.next_shrink < poly.rings[0].len()
+        && !self.points[poly.rings[0][self.next_shrink].usize()].simplify()
+      {
+        self.next_shrink += 1;
+        // eprintln!("Shrink next point: {}", self.shrink);
       }
-      // eprintln!("Phew. Fixed: {}", self.next_shrink);
-      self.prev_shrink = Some(self.next_shrink);
-      return true;
+      if self.next_shrink < poly.rings[0].len() {
+        while self.polygon().validate().is_err() {
+          // eprintln!("Bad point shrink. Undo: {}", self.next_shrink);
+          if !self.points[poly.rings[0][self.next_shrink].usize()].complicate() {
+            // eprintln!("Cannot undo. Abort");
+            self.next_shrink = usize::MAX;
+            return true;
+          }
+        }
+        // eprintln!("Phew. Fixed: {}", self.next_shrink);
+        self.prev_shrink = Some(self.next_shrink);
+        return true;
+      } else {
+        self.done = true;
+        return false;
+      }
     } else {
       self.done = true;
       return false;
