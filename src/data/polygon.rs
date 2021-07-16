@@ -348,7 +348,7 @@ impl<T> Polygon<T> {
   /// for the coordinates. For example, if 32bit integers are used for point coordinates
   /// then you might need 65 bits to store the area doubled. For this reason, the return
   /// type is polymorphic and should be selected with care. If you are unsure which type
-  /// is appropriate, use [`BigInt`] or [`BigRational`].
+  /// is appropriate, use [`BigInt`](num::BigInt) or [`BigRational`](num::BigRational).
   ///
   /// # Time complexity
   ///
