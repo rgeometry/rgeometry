@@ -3,8 +3,8 @@
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
 use crate::data::{
-  Direction, Direction_, Line, LineSoS, LineSoSOwned, Line_, Point, PointId, Polygon,
-  PolygonConvex, Triangle, Vector,
+  Direction, Direction_, Line, LineSoS, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex,
+  Triangle, Vector,
 };
 use crate::PolygonScalar;
 
@@ -456,17 +456,16 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary LineSoS
 
-impl<T: Arbitrary, const N: usize> Arbitrary for LineSoSOwned<T, N>
+impl<T: Arbitrary, const N: usize> Arbitrary for LineSoS_<T, N>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Mapped<Line_<T, N>, LineSoSOwned<T, N>>;
+  type Strategy = Mapped<Line_<T, N>, LineSoS_<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-    any_with::<Line_<T, N>>(params)
-      .prop_map(|Line_ { origin, direction }| LineSoSOwned { origin, direction })
+    any_with::<Line_<T, N>>(params).prop_map(|line| LineSoS_ { line })
   }
 }
 

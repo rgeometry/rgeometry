@@ -104,9 +104,7 @@ where
 
   let mut polygon_points = Vec::new();
   for vertex in vertices {
-    let ray_sos = HalfLineSoS {
-      line: LineSoS::new_through(point, vertex.point()),
-    };
+    let ray_sos = HalfLineSoS::new_through(point, vertex.point());
     let mut right_intersection = NearestIntersection::new(point);
     let mut left_intersection = NearestIntersection::new(point);
 
@@ -118,17 +116,17 @@ where
         None => (),
         // CoLinear crosing blocks the ray both to the left and to the right
         Some(Crossing(CoLinear)) => {
-          let isect = get_intersection(&ray_sos, edge);
+          let isect = get_intersection(ray_sos, edge);
           left_intersection.push(isect.clone());
           right_intersection.push(isect);
         }
         // Ray blocked on the left side.
         Some(Crossing(CounterClockWise)) => {
-          left_intersection.push(get_intersection(&ray_sos, edge));
+          left_intersection.push(get_intersection(ray_sos, edge));
         }
         // Ray blocked on the right side.
         Some(Crossing(ClockWise)) => {
-          right_intersection.push(get_intersection(&ray_sos, edge));
+          right_intersection.push(get_intersection(ray_sos, edge));
         }
       }
     }
@@ -155,7 +153,7 @@ where
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
 }
 
-fn get_intersection<T>(sos_line: &HalfLineSoS<T, 2>, edge: DirectedEdge<'_, T, 2>) -> Point<T, 2>
+fn get_intersection<T>(sos_line: HalfLineSoS<T, 2>, edge: DirectedEdge<'_, T, 2>) -> Point<T, 2>
 where
   T: PolygonScalar,
 {
@@ -163,11 +161,7 @@ where
     origin: edge.src,
     direction: Direction::Through(edge.dst),
   };
-  let sos_line = Line {
-    origin: sos_line.line.origin,
-    direction: sos_line.line.direction,
-  };
-  sos_line
+  Line::from(sos_line)
     .intersection_point(&segment_line)
     .expect("LinesMustIntersect")
 }

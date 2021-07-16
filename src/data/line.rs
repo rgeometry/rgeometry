@@ -9,10 +9,38 @@ use crate::{Orientation, PolygonScalar, SoS};
 // Line
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Line<'a, T, const N: usize> {
   pub origin: &'a Point<T, N>,
   pub direction: Direction<'a, T, N>,
+}
+
+impl<'a, T, const N: usize> Copy for Line<'a, T, N> {}
+impl<'a, T, const N: usize> Clone for Line<'a, T, N> {
+  fn clone(&self) -> Self {
+    Line {
+      origin: self.origin,
+      direction: self.direction,
+    }
+  }
+}
+
+impl<'a, T, const N: usize> Line<'a, T, N> {
+  pub fn new(origin: &'a Point<T, N>, direction: Direction<'a, T, N>) -> Line<'a, T, N> {
+    Line { origin, direction }
+  }
+
+  pub fn new_directed(origin: &'a Point<T, N>, vector: &'a Vector<T, N>) -> Line<'a, T, N> {
+    Line::new(origin, Direction::Vector(vector))
+  }
+
+  pub fn new_through(origin: &'a Point<T, N>, through: &'a Point<T, N>) -> Line<'a, T, N> {
+    Line::new(origin, Direction::Through(through))
+  }
+
+  pub fn sos(self) -> LineSoS<'a, T, N> {
+    LineSoS { line: self }
+  }
 }
 
 impl<'a, T: PolygonScalar> Line<'a, T, 2> {
@@ -106,21 +134,12 @@ impl<'a, T, const N: usize> From<&'a Direction_<T, N>> for Direction<'a, T, N> {
 
 #[derive(Debug, Clone)]
 pub struct LineSoS<'a, T, const N: usize> {
-  pub origin: &'a Point<T, N>,
-  pub direction: Direction<'a, T, N>,
+  line: Line<'a, T, N>,
 }
 
-impl<'a, T, const N: usize> LineSoS<'a, T, N> {
-  pub fn new(origin: &'a Point<T, N>, direction: Direction<'a, T, N>) -> LineSoS<'a, T, N> {
-    LineSoS { origin, direction }
-  }
-
-  pub fn new_directed(origin: &'a Point<T, N>, vector: &'a Vector<T, N>) -> LineSoS<'a, T, N> {
-    LineSoS::new(origin, Direction::Vector(vector))
-  }
-
-  pub fn new_through(origin: &'a Point<T, N>, through: &'a Point<T, N>) -> LineSoS<'a, T, N> {
-    LineSoS::new(origin, Direction::Through(through))
+impl<'a, T, const N: usize> From<LineSoS<'a, T, N>> for Line<'a, T, N> {
+  fn from(sos: LineSoS<'a, T, N>) -> Line<'a, T, N> {
+    sos.line
   }
 }
 
@@ -128,16 +147,14 @@ impl<'a, T, const N: usize> LineSoS<'a, T, N> {
 // Line SoS Owned
 
 #[derive(Debug, Clone)]
-pub struct LineSoSOwned<T, const N: usize> {
-  pub origin: Point<T, N>,
-  pub direction: Direction_<T, N>,
+pub struct LineSoS_<T, const N: usize> {
+  pub(crate) line: Line_<T, N>,
 }
 
-impl<'a, T, const N: usize> From<&'a LineSoSOwned<T, N>> for LineSoS<'a, T, N> {
-  fn from(line: &'a LineSoSOwned<T, N>) -> LineSoS<'a, T, N> {
+impl<'a, T, const N: usize> From<&'a LineSoS_<T, N>> for LineSoS<'a, T, N> {
+  fn from(line: &'a LineSoS_<T, N>) -> LineSoS<'a, T, N> {
     LineSoS {
-      origin: &line.origin,
-      direction: (&line.direction).into(),
+      line: Line::from(&line.line),
     }
   }
 }
@@ -160,10 +177,10 @@ where
   fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
     let b1 = other.min.inner();
     let b2 = other.max.inner();
-    let origin = &self.origin;
+    let origin = &self.line.origin;
     let l1_to_b1;
     let l1_to_b2;
-    match &self.direction {
+    match &self.line.direction {
       Direction::Vector(direction) => {
         l1_to_b1 =
           Point::orient_along_vector(origin, direction, b1).then(Orientation::CounterClockWise);
@@ -199,26 +216,51 @@ where
 // Half-Line SoS
 
 pub struct HalfLineSoS<'a, T, const N: usize> {
-  pub line: LineSoS<'a, T, N>,
+  pub line: Line<'a, T, N>,
+}
+
+impl<'a, T, const N: usize> Copy for HalfLineSoS<'a, T, N> {}
+impl<'a, T, const N: usize> Clone for HalfLineSoS<'a, T, N> {
+  fn clone(&self) -> Self {
+    HalfLineSoS { line: self.line }
+  }
+}
+
+impl<'a, T, const N: usize> From<LineSoS<'a, T, N>> for HalfLineSoS<'a, T, N> {
+  fn from(sos: LineSoS<'a, T, N>) -> HalfLineSoS<'a, T, N> {
+    HalfLineSoS { line: sos.into() }
+  }
+}
+
+impl<'a, T, const N: usize> From<Line<'a, T, N>> for HalfLineSoS<'a, T, N> {
+  fn from(line: Line<'a, T, N>) -> HalfLineSoS<'a, T, N> {
+    HalfLineSoS { line: line }
+  }
+}
+
+impl<'a, T, const N: usize> From<HalfLineSoS<'a, T, N>> for LineSoS<'a, T, N> {
+  fn from(ray: HalfLineSoS<'a, T, N>) -> LineSoS<'a, T, N> {
+    ray.line.sos()
+  }
+}
+
+impl<'a, T, const N: usize> From<HalfLineSoS<'a, T, N>> for Line<'a, T, N> {
+  fn from(ray: HalfLineSoS<'a, T, N>) -> Line<'a, T, N> {
+    ray.line.into()
+  }
 }
 
 impl<'a, T, const N: usize> HalfLineSoS<'a, T, N> {
   pub fn new(origin: &'a Point<T, N>, direction: Direction<'a, T, N>) -> HalfLineSoS<'a, T, N> {
-    HalfLineSoS {
-      line: LineSoS::new(origin, direction),
-    }
+    Line::new(origin, direction).into()
   }
 
   pub fn new_directed(origin: &'a Point<T, N>, vector: &'a Vector<T, N>) -> HalfLineSoS<'a, T, N> {
-    HalfLineSoS {
-      line: LineSoS::new_directed(origin, vector),
-    }
+    Line::new_directed(origin, vector).into()
   }
 
   pub fn new_through(origin: &'a Point<T, N>, through: &'a Point<T, N>) -> HalfLineSoS<'a, T, N> {
-    HalfLineSoS {
-      line: LineSoS::new_through(origin, through),
-    }
+    Line::new_through(origin, through).into()
   }
 }
 
@@ -324,12 +366,8 @@ mod tests {
   fn ray_intersect_unit_1() {
     let line: LineSegment<i8, 2> = LineSegment::from((-1, 127)..(-5, 48));
     let direction: Vector<i8, 2> = Vector([1, 0]);
-    let ray = HalfLineSoS {
-      line: LineSoS {
-        origin: &Point::new([79, 108]),
-        direction: Direction::Vector(&direction),
-      },
-    };
+    let origin = Point::new([79, 108]);
+    let ray = HalfLineSoS::new_directed(&origin, &direction);
 
     assert_eq!(ray.intersect(line.as_ref()), None);
   }
@@ -338,12 +376,8 @@ mod tests {
   fn ray_intersect_unit_2() {
     let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(-1, 127));
     let direction: Vector<i8, 2> = Vector([1, 0]);
-    let ray = HalfLineSoS {
-      line: LineSoS {
-        origin: &Point::new([79, 108]),
-        direction: Direction::Vector(&direction),
-      },
-    };
+    let origin = Point::new([79, 108]);
+    let ray = HalfLineSoS::new_directed(&origin, &direction);
 
     assert_eq!(ray.intersect(line.as_ref()), None);
   }
@@ -353,12 +387,8 @@ mod tests {
     let line1: LineSegment<i8, 2> = LineSegment::from((0, 0)..(0, 1));
     let line2: LineSegment<i8, 2> = LineSegment::from((0, -1)..(0, 0));
     let direction: Vector<i8, 2> = Vector([1, 0]);
-    let ray = HalfLineSoS {
-      line: LineSoS {
-        origin: &Point::new([-1, 0]),
-        direction: Direction::Vector(&direction),
-      },
-    };
+    let origin = Point::new([-1, 0]);
+    let ray = HalfLineSoS::new_directed(&origin, &direction);
 
     assert!(ray.intersect(line1.as_ref()).is_some());
     assert!(ray.intersect(line2.as_ref()).is_some());
@@ -390,12 +420,8 @@ mod tests {
   fn ray_intersect_unit_5() {
     let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(0, 1));
     let direction: Vector<i8, 2> = Vector([1, 0]);
-    let ray = HalfLineSoS {
-      line: LineSoS {
-        origin: &Point::new([1, 0]),
-        direction: Direction::Vector(&direction),
-      },
-    };
+    let origin = Point::new([1, 0]);
+    let ray = HalfLineSoS::new_directed(&origin, &direction);
 
     assert!(ray.intersect(line.as_ref()).is_none());
   }
@@ -404,18 +430,14 @@ mod tests {
   fn ray_intersect_unit_6() {
     let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(0, 1));
     let direction: Vector<i8, 2> = Vector([1, 0]);
-    let ray = HalfLineSoS {
-      line: LineSoS {
-        origin: &Point::new([1, 0]),
-        direction: Direction::Vector(&direction),
-      },
-    };
+    let origin = Point::new([1, 0]);
+    let ray = HalfLineSoS::new_directed(&origin, &direction);
 
     assert!(ray.intersect(line.as_ref()).is_none());
   }
 
   #[proptest]
-  fn raw_intersection_count_prop(poly: Polygon<i8>, line: LineSoSOwned<i8, 2>) {
+  fn raw_intersection_count_prop(poly: Polygon<i8>, line: LineSoS_<i8, 2>) {
     let line: LineSoS<'_, i8, 2> = (&line).into();
     let mut intersections = 0;
     for edge in poly.iter_boundary_edges() {
