@@ -148,7 +148,7 @@ impl<'a, T, const N: usize> From<LineSoS<'a, T, N>> for Line<'a, T, N> {
 
 #[derive(Debug, Clone)]
 pub struct LineSoS_<T, const N: usize> {
-  pub(crate) line: Line_<T, N>,
+  line: Line_<T, N>,
 }
 
 impl<'a, T, const N: usize> From<&'a LineSoS_<T, N>> for LineSoS<'a, T, N> {
@@ -156,6 +156,12 @@ impl<'a, T, const N: usize> From<&'a LineSoS_<T, N>> for LineSoS<'a, T, N> {
     LineSoS {
       line: Line::from(&line.line),
     }
+  }
+}
+
+impl<T, const N: usize> From<Line_<T, N>> for LineSoS_<T, N> {
+  fn from(line: Line_<T, N>) -> LineSoS_<T, N> {
+    LineSoS_ { line }
   }
 }
 
@@ -216,7 +222,7 @@ where
 // Half-Line SoS
 
 pub struct HalfLineSoS<'a, T, const N: usize> {
-  pub line: Line<'a, T, N>,
+  line: Line<'a, T, N>,
 }
 
 impl<'a, T, const N: usize> Copy for HalfLineSoS<'a, T, N> {}

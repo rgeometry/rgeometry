@@ -465,7 +465,7 @@ where
   type Strategy = Mapped<Line_<T, N>, LineSoS_<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-    any_with::<Line_<T, N>>(params).prop_map(|line| LineSoS_ { line })
+    any_with::<Line_<T, N>>(params).prop_map(|line| line.into())
   }
 }
 
