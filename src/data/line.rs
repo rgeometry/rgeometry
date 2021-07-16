@@ -15,6 +15,30 @@ pub struct Line<T, const N: usize> {
   pub direction: Direction<T, N>,
 }
 
+impl<T: PolygonScalar> Line<T, 2> {
+  pub fn intersection_point(&self, other: &Self) -> Option<Point<T, 2>> {
+    let [x1, y1] = self.origin.array.clone();
+    let [x2, y2] = match &self.direction {
+      Direction::Through(pt) => pt.array.clone(),
+      _ => unimplemented!(),
+    };
+    let [x3, y3] = other.origin.array.clone();
+    let [x4, y4] = match &other.direction {
+      Direction::Through(pt) => pt.array.clone(),
+      _ => unimplemented!(),
+    };
+    let denom: T = (x1.clone() - x2.clone()) * (y3.clone() - y4.clone())
+      - (y1.clone() - y2.clone()) * (x3.clone() - x4.clone());
+    if denom == T::from_constant(0) {
+      return None;
+    }
+    let part_a = x1.clone() * y2.clone() - y1.clone() * x2.clone();
+    let part_b = x3.clone() * y4.clone() - y3.clone() * x4.clone();
+    let x_num = part_a.clone() * (x3 - x4) - (x1 - x2) * part_b.clone();
+    let y_num = part_a * (y3 - y4) - (y1 - y2) * part_b;
+    Some(Point::new([x_num / denom.clone(), y_num / denom]))
+  }
+}
 #[derive(Debug, Clone)]
 pub enum Direction<T, const N: usize> {
   Vector(Vector<T, N>),
