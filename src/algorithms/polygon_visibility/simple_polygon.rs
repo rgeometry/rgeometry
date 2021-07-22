@@ -90,11 +90,7 @@ where
   let prev_point = curr_cursor.prev().point();
   //Only check for RA case, we use sos to avoid collinar cases
   let (j, j_prev) = get_ra(point, curr_cursor, polygon_points);
-  let j_segment = Line::new(&j_prev, Direction::Through(&j));
-  let z_line = Line::new(point, Direction::Through(curr_cursor.point()));
-  let intersection = z_line
-    .intersection_point(&j_segment)
-    .expect("Lines Must Intersect");
+  let intersection = get_intersection(point,curr_cursor.point(),&j_prev,&j);
   polygon_points.push(intersection);
 
   match Orientation::new(point, curr_cursor.point(), nxt_point).sos(TIEBREAKER) {
@@ -114,7 +110,7 @@ where
 ///Case RA for right
 fn get_ra<T>(
   point: &Point<T, 2>,
-  curr_boundary_point: Cursor<'_, T>,
+  curr_cursor: Cursor<'_, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
 ) -> (Point<T, 2>, Point<T, 2>)
 where
@@ -124,17 +120,17 @@ where
   let p1 = stack_back_iter.next().unwrap();
   let p0 = stack_back_iter.next().unwrap();
 
-  match Orientation::new(point, p1, curr_boundary_point.point()).sos(TIEBREAKER) {
+  match Orientation::new(point, p1, curr_cursor.point()).sos(TIEBREAKER) {
     SoS::CounterClockWise => {
       polygon_points.pop();
-      get_ra(point, curr_boundary_point, polygon_points)
+      get_ra(point, curr_cursor, polygon_points)
     }
     SoS::ClockWise => {
-      match Orientation::new(point, p0, curr_boundary_point.point()).sos(TIEBREAKER) {
+      match Orientation::new(point, p0, curr_cursor.point()).sos(TIEBREAKER) {
         SoS::CounterClockWise => (p1.clone(), p0.clone()),
         SoS::ClockWise => {
           polygon_points.pop();
-          get_ra(point, curr_boundary_point, polygon_points)
+          get_ra(point, curr_cursor, polygon_points)
         }
       }
     }
@@ -143,13 +139,41 @@ where
 
 fn scan_a<T>(
   point: &Point<T, 2>,
-  curr_point: Cursor<'_, T>,
+  curr_cursor: Cursor<'_, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
   w: &Point<T, 2>,
 ) -> Process<T>
 where
   T: PolygonScalar,
 {
+  let mut c1 = curr_cursor;
+  let mut c0 = curr_cursor.next();
+  let s = polygon_points.last().unwrap();
+  let check_intersection = |curr:Cursor<'_, T>,prev:Cursor<'_, T> | ->bool {
+    Orientation::new(point,s,curr.point()).sos(TIEBREAKER) == SoS::CounterClockWise
+    && Orientation::new(point,s,prev.point()).sos(TIEBREAKER) == SoS::ClockWise
+  };
+  while !check_intersection(c1,c0) {
+      c1 = c1.next();
+      c0 = c0.next();
+  }
+  
+  let intersection_point = get_intersection(point, s, c0.point(), c1.point());
+
+  match Orientation::new(point, curr_cursor.point(), nxt_point).sos(TIEBREAKER) {
+    SoS::CounterClockWise => {
+      match Orientation::new(prev_point, curr_cursor.point(), nxt_point).sos(TIEBREAKER) {
+        SoS::ClockWise => {
+          polygon_points.push(nxt_point.clone());
+          Process(left)
+        }
+        SoS::CounterClockWise => Process(scan_c),
+      }
+    }
+    SoS::ClockWise => Process(right),
+  }
+
+
   Process(left)
 }
 fn scan_b<T>(
@@ -184,6 +208,16 @@ where
   T: PolygonScalar,
 {
   Process(left)
+}
+
+fn get_intersection<T>(l0:&Point<T,2>,l1:&Point<T,2>,s0:&Point<T,2>,s1:&Point<T,2>) -> Point<T,2>
+where T: PolygonScalar
+{
+  let z_line = Line::new(l0, Direction::Through(l1));
+  let j_segment = Line::new(s0, Direction::Through(s1));
+  z_line
+    .intersection_point(&j_segment)
+    .expect("Lines Must Intersect")
 }
 #[cfg(test)]
 mod simple_polygon_testing {
