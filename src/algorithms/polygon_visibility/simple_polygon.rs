@@ -1,11 +1,19 @@
 //https://link.springer.com/content/pdf/10.1007/BF01937271.pdf
 
+use std::ops::Index;
+
+use crate::data::polygon::{CursorIter, EdgeIter};
 use crate::data::{
-  Cursor, DirectedEdge, Direction, EndPoint, HalfLineSoS, Line, LineSegment, Point, Polygon,
+  Cursor, DirectedEdge, Direction, EndPoint, HalfLineSoS, Line, LineSegment, LineSegmentView,
+  Point, PointId, Polygon, Vector,
 };
 use crate::{Bound, Error, Intersects, Ordering, Orientation, PolygonScalar, SoS};
 
 const TIEBREAKER: SoS = SoS::ClockWise;
+struct StartInfo<T> {
+  point: Point<T, 2>,
+  point_on_polygon: PointId,
+}
 struct Step<'a, N> {
   process: fn(&Point<N, 2>, Cursor<'a, N>, &mut Vec<Point<N, 2>>, &Point<N, 2>) -> Step<'a, N>,
   curr_cursor: Cursor<'a, N>,
@@ -20,43 +28,42 @@ pub fn get_visibility_polygon_simple<T>(
 where
   T: PolygonScalar,
 {
-  let cmp_cursors = |a: &Cursor<'_, T>, b: &Cursor<'_, T>| {
-    point.ccw_cmp_around(a, b).then(point.cmp_distance_to(a, b))
-  };
-  // FIXME: points should start from a point on X axis
-  let start_vertex = polygon
-    .iter_boundary()
-    .min_by(cmp_cursors)
-    .expect("polygon must have points");
-  let end_vertex = polygon
-    .iter_boundary()
-    .max_by(cmp_cursors)
-    .expect("polygon must have points");
-
-  let mut polygon_points: Vec<Point<T, 2>> = vec![start_vertex.point().clone()];
+  let start_point;
+  let mut start_cursor;
+  match get_start_info(point, polygon) {
+    None => panic!("Point is in free exterior"),
+    Some(info) => {
+      start_point = info.point;
+      start_cursor = polygon.cursor(info.point_on_polygon);
+    }
+  }
+  let mut polygon_points: Vec<Point<T, 2>> = vec![start_point.clone()];
   let mut step: Step<'_, T>;
+  if start_point.eq(start_cursor.point()) {
+    start_cursor.move_next();
+  }
 
-  match Orientation::new(point, start_vertex.point(), start_vertex.next().point()).sos(TIEBREAKER) {
+  match Orientation::new(point, &start_point, start_cursor.point()).sos(TIEBREAKER) {
     SoS::CounterClockWise => {
       step = {
-        polygon_points.push(start_vertex.next().point().clone());
+        polygon_points.push(start_cursor.point().clone());
         Step {
           process: left,
-          curr_cursor: start_vertex.next(),
-          w: start_vertex.next().point().clone(),
+          curr_cursor: start_cursor,
+          w: start_cursor.point().clone(),
         }
       }
     }
     SoS::ClockWise => {
       step = Step {
         process: scan_a,
-        curr_cursor: start_vertex.next(),
-        w: start_vertex.next().point().clone(),
+        curr_cursor: start_cursor,
+        w: start_cursor.point().clone(),
       }
     }
   }
-
-  while step.curr_cursor != end_vertex {
+  //FIXME: adjust looping, find better exit condition
+  while !step.curr_cursor.eq(&start_cursor) {
     // FIXME: how to call the function pointer directly?
     let process = step.process;
     step = process(&point, step.curr_cursor, &mut polygon_points, &step.w);
@@ -64,7 +71,54 @@ where
 
   Option::None
 }
+/// Get the start point (closest point on the positive x axis) and a cursor to the next point
+fn get_start_info<T>(view_point: &Point<T, 2>, polygon: &Polygon<T>) -> Option<StartInfo<T>>
+where
+  T: PolygonScalar,
+{
+  let x_dir_point = Point::new([
+    PolygonScalar::from_constant(1),
+    PolygonScalar::from_constant(0),
+  ]);
+  let x_dir = Vector(x_dir_point.array.clone());
+  let x_ray = HalfLineSoS::new_directed(view_point, &x_dir);
+  let mut start_info: Option<StartInfo<T>> = Option::None;
 
+  let cursor = polygon.iter_boundary().next().unwrap();
+  // FIXME: maybe let directed edge return PointId of the end points?
+  for edge in polygon.iter_boundary_edges() {
+    //cursor point to edge distination
+    let curr_cursor = cursor.next();
+    if let Some(_) = x_ray.intersect(edge) {
+      let intersection_point = get_intersection(view_point, &x_dir_point, edge.src, edge.dst);
+      if check_new_point(view_point, &start_info, &intersection_point) {
+        start_info = Some(StartInfo {
+          point: intersection_point,
+          point_on_polygon: curr_cursor.point_id(),
+        });
+      }
+    }
+  }
+
+  return start_info;
+
+  fn check_new_point<'a, T>(
+    point: &Point<T, 2>,
+    start_info: &Option<StartInfo<T>>,
+    curr_point: &Point<T, 2>,
+  ) -> bool
+  where
+    T: PolygonScalar,
+  {
+    match start_info {
+      Some(info) => match point.cmp_distance_to(curr_point, &info.point) {
+        Ordering::Less => true,
+        _ => false,
+      },
+      None => true,
+    }
+  }
+}
 /// The current segment is taking a left turn
 fn left<'a, T>(
   point: &Point<T, 2>,
@@ -275,15 +329,15 @@ where
 }
 
 fn get_intersection<T>(
-  l0: &Point<T, 2>,
-  l1: &Point<T, 2>,
+  r0: &Point<T, 2>,
+  r1: &Point<T, 2>,
   s0: &Point<T, 2>,
   s1: &Point<T, 2>,
 ) -> Point<T, 2>
 where
   T: PolygonScalar,
 {
-  let z_line = Line::new(l0, Direction::Through(l1));
+  let z_line = Line::new(r0, Direction::Through(r1));
   let j_segment = Line::new(s0, Direction::Through(s1));
   z_line
     .intersection_point(&j_segment)
