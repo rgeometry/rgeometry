@@ -39,11 +39,13 @@ where
       start_cursor = polygon.cursor(info.point_on_polygon);
     }
   }
+  // FIXME: coincident start point and start cursor should be handeled in get_start_info() not here
   let mut polygon_points: Vec<Point<T, 2>> = vec![start_point.clone()];
   let mut step;
   if start_point.eq(start_cursor.point()) {
     start_cursor.move_next();
   }
+
   let cursor_iter = start_cursor.to(Bound::Excluded(start_cursor));
 
   match Orientation::new(point, &start_point, start_cursor.point()).sos(TIEBREAKER) {
@@ -84,11 +86,11 @@ where
   let x_ray = HalfLineSoS::new_directed(view_point, &x_dir);
   let mut start_info: Option<StartInfo<T>> = Option::None;
 
-  let cursor = polygon.iter_boundary().next().unwrap();
+  let mut cursor = polygon.iter_boundary().next().unwrap();
   // FIXME: maybe let directed edge return PointId of the end points?
   for edge in polygon.iter_boundary_edges() {
     //cursor point to edge distination
-    let curr_cursor = cursor.next();
+    cursor.move_next();
     if let Some(_) = x_ray.intersect(edge) {
       // FIXME: problem using Add operator &point + &vector
       let through_point = Point::new([
@@ -99,7 +101,7 @@ where
       if check_new_point(view_point, &start_info, &intersection_point) {
         start_info = Some(StartInfo {
           point: intersection_point,
-          point_on_polygon: curr_cursor.point_id(),
+          point_on_polygon: cursor.point_id(),
         });
       }
     }
@@ -479,6 +481,7 @@ mod simple_polygon_testing {
     .unwrap();
     let out_test_point = Point::new([4, 3]);
     let out_point = get_start_info(&point, &input_polygon);
-    assert_eq!(assert_some!(out_point).point, out_test_point);
+    assert_eq!(assert_some!(&out_point).point, out_test_point);
+    assert_eq!(input_polygon.point(assert_some!(&out_point).point_on_polygon),&Point::new([4, 6]));
   }
 }
