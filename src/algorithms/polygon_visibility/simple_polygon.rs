@@ -74,7 +74,7 @@ where
     step = process(&point, next.cursor_iter, &mut polygon_points, &next.w);
   }
 
-  Option::None
+  Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
 }
 /// Get the start point (closest point on the positive x axis) and a cursor to the next point
 fn get_start_info<T>(view_point: &Point<T, 2>, polygon: &Polygon<T>) -> Option<StartInfo<T>>
@@ -151,7 +151,7 @@ where
             w: curr_cursor.next().point().clone(),
           }),
           SoS::CounterClockWise => Some(Step {
-            process: scan_b,
+            process: right,
             cursor_iter: cursor_iter,
             w: curr_cursor.next().point().clone(),
           }),
@@ -159,7 +159,7 @@ where
         SoS::CounterClockWise => {
           polygon_points.push(nxt_point.clone());
           Some(Step {
-            process: scan_c,
+            process: left,
             cursor_iter: cursor_iter,
             w: curr_cursor.next().point().clone(),
           })
@@ -437,6 +437,8 @@ where
 }
 #[cfg(test)]
 mod simple_polygon_testing {
+  use crate::algorithms::polygon_visibility::test_polygons;
+
   use super::super::naive::get_visibility_polygon;
   use super::*;
   use claim::assert_some;
@@ -444,7 +446,7 @@ mod simple_polygon_testing {
   use test_strategy::proptest;
 
   #[proptest]
-  fn test_no_holes(polygon: Polygon<i8>, point: Point<i8, 2>) {
+  fn test_with_naive(polygon: Polygon<i8>, point: Point<i8, 2>) {
     // FIXME: get_visibility_polygon overflows
     let cast_polygon: Polygon<i32> = polygon.cast();
     let cast_point: Point<i32, 2> = point.cast();
@@ -459,29 +461,18 @@ mod simple_polygon_testing {
     }
   }
 
-  //   Input
-  //  /-----\ /----\
-  //  |     | |    |
-  //  |  x  \-/    |
-  //  |            |
-  //  \------------/
   #[test]
   fn find_start_point() {
-    let point = Point::new([2, 3]);
-    let input_polygon = Polygon::new(vec![
-      Point::new([0, 0]),
-      Point::new([10, 0]),
-      Point::new([10, 6]),
-      Point::new([6, 6]),
-      Point::new([6, 3]),
-      Point::new([4, 3]),
-      Point::new([4, 6]),
-      Point::new([0, 6]),
-    ])
-    .unwrap();
+    let testing_info = test_polygons::test_info_1();
     let out_test_point = Point::new([4, 3]);
-    let out_point = get_start_info(&point, &input_polygon);
+    let nxt_test_point = Point::new([4, 6]);
+    let out_point = get_start_info(&testing_info.point, &testing_info.polygon);
     assert_eq!(assert_some!(&out_point).point, out_test_point);
-    assert_eq!(input_polygon.point(assert_some!(&out_point).point_on_polygon),&Point::new([4, 6]));
+    assert_eq!(
+      testing_info
+        .polygon
+        .point(assert_some!(&out_point).point_on_polygon),
+      &nxt_test_point
+    );
   }
 }

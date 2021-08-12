@@ -201,6 +201,8 @@ where
 
 #[cfg(test)]
 mod naive_testing {
+  use crate::algorithms::polygon_visibility::test_polygons;
+
   use super::*;
 
   //     x
@@ -222,77 +224,33 @@ mod naive_testing {
 
     assert!(out_polygon.is_none())
   }
-  //  /-----\ /----\  /-----\ /----\
-  //  |     | |    |  |     | |    |
-  //  |  x  \-/ /--/  |  x  \---\--/
-  //  |         |     |         |
-  //  \---------/     \---------/
+
   #[test]
   fn case_1() {
-    let point = Point::new([2, 3]);
-    let input_polygon = Polygon::new(vec![
-      Point::new([0, 0]),
-      Point::new([8, 0]),
-      Point::new([8, 3]),
-      Point::new([10, 3]),
-      Point::new([10, 6]),
-      Point::new([6, 6]),
-      Point::new([6, 3]),
-      Point::new([4, 3]),
-      Point::new([4, 6]),
-      Point::new([0, 6]),
-    ])
-    .unwrap();
-    let out_test_points = vec![
-      Point::new([0, 0]),
-      Point::new([8, 0]),
-      Point::new([8, 3]),
-      Point::new([4, 3]),
-      Point::new([4, 6]),
-      Point::new([0, 6]),
-    ];
-    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+    let testing_info = test_polygons::test_info_1();
+    let out_polygon = get_visibility_polygon(&testing_info.point, &testing_info.visibility_polygon);
     match out_polygon {
       Some(polygon) => {
-        //ToDo: find a better way to compare polygons (maybe pairwise comparison of the points)
-        assert_eq!(out_test_points.len(), polygon.points.len())
+        assert_eq!(
+          testing_info.visibility_polygon.points.len(),
+          polygon.points.len()
+        )
       }
       None => panic!(),
     }
   }
 
-  //   Input            Output
-  //  /-----\ /----\  /-----\ /----\
-  //  |     | |    |  |     | |    |
-  //  |  x  \-/    |  |  x  \------\
-  //  |            |  |            |
-  //  \------------/  \------------/
   #[test]
   fn case_2() {
-    let point = Point::new([2, 3]);
-    let input_polygon = Polygon::new(vec![
-      Point::new([0, 0]),
-      Point::new([10, 0]),
-      Point::new([10, 6]),
-      Point::new([6, 6]),
-      Point::new([6, 3]),
-      Point::new([4, 3]),
-      Point::new([4, 6]),
-      Point::new([0, 6]),
-    ])
-    .unwrap();
-    let out_test_points = vec![
-      Point::new([0, 0]),
-      Point::new([10, 0]),
-      Point::new([10, 3]),
-      Point::new([4, 3]),
-      Point::new([4, 6]),
-      Point::new([0, 6]),
-    ];
-    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+    let testing_info = test_polygons::test_info_2();
+
+    let out_polygon = get_visibility_polygon(&testing_info.point, &testing_info.visibility_polygon);
     match out_polygon {
       Some(polygon) => {
-        assert_eq!(out_test_points.len(), polygon.points.len())
+        assert_eq!(
+          testing_info.visibility_polygon.points.len(),
+          polygon.points.len()
+        )
       }
       None => panic!(),
     }
