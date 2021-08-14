@@ -10,6 +10,7 @@ pub struct TestingInfo<T> {
 //  |  x  \-/ /--/  |  x  \---\--/
 //  |         |     |         |
 //  \---------/     \---------/
+#[allow(dead_code)]
 pub fn test_info_1() -> TestingInfo<i32> {
   let polygon = Polygon::new(vec![
     Point::new([0, 0]),
@@ -24,7 +25,7 @@ pub fn test_info_1() -> TestingInfo<i32> {
     Point::new([0, 6]),
   ])
   .unwrap();
-  let visibilty_polygon = Polygon::new(vec![
+  let visibility_polygon = Polygon::new(vec![
     Point::new([0, 0]),
     Point::new([8, 0]),
     Point::new([8, 3]),
@@ -35,9 +36,9 @@ pub fn test_info_1() -> TestingInfo<i32> {
   .unwrap();
   let point = Point::new([2, 3]);
   TestingInfo {
-    polygon: polygon,
-    visibility_polygon: visibilty_polygon,
-    point: point,
+    polygon,
+    visibility_polygon,
+    point,
   }
 }
 
@@ -47,6 +48,7 @@ pub fn test_info_1() -> TestingInfo<i32> {
 //  |  x  \-/    |  |  x  \------\
 //  |            |  |            |
 //  \------------/  \------------/
+#[allow(dead_code)]
 pub fn test_info_2() -> TestingInfo<i32> {
   let point = Point::new([2, 3]);
   let polygon = Polygon::new(vec![
@@ -70,8 +72,8 @@ pub fn test_info_2() -> TestingInfo<i32> {
   ])
   .unwrap();
   TestingInfo {
-    polygon: polygon,
-    visibility_polygon: visibility_polygon,
-    point: point,
+    polygon,
+    visibility_polygon,
+    point,
   }
 }

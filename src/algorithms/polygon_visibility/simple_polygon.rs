@@ -11,15 +11,12 @@ use crate::data::{
 use crate::{Bound, Error, Intersects, Ordering, Orientation, PolygonScalar, SoS};
 
 const TIEBREAKER: SoS = SoS::ClockWise;
-struct StartInfo<T> {
-  point: Point<T, 2>,
-  point_on_polygon: PointId,
-}
-struct Step<'a, N> {
-  process:
-    fn(&Point<N, 2>, CursorIter<'a, N>, &mut Vec<Point<N, 2>>, &Point<N, 2>) -> Option<Step<'a, N>>,
-  cursor_iter: CursorIter<'a, N>,
-  w: Point<N, 2>,
+type StepProcess<'a, N> =
+  fn(&Point<N, 2>, CursorIter<'a, N>, &mut Vec<Point<N, 2>>, &Point<N, 2>) -> Step<'a, N>;
+struct Step<'a, T> {
+  process: StepProcess<'a, T>,
+  cursor_iter: CursorIter<'a, T>,
+  w: Point<T, 2>,
 }
 
 /// Finds the visiblity polygon from a point and a given simple polygon -  O(n)
@@ -30,68 +27,60 @@ pub fn get_visibility_polygon_simple<T>(
 where
   T: PolygonScalar,
 {
-  let start_point;
-  let mut start_cursor;
-  match get_start_info(point, polygon) {
-    None => panic!("Point is free exterior"),
-    Some(info) => {
-      start_point = info.point;
-      start_cursor = polygon.cursor(info.point_on_polygon);
-    }
-  }
-  // FIXME: coincident start point and start cursor should be handeled in get_start_info() not here
+  let reformed_polygon = rearrange_polygon(point, polygon).expect("There must be an intersection");
+  let mut cursor_iter = reformed_polygon.iter_boundary();
+  let start_point = cursor_iter
+    .next()
+    .expect("Must have more than one point")
+    .point();
+  let next_point = cursor_iter.cursor_head.point();
   let mut polygon_points: Vec<Point<T, 2>> = vec![start_point.clone()];
   let mut step;
-  if start_point.eq(start_cursor.point()) {
-    start_cursor.move_next();
-  }
 
-  let cursor_iter = start_cursor.to(Bound::Excluded(start_cursor));
-
-  match Orientation::new(point, &start_point, start_cursor.point()).sos(TIEBREAKER) {
+  match Orientation::new(point, &start_point, next_point).sos(TIEBREAKER) {
     SoS::CounterClockWise => {
       step = {
-        polygon_points.push(start_cursor.point().clone());
-        Some(Step {
+        polygon_points.push(next_point.clone());
+        Step {
           process: left,
-          cursor_iter: cursor_iter,
-          w: start_cursor.point().clone(),
-        })
+          w: next_point.clone(),
+          cursor_iter,
+        }
       }
     }
     SoS::ClockWise => {
-      step = Some(Step {
+      step = Step {
         process: scan_a,
-        cursor_iter: cursor_iter,
-        w: start_cursor.point().clone(),
-      })
+        w: next_point.clone(),
+        cursor_iter,
+      }
     }
   }
 
-  while let Some(next) = step {
+  while !step.cursor_iter.exhausted {
     // FIXME: how to call the function pointer directly?
-    let process = next.process;
-    step = process(&point, next.cursor_iter, &mut polygon_points, &next.w);
+    let process = step.process;
+    step = process(&point, step.cursor_iter, &mut polygon_points, &step.w);
   }
 
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
 }
-/// Get the start point (closest point on the positive x axis) and a cursor to the next point
-fn get_start_info<T>(view_point: &Point<T, 2>, polygon: &Polygon<T>) -> Option<StartInfo<T>>
+/// Make the polygon start with the point closest on the positive x axis
+fn rearrange_polygon<T>(view_point: &Point<T, 2>, polygon: &Polygon<T>) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar,
 {
   let x_dir_point = Point::new([T::from_constant(1), T::from_constant(0)]);
   let x_dir = x_dir_point.as_vec();
   let x_ray = HalfLineSoS::new_directed(view_point, &x_dir);
-  let mut start_info: Option<StartInfo<T>> = Option::None;
+  let mut start_info: Option<(Point<T, 2>, Cursor<T>)> = Option::None;
 
   let mut cursor = polygon.iter_boundary().next().unwrap();
   // FIXME: maybe let directed edge return PointId of the end points?
   for edge in polygon.iter_boundary_edges() {
     //cursor point to edge distination
     cursor.move_next();
-    if let Some(_) = x_ray.intersect(edge) {
+    if x_ray.intersect(edge).is_some() {
       // FIXME: problem using Add operator &point + &vector
       let through_point = Point::new([
         view_point.array[0].clone() + x_dir_point.array[0].clone(),
@@ -99,31 +88,45 @@ where
       ]);
       let intersection_point = get_intersection(view_point, &through_point, edge.src, edge.dst);
       if check_new_point(view_point, &start_info, &intersection_point) {
-        start_info = Some(StartInfo {
-          point: intersection_point,
-          point_on_polygon: cursor.point_id(),
-        });
+        start_info = Some((intersection_point, cursor));
       }
     }
   }
+  match start_info {
+    // FIXME: find suitable error
+    None => Err(Error::InsufficientVertices),
+    Some(info) => {
+      let intersection_point = &info.0;
+      let mut polygon_points = Vec::new();
+      let mut cursor_start = info.1;
+      let mut cursor_end = cursor_start.prev();
 
-  return start_info;
+      if cursor_start.point().ne(intersection_point) && cursor_end.point().ne(intersection_point) {
+        polygon_points.push(intersection_point.clone());
+      } else if cursor_end.point().eq(intersection_point) {
+        cursor_start.move_prev();
+        cursor_end.move_prev();
+      }
 
-  fn check_new_point<T>(
-    point: &Point<T, 2>,
-    start_info: &Option<StartInfo<T>>,
-    curr_point: &Point<T, 2>,
-  ) -> bool
-  where
-    T: PolygonScalar,
-  {
-    match start_info {
-      Some(info) => match point.cmp_distance_to(curr_point, &info.point) {
-        Ordering::Less => true,
-        _ => false,
-      },
-      None => true,
+      for curr in cursor_start.to(Bound::Included(cursor_end)) {
+        polygon_points.push(curr.point().clone());
+      }
+      Ok(Polygon::new_unchecked(polygon_points))
     }
+  }
+}
+
+fn check_new_point<T>(
+  point: &Point<T, 2>,
+  start_info: &Option<(Point<T, 2>, Cursor<T>)>,
+  curr_point: &Point<T, 2>,
+) -> bool
+where
+  T: PolygonScalar,
+{
+  match start_info {
+    Some(info) => matches!(point.cmp_distance_to(curr_point, &info.0), Ordering::Less),
+    None => true,
   }
 }
 /// The current segment is taking a left turn
@@ -132,37 +135,54 @@ fn left<'a, T>(
   mut cursor_iter: CursorIter<'a, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
   _: &Point<T, 2>,
-) -> Option<Step<'a, T>>
+) -> Step<'a, T>
 where
   T: PolygonScalar,
 {
-  match cursor_iter.next() {
-    None => None,
-    Some(curr_cursor) => {
-      let nxt_point = curr_cursor.next().point();
-      let mut stack_back_iter = polygon_points.iter().rev();
-      let p1 = stack_back_iter.next().unwrap();
-      let p0 = stack_back_iter.next().unwrap();
-      match Orientation::new(point, curr_cursor.point(), nxt_point).sos(TIEBREAKER) {
-        SoS::ClockWise => match Orientation::new(p0, p1, nxt_point).sos(TIEBREAKER) {
-          SoS::ClockWise => Some(Step {
-            process: scan_a,
-            cursor_iter: cursor_iter,
-            w: curr_cursor.next().point().clone(),
-          }),
-          SoS::CounterClockWise => Some(Step {
-            process: right,
-            cursor_iter: cursor_iter,
-            w: curr_cursor.next().point().clone(),
-          }),
-        },
-        SoS::CounterClockWise => {
+  let curr_cursor = cursor_iter.cursor_head;
+  cursor_iter.next();
+  let nxt_point = curr_cursor.next().point();
+  let mut stack_back_iter = polygon_points.iter().rev();
+  let p1 = stack_back_iter.next().unwrap();
+  let p0 = stack_back_iter.next().unwrap();
+
+  match Orientation::new(point, curr_cursor.point(), nxt_point).sos(TIEBREAKER) {
+    SoS::ClockWise => match Orientation::new(p0, p1, nxt_point).sos(TIEBREAKER) {
+      SoS::ClockWise => Step {
+        process: scan_a,
+        cursor_iter,
+        w: curr_cursor.next().point().clone(),
+      },
+      SoS::CounterClockWise => Step {
+        process: right,
+        cursor_iter,
+        w: curr_cursor.next().point().clone(),
+      },
+    },
+    SoS::CounterClockWise => {
+      //check for scan_b
+      let ray = HalfLineSoS::new(point, Direction::Through(&polygon_points[0]));
+      let segment = LineSegment::new(
+        EndPoint::Exclusive(p1.clone()),
+        EndPoint::Exclusive(nxt_point.clone()),
+      );
+      match ray.intersect(segment.as_ref()) {
+        None => {
           polygon_points.push(nxt_point.clone());
-          Some(Step {
+          Step {
             process: left,
-            cursor_iter: cursor_iter,
+            cursor_iter,
             w: curr_cursor.next().point().clone(),
-          })
+          }
+        }
+        Some(_) => {
+          let intersection = get_intersection(point, &polygon_points[0], p1, nxt_point);
+          polygon_points.push(intersection);
+          Step {
+            process: scan_b,
+            cursor_iter,
+            w: curr_cursor.next().point().clone(),
+          }
         }
       }
     }
@@ -175,16 +195,19 @@ fn right<'a, T>(
   mut cursor_iter: CursorIter<'a, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
   _: &Point<T, 2>,
-) -> Option<Step<'a, T>>
+) -> Step<'a, T>
 where
   T: PolygonScalar,
 {
-  let curr_cursor = cursor_iter.next().expect("Exit can be in LEFT or SCANB");
+  let curr_cursor = cursor_iter.cursor_head;
+  cursor_iter.next();
+
   let nxt_point = curr_cursor.next().point();
   let prev_point = curr_cursor.prev().point();
   //Only check for RA case, we use sos to avoid collinar cases
   let (j, j_prev) = get_ra(point, curr_cursor, polygon_points);
   let intersection = get_intersection(point, curr_cursor.point(), &j_prev, &j);
+  polygon_points.pop();
   polygon_points.push(intersection);
 
   match Orientation::new(point, curr_cursor.point(), nxt_point).sos(TIEBREAKER) {
@@ -192,24 +215,24 @@ where
       match Orientation::new(prev_point, curr_cursor.point(), nxt_point).sos(TIEBREAKER) {
         SoS::ClockWise => {
           polygon_points.push(nxt_point.clone());
-          Some(Step {
+          Step {
             process: left,
-            cursor_iter: cursor_iter,
+            cursor_iter,
             w: curr_cursor.next().point().clone(),
-          })
+          }
         }
-        SoS::CounterClockWise => Some(Step {
+        SoS::CounterClockWise => Step {
           process: scan_c,
-          cursor_iter: cursor_iter,
+          cursor_iter,
           w: curr_cursor.point().clone(),
-        }),
+        },
       }
     }
-    SoS::ClockWise => Some(Step {
+    SoS::ClockWise => Step {
       process: right,
-      cursor_iter: cursor_iter,
+      cursor_iter,
       w: curr_cursor.point().clone(),
-    }),
+    },
   }
 }
 
@@ -247,7 +270,7 @@ fn scan_a<'a, T>(
   mut cursor_iter: CursorIter<'a, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
   _: &Point<T, 2>,
-) -> Option<Step<'a, T>>
+) -> Step<'a, T>
 where
   T: PolygonScalar,
 {
@@ -259,10 +282,7 @@ where
       EndPoint::Inclusive(prev.point().clone()),
       EndPoint::Inclusive(curr.point().clone()),
     );
-    match ray.intersect(segment.as_ref()) {
-      None => false,
-      _ => true,
-    }
+    !matches!(ray.intersect(segment.as_ref()), None)
   };
   //
   cursor_iter.next();
@@ -274,36 +294,36 @@ where
 
   match Orientation::new(point, c1.prev().point(), c1.point()).sos(TIEBREAKER) {
     SoS::ClockWise => match point.cmp_distance_to(s, &intersection_point) {
-      Ordering::Greater => Some(Step {
+      Ordering::Greater => Step {
         process: right,
-        cursor_iter: cursor_iter,
+        cursor_iter,
         w: intersection_point,
-      }),
-      _ => Some(Step {
+      },
+      _ => Step {
         process: scan_d,
-        cursor_iter: cursor_iter,
+        cursor_iter,
         w: intersection_point,
-      }),
+      },
     },
     SoS::CounterClockWise => {
-      polygon_points.push(intersection_point.clone());
+      polygon_points.push(intersection_point);
       polygon_points.push(c1.point().clone());
-      Some(Step {
+      Step {
         process: left,
-        cursor_iter: cursor_iter,
+        cursor_iter,
         w: c1.point().clone(),
-      })
+      }
     }
   }
 }
 
 ///SCAN B
 fn scan_b<'a, T>(
-  point: &Point<T, 2>,
+  _: &Point<T, 2>,
   mut cursor_iter: CursorIter<'a, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
   _: &Point<T, 2>,
-) -> Option<Step<'a, T>>
+) -> Step<'a, T>
 where
   T: PolygonScalar,
 {
@@ -318,10 +338,7 @@ where
       EndPoint::Inclusive(prev.point().clone()),
       EndPoint::Inclusive(curr.point().clone()),
     );
-    match sos_segment.intersect(&segment) {
-      None => false,
-      _ => true,
-    }
+    !matches!(sos_segment.intersect(&segment), None)
   };
   cursor_iter.next();
   let c1 = cursor_iter
@@ -330,26 +347,20 @@ where
 
   let intersection_point = get_intersection(s_t, s_0, c1.prev().point(), c1.point());
 
-  match cursor_iter.exhausted {
-    true => {
-      polygon_points.push(c1.point().clone());
-      None // polygon closed
-    }
-    false => Some(Step {
-      process: right,
-      cursor_iter: cursor_iter,
-      w: intersection_point,
-    }),
+  Step {
+    process: right,
+    cursor_iter,
+    w: intersection_point,
   }
 }
 
 ///SCAN C
 fn scan_c<'a, T>(
-  point: &Point<T, 2>,
+  _: &Point<T, 2>,
   mut cursor_iter: CursorIter<'a, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
   w: &Point<T, 2>,
-) -> Option<Step<'a, T>>
+) -> Step<'a, T>
 where
   T: PolygonScalar,
 {
@@ -363,10 +374,7 @@ where
       EndPoint::Inclusive(prev.point().clone()),
       EndPoint::Inclusive(curr.point().clone()),
     );
-    match sos_segment.intersect(&segment) {
-      None => false,
-      _ => true,
-    }
+    !matches!(sos_segment.intersect(&segment), None)
   };
   cursor_iter.next();
   let c1 = cursor_iter
@@ -374,20 +382,20 @@ where
     .expect("There must be an intersection");
   let intersection_point = get_intersection(s_t, w, c1.prev().point(), c1.point());
 
-  Some(Step {
+  Step {
     process: right,
-    cursor_iter: cursor_iter,
+    cursor_iter,
     w: intersection_point,
-  })
+  }
 }
 
 ///SCAN D
 fn scan_d<'a, T>(
-  point: &Point<T, 2>,
+  _: &Point<T, 2>,
   mut cursor_iter: CursorIter<'a, T>,
   polygon_points: &mut Vec<Point<T, 2>>,
   w: &Point<T, 2>,
-) -> Option<Step<'a, T>>
+) -> Step<'a, T>
 where
   T: PolygonScalar,
 {
@@ -401,10 +409,7 @@ where
       EndPoint::Inclusive(prev.point().clone()),
       EndPoint::Inclusive(curr.point().clone()),
     );
-    match sos_segment.intersect(&segment) {
-      None => false,
-      _ => true,
-    }
+    !matches!(sos_segment.intersect(&segment), None)
   };
 
   cursor_iter.next();
@@ -413,11 +418,11 @@ where
     .expect("There must be an intersection");
   let intersection_point = get_intersection(s_t, w, c1.prev().point(), c1.point());
 
-  Some(Step {
+  Step {
     process: left,
-    cursor_iter: cursor_iter,
+    cursor_iter,
     w: intersection_point,
-  })
+  }
 }
 
 fn get_intersection<T>(
@@ -441,7 +446,7 @@ mod simple_polygon_testing {
 
   use super::super::naive::get_visibility_polygon;
   use super::*;
-  use claim::assert_some;
+  use claim::{assert_ok, assert_some};
   use proptest::prelude::*;
   use test_strategy::proptest;
 
@@ -462,17 +467,46 @@ mod simple_polygon_testing {
   }
 
   #[test]
-  fn find_start_point() {
+  fn case_1() {
     let testing_info = test_polygons::test_info_1();
-    let out_test_point = Point::new([4, 3]);
-    let nxt_test_point = Point::new([4, 6]);
-    let out_point = get_start_info(&testing_info.point, &testing_info.polygon);
-    assert_eq!(assert_some!(&out_point).point, out_test_point);
-    assert_eq!(
-      testing_info
-        .polygon
-        .point(assert_some!(&out_point).point_on_polygon),
-      &nxt_test_point
-    );
+    let out_polygon = get_visibility_polygon_simple(&testing_info.point, &testing_info.polygon);
+    match out_polygon {
+      Some(polygon) => {
+        assert_eq!(
+          testing_info.visibility_polygon.points.len(),
+          polygon.points.len()
+        )
+      }
+      None => panic!(),
+    }
   }
+  #[test]
+  fn case_2() {
+    let testing_info = test_polygons::test_info_2();
+    let out_polygon = get_visibility_polygon_simple(&testing_info.point, &testing_info.polygon);
+    match out_polygon {
+      Some(polygon) => {
+        assert_eq!(
+          testing_info.visibility_polygon.points.len(),
+          polygon.points.len()
+        )
+      }
+      None => panic!(),
+    }
+  }
+
+  // #[test]
+  // fn find_start_point() {
+  //   let testing_info = test_polygons::test_info_1();
+  //   let out_test_point = Point::new([4, 3]);
+  //   let nxt_test_point = Point::new([4, 6]);
+  //   let out_polygon = rearrange_polygon(&testing_info.point, &testing_info.polygon);
+  //   assert_eq!(assert_ok!(&out_polygon).points[0], out_test_point);
+  //   assert_eq!(
+  //     testing_info
+  //       .polygon
+  //       .point(assert_some!(&out_point).point_on_polygon),
+  //     &nxt_test_point
+  //   );
+  // }
 }
