@@ -26,8 +26,8 @@ use EndPoint::*;
 impl<T> EndPoint<T> {
   pub fn inner(&self) -> &T {
     match self {
-      Exclusive(t) => &t,
-      Inclusive(t) => &t,
+      Exclusive(t) => t,
+      Inclusive(t) => t,
     }
   }
 

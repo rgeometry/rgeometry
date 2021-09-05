@@ -28,10 +28,10 @@ where
   // dbg!(&pts);
   let mut isects = IndexIntersectionSet::new(poly.iter_boundary().len());
   // dbg!(&poly.rings[0]);
-  for e1 in edges(&poly) {
-    for e2 in edges(&poly) {
+  for e1 in edges(poly) {
+    for e2 in edges(poly) {
       if e1 < e2 {
-        if let Some(isect) = intersects(&poly, e1, e2) {
+        if let Some(isect) = intersects(poly, e1, e2) {
           // eprintln!("Inserting new intersection: {:?} {:?}", e1, e2);
           isects.push(isect)
         }
@@ -242,9 +242,9 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
   // dbg!(&removed_edges, &inserted_edges);
   // eprintln!("New edges: {:?}", &inserted_edges);
   for &edge in inserted_edges.iter() {
-    for e1 in edges(&poly) {
+    for e1 in edges(poly) {
       if e1 != edge {
-        if let Some(isect) = intersects(&poly, e1, edge) {
+        if let Some(isect) = intersects(poly, e1, edge) {
           // eprintln!("Inserting new intersection: {:?} {:?}", e1, edge);
           set.push(isect)
         }
@@ -269,10 +269,10 @@ fn sanity_check<T: PolygonScalar>(poly: &Polygon<T>, isects: &IndexIntersectionS
 }
 fn naive_intersection_set<T: PolygonScalar>(poly: &Polygon<T>) -> BTreeSet<IndexIntersection> {
   let mut set = BTreeSet::new();
-  for e1 in edges(&poly) {
-    for e2 in edges(&poly) {
+  for e1 in edges(poly) {
+    for e2 in edges(poly) {
       if e1 < e2 {
-        if let Some(isect) = intersects(&poly, e1, e2) {
+        if let Some(isect) = intersects(poly, e1, e2) {
           set.insert(isect);
         }
       }

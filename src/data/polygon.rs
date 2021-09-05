@@ -426,7 +426,7 @@ impl<T> Polygon<T> {
     let ring_id = self.ring_index[idx.0];
     let position_id = self.position_index[idx.0];
     Cursor {
-      polygon: &self,
+      polygon: self,
       position: Position {
         ring_id,
         position_id,
@@ -441,7 +441,7 @@ impl<T> Polygon<T> {
 
   pub fn iter_boundary(&self) -> CursorIter<'_, T> {
     let root_cursor = Cursor {
-      polygon: &self,
+      polygon: self,
       position: Position {
         ring_id: RingId(0),
         position_id: PositionId(0),
