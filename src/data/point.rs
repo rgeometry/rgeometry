@@ -203,7 +203,7 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 // Methods on two-dimensional points.
 impl<T: PolygonScalar> Point<T, 2> {
   pub fn cmp_distance_to(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering {
-    T::cmp_dist(&self, &p, &q)
+    T::cmp_dist(self, p, q)
   }
 
   /// Determine the direction you have to turn if you walk from `p1`
@@ -228,7 +228,7 @@ impl<T: PolygonScalar> Point<T, 2> {
   /// ```
   ///
   pub fn orient(p1: &Point<T, 2>, p2: &Point<T, 2>, p3: &Point<T, 2>) -> Orientation {
-    Orientation::new(&p1, &p2, &p3)
+    Orientation::new(p1, p2, p3)
   }
 
   pub fn orient_along_direction(
@@ -247,7 +247,7 @@ impl<T: PolygonScalar> Point<T, 2> {
     vector: &Vector<T, 2>,
     p2: &Point<T, 2>,
   ) -> Orientation {
-    Orientation::along_vector(&p1, &vector, &p2)
+    Orientation::along_vector(p1, vector, p2)
   }
 
   pub fn orient_along_perp_vector(
@@ -255,7 +255,7 @@ impl<T: PolygonScalar> Point<T, 2> {
     vector: &Vector<T, 2>,
     p2: &Point<T, 2>,
   ) -> Orientation {
-    Orientation::along_perp_vector(&p1, &vector, &p2)
+    Orientation::along_perp_vector(p1, vector, p2)
   }
 
   /// Docs?
@@ -269,7 +269,7 @@ impl<T: PolygonScalar> Point<T, 2> {
     p: &Point<T, 2>,
     q: &Point<T, 2>,
   ) -> Ordering {
-    Orientation::ccw_cmp_around_with(z, &self, &p, &q)
+    Orientation::ccw_cmp_around_with(z, self, p, q)
   }
 }
 
