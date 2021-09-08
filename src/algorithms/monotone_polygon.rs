@@ -58,7 +58,7 @@ where
 {
   // First compare along the direction vector.
   // If two points are the same distance along the vector, compare their X and Y components.
-  points.sort_by(|prev, curr| direction.cmp_along(prev, curr).then(prev.cmp(&curr)));
+  points.sort_by(|prev, curr| direction.cmp_along(prev, curr).then(prev.cmp(curr)));
 
   points.dedup();
   if points.len() < 3 {

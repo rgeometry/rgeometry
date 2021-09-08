@@ -58,9 +58,9 @@ where
   }
 
   pub fn new_ccw(pts: [&'a Point<T, 2>; 3]) -> TriangleView<'a, T> {
-    match Point::orient(&pts[0], &pts[1], &pts[2]) {
+    match Point::orient(pts[0], pts[1], pts[2]) {
       Orientation::CounterClockWise => TriangleView(pts),
-      Orientation::ClockWise => TriangleView([&pts[2], &pts[1], &pts[0]]),
+      Orientation::ClockWise => TriangleView([pts[2], pts[1], pts[0]]),
       Orientation::CoLinear => panic!("Cannot orient colinear points."),
     }
   }
@@ -80,7 +80,7 @@ where
 
   pub fn orientation(&self) -> Orientation {
     let arr = &self.0;
-    Point::orient(&arr[0], &arr[1], &arr[2])
+    Point::orient(arr[0], arr[1], arr[2])
   }
 
   // O(1)
