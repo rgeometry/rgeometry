@@ -37,7 +37,7 @@ where
   let mut polygon_points: Vec<Point<T, 2>> = vec![start_point.clone()];
   let mut step;
 
-  match Orientation::new(point, &start_point, next_point).sos(TIEBREAKER) {
+  match Orientation::new(point, start_point, next_point).sos(TIEBREAKER) {
     SoS::CounterClockWise => {
       step = {
         polygon_points.push(next_point.clone());
@@ -60,7 +60,7 @@ where
   while !step.cursor_iter.exhausted {
     // FIXME: how to call the function pointer directly?
     let process = step.process;
-    step = process(&point, step.cursor_iter, &mut polygon_points, &step.w);
+    step = process(point, step.cursor_iter, &mut polygon_points, &step.w);
   }
 
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
@@ -72,7 +72,7 @@ where
 {
   let x_dir_point = Point::new([T::from_constant(1), T::from_constant(0)]);
   let x_dir = x_dir_point.as_vec();
-  let x_ray = HalfLineSoS::new_directed(view_point, &x_dir);
+  let x_ray = HalfLineSoS::new_directed(view_point, x_dir);
   let mut start_info: Option<(Point<T, 2>, Cursor<T>)> = Option::None;
 
   let mut cursor = polygon.iter_boundary().next().unwrap();
