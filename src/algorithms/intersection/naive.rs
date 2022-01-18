@@ -22,7 +22,5 @@ where
 
 fn pairs<E>(slice: &[E]) -> impl Iterator<Item = (&E, &E)> {
   let n = slice.len();
-  (0..n)
-    .map(move |a| (0..a).map(move |b| (&slice[a], &slice[b])))
-    .flatten()
+  (0..n).flat_map(move |a| (0..a).map(move |b| (&slice[a], &slice[b])))
 }

@@ -145,6 +145,7 @@ where
 }
 
 impl PolygonConvex<OrderedFloat<f64>> {
+  #[must_use]
   pub fn normalize(&self) -> PolygonConvex<OrderedFloat<f64>> {
     PolygonConvex::new_unchecked(self.0.normalize())
   }

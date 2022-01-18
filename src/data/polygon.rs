@@ -461,6 +461,7 @@ impl<T> Polygon<T> {
     }
   }
 
+  #[must_use]
   pub fn map_points<F>(mut self, f: F) -> Polygon<T>
   where
     T: Clone,
@@ -599,6 +600,7 @@ impl<T> Polygon<T> {
 }
 
 impl Polygon<OrderedFloat<f64>> {
+  #[must_use]
   // Center on <0,0>. Scale size such that max(width,height) = 1.
   pub fn normalize(&self) -> Polygon<OrderedFloat<f64>> {
     let (min, max) = self.bounding_box();
@@ -649,11 +651,13 @@ impl<'a, T> Cursor<'a, T> {
     self.polygon.position_to_point_id(self.position)
   }
 
+  #[must_use]
   pub fn prev(mut self) -> Cursor<'a, T> {
     self.move_prev();
     self
   }
 
+  #[must_use]
   pub fn next(mut self) -> Cursor<'a, T> {
     self.move_next();
     self
@@ -737,11 +741,13 @@ pub struct Position {
 }
 
 impl Position {
+  #[must_use]
   pub fn prev(mut self) -> Position {
     self.move_prev();
     self
   }
 
+  #[must_use]
   pub fn next(mut self) -> Position {
     self.move_next();
     self

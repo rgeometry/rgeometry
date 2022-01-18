@@ -56,6 +56,7 @@ impl<T> EndPoint<T> {
     !self.is_exclusive()
   }
 
+  #[must_use]
   pub fn leftmost(self, other: EndPoint<T>) -> EndPoint<T>
   where
     T: Ord,
@@ -73,6 +74,7 @@ impl<T> EndPoint<T> {
     }
   }
 
+  #[must_use]
   pub fn rightmost(self, other: EndPoint<T>) -> EndPoint<T>
   where
     T: Ord,
