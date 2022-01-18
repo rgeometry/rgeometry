@@ -113,6 +113,7 @@ impl Orientation {
     matches!(self, Orientation::ClockWise)
   }
 
+  #[must_use]
   pub fn then(self, other: Orientation) -> Orientation {
     match self {
       Orientation::CoLinear => other,
@@ -143,6 +144,7 @@ impl Orientation {
   //   raw_arr_turn_origin(q, r)
   // }
 
+  #[must_use]
   pub fn reverse(self) -> Orientation {
     match self {
       Orientation::CounterClockWise => Orientation::ClockWise,
@@ -457,6 +459,7 @@ impl SoS {
     }
   }
 
+  #[must_use]
   pub fn reverse(self) -> SoS {
     match self {
       SoS::CounterClockWise => SoS::ClockWise,
