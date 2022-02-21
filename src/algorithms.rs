@@ -3,6 +3,7 @@ pub mod intersection;
 pub mod monotone_polygon;
 pub mod polygon_visibility;
 pub mod polygonization;
+pub mod star_polygon;
 pub mod triangulation;
 pub mod zhash;
 
