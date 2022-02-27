@@ -20,7 +20,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     b.iter(|| {
       let mut pts = Vec::new();
       while pts.len() < SET_SIZE {
-        let pt: Point<isize, 2> = rng.sample(Standard);
+        let pt: Point<isize> = rng.sample(Standard);
         pts.push(pt)
       }
       two_opt_moves(pts, &mut rng)
@@ -32,7 +32,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     b.iter(|| {
       let mut pts = Vec::new();
       while pts.len() < SET_SIZE {
-        let pt: Point<OrderedFloat<f64>, 2> = rng.sample(Standard);
+        let pt: Point<OrderedFloat<f64>> = rng.sample(Standard);
         pts.push(pt)
       }
       two_opt_moves(pts, &mut rng)
@@ -44,7 +44,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
   // 3950X: 39ms, 15x
   c.bench_function("two_opt_moves::<BigInt>", |b| {
     b.iter(|| {
-      let mut pts: Vec<Point<BigInt, 2>> = Vec::new();
+      let mut pts: Vec<Point<BigInt>> = Vec::new();
       while pts.len() < SET_SIZE {
         let pt: Point<isize, 2> = rng.sample(Standard);
         pts.push(pt.cast())
@@ -58,10 +58,10 @@ pub fn criterion_benchmark(c: &mut Criterion) {
   let mut rng = rand::rngs::SmallRng::seed_from_u64(1);
   c.bench_function("two_opt_moves::<BigRational>", |b| {
     b.iter(|| {
-      let mut pts: Vec<Point<BigRational, 2>> = Vec::new();
+      let mut pts: Vec<Point<BigRational>> = Vec::new();
       while pts.len() < SET_SIZE {
-        let pt: Point<isize, 2> = rng.sample(Standard);
-        let pt: Point<BigInt, 2> = pt.cast();
+        let pt: Point<isize> = rng.sample(Standard);
+        let pt: Point<BigInt> = pt.cast();
         pts.push(pt.cast())
       }
       two_opt_moves(pts, &mut rng)

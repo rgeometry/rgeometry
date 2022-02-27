@@ -56,7 +56,7 @@ where
 /// $O(n^4)$
 /// # Space complexity
 /// $O(n^2)$
-pub fn two_opt_moves<T, R>(pts: Vec<Point<T, 2>>, rng: &mut R) -> Result<Polygon<T>, Error>
+pub fn two_opt_moves<T, R>(pts: Vec<Point<T>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar + std::fmt::Debug,
   R: Rng + ?Sized,
@@ -157,7 +157,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
     // and shorten the circumference.
     let mut kinks = Vec::new();
     for elt in a_min.to(Included(a_max)).chain(b_min.to(Included(b_max))) {
-      let inner_segment: LineSegmentView<T, 2> = (elt.prev().point()..elt.next().point()).into();
+      let inner_segment: LineSegmentView<T> = (elt.prev().point()..elt.next().point()).into();
       if elt.orientation() != Orientation::CoLinear || !inner_segment.contains(elt.point()) {
         // We're either at a corner:
         //   prev
@@ -336,7 +336,7 @@ pub mod tests {
 
   #[test]
   fn unit_1() {
-    let pts: Vec<Point<i8, 2>> = vec![
+    let pts: Vec<Point<i8>> = vec![
       Point { array: [-71, 91] },
       Point { array: [-17, -117] },
       Point { array: [-13, 98] },
@@ -416,7 +416,7 @@ pub mod tests {
 
   #[test]
   fn unit_2() {
-    let pts: Vec<Point<i8, 2>> = vec![
+    let pts: Vec<Point<i8>> = vec![
       Point { array: [-59, -36] },
       Point { array: [-62, 88] },
       Point { array: [8, 124] },
@@ -515,7 +515,7 @@ pub mod tests {
 
   #[test]
   fn unit_3() {
-    let pts: Vec<Point<i8, 2>> = vec![
+    let pts: Vec<Point<i8>> = vec![
       Point { array: [0, 0] },
       Point { array: [2, 0] },
       Point { array: [1, 0] },
@@ -530,7 +530,7 @@ pub mod tests {
   }
 
   #[proptest]
-  fn points_to_polygon(#[strategy(vec(any::<Point<i8,2>>(), 3..100))] pts: Vec<Point<i8, 2>>) {
+  fn points_to_polygon(#[strategy(vec(any::<Point<i8>>(), 3..100))] pts: Vec<Point<i8>>) {
     let mut pts = pts; // XXX: Missing feature in the 'strategy' attribute.
     let mut set = BTreeSet::new();
     pts.retain(|pt| set.insert(pt.clone()));
@@ -546,7 +546,7 @@ pub mod tests {
     let mut linear: Vec<i8> = (0..n).collect();
     let mut rng = rand::rngs::SmallRng::seed_from_u64(seed);
     linear.shuffle(&mut rng);
-    let mut pts: Vec<Point<i8, 2>> = linear.iter().map(|&n| Point::new([n, 0])).collect();
+    let mut pts: Vec<Point<i8>> = linear.iter().map(|&n| Point::new([n, 0])).collect();
     pts.push(Point::new([0, 1]));
 
     let mut rng = StepRng::new(0, 0);

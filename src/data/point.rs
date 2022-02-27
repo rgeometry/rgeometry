@@ -18,12 +18,12 @@ use crate::{Orientation, PolygonScalar};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)] // Required for correctness!
-pub struct Point<T, const N: usize> {
+pub struct Point<T, const N: usize = 2> {
   pub array: [T; N],
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct PointSoS<'a, T, const N: usize> {
+pub struct PointSoS<'a, T, const N: usize = 2> {
   pub index: u32,
   pub point: &'a Point<T, N>,
 }

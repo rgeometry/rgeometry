@@ -50,7 +50,7 @@ where
 //     Insert vertex->prev and vertex->next into possible-ears if they aren't there already.
 //     Emit an edge: (vertex.prev, ear, vertex.next)
 pub fn triangulate_list<'a, T, R>(
-  points: &'a [Point<T, 2>],
+  points: &'a [Point<T>],
   order: &'a [PointId],
   mut rng: R,
 ) -> impl Iterator<Item = (PointId, PointId, PointId)> + 'a
@@ -103,7 +103,7 @@ where
 // Z-order hash ear clipping
 
 pub fn triangulate_list_hashed<'a, T, R>(
-  points: &'a [Point<T, 2>],
+  points: &'a [Point<T>],
   order: &'a [PointId],
   mut rng: R,
 ) -> impl Iterator<Item = (PointId, PointId, PointId)> + 'a
@@ -207,7 +207,7 @@ where
   }
 }
 
-fn zbox_slice<'a, T>(slice: &'a [Point<T, 2>], order: &'a [PointId]) -> ZHashBox<'a, T>
+fn zbox_slice<'a, T>(slice: &'a [Point<T>], order: &'a [PointId]) -> ZHashBox<'a, T>
 where
   T: PolygonScalar + ZHashable,
 {
@@ -384,7 +384,7 @@ impl<'a, T> Cursor<'a, T> {
     self
   }
 
-  fn point(&self) -> &Point<T, 2> {
+  fn point(&self) -> &Point<T> {
     self.list.point(self.position)
   }
 
@@ -402,7 +402,7 @@ impl<'a, T> Cursor<'a, T> {
 }
 
 struct List<'a, T> {
-  points: &'a [Point<T, 2>],
+  points: &'a [Point<T>],
   order: &'a [PointId],
   hashes: Vec<u64>,
   prev: Vec<usize>,
@@ -410,7 +410,7 @@ struct List<'a, T> {
 }
 
 impl<'a, T> List<'a, T> {
-  fn new(points: &'a [Point<T, 2>], order: &'a [PointId]) -> List<'a, T> {
+  fn new(points: &'a [Point<T>], order: &'a [PointId]) -> List<'a, T> {
     let size = order.len();
     let mut prev = Vec::with_capacity(size);
     let mut next = Vec::with_capacity(size);
@@ -455,7 +455,7 @@ impl<'a, T> List<'a, T> {
     }
   }
 
-  fn point(&self, vertex: usize) -> &Point<T, 2> {
+  fn point(&self, vertex: usize) -> &Point<T> {
     &self.points[self.point_id(vertex).usize()]
   }
 
@@ -469,7 +469,7 @@ impl<'a, T> List<'a, T> {
 }
 
 impl<'a, T> List<'a, T> {
-  fn new_sorted(points: &'a [Point<T, 2>], order: &'a [PointId], keys: Vec<u64>) -> List<'a, T> {
+  fn new_sorted(points: &'a [Point<T>], order: &'a [PointId], keys: Vec<u64>) -> List<'a, T> {
     let size = keys.len();
     let mut v: Vec<usize> = (0..size).collect();
     v.sort_unstable_by_key(|&idx| keys[idx]);
