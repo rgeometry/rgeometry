@@ -76,7 +76,7 @@ use crate::{Error, Orientation, PolygonScalar};
 /// <iframe src="https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca"></iframe>
 ///
 /// [wiki]: https://en.wikipedia.org/wiki/Graham_scan
-pub fn convex_hull<T>(mut pts: Vec<Point<T, 2>>) -> Result<PolygonConvex<T>, Error>
+pub fn convex_hull<T>(mut pts: Vec<Point<T>>) -> Result<PolygonConvex<T>, Error>
 where
   T: PolygonScalar,
   // for<'a> &'a T: PolygonScalarRef<&'a T, T>,

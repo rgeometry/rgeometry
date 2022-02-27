@@ -33,7 +33,7 @@ fn main() {
   // dbg!(&t1 * &v);
   // dbg!(&t2 * &v);
   // dbg!((&t2 * &t1) * &v);
-  let p: Vec<Point<i32, 2>> = vec![
+  let p: Vec<Point<i32>> = vec![
     Point::new([0, 0]),
     Point::new([1, 0]),
     Point::new([2, 0]),

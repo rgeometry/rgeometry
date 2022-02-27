@@ -113,7 +113,7 @@ pub struct DirectedIndexEdge {
 pub struct Polygon<T> {
   // Use points: Arc<Vec<Point<T, 2>>>, ?
   // Key: PointId
-  pub(crate) points: Vec<Point<T, 2>>,
+  pub(crate) points: Vec<Point<T>>,
   // Key: PointId
   pub(crate) ring_index: Vec<RingId>,
   // Key: PointId

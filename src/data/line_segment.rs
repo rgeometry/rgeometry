@@ -182,7 +182,7 @@ impl<T: Ord, const N: usize> From<RangeInclusive<Point<T, N>>> for LineSegment<T
 // LineSegmentView
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct LineSegmentView<'a, T, const N: usize> {
+pub struct LineSegmentView<'a, T, const N: usize = 2> {
   pub min: EndPoint<&'a Point<T, N>>,
   pub max: EndPoint<&'a Point<T, N>>,
 }
