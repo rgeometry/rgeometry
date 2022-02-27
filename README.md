@@ -20,6 +20,10 @@ RGeometry is a collection of data types such as points, polygons, lines, and seg
 
 Check out the API documentation for more details. Under each function, there is an interactive example (powered by rust->wasm).
 
+## MSRV
+
+rust-1.59
+
 ## Contribute
 
 If you want to learn Rust or computational geometry or both, hit me up in discord and I'll (@lemmih) mentor you. There is a long list of algorithms (ranging from easy to difficult) yet to be implemented in Rust.
