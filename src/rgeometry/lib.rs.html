@@ -298,6 +298,65 @@
 <span id="275">275</span>
 <span id="276">276</span>
 <span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
 </pre><pre class="rust"><code><span class="comment">// #![deny(warnings)]</span>
 <span class="attribute">#![<span class="ident">doc</span>(<span class="ident">test</span>(<span class="ident">no_crate_inject</span>))]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
@@ -518,6 +577,61 @@
     })<span class="op">*</span>
   };
 }
+<span class="macro">macro_rules!</span> <span class="ident">floating_precision</span> {
+  ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span> ),<span class="op">*</span> ) =&gt; {
+    $(
+      <span class="kw">impl</span> <span class="ident">PolygonScalar</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
+      <span class="kw">fn</span> <span class="ident">from_constant</span>(<span class="ident">val</span>: <span class="ident">i8</span>) -&gt; <span class="self">Self</span> {
+        <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span><span class="ident">::from_i8</span>(<span class="ident">val</span>).<span class="ident">unwrap</span>()
+      }
+      <span class="comment">// FIXME: Use `geometry_predicates` to speed up calculation. Right now we&#39;re</span>
+      <span class="comment">// roughly 100x slower than necessary.</span>
+      <span class="kw">fn</span> <span class="ident">cmp_dist</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">r</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) -&gt; <span class="ident">std::cmp::Ordering</span> {
+        <span class="ident">PolygonScalar::cmp_dist</span>(
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">p</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">p</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">q</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">q</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">r</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">r</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+        )
+      }
+
+      <span class="comment">// This function uses the arbitrary precision machinery of `geometry_predicates` to</span>
+      <span class="comment">// quickly compute the orientation of three 2D points. This is about 10x-50x slower</span>
+      <span class="comment">// than the inexact version.</span>
+      <span class="kw">fn</span> <span class="ident">cmp_slope</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">r</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) -&gt; <span class="ident">std::cmp::Ordering</span> {
+        <span class="kw">let</span> <span class="ident">orient</span> <span class="op">=</span> <span class="ident">geometry_predicates::predicates::orient2d</span>(
+          [<span class="ident">p</span>[<span class="number">0</span>].<span class="ident">into_inner</span>() <span class="kw">as</span> <span class="ident">f64</span>, <span class="ident">p</span>[<span class="number">1</span>].<span class="ident">into_inner</span>() <span class="kw">as</span> <span class="ident">f64</span>],
+          [<span class="ident">q</span>[<span class="number">0</span>].<span class="ident">into_inner</span>() <span class="kw">as</span> <span class="ident">f64</span>, <span class="ident">q</span>[<span class="number">1</span>].<span class="ident">into_inner</span>() <span class="kw">as</span> <span class="ident">f64</span>],
+          [<span class="ident">r</span>[<span class="number">0</span>].<span class="ident">into_inner</span>() <span class="kw">as</span> <span class="ident">f64</span>, <span class="ident">r</span>[<span class="number">1</span>].<span class="ident">into_inner</span>() <span class="kw">as</span> <span class="ident">f64</span>],
+        );
+        <span class="kw">if</span> <span class="ident">orient</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
+          <span class="ident">Ordering::Greater</span>
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">orient</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
+          <span class="ident">Ordering::Less</span>
+        } <span class="kw">else</span> {
+          <span class="ident">Ordering::Equal</span>
+        }
+      }
+      <span class="comment">// FIXME: Use `geometry_predicates` to speed up calculation. Right now we&#39;re</span>
+      <span class="comment">// roughly 100x slower than necessary.</span>
+      <span class="kw">fn</span> <span class="ident">cmp_vector_slope</span>(<span class="ident">vector</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>;<span class="number">2</span>], <span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) -&gt; <span class="ident">std::cmp::Ordering</span> {
+        <span class="ident">PolygonScalar::cmp_vector_slope</span>(
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">vector</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">vector</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">p</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">p</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">q</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">q</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+        )
+      }
+      <span class="comment">// FIXME: Use `geometry_predicates` to speed up calculation. Right now we&#39;re</span>
+      <span class="comment">// roughly 100x slower than necessary.</span>
+      <span class="kw">fn</span> <span class="ident">cmp_perp_vector_slope</span>(<span class="ident">vector</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>;<span class="number">2</span>], <span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>], <span class="ident">q</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>; <span class="number">2</span>]) -&gt; <span class="ident">std::cmp::Ordering</span> {
+        <span class="ident">PolygonScalar::cmp_perp_vector_slope</span>(
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">vector</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">vector</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">p</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">p</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+          <span class="kw-2">&amp;</span>[<span class="ident">float_to_rational</span>(<span class="ident">q</span>[<span class="number">0</span>].<span class="ident">into_inner</span>()), <span class="ident">float_to_rational</span>(<span class="ident">q</span>[<span class="number">1</span>].<span class="ident">into_inner</span>())],
+        )
+      }
+    })<span class="op">*</span>
+  };
+}
 
 <span class="macro">fixed_precision!</span>(<span class="ident">i8</span>, <span class="ident">u8</span>, <span class="ident">i16</span>, <span class="ident">u16</span>);
 <span class="macro">fixed_precision!</span>(<span class="ident">i16</span>, <span class="ident">u16</span>, <span class="ident">i32</span>, <span class="ident">u32</span>);
@@ -526,10 +640,10 @@
 <span class="macro">fixed_precision!</span>(<span class="ident">isize</span>, <span class="ident">usize</span>, <span class="ident">i128</span>, <span class="ident">u128</span>);
 <span class="macro">arbitrary_precision!</span>(<span class="ident">num_bigint::BigInt</span>);
 <span class="macro">arbitrary_precision!</span>(<span class="ident">num_rational::BigRational</span>);
-<span class="macro">arbitrary_precision!</span>(<span class="ident">ordered_float::OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>);
-<span class="macro">arbitrary_precision!</span>(<span class="ident">ordered_float::OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>);
-<span class="macro">arbitrary_precision!</span>(<span class="ident">ordered_float::NotNan</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>);
-<span class="macro">arbitrary_precision!</span>(<span class="ident">ordered_float::NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>);
+<span class="macro">floating_precision!</span>(<span class="ident">ordered_float::OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>);
+<span class="macro">floating_precision!</span>(<span class="ident">ordered_float::OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>);
+<span class="macro">floating_precision!</span>(<span class="ident">ordered_float::NotNan</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>);
+<span class="macro">floating_precision!</span>(<span class="ident">ordered_float::NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>);
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rug&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">PolygonScalar</span> <span class="kw">for</span> <span class="ident">rug::Integer</span> {
@@ -571,6 +685,10 @@
     <span class="kw">let</span> <span class="ident">new_y</span> <span class="op">=</span> <span class="ident">rug::Integer::from</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>[<span class="number">1</span>] <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">vector</span>[<span class="number">0</span>]);
     <span class="ident">PolygonScalar::cmp_slope</span>(<span class="ident">p</span>, <span class="kw-2">&amp;</span>[<span class="ident">new_x</span>, <span class="ident">new_y</span>], <span class="ident">q</span>)
   }
+}
+
+<span class="kw">fn</span> <span class="ident">float_to_rational</span>(<span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">num::traits::float::FloatCore</span>) -&gt; <span class="ident">num::BigRational</span> {
+  <span class="ident">num::BigRational::from_float</span>(<span class="ident">f</span>).<span class="ident">expect</span>(<span class="string">&quot;cannot convert NaN or infinite to exact precision number&quot;</span>)
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>

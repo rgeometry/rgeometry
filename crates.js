@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["array_init","cfg_if","claim","getrandom","libc","num","num_bigint","num_complex","num_integer","num_iter","num_rational","num_traits","ordered_float","ppv_lite86","rand","rand_chacha","rand_core","rgeometry"];
+window.ALL_CRATES = ["array_init","cfg_if","claim","geometry_predicates","getrandom","libc","num","num_bigint","num_complex","num_integer","num_iter","num_rational","num_traits","ordered_float","ppv_lite86","rand","rand_chacha","rand_core","rgeometry"];
