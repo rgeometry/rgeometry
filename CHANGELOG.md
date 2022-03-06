@@ -2,7 +2,11 @@
 
 ## [Unreleased]
 ### Added
+- Generator for star-shaped polygons in O(n log n).
+- Naive O(n^2) visibility algorithm.
 ### Changed
+- MSRV is now 1.59
+- f32 and f64 now uses exact math.
 
 ## [0.7.0] 2021-07-15
 ### Added
