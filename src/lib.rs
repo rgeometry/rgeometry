@@ -218,6 +218,61 @@ macro_rules! arbitrary_precision {
     })*
   };
 }
+macro_rules! floating_precision {
+  ( $( $ty:ty ),* ) => {
+    $(
+      impl PolygonScalar for $ty {
+      fn from_constant(val: i8) -> Self {
+        <$ty>::from_i8(val).unwrap()
+      }
+      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
+      // roughly 100x slower than necessary.
+      fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        PolygonScalar::cmp_dist(
+          &[float_to_rational(p[0].into_inner()), float_to_rational(p[1].into_inner())],
+          &[float_to_rational(q[0].into_inner()), float_to_rational(q[1].into_inner())],
+          &[float_to_rational(r[0].into_inner()), float_to_rational(r[1].into_inner())],
+        )
+      }
+
+      // This function uses the arbitrary precision machinery of `geometry_predicates` to
+      // quickly compute the orientation of three 2D points. This is about 10x-50x slower
+      // than the inexact version.
+      fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        let orient = geometry_predicates::predicates::orient2d(
+          [p[0].into_inner() as f64, p[1].into_inner() as f64],
+          [q[0].into_inner() as f64, q[1].into_inner() as f64],
+          [r[0].into_inner() as f64, r[1].into_inner() as f64],
+        );
+        if orient > 0.0 {
+          Ordering::Greater
+        } else if orient < 0.0 {
+          Ordering::Less
+        } else {
+          Ordering::Equal
+        }
+      }
+      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
+      // roughly 100x slower than necessary.
+      fn cmp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
+        PolygonScalar::cmp_vector_slope(
+          &[float_to_rational(vector[0].into_inner()), float_to_rational(vector[1].into_inner())],
+          &[float_to_rational(p[0].into_inner()), float_to_rational(p[1].into_inner())],
+          &[float_to_rational(q[0].into_inner()), float_to_rational(q[1].into_inner())],
+        )
+      }
+      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
+      // roughly 100x slower than necessary.
+      fn cmp_perp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
+        PolygonScalar::cmp_perp_vector_slope(
+          &[float_to_rational(vector[0].into_inner()), float_to_rational(vector[1].into_inner())],
+          &[float_to_rational(p[0].into_inner()), float_to_rational(p[1].into_inner())],
+          &[float_to_rational(q[0].into_inner()), float_to_rational(q[1].into_inner())],
+        )
+      }
+    })*
+  };
+}
 
 fixed_precision!(i8, u8, i16, u16);
 fixed_precision!(i16, u16, i32, u32);
@@ -226,10 +281,10 @@ fixed_precision!(i64, u64, i128, u128);
 fixed_precision!(isize, usize, i128, u128);
 arbitrary_precision!(num_bigint::BigInt);
 arbitrary_precision!(num_rational::BigRational);
-arbitrary_precision!(ordered_float::OrderedFloat<f32>);
-arbitrary_precision!(ordered_float::OrderedFloat<f64>);
-arbitrary_precision!(ordered_float::NotNan<f32>);
-arbitrary_precision!(ordered_float::NotNan<f64>);
+floating_precision!(ordered_float::OrderedFloat<f32>);
+floating_precision!(ordered_float::OrderedFloat<f64>);
+floating_precision!(ordered_float::NotNan<f32>);
+floating_precision!(ordered_float::NotNan<f64>);
 
 #[cfg(feature = "rug")]
 impl PolygonScalar for rug::Integer {
@@ -271,6 +326,10 @@ impl PolygonScalar for rug::Integer {
     let new_y = rug::Integer::from(&p[1] + &vector[0]);
     PolygonScalar::cmp_slope(p, &[new_x, new_y], q)
   }
+}
+
+fn float_to_rational(f: impl num::traits::float::FloatCore) -> num::BigRational {
+  num::BigRational::from_float(f).expect("cannot convert NaN or infinite to exact precision number")
 }
 
 #[cfg(test)]

@@ -1,34 +1,35 @@
 [package]
-authors     = ["David Himmelstrup <lemmih@gmail.com>"]
-categories  = ["algorithms", "data-structures", "mathematics", "graphics"]
+authors = ["David Himmelstrup <lemmih@gmail.com>"]
+categories = ["algorithms", "data-structures", "mathematics", "graphics"]
 description = "High-Level Computational Geometry"
-edition     = "2018"
-exclude     = [
+edition = "2018"
+exclude = [
   ".dockerignore",
   ".github",
   ".gitignore",
   "playground",
   "Dockerfile.server",
 ]
-homepage    = "https://rgeometry.org/"
-license     = "Unlicense"
-name        = "rgeometry"
-readme      = "README.md"
-repository  = "https://github.com/rgeometry/rgeometry"
-version     = "0.7.0"
+homepage = "https://rgeometry.org/"
+license = "Unlicense"
+name = "rgeometry"
+readme = "README.md"
+repository = "https://github.com/rgeometry/rgeometry"
+version = "0.7.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-array-init    = "2.0"
-claim         = "0.5.0"
-getrandom     = { version = "^0.2.3", features = ["js"] }
-num           = "0.4"
-num-bigint    = "0.4"
-num-rational  = "0.4"
-num-traits    = "0.2.*"
-ordered-float = "2.6.0"
-rand          = { version = "0.8", features = ["small_rng"] }
-rug           = { version = "1.12", optional = true }
+geometry-predicates = "0.3.0"
+array-init          = "2.0"
+claim               = "0.5.0"
+getrandom           = { version = "^0.2.3", features = ["js"] }
+num                 = "0.4"
+num-bigint          = "0.4"
+num-rational        = "0.4"
+num-traits          = "0.2.*"
+ordered-float       = "2.6.0"
+rand                = { version = "0.8", features = ["small_rng"] }
+rug                 = { version = "1.12", optional = true }
 
 [dev-dependencies]
 criterion      = "0.3"
