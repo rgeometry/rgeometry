@@ -1,12 +1,23 @@
 # https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
+
+### Added
+### Changed
+
+## [0.8.1] 2022-05-23
+### Changed
+- Fixed bug in 'squared_magnitude'.
+
+## [0.8.0] 2022-05-23
 ### Added
 - Generator for star-shaped polygons in O(n log n).
 - Naive O(n^2) visibility algorithm.
 ### Changed
 - MSRV is now 1.59
 - f32 and f64 now uses exact math.
+- Updated ordered-float dependency.
+- Fixed panic in Polygon::new.
 
 ## [0.7.0] 2021-07-15
 ### Added
