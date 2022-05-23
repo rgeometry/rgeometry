@@ -203,9 +203,12 @@ impl<T> Polygon<T> {
     T: PolygonScalar,
   {
     // FIXME: Support polygons with holes.
-    if self.rings.len() != 1 {
-      panic!("FIXME: Polygon::locate should support polygons with holes.");
-    }
+    assert_eq!(
+      self.rings.len(),
+      1,
+      "FIXME: Polygon::locate should support polygons with holes."
+    );
+
     let direction = Vector::unit_right();
     let ray = HalfLineSoS::new_directed(origin, &direction);
     let mut intersections = 0;
