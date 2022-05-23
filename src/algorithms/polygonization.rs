@@ -43,7 +43,7 @@ where
   while let Some(isect) = isects.random(rng) {
     untangle(poly, &mut isects, isect)
   }
-  poly.ensure_ccw();
+  poly.ensure_ccw()?;
   // poly.validate()?;
   Ok(())
 }

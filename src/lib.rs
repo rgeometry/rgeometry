@@ -31,6 +31,7 @@ pub enum Error {
   /// Two consecutive line segments are either colinear or oriented clockwise.
   ConvexViolation,
   ClockWiseViolation,
+  CoLinearViolation,
 }
 
 impl std::fmt::Display for Error {
@@ -41,6 +42,10 @@ impl std::fmt::Display for Error {
       Error::DuplicatePoints => write!(f, "Duplicate points"),
       Error::ConvexViolation => write!(f, "Convex violation"),
       Error::ClockWiseViolation => write!(f, "Clockwise violation"),
+      Error::CoLinearViolation => write!(
+        f,
+        "Two or more points are colinear and no valid solution exists"
+      ),
     }
   }
 }
