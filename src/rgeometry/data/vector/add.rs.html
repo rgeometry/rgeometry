@@ -77,7 +77,6 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
-<span id="54">54</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">array_init::array_init</span>;
 <span class="kw">use</span> <span class="ident">num_traits::NumOps</span>;
 <span class="kw">use</span> <span class="ident">std::ops::Add</span>;
@@ -90,7 +89,6 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
 <span class="kw">where</span>
   <span class="ident">T</span>: <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Clone</span>,
-  <span class="comment">// for&lt;&#39;c&gt; &amp;&#39;c T: Add&lt;&amp;&#39;c T, Output = T&gt;,</span>
 {
   <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>;
 

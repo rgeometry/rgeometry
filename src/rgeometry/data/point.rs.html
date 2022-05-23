@@ -537,20 +537,6 @@
 <span id="511">511</span>
 <span id="512">512</span>
 <span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
-<span id="517">517</span>
-<span id="518">518</span>
-<span id="519">519</span>
-<span id="520">520</span>
-<span id="521">521</span>
-<span id="522">522</span>
-<span id="523">523</span>
-<span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -738,20 +724,6 @@
     <span class="ident">Point</span> { <span class="ident">array</span>: <span class="ident">vector</span>.<span class="number">0</span> }
   }
 }
-
-<span class="comment">// impl&lt;T, const N: usize&gt; AsRef&lt;Vector&lt;T, N&gt;&gt; for Point&lt;T, N&gt; {</span>
-<span class="comment">//   fn as_ref(&amp;self) -&gt; &amp;Vector&lt;T, N&gt; {</span>
-<span class="comment">//     self.into()</span>
-<span class="comment">//   }</span>
-<span class="comment">// }</span>
-
-<span class="comment">// pub fn orientation&lt;T&gt;(p: &amp;Point&lt;T, 2&gt;, q: &amp;Point&lt;T, 2&gt;, r: &amp;Point&lt;T, 2&gt;) -&gt; Orientation</span>
-<span class="comment">// where</span>
-<span class="comment">//   T: Sub&lt;T, Output = T&gt; + Clone + Mul&lt;T, Output = T&gt; + Ord,</span>
-<span class="comment">//   // for&lt;&#39;a&gt; &amp;&#39;a T: Sub&lt;Output = T&gt;,</span>
-<span class="comment">// {</span>
-<span class="comment">//   raw_arr_turn(&amp;p.array, &amp;q.array, &amp;r.array)</span>
-<span class="comment">// }</span>
 
 <span class="comment">// Methods on two-dimensional points.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PolygonScalar</span><span class="op">&gt;</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span> {
