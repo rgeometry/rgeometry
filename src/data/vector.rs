@@ -126,7 +126,7 @@ impl<T> Vector<T, 2> {
 
   // FIXME: rename to sort_around_origin
   // FIXME: sort by magnitude if two vectors have the same angle.
-  pub fn sort_around(pts: &mut Vec<Vector<T, 2>>)
+  pub fn sort_around(pts: &mut [Vector<T, 2>])
   where
     T: PolygonScalar,
   {
