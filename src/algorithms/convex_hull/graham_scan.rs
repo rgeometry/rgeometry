@@ -79,7 +79,6 @@ use crate::{Error, Orientation, PolygonScalar};
 pub fn convex_hull<T>(mut pts: Vec<Point<T>>) -> Result<PolygonConvex<T>, Error>
 where
   T: PolygonScalar,
-  // for<'a> &'a T: PolygonScalarRef<&'a T, T>,
 {
   let smallest: &Point<T, 2> = &smallest_point(&pts)?;
 

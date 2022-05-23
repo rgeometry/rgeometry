@@ -15,14 +15,6 @@ use rgeometry::data::*;
 // use std::ops::Neg;
 // use std::ops::Sub;
 
-// pub fn test_sub<T>(p: &Point<T, 2>, q: &Point<T, 2>) -> Vector<T, 2>
-// where
-//   T: Num + Clone + PartialOrd,
-//   for<'a> &'a T: Sub<Output = T> + Mul<Output = T> + Neg<Output = T>,
-// {
-//   p - q
-// }
-
 fn main() {
   // let pt = Point::new([1, 2]);
   // dbg!(pt.y_coord());

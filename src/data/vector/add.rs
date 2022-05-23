@@ -10,7 +10,6 @@ use super::VectorView;
 impl<T, const N: usize> Add<Vector<T, N>> for Vector<T, N>
 where
   T: NumOps + Clone,
-  // for<'c> &'c T: Add<&'c T, Output = T>,
 {
   type Output = Vector<T, N>;
 

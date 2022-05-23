@@ -10,10 +10,7 @@ use super::Vector;
 // point - point = vector
 impl<'a, 'b, T, const N: usize> Sub<&'a Point<T, N>> for &'b Point<T, N>
 where
-  // T: Sub<T, Output = T> + Clone,
   T: Sub<T, Output = T> + Clone,
-  // for<'c> &'c T: Sub<&'c T, Output = T> + Clone,
-  // for<'c> &'c T: RefNum<T>,
 {
   type Output = Vector<T, N>;
 
@@ -27,7 +24,6 @@ where
 
 impl<T, const N: usize> Sub<Point<T, N>> for Point<T, N>
 where
-  // T: Sub<T, Output = T> + Clone,
   T: Sub<T, Output = T> + Clone,
 {
   type Output = Vector<T, N>;
