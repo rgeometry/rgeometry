@@ -109,7 +109,7 @@ pub struct DirectedIndexEdge {
 // triangulate: Polygon -> Vec<Polygon>
 // triangulate: Polygon -> Vec<(PointId, PointId, PointId)>
 
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Polygon<T> {
   // Use points: Arc<Vec<Point<T, 2>>>, ?
   // Key: PointId
