@@ -125,17 +125,6 @@ pub struct Polygon<T> {
   pub(crate) rings: Vec<Vec<PointId>>,
 }
 
-impl<T> Default for Polygon<T> {
-  fn default() -> Polygon<T> {
-    Polygon {
-      points: Vec::default(),
-      ring_index: Vec::default(),
-      position_index: Vec::default(),
-      rings: Vec::default(),
-    }
-  }
-}
-
 impl<T> Polygon<T> {
   /// $O(1)$
   pub fn new_unchecked(vertices: Vec<Point<T, 2>>) -> Polygon<T>
@@ -156,8 +145,12 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
+    // Verify minimum length before calling 'ensure_ccw'.
+    if points.len() < 3 {
+      return Err(Error::InsufficientVertices);
+    }
     let mut p = Self::new_unchecked(points);
-    p.ensure_ccw();
+    p.ensure_ccw()?;
     p.validate()?;
     Ok(p)
   }
@@ -185,7 +178,10 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    assert!(!self.rings.is_empty());
+    if self.rings.is_empty() {
+      return Err(Error::InsufficientVertices);
+    }
+
     // Has at least three points.
     if self.rings[0].len() < 3 {
       return Err(Error::InsufficientVertices);
@@ -565,20 +561,21 @@ impl<T> Polygon<T> {
     }
   }
 
-  pub fn ensure_ccw(&mut self)
+  pub fn ensure_ccw(&mut self) -> Result<(), Error>
   where
     T: PolygonScalar,
   {
     match self.orientation() {
-      Orientation::CounterClockWise => (),
-      Orientation::CoLinear => panic!("Polygon is non-orientable."),
+      Orientation::CounterClockWise => Ok(()),
+      Orientation::CoLinear => Err(Error::CoLinearViolation),
       Orientation::ClockWise => {
         let root_position = Position {
           ring_id: RingId(0),
           position_id: PositionId(0),
           size: self.rings[0].len(),
         };
-        self.vertices_reverse(root_position, root_position.prev())
+        self.vertices_reverse(root_position, root_position.prev());
+        Ok(())
       }
     }
   }
@@ -780,6 +777,12 @@ pub mod tests {
   #[proptest]
   fn random_polygon(poly: Polygon<i8>) {
     prop_assert_eq!(poly.validate().err(), None);
+  }
+
+  #[proptest]
+  fn fuzz_new_polygon(pts: Vec<Point<i8>>) {
+    // make sure there's no input that can cause a panic. Err is okay, panic is not.
+    Polygon::new(pts).ok();
   }
 
   // // #[cfg(not(debug_assertions))] // proxy for release builds.
