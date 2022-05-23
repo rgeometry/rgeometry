@@ -154,9 +154,7 @@ impl<T> Polygon<T> {
     p.validate()?;
     Ok(p)
   }
-}
 
-impl<T> Polygon<T> {
   // Validate that a polygon is simple.
   // https://en.wikipedia.org/wiki/Simple_polygon
   pub fn validate(&self) -> Result<(), Error>
