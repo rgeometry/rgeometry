@@ -176,9 +176,9 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    if self.rings.is_empty() {
-      return Err(Error::InsufficientVertices);
-    }
+    // Rings is never allowed to be empty under any circumstances, even when
+    // using 'Polygon::unchecked_new'.
+    assert!(!self.rings.is_empty());
 
     // Has at least three points.
     if self.rings[0].len() < 3 {
