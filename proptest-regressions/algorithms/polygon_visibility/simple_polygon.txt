@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 5e4d1bea5ae18aa4c9154c1384724127ff8205d4a889349d3c88304d98a30225 # shrinks to input = _TestNoHolesArgs { polygon: Polygon { points: [Point { array: [-119, 37] }, Point { array: [-128, -8] }, Point { array: [-67, 41] }], ring_index: [RingId(0), RingId(0), RingId(0)], position_index: [PositionId(0), PositionId(1), PositionId(2)], rings: [[0, 1, 2]] }, point: Point { array: [0, 0] } }
