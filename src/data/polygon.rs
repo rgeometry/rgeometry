@@ -240,6 +240,11 @@ impl<T> Polygon<T> {
       .map(move |(p1, p2, p3)| (self.cursor(p1), self.cursor(p2), self.cursor(p3)))
   }
 
+  //
+  // # Panics
+  //
+  // May panic for bounded types (i8, isize, etc). Maybe produce inaccurate results for
+  // floating point types (f32, f64).
   pub fn centroid(&self) -> Point<T, 2>
   where
     T: PolygonScalar,
@@ -772,6 +777,7 @@ impl Position {
 pub mod tests {
   use super::*;
 
+  use num::BigRational;
   use proptest::prelude::*;
   use test_strategy::proptest;
 
@@ -796,6 +802,11 @@ pub mod tests {
   fn fuzz_validate_weakly(pts: Vec<Point<i8>>) {
     // make sure there's no input that can cause a panic. Err is okay, panic is not.
     Polygon::new_unchecked(pts).validate_weakly().ok();
+  }
+
+  #[proptest]
+  fn fuzz_centroid(poly: Polygon<BigRational>) {
+    poly.centroid();
   }
 
   // // #[cfg(not(debug_assertions))] // proxy for release builds.
