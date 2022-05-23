@@ -186,20 +186,6 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
   }
 }
 
-// impl<T, const N: usize> AsRef<Vector<T, N>> for Point<T, N> {
-//   fn as_ref(&self) -> &Vector<T, N> {
-//     self.into()
-//   }
-// }
-
-// pub fn orientation<T>(p: &Point<T, 2>, q: &Point<T, 2>, r: &Point<T, 2>) -> Orientation
-// where
-//   T: Sub<T, Output = T> + Clone + Mul<T, Output = T> + Ord,
-//   // for<'a> &'a T: Sub<Output = T>,
-// {
-//   raw_arr_turn(&p.array, &q.array, &r.array)
-// }
-
 // Methods on two-dimensional points.
 impl<T: PolygonScalar> Point<T, 2> {
   pub fn cmp_distance_to(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering {

@@ -42,9 +42,9 @@ where
   pub fn squared_magnitude(&self) -> T
   where
     T: Sum + AddAssign,
-    for<'a> &'a T: Sub<&'a T, Output = T> + Mul<&'a T, Output = T>,
+    T: Sub<T, Output = T> + Mul<Output = T>,
   {
-    self.0.iter().map(|elt| elt * elt).sum()
+    self.0.iter().map(|elt| elt.clone() * elt.clone()).sum()
   }
 
   pub fn map<U, F>(&self, f: F) -> Vector<U, N>
@@ -163,7 +163,6 @@ mod sub;
 impl<T, const N: usize> Sum for Vector<T, N>
 where
   T: NumOps + AddAssign + Clone + Sum,
-  // for<'c> &'c T: Add<&'c T, Output = T>,
 {
   fn sum<I>(iter: I) -> Vector<T, N>
   where
