@@ -811,6 +811,21 @@ pub mod tests {
   // }
 
   #[test]
+  #[should_panic]
+  fn locate_feature_fixme() {
+    let mut poly: Polygon<i8> = Polygon::new(vec![
+      Point { array: [0, 0] },
+      Point { array: [-1, 127] },
+      Point { array: [-50, 48] },
+    ])
+    .expect("valid polygon");
+    // Add an hole (happens to be topologically invalid but that doesn't matter)
+    poly.rings.push(vec![PointId(0), PointId(1), PointId(2)]);
+    let origin = Point { array: [79, 108] };
+    poly.locate(&origin);
+  }
+
+  #[test]
   fn locate_unit_1() {
     let poly: Polygon<i8> = Polygon::new(vec![
       Point { array: [0, 0] },
