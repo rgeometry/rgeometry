@@ -15,7 +15,7 @@ license = "Unlicense"
 name = "rgeometry"
 readme = "README.md"
 repository = "https://github.com/rgeometry/rgeometry"
-version = "0.7.0"
+version = "0.8.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -27,14 +27,14 @@ num                 = "0.4"
 num-bigint          = "0.4"
 num-rational        = "0.4"
 num-traits          = "0.2.*"
-ordered-float       = "2.6.0"
+ordered-float       = "3.0.0"
 rand                = { version = "0.8", features = ["small_rng"] }
 rug                 = { version = "1.12", optional = true }
 
 [dev-dependencies]
 criterion      = "0.3"
 proptest       = "1.0.0"
-test-strategy  = "0.1"
+test-strategy  = "0.2.0"
 rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
 
 [[bench]]
