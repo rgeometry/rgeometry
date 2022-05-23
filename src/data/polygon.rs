@@ -786,6 +786,18 @@ pub mod tests {
     Polygon::new(pts).ok();
   }
 
+  #[proptest]
+  fn fuzz_validate(pts: Vec<Point<i8>>) {
+    // make sure there's no input that can cause a panic. Err is okay, panic is not.
+    Polygon::new_unchecked(pts).validate().ok();
+  }
+
+  #[proptest]
+  fn fuzz_validate_weakly(pts: Vec<Point<i8>>) {
+    // make sure there's no input that can cause a panic. Err is okay, panic is not.
+    Polygon::new_unchecked(pts).validate_weakly().ok();
+  }
+
   // // #[cfg(not(debug_assertions))] // proxy for release builds.
   // #[proptest]
   // fn normalize_props(poly: Polygon<i8>) {
