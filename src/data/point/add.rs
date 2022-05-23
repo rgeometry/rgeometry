@@ -9,13 +9,13 @@ use std::ops::Index;
 // &point + &vector = point
 impl<'a, 'b, T, const N: usize> Add<&'a Vector<T, N>> for &'b Point<T, N>
 where
-  for<'c> &'c T: Add<&'c T, Output = T>,
+  T: Add<Output = T> + Clone,
 {
   type Output = Point<T, N>;
 
   fn add(self: &'b Point<T, N>, other: &'a Vector<T, N>) -> Self::Output {
     Point {
-      array: array_init(|i| self.array.index(i) + other.0.index(i)),
+      array: array_init(|i| self.array.index(i).clone() + other.0.index(i).clone()),
     }
   }
 }
@@ -23,7 +23,7 @@ where
 // point + vector = point
 impl<T, const N: usize> Add<Vector<T, N>> for Point<T, N>
 where
-  for<'a> &'a T: Add<&'a T, Output = T>,
+  T: Add<Output = T> + Clone,
 {
   type Output = Point<T, N>;
 
@@ -35,7 +35,7 @@ where
 // point + &vector = point
 impl<T, const N: usize> Add<&Vector<T, N>> for Point<T, N>
 where
-  for<'a> &'a T: Add<&'a T, Output = T>,
+  T: Add<Output = T> + Clone,
 {
   type Output = Point<T, N>;
 

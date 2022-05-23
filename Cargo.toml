@@ -32,9 +32,10 @@ rand                = { version = "0.8", features = ["small_rng"] }
 rug                 = { version = "1.12", optional = true }
 
 [dev-dependencies]
-criterion      = "0.3"
-proptest       = "1.0.0"
-test-strategy  = "0.2.0"
+criterion     = "0.3"
+proptest      = "1.0.0"
+test-strategy = "0.2.0"
+# Used for doctest examples.
 rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
 
 [[bench]]
