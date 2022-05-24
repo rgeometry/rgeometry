@@ -1,3 +1,4 @@
+#![cfg(not(tarpaulin_include))]
 // This module contains strategies and shrinkers for:
 //  * points
 //  * polygons
