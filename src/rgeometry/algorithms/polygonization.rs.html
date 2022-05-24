@@ -581,6 +581,18 @@
 <span id="555">555</span>
 <span id="556">556</span>
 <span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data::Cursor</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data::EndPoint</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data::IndexEdge</span>;
@@ -910,6 +922,8 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
+  <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testing::any_nn</span>;
+  <span class="kw">use</span> <span class="ident">ordered_float::NotNan</span>;
   <span class="kw">use</span> <span class="ident">proptest::collection::vec</span>;
   <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="ident">rand::prelude::SliceRandom</span>;
@@ -1113,11 +1127,21 @@
   }
 
   <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">points_to_polygon</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">3</span>..<span class="number">100</span>))]</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pts</span> <span class="op">=</span> <span class="ident">pts</span>; <span class="comment">// XXX: Missing feature in the &#39;strategy&#39; attribute.</span>
+  <span class="kw">fn</span> <span class="ident">points_to_polygon</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="number">3</span>..<span class="number">100</span>))]</span> <span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">set</span> <span class="op">=</span> <span class="ident">BTreeSet::new</span>();
     <span class="ident">pts</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">pt</span><span class="op">|</span> <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">pt</span>.<span class="ident">clone</span>()));
-    <span class="kw">if</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span> {
+    <span class="kw">if</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">Point::all_colinear</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>) {
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">StepRng::new</span>(<span class="number">0</span>, <span class="number">0</span>);
+      <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">two_opt_moves</span>(<span class="ident">pts</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">ret</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">validate</span>()).<span class="ident">err</span>(), <span class="prelude-val">None</span>);
+    }
+  }
+
+  <span class="attribute">#[<span class="ident">proptest</span>]</span>
+  <span class="kw">fn</span> <span class="ident">f64_to_polygon</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="ident">vec</span>(<span class="ident">any_nn</span>(), <span class="number">3</span>..<span class="number">100</span>))]</span> <span class="kw-2">mut</span> <span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">NotNan</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">set</span> <span class="op">=</span> <span class="ident">BTreeSet::new</span>();
+    <span class="ident">pts</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">pt</span><span class="op">|</span> <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">pt</span>.<span class="ident">clone</span>()));
+    <span class="kw">if</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">Point::all_colinear</span>(<span class="kw-2">&amp;</span><span class="ident">pts</span>) {
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">StepRng::new</span>(<span class="number">0</span>, <span class="number">0</span>);
       <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">two_opt_moves</span>(<span class="ident">pts</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
       <span class="macro">prop_assert_eq!</span>(<span class="ident">ret</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">validate</span>()).<span class="ident">err</span>(), <span class="prelude-val">None</span>);
