@@ -30,7 +30,7 @@ impl<'a, T> Clone for ZHashBox<'a, T> {
 pub trait ZHashable: Sized {
   type ZHashKey: Copy;
   fn zhash_key(zbox: ZHashBox<'_, Self>) -> Self::ZHashKey;
-  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64;
+  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self>) -> u64;
 }
 
 impl ZHashable for f64 {
@@ -40,7 +40,7 @@ impl ZHashable for f64 {
     let height = zbox.max_y - zbox.min_y;
     (*zbox.min_x, *zbox.min_y, width, height)
   }
-  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
+  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self>) -> u64 {
     let (min_x, min_y, width, height) = key;
     let z_hash_max = u32::MAX as f64;
     let x = ((point.x_coord() - min_x) / width * z_hash_max) as u32;
@@ -58,7 +58,7 @@ impl ZHashable for i64 {
     let y_r_shift = 32u32.saturating_sub(height.leading_zeros());
     (*zbox.min_x, *zbox.min_y, x_r_shift, y_r_shift)
   }
-  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
+  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self>) -> u64 {
     let (min_x, min_y, x_r_shift, y_r_shift) = key;
     let x = ((point.x_coord().wrapping_sub(min_x) as u64) >> x_r_shift) as u32;
     let y = ((point.y_coord().wrapping_sub(min_y) as u64) >> y_r_shift) as u32;
@@ -71,7 +71,7 @@ impl ZHashable for i8 {
   fn zhash_key(zbox: ZHashBox<'_, i8>) -> Self::ZHashKey {
     (*zbox.min_x, *zbox.min_y)
   }
-  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
+  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self>) -> u64 {
     let (min_x, min_y) = key;
     let x = (point.x_coord().wrapping_sub(min_x) as u8) as u32;
     let y = (point.y_coord().wrapping_sub(min_y) as u8) as u32;
@@ -90,7 +90,7 @@ impl ZHashable for u64 {
     let y_r_shift = 32u32.saturating_sub(height.leading_zeros());
     (*zbox.min_x, *zbox.min_y, x_r_shift, y_r_shift)
   }
-  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
+  fn zhash_fn(key: Self::ZHashKey, point: &Point<Self>) -> u64 {
     let (min_x, min_y, x_r_shift, y_r_shift) = key;
     let x = ((*point.x_coord() - min_x) >> x_r_shift) as u32;
     let y = ((*point.y_coord() - min_y) >> y_r_shift) as u32;
@@ -101,7 +101,7 @@ impl ZHashable for u64 {
 impl ZHashable for u32 {
   type ZHashKey = ();
   fn zhash_key(_zbox: ZHashBox<'_, u32>) -> Self::ZHashKey {}
-  fn zhash_fn(_key: Self::ZHashKey, point: &Point<Self, 2>) -> u64 {
+  fn zhash_fn(_key: Self::ZHashKey, point: &Point<Self>) -> u64 {
     zhash_pair(*point.x_coord(), *point.y_coord())
   }
 }

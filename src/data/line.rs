@@ -9,7 +9,7 @@ use crate::{Orientation, PolygonScalar, SoS};
 // Line
 
 #[derive(Debug)]
-pub struct Line<'a, T, const N: usize> {
+pub struct Line<'a, T, const N: usize = 2> {
   pub origin: &'a Point<T, N>,
   pub direction: Direction<'a, T, N>,
 }
@@ -38,8 +38,8 @@ impl<'a, T, const N: usize> Line<'a, T, N> {
   }
 }
 
-impl<'a, T: PolygonScalar> Line<'a, T, 2> {
-  pub fn intersection_point(&self, other: &Self) -> Option<Point<T, 2>> {
+impl<'a, T: PolygonScalar> Line<'a, T> {
+  pub fn intersection_point(&self, other: &Self) -> Option<Point<T>> {
     let [x1, y1] = self.origin.array.clone();
     let [x2, y2] = match &self.direction {
       Direction::Through(pt) => pt.array.clone(),
@@ -128,7 +128,7 @@ impl<'a, T, const N: usize> From<&'a Direction_<T, N>> for Direction<'a, T, N> {
 // Line SoS
 
 #[derive(Debug, Clone)]
-pub struct LineSoS<'a, T, const N: usize> {
+pub struct LineSoS<'a, T, const N: usize = 2> {
   line: Line<'a, T, N>,
 }
 
@@ -148,7 +148,7 @@ impl<'a, T, const N: usize> From<Line<'a, T, N>> for LineSoS<'a, T, N> {
 // Line SoS Owned
 
 #[derive(Debug, Clone)]
-pub struct LineSoS_<T, const N: usize> {
+pub struct LineSoS_<T, const N: usize = 2> {
   line: Line_<T, N>,
 }
 
@@ -176,12 +176,12 @@ pub enum ILineLineSegmentSoS {
 // Line / LineSegment intersection.
 // If the line is colinear with an endpoint in the linesegment, the endpoint
 // will be considered to be to the left of the line.
-impl<T> Intersects<LineSegmentView<'_, T, 2>> for &LineSoS<'_, T, 2>
+impl<T> Intersects<LineSegmentView<'_, T>> for &LineSoS<'_, T>
 where
   T: PolygonScalar,
 {
   type Result = ILineLineSegmentSoS;
-  fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
+  fn intersect(self, other: LineSegmentView<'_, T>) -> Option<Self::Result> {
     let b1 = other.min.inner();
     let b2 = other.max.inner();
     let origin = &self.line.origin;
@@ -208,13 +208,13 @@ where
   }
 }
 
-impl<T> Intersects<DirectedEdge<'_, T, 2>> for &LineSoS<'_, T, 2>
+impl<T> Intersects<DirectedEdge<'_, T>> for &LineSoS<'_, T>
 where
   T: PolygonScalar,
 {
   type Result = ILineLineSegmentSoS;
-  fn intersect(self, other: DirectedEdge<'_, T, 2>) -> Option<Self::Result> {
-    let line_segment: LineSegmentView<'_, T, 2> = other.into();
+  fn intersect(self, other: DirectedEdge<'_, T>) -> Option<Self::Result> {
+    let line_segment: LineSegmentView<'_, T> = other.into();
     self.intersect(line_segment)
   }
 }
@@ -222,7 +222,7 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Half-Line SoS
 
-pub struct HalfLineSoS<'a, T, const N: usize> {
+pub struct HalfLineSoS<'a, T, const N: usize = 2> {
   line: Line<'a, T, N>,
 }
 
@@ -282,12 +282,12 @@ pub enum IHalfLineLineSegmentSoS {
 // Line / LineSegment intersection.
 // If the line is colinear with an endpoint in the linesegment, the endpoint
 // will be considered to be to the left of the line.
-impl<T> Intersects<LineSegmentView<'_, T, 2>> for &HalfLineSoS<'_, T, 2>
+impl<T> Intersects<LineSegmentView<'_, T>> for &HalfLineSoS<'_, T>
 where
   T: PolygonScalar,
 {
   type Result = IHalfLineLineSegmentSoS;
-  fn intersect(self, other: LineSegmentView<'_, T, 2>) -> Option<Self::Result> {
+  fn intersect(self, other: LineSegmentView<'_, T>) -> Option<Self::Result> {
     let b1 = other.min.inner();
     let b2 = other.max.inner();
 
@@ -350,13 +350,13 @@ where
 //   }
 // }
 
-impl<T> Intersects<DirectedEdge<'_, T, 2>> for &HalfLineSoS<'_, T, 2>
+impl<T> Intersects<DirectedEdge<'_, T>> for &HalfLineSoS<'_, T>
 where
   T: PolygonScalar,
 {
   type Result = IHalfLineLineSegmentSoS;
-  fn intersect(self, other: DirectedEdge<'_, T, 2>) -> Option<Self::Result> {
-    let line: LineSegmentView<'_, T, 2> = other.into();
+  fn intersect(self, other: DirectedEdge<'_, T>) -> Option<Self::Result> {
+    let line: LineSegmentView<'_, T> = other.into();
     self.intersect(line)
   }
 }
@@ -371,7 +371,7 @@ mod tests {
 
   #[test]
   fn ray_intersect_unit_1() {
-    let line: LineSegment<i8, 2> = LineSegment::from((-1, 127)..(-5, 48));
+    let line: LineSegment<i8> = LineSegment::from((-1, 127)..(-5, 48));
     let direction: Vector<i8, 2> = Vector([1, 0]);
     let origin = Point::new([79, 108]);
     let ray = HalfLineSoS::new_directed(&origin, &direction);
@@ -381,7 +381,7 @@ mod tests {
 
   #[test]
   fn ray_intersect_unit_2() {
-    let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(-1, 127));
+    let line: LineSegment<i8> = LineSegment::from((0, 0)..(-1, 127));
     let direction: Vector<i8, 2> = Vector([1, 0]);
     let origin = Point::new([79, 108]);
     let ray = HalfLineSoS::new_directed(&origin, &direction);
@@ -391,8 +391,8 @@ mod tests {
 
   #[test]
   fn ray_intersect_unit_3() {
-    let line1: LineSegment<i8, 2> = LineSegment::from((0, 0)..(0, 1));
-    let line2: LineSegment<i8, 2> = LineSegment::from((0, -1)..(0, 0));
+    let line1: LineSegment<i8> = LineSegment::from((0, 0)..(0, 1));
+    let line2: LineSegment<i8> = LineSegment::from((0, -1)..(0, 0));
     let direction: Vector<i8, 2> = Vector([1, 0]);
     let origin = Point::new([-1, 0]);
     let ray = HalfLineSoS::new_directed(&origin, &direction);
@@ -425,7 +425,7 @@ mod tests {
 
   #[test]
   fn ray_intersect_unit_5() {
-    let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(0, 1));
+    let line: LineSegment<i8> = LineSegment::from((0, 0)..(0, 1));
     let direction: Vector<i8, 2> = Vector([1, 0]);
     let origin = Point::new([1, 0]);
     let ray = HalfLineSoS::new_directed(&origin, &direction);
@@ -435,7 +435,7 @@ mod tests {
 
   #[test]
   fn ray_intersect_unit_6() {
-    let line: LineSegment<i8, 2> = LineSegment::from((0, 0)..(0, 1));
+    let line: LineSegment<i8> = LineSegment::from((0, 0)..(0, 1));
     let direction: Vector<i8, 2> = Vector([1, 0]);
     let origin = Point::new([1, 0]);
     let ray = HalfLineSoS::new_directed(&origin, &direction);
@@ -444,8 +444,8 @@ mod tests {
   }
 
   #[proptest]
-  fn raw_intersection_count_prop(poly: Polygon<i8>, line: LineSoS_<i8, 2>) {
-    let line: LineSoS<'_, i8, 2> = (&line).into();
+  fn raw_intersection_count_prop(poly: Polygon<i8>, line: LineSoS_<i8>) {
+    let line: LineSoS<'_, i8> = (&line).into();
     let mut intersections = 0;
     for edge in poly.iter_boundary_edges() {
       if line.intersect(edge).is_some() {

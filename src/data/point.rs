@@ -201,7 +201,7 @@ impl<T, const N: usize> From<Vector<T, N>> for Point<T, N> {
 // }
 
 // Methods on two-dimensional points.
-impl<T: PolygonScalar> Point<T, 2> {
+impl<T: PolygonScalar> Point<T> {
   pub fn cmp_distance_to(&self, p: &Point<T, 2>, q: &Point<T, 2>) -> Ordering {
     T::cmp_dist(self, p, q)
   }
@@ -256,6 +256,15 @@ impl<T: PolygonScalar> Point<T, 2> {
     p2: &Point<T, 2>,
   ) -> Orientation {
     Orientation::along_perp_vector(p1, vector, p2)
+  }
+
+  pub fn all_colinear(pts: &[Point<T>]) -> bool {
+    if pts.len() < 3 {
+      return true;
+    }
+    pts
+      .iter()
+      .all(|pt| Point::orient(&pts[0], &pts[1], pt).is_colinear())
   }
 
   /// Docs?

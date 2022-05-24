@@ -245,7 +245,7 @@ impl<T> Polygon<T> {
   //
   // May panic for bounded types (i8, isize, etc). Maybe produce inaccurate results for
   // floating point types (f32, f64).
-  pub fn centroid(&self) -> Point<T, 2>
+  pub fn centroid(&self) -> Point<T>
   where
     T: PolygonScalar,
   {
@@ -261,7 +261,7 @@ impl<T> Polygon<T> {
     Point::from(xs / (three * self.signed_area_2x()))
   }
 
-  pub fn bounding_box(&self) -> (Point<T, 2>, Point<T, 2>)
+  pub fn bounding_box(&self) -> (Point<T>, Point<T>)
   where
     T: PolygonScalar,
   {
@@ -416,7 +416,7 @@ impl<T> Polygon<T> {
   /// Access point of a given vertex.
   /// # Time complexity
   /// $O(1)$
-  pub fn point(&self, idx: PointId) -> &Point<T, 2> {
+  pub fn point(&self, idx: PointId) -> &Point<T> {
     &self.points[idx.0]
   }
 
@@ -467,7 +467,7 @@ impl<T> Polygon<T> {
   pub fn map_points<F>(mut self, f: F) -> Polygon<T>
   where
     T: Clone,
-    F: Fn(Point<T, 2>) -> Point<T, 2>,
+    F: Fn(Point<T>) -> Point<T>,
   {
     for pt in self.iter_mut() {
       *pt = f(pt.clone())
@@ -626,7 +626,7 @@ pub struct Cursor<'a, T> {
 }
 
 impl<'a, T> Deref for Cursor<'a, T> {
-  type Target = Point<T, 2>;
+  type Target = Point<T>;
   fn deref(&self) -> &Self::Target {
     self.point()
   }
@@ -666,7 +666,7 @@ impl<'a, T> Cursor<'a, T> {
     self
   }
 
-  pub fn point(self: Cursor<'a, T>) -> &'a Point<T, 2> {
+  pub fn point(self: Cursor<'a, T>) -> &'a Point<T> {
     &self.polygon.points[self.point_id().0]
   }
 
@@ -873,7 +873,7 @@ pub mod tests {
 
   // Locate a point relative to a polygon. Should be identical to
   // Polygon::locate but slower.
-  fn locate_by_triangulation<T>(poly: &Polygon<T>, origin: &Point<T, 2>) -> PointLocation
+  fn locate_by_triangulation<T>(poly: &Polygon<T>, origin: &Point<T>) -> PointLocation
   where
     T: PolygonScalar,
   {
@@ -892,7 +892,7 @@ pub mod tests {
   }
 
   #[proptest]
-  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8, 2>) {
+  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8>) {
     prop_assert_eq!(
       locate_by_triangulation(&poly, &origin),
       poly.locate(&origin)

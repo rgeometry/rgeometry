@@ -118,12 +118,10 @@ fn inner_between<T: PartialOrd>(inner: &T, a: EndPoint<&T>, b: EndPoint<&T>) -> 
 // LineSegment
 
 #[derive(Debug, Clone, Copy)]
-pub struct LineSegment<T, const N: usize> {
+pub struct LineSegment<T, const N: usize = 2> {
   pub min: EndPoint<Point<T, N>>,
   pub max: EndPoint<Point<T, N>>,
 }
-
-pub type LineSegment2D<T> = LineSegment<T, 2>;
 
 impl<T, const N: usize> LineSegment<T, N> {
   pub fn new(a: EndPoint<Point<T, N>>, b: EndPoint<Point<T, N>>) -> LineSegment<T, N>
@@ -144,8 +142,8 @@ impl<T, const N: usize> LineSegment<T, N> {
     }
   }
 }
-impl<T> LineSegment<T, 2> {
-  pub fn contains(&self, pt: &Point<T, 2>) -> bool
+impl<T> LineSegment<T> {
+  pub fn contains(&self, pt: &Point<T>) -> bool
   where
     T: PolygonScalar,
   {
@@ -162,8 +160,8 @@ impl<T: Ord, const N: usize> From<Range<Point<T, N>>> for LineSegment<T, N> {
   }
 }
 
-impl<T: Ord> From<Range<(T, T)>> for LineSegment<T, 2> {
-  fn from(range: Range<(T, T)>) -> LineSegment<T, 2> {
+impl<T: Ord> From<Range<(T, T)>> for LineSegment<T> {
+  fn from(range: Range<(T, T)>) -> LineSegment<T> {
     LineSegment::new(
       EndPoint::Inclusive(range.start.into()),
       EndPoint::Exclusive(range.end.into()),
@@ -219,8 +217,8 @@ impl<'a, T, const N: usize> LineSegmentView<'a, T, N> {
   }
 }
 
-impl<'a, T> LineSegmentView<'a, T, 2> {
-  pub fn contains(&self, pt: &Point<T, 2>) -> bool
+impl<'a, T> LineSegmentView<'a, T> {
+  pub fn contains(&self, pt: &Point<T>) -> bool
   where
     T: PolygonScalar,
   {
@@ -263,19 +261,19 @@ impl<'a, T: Ord, const N: usize> From<&'a RangeInclusive<Point<T, N>>>
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum ILineSegment<'a, T> {
-  Crossing,                           // Lines touch but are not parallel.
-  Overlap(LineSegmentView<'a, T, 2>), // Lines touch and are parallel.
+  Crossing,                        // Lines touch but are not parallel.
+  Overlap(LineSegmentView<'a, T>), // Lines touch and are parallel.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Intersects
 
-impl<'a, T> Intersects for LineSegmentView<'a, T, 2>
+impl<'a, T> Intersects for LineSegmentView<'a, T>
 where
   T: PolygonScalar,
 {
   type Result = ILineSegment<'a, T>;
-  fn intersect(self, other: LineSegmentView<'a, T, 2>) -> Option<Self::Result> {
+  fn intersect(self, other: LineSegmentView<'a, T>) -> Option<Self::Result> {
     let a1 = self.min.inner();
     let a2 = self.max.inner();
     let b1 = other.min.inner();
@@ -353,32 +351,32 @@ where
   }
 }
 
-impl<'a, T> Intersects for &'a LineSegment<T, 2>
+impl<'a, T> Intersects for &'a LineSegment<T>
 where
   T: PolygonScalar,
 {
   type Result = ILineSegment<'a, T>;
-  fn intersect(self, other: &'a LineSegment<T, 2>) -> Option<Self::Result> {
+  fn intersect(self, other: &'a LineSegment<T>) -> Option<Self::Result> {
     self.as_ref().intersect(other.as_ref())
   }
 }
 
-impl<'a, T> Intersects for &'a Range<Point<T, 2>>
+impl<'a, T> Intersects for &'a Range<Point<T>>
 where
   T: PolygonScalar,
 {
   type Result = ILineSegment<'a, T>;
-  fn intersect(self, other: &'a Range<Point<T, 2>>) -> Option<Self::Result> {
+  fn intersect(self, other: &'a Range<Point<T>>) -> Option<Self::Result> {
     LineSegmentView::from(self).intersect(LineSegmentView::from(other))
   }
 }
 
-impl<'a, T> Intersects for &'a RangeInclusive<Point<T, 2>>
+impl<'a, T> Intersects for &'a RangeInclusive<Point<T>>
 where
   T: PolygonScalar,
 {
   type Result = ILineSegment<'a, T>;
-  fn intersect(self, other: &'a RangeInclusive<Point<T, 2>>) -> Option<Self::Result> {
+  fn intersect(self, other: &'a RangeInclusive<Point<T>>) -> Option<Self::Result> {
     LineSegmentView::from(self).intersect(LineSegmentView::from(other))
   }
 }
@@ -411,13 +409,13 @@ mod tests {
   //
   // P1  P3
   //
-  static P1: Point<i32, 2> = Point::new([0, 0]);
-  static P2: Point<i32, 2> = Point::new([1, 1]);
-  static P3: Point<i32, 2> = Point::new([1, 0]);
-  static P4: Point<i32, 2> = Point::new([0, 1]);
-  static P5: Point<i32, 2> = Point::new([2, 2]);
-  static P6: Point<i32, 2> = Point::new([3, 3]);
-  static P7: Point<i32, 2> = Point::new([0, 2]);
+  static P1: Point<i32> = Point::new([0, 0]);
+  static P2: Point<i32> = Point::new([1, 1]);
+  static P3: Point<i32> = Point::new([1, 0]);
+  static P4: Point<i32> = Point::new([0, 1]);
+  static P5: Point<i32> = Point::new([2, 2]);
+  static P6: Point<i32> = Point::new([3, 3]);
+  static P7: Point<i32> = Point::new([0, 2]);
 
   #[test]
   fn line_crossing() {

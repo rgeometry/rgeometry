@@ -535,15 +535,10 @@ pub mod tests {
   fn points_to_polygon(#[strategy(vec(any::<Point<i8>>(), 3..100))] mut pts: Vec<Point<i8>>) {
     let mut set = BTreeSet::new();
     pts.retain(|pt| set.insert(pt.clone()));
-    if pts.len() >= 3 {
-      if !pts
-        .iter()
-        .all(|pt| Orientation::new(&pts[0], &pts[1], pt).is_colinear())
-      {
-        let mut rng = StepRng::new(0, 0);
-        let ret = two_opt_moves(pts, &mut rng);
-        prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
-      }
+    if pts.len() >= 3 && !Point::all_colinear(&pts) {
+      let mut rng = StepRng::new(0, 0);
+      let ret = two_opt_moves(pts, &mut rng);
+      prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
     }
   }
 
@@ -551,15 +546,10 @@ pub mod tests {
   fn f64_to_polygon(#[strategy(vec(any_nn(), 3..100))] mut pts: Vec<Point<NotNan<f64>>>) {
     let mut set = BTreeSet::new();
     pts.retain(|pt| set.insert(pt.clone()));
-    if pts.len() >= 3 {
-      if !pts
-        .iter()
-        .all(|pt| Orientation::new(&pts[0], &pts[1], pt).is_colinear())
-      {
-        let mut rng = StepRng::new(0, 0);
-        let ret = two_opt_moves(pts, &mut rng);
-        prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
-      }
+    if pts.len() >= 3 && !Point::all_colinear(&pts) {
+      let mut rng = StepRng::new(0, 0);
+      let ret = two_opt_moves(pts, &mut rng);
+      prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
     }
   }
 

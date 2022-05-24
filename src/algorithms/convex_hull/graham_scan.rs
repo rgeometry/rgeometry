@@ -79,9 +79,8 @@ use crate::{Error, Orientation, PolygonScalar};
 pub fn convex_hull<T>(mut pts: Vec<Point<T>>) -> Result<PolygonConvex<T>, Error>
 where
   T: PolygonScalar,
-  // for<'a> &'a T: PolygonScalarRef<&'a T, T>,
 {
-  let smallest: &Point<T, 2> = &smallest_point(&pts)?;
+  let smallest = &smallest_point(&pts)?;
 
   pts.sort_unstable_by(|a, b| {
     smallest
@@ -132,7 +131,7 @@ where
 
 // Find the smallest point and remove it from the vector
 // O(n)
-fn smallest_point<T>(pts: &[Point<T, 2>]) -> Result<Point<T, 2>, Error>
+fn smallest_point<T>(pts: &[Point<T>]) -> Result<Point<T>, Error>
 where
   T: PolygonScalar,
 {
@@ -217,7 +216,7 @@ mod tests {
 
   #[test]
   fn convex_hull_invalid() {
-    let points: Vec<Point<i64, 2>> = vec![
+    let points: Vec<Point<i64>> = vec![
       Point { array: [0, 0] },
       Point { array: [100, 0] },
       Point { array: [50, 1] },
@@ -231,7 +230,7 @@ mod tests {
 
   #[test]
   fn unit_1() {
-    let points: Vec<Point<BigInt, 2>> = vec![
+    let points: Vec<Point<BigInt>> = vec![
       Point::new([0, 0]).into(),
       Point::new([-1, 1]).into(),
       Point::new([0, 1]).into(),
@@ -243,7 +242,7 @@ mod tests {
 
   #[test]
   fn unit_2() {
-    let points: Vec<Point<i8, 2>> = vec![
+    let points: Vec<Point<i8>> = vec![
       Point::new([0, 0]),
       Point::new([0, -10]),
       Point::new([-13, 0]),
@@ -253,7 +252,7 @@ mod tests {
   }
 
   #[proptest]
-  fn convex_hull_prop(#[strategy(vec(any_r(), 0..100))] pts: Vec<Point<BigInt, 2>>) {
+  fn convex_hull_prop(#[strategy(vec(any_r(), 0..100))] pts: Vec<Point<BigInt>>) {
     if let Ok(poly) = convex_hull(pts.clone()) {
       // Prop #1: Results are valid.
       prop_assert_eq!(poly.validate().err(), None);
@@ -269,7 +268,7 @@ mod tests {
   }
 
   #[proptest]
-  fn convex_hull_prop_i8(#[strategy(vec(any::<Point<i8,2>>(), 0..100))] pts: Vec<Point<i8, 2>>) {
+  fn convex_hull_prop_i8(#[strategy(vec(any::<Point<i8>>(), 0..100))] pts: Vec<Point<i8>>) {
     if let Ok(poly) = convex_hull(pts.clone()) {
       // Prop #1: Results are valid.
       prop_assert_eq!(poly.validate().err(), None);
