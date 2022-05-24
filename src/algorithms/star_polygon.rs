@@ -2,8 +2,8 @@ use crate::data::{Point, Polygon};
 use crate::{Error, PolygonScalar};
 
 pub fn new_star_polygon<T>(
-  mut vertices: Vec<Point<T, 2>>,
-  point: &Point<T, 2>,
+  mut vertices: Vec<Point<T>>,
+  point: &Point<T>,
 ) -> Result<Polygon<T>, Error>
 where
   T: PolygonScalar,

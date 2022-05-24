@@ -94,7 +94,7 @@ use crate::{Intersects, Orientation, PolygonScalar, SoS};
 //  |    x    |     |    x    |
 //  \---------/     \---------/
 /// Naive alogrithn for calculating visibility polygon
-pub fn get_visibility_polygon<T>(point: &Point<T, 2>, polygon: &Polygon<T>) -> Option<Polygon<T>>
+pub fn get_visibility_polygon<T>(point: &Point<T>, polygon: &Polygon<T>) -> Option<Polygon<T>>
 where
   T: PolygonScalar,
 {
@@ -153,7 +153,7 @@ where
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
 }
 
-fn get_intersection<T>(sos_line: HalfLineSoS<T, 2>, edge: DirectedEdge<'_, T, 2>) -> Point<T, 2>
+fn get_intersection<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdge<'_, T>) -> Point<T>
 where
   T: PolygonScalar,
 {
@@ -168,22 +168,22 @@ where
 
 // Container for intersections that only store the nearest point to some origin.
 struct NearestIntersection<'a, T> {
-  origin: &'a Point<T, 2>,
-  nearest_intersection: Option<Point<T, 2>>,
+  origin: &'a Point<T>,
+  nearest_intersection: Option<Point<T>>,
 }
 
 impl<'a, T> NearestIntersection<'a, T>
 where
   T: PolygonScalar,
 {
-  fn new(origin: &'a Point<T, 2>) -> NearestIntersection<'a, T> {
+  fn new(origin: &'a Point<T>) -> NearestIntersection<'a, T> {
     NearestIntersection {
       origin,
       nearest_intersection: None,
     }
   }
 
-  fn push(&mut self, mut intersection: Point<T, 2>) {
+  fn push(&mut self, mut intersection: Point<T>) {
     match self.nearest_intersection.as_mut() {
       None => self.nearest_intersection = Some(intersection),
       Some(previous) => {
@@ -194,7 +194,7 @@ where
     }
   }
 
-  fn take(self) -> Option<Point<T, 2>> {
+  fn take(self) -> Option<Point<T>> {
     self.nearest_intersection
   }
 }

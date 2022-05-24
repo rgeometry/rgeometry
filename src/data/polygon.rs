@@ -154,9 +154,7 @@ impl<T> Polygon<T> {
     p.validate()?;
     Ok(p)
   }
-}
 
-impl<T> Polygon<T> {
   // Validate that a polygon is simple.
   // https://en.wikipedia.org/wiki/Simple_polygon
   pub fn validate(&self) -> Result<(), Error>
@@ -178,9 +176,9 @@ impl<T> Polygon<T> {
   where
     T: PolygonScalar,
   {
-    if self.rings.is_empty() {
-      return Err(Error::InsufficientVertices);
-    }
+    // Rings is never allowed to be empty under any circumstances, even when
+    // using 'Polygon::unchecked_new'.
+    assert!(!self.rings.is_empty());
 
     // Has at least three points.
     if self.rings[0].len() < 3 {
@@ -205,9 +203,12 @@ impl<T> Polygon<T> {
     T: PolygonScalar,
   {
     // FIXME: Support polygons with holes.
-    if self.rings.len() != 1 {
-      panic!("FIXME: Polygon::locate should support polygons with holes.");
-    }
+    assert_eq!(
+      self.rings.len(),
+      1,
+      "FIXME: Polygon::locate should support polygons with holes."
+    );
+
     let direction = Vector::unit_right();
     let ray = HalfLineSoS::new_directed(origin, &direction);
     let mut intersections = 0;
@@ -239,7 +240,12 @@ impl<T> Polygon<T> {
       .map(move |(p1, p2, p3)| (self.cursor(p1), self.cursor(p2), self.cursor(p3)))
   }
 
-  pub fn centroid(&self) -> Point<T, 2>
+  //
+  // # Panics
+  //
+  // May panic for bounded types (i8, isize, etc). Maybe produce inaccurate results for
+  // floating point types (f32, f64).
+  pub fn centroid(&self) -> Point<T>
   where
     T: PolygonScalar,
   {
@@ -255,7 +261,7 @@ impl<T> Polygon<T> {
     Point::from(xs / (three * self.signed_area_2x()))
   }
 
-  pub fn bounding_box(&self) -> (Point<T, 2>, Point<T, 2>)
+  pub fn bounding_box(&self) -> (Point<T>, Point<T>)
   where
     T: PolygonScalar,
   {
@@ -410,7 +416,7 @@ impl<T> Polygon<T> {
   /// Access point of a given vertex.
   /// # Time complexity
   /// $O(1)$
-  pub fn point(&self, idx: PointId) -> &Point<T, 2> {
+  pub fn point(&self, idx: PointId) -> &Point<T> {
     &self.points[idx.0]
   }
 
@@ -461,7 +467,7 @@ impl<T> Polygon<T> {
   pub fn map_points<F>(mut self, f: F) -> Polygon<T>
   where
     T: Clone,
-    F: Fn(Point<T, 2>) -> Point<T, 2>,
+    F: Fn(Point<T>) -> Point<T>,
   {
     for pt in self.iter_mut() {
       *pt = f(pt.clone())
@@ -620,7 +626,7 @@ pub struct Cursor<'a, T> {
 }
 
 impl<'a, T> Deref for Cursor<'a, T> {
-  type Target = Point<T, 2>;
+  type Target = Point<T>;
   fn deref(&self) -> &Self::Target {
     self.point()
   }
@@ -660,7 +666,7 @@ impl<'a, T> Cursor<'a, T> {
     self
   }
 
-  pub fn point(self: Cursor<'a, T>) -> &'a Point<T, 2> {
+  pub fn point(self: Cursor<'a, T>) -> &'a Point<T> {
     &self.polygon.points[self.point_id().0]
   }
 
@@ -771,7 +777,10 @@ impl Position {
 pub mod tests {
   use super::*;
 
+  use crate::testing::*;
+  use ordered_float::NotNan;
   use proptest::prelude::*;
+  use proptest::proptest as proptest_block;
   use test_strategy::proptest;
 
   #[proptest]
@@ -785,6 +794,25 @@ pub mod tests {
     Polygon::new(pts).ok();
   }
 
+  #[proptest]
+  fn fuzz_validate(pts: Vec<Point<i8>>) {
+    // make sure there's no input that can cause a panic. Err is okay, panic is not.
+    Polygon::new_unchecked(pts).validate().ok();
+  }
+
+  #[proptest]
+  fn fuzz_validate_weakly(pts: Vec<Point<i8>>) {
+    // make sure there's no input that can cause a panic. Err is okay, panic is not.
+    Polygon::new_unchecked(pts).validate_weakly().ok();
+  }
+
+  proptest_block! {
+    #[test]
+    fn fuzz_centroid(poly in polygon_nn()) {
+      poly.centroid();
+    }
+  }
+
   // // #[cfg(not(debug_assertions))] // proxy for release builds.
   // #[proptest]
   // fn normalize_props(poly: Polygon<i8>) {
@@ -796,6 +824,21 @@ pub mod tests {
   //   let height = max.y_coord() - min.y_coord();
   //   // prop_assert!(width == OrderedFloat(1.0) || height == OrderedFloat(1.0));
   // }
+
+  #[test]
+  #[should_panic]
+  fn locate_feature_fixme() {
+    let mut poly: Polygon<i8> = Polygon::new(vec![
+      Point { array: [0, 0] },
+      Point { array: [-1, 127] },
+      Point { array: [-50, 48] },
+    ])
+    .expect("valid polygon");
+    // Add an hole (happens to be topologically invalid but that doesn't matter)
+    poly.rings.push(vec![PointId(0), PointId(1), PointId(2)]);
+    let origin = Point { array: [79, 108] };
+    poly.locate(&origin);
+  }
 
   #[test]
   fn locate_unit_1() {
@@ -830,7 +873,7 @@ pub mod tests {
 
   // Locate a point relative to a polygon. Should be identical to
   // Polygon::locate but slower.
-  fn locate_by_triangulation<T>(poly: &Polygon<T>, origin: &Point<T, 2>) -> PointLocation
+  fn locate_by_triangulation<T>(poly: &Polygon<T>, origin: &Point<T>) -> PointLocation
   where
     T: PolygonScalar,
   {
@@ -849,7 +892,7 @@ pub mod tests {
   }
 
   #[proptest]
-  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8, 2>) {
+  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8>) {
     prop_assert_eq!(
       locate_by_triangulation(&poly, &origin),
       poly.locate(&origin)

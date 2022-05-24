@@ -47,7 +47,7 @@ where
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 // Directed edge from A to B, including A and excluding B.
-pub struct DirectedEdge<'a, T, const N: usize> {
+pub struct DirectedEdge<'a, T, const N: usize = 2> {
   pub src: &'a Point<T, N>,
   pub dst: &'a Point<T, N>,
 }
