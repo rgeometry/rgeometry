@@ -134,6 +134,7 @@ fn zhash_u32(w: u32) -> u64 {
 }
 
 #[cfg(test)]
+#[cfg(not(tarpaulin_include))]
 mod tests {
   use super::*;
   use crate::data::Triangle;

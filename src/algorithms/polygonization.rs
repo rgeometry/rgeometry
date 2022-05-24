@@ -255,6 +255,7 @@ fn untangle<T: PolygonScalar + std::fmt::Debug>(
 }
 
 #[allow(dead_code)]
+#[cfg(not(tarpaulin_include))]
 fn sanity_check<T: PolygonScalar>(poly: &Polygon<T>, isects: &IndexIntersectionSet) {
   let naive_set = naive_intersection_set(poly);
   let fast_set = isects.iter().collect();
@@ -267,6 +268,8 @@ fn sanity_check<T: PolygonScalar>(poly: &Polygon<T>, isects: &IndexIntersectionS
     panic!("Fast set is too large! {:?}", extra);
   }
 }
+
+#[cfg(not(tarpaulin_include))]
 fn naive_intersection_set<T: PolygonScalar>(poly: &Polygon<T>) -> BTreeSet<IndexIntersection> {
   let mut set = BTreeSet::new();
   for e1 in edges(poly) {
@@ -324,6 +327,7 @@ fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
 }
 
 #[cfg(test)]
+#[cfg(not(tarpaulin_include))]
 pub mod tests {
   use super::*;
 
@@ -551,6 +555,18 @@ pub mod tests {
       let ret = two_opt_moves(pts, &mut rng);
       prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
     }
+  }
+
+  #[proptest]
+  fn fuzz_f64(#[strategy(vec(any_nn(), 0..100))] pts: Vec<Point<NotNan<f64>>>) {
+    let mut rng = StepRng::new(0, 0);
+    two_opt_moves(pts, &mut rng).ok();
+  }
+
+  #[proptest]
+  fn fuzz_i8(#[strategy(vec(any::<Point<i8>>(), 0..100))] pts: Vec<Point<i8>>) {
+    let mut rng = StepRng::new(0, 0);
+    two_opt_moves(pts, &mut rng).ok();
   }
 
   #[proptest]
