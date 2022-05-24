@@ -10,6 +10,7 @@ use crate::PolygonScalar;
 
 use array_init::{array_init, try_array_init};
 use core::ops::Range;
+use num::BigRational;
 use num_bigint::BigInt;
 use num_traits::*;
 use ordered_float::NotNan;
@@ -292,6 +293,21 @@ where
   }
 }
 
+// Arbitrary isn't defined for NotNan.
+pub fn polygon_nn() -> impl Strategy<Value = Polygon<NotNan<f64>>> {
+  PolygonStrat(
+    any::<f64>().prop_filter_map("Check for NaN", |pt| rem_float(pt).try_into().ok()),
+    3..50,
+  )
+}
+
+pub fn polygon_big() -> impl Strategy<Value = Polygon<BigRational>> {
+  PolygonStrat(
+    any::<f64>().prop_filter_map("Check for NaN", |pt| BigRational::from_float(pt)),
+    3..50,
+  )
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary convex polygons
 
@@ -483,7 +499,17 @@ where
 
 // Arbitrary isn't defined for NotNan.
 pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> {
-  any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.try_into().ok())
+  any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.map(rem_float).try_into().ok())
+}
+
+// Float representation: mantissa * 2^exponent * sign
+// This function changes the exponent modulo 250. This rules out extreme
+// numbers (very large, very small, very close to zero). Such extremes
+// are likely to overflow since the arbitrary precision machinery we're
+// using cannot compute answers with an exponent larger than 1024.
+fn rem_float(f: f64) -> f64 {
+  let (mantissa, exponent, sign) = f.integer_decode();
+  ((mantissa as f64) * 2f64.powi(exponent as i32 % 250)).copysign(sign as f64)
 }
 
 // Arbitrary isn't defined for BigInt.

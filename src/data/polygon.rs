@@ -777,8 +777,10 @@ impl Position {
 pub mod tests {
   use super::*;
 
-  use num::BigRational;
+  use crate::testing::*;
+  use ordered_float::NotNan;
   use proptest::prelude::*;
+  use proptest::proptest as proptest_block;
   use test_strategy::proptest;
 
   #[proptest]
@@ -804,9 +806,11 @@ pub mod tests {
     Polygon::new_unchecked(pts).validate_weakly().ok();
   }
 
-  #[proptest]
-  fn fuzz_centroid(poly: Polygon<BigRational>) {
-    poly.centroid();
+  proptest_block! {
+    #[test]
+    fn fuzz_centroid(poly in polygon_nn()) {
+      poly.centroid();
+    }
   }
 
   // // #[cfg(not(debug_assertions))] // proxy for release builds.

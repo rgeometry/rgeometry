@@ -327,6 +327,8 @@ fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
 pub mod tests {
   use super::*;
 
+  use crate::testing::any_nn;
+  use ordered_float::NotNan;
   use proptest::collection::vec;
   use proptest::prelude::*;
   use rand::prelude::SliceRandom;
@@ -530,14 +532,34 @@ pub mod tests {
   }
 
   #[proptest]
-  fn points_to_polygon(#[strategy(vec(any::<Point<i8>>(), 3..100))] pts: Vec<Point<i8>>) {
-    let mut pts = pts; // XXX: Missing feature in the 'strategy' attribute.
+  fn points_to_polygon(#[strategy(vec(any::<Point<i8>>(), 3..100))] mut pts: Vec<Point<i8>>) {
     let mut set = BTreeSet::new();
     pts.retain(|pt| set.insert(pt.clone()));
     if pts.len() >= 3 {
-      let mut rng = StepRng::new(0, 0);
-      let ret = two_opt_moves(pts, &mut rng);
-      prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
+      if !pts
+        .iter()
+        .all(|pt| Orientation::new(&pts[0], &pts[1], pt).is_colinear())
+      {
+        let mut rng = StepRng::new(0, 0);
+        let ret = two_opt_moves(pts, &mut rng);
+        prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
+      }
+    }
+  }
+
+  #[proptest]
+  fn f64_to_polygon(#[strategy(vec(any_nn(), 3..100))] mut pts: Vec<Point<NotNan<f64>>>) {
+    let mut set = BTreeSet::new();
+    pts.retain(|pt| set.insert(pt.clone()));
+    if pts.len() >= 3 {
+      if !pts
+        .iter()
+        .all(|pt| Orientation::new(&pts[0], &pts[1], pt).is_colinear())
+      {
+        let mut rng = StepRng::new(0, 0);
+        let ret = two_opt_moves(pts, &mut rng);
+        prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
+      }
     }
   }
 
