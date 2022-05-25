@@ -580,6 +580,7 @@
 <span id="554">554</span>
 <span id="555">555</span>
 <span id="556">556</span>
+<span id="557">557</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::algorithms::zhash</span>::{<span class="ident">ZHashBox</span>, <span class="ident">ZHashable</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data</span>::{<span class="ident">Point</span>, <span class="ident">PointId</span>, <span class="ident">PointLocation</span>, <span class="ident">Polygon</span>, <span class="ident">TriangleView</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Orientation</span>;
@@ -830,6 +831,7 @@
 <span class="comment">// Tests</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data</span>::<span class="kw-2">*</span>;

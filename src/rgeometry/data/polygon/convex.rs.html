@@ -319,6 +319,7 @@
 <span id="293">293</span>
 <span id="294">294</span>
 <span id="295">295</span>
+<span id="296">296</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">ordered_float::OrderedFloat</span>;
@@ -559,6 +560,7 @@
 <span class="comment">// Tests</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 

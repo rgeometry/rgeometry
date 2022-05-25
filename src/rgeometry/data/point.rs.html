@@ -546,6 +546,7 @@
 <span id="520">520</span>
 <span id="521">521</span>
 <span id="522">522</span>
+<span id="523">523</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">array_init</span>::{<span class="ident">array_init</span>, <span class="ident">try_array_init</span>};
 <span class="kw">use</span> <span class="ident">num_bigint::BigInt</span>;
 <span class="kw">use</span> <span class="ident">num_rational::BigRational</span>;
@@ -853,6 +854,7 @@
 <span class="kw">mod</span> <span class="ident">sub</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
   <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testing</span>::<span class="kw-2">*</span>;
