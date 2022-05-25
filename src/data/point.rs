@@ -305,6 +305,7 @@ mod add;
 mod sub;
 
 #[cfg(test)]
+#[cfg(not(tarpaulin_include))]
 pub mod tests {
   use super::*;
   use crate::testing::*;

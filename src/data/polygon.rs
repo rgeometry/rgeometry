@@ -774,11 +774,13 @@ impl Position {
 }
 
 #[cfg(test)]
+#[cfg(not(tarpaulin_include))]
 pub mod tests {
   use super::*;
 
   use crate::testing::*;
   use ordered_float::NotNan;
+  use proptest::collection::vec;
   use proptest::prelude::*;
   use proptest::proptest as proptest_block;
   use test_strategy::proptest;
@@ -810,6 +812,23 @@ pub mod tests {
     #[test]
     fn fuzz_centroid(poly in polygon_nn()) {
       poly.centroid();
+    }
+
+    #[test]
+    fn signed_area_non_negative_prop(poly in polygon_nn()) {
+      prop_assert!( poly.signed_area::<NotNan<f64>>() >= NotNan::zero())
+    }
+
+    #[test]
+    fn fuzz_orientation(pts in vec(any_nn(), 2..100)) {
+      let poly = Polygon::new_unchecked(pts);
+      poly.orientation();
+    }
+
+    #[test]
+    fn fuzz_ensure_ccw(pts in vec(any_nn(), 2..100)) {
+      let mut poly = Polygon::new_unchecked(pts);
+      poly.ensure_ccw().ok();
     }
   }
 
