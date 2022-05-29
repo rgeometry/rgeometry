@@ -365,7 +365,9 @@
 <span id="339">339</span>
 <span id="340">340</span>
 <span id="341">341</span>
+<span id="342">342</span>
 </pre><pre class="rust"><code><span class="comment">// #![deny(warnings)]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">coverage_nightly</span>, <span class="ident">feature</span>(<span class="ident">no_coverage</span>))]</span>
 <span class="attribute">#![<span class="ident">doc</span>(<span class="ident">test</span>(<span class="ident">no_crate_inject</span>))]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="comment">// #![allow(incomplete_features)]</span>

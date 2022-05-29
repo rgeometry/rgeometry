@@ -944,6 +944,12 @@
 <span id="918">918</span>
 <span id="919">919</span>
 <span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
 </pre><pre class="rust"><code><span class="comment">// use claim::debug_assert_ok;</span>
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">ordered_float::OrderedFloat</span>;
@@ -1720,7 +1726,6 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
@@ -1731,30 +1736,37 @@
   <span class="kw">use</span> <span class="ident">proptest::proptest</span> <span class="kw">as</span> <span class="ident">proptest_block</span>;
   <span class="kw">use</span> <span class="ident">test_strategy::proptest</span>;
 
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">random_polygon</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
-  }
-
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">fuzz_new_polygon</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
-    <span class="comment">// make sure there&#39;s no input that can cause a panic. Err is okay, panic is not.</span>
-    <span class="ident">Polygon::new</span>(<span class="ident">pts</span>).<span class="ident">ok</span>();
-  }
-
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">fuzz_validate</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
-    <span class="comment">// make sure there&#39;s no input that can cause a panic. Err is okay, panic is not.</span>
-    <span class="ident">Polygon::new_unchecked</span>(<span class="ident">pts</span>).<span class="ident">validate</span>().<span class="ident">ok</span>();
-  }
-
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">fuzz_validate_weakly</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
-    <span class="comment">// make sure there&#39;s no input that can cause a panic. Err is okay, panic is not.</span>
-    <span class="ident">Polygon::new_unchecked</span>(<span class="ident">pts</span>).<span class="ident">validate_weakly</span>().<span class="ident">ok</span>();
-  }
-
   <span class="macro">proptest_block!</span> {
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">random_polygon</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fuzz_new_polygon</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+      <span class="comment">// make sure there&#39;s no input that can cause a panic. Err is okay, panic is not.</span>
+      <span class="ident">Polygon::new</span>(<span class="ident">pts</span>).<span class="ident">ok</span>();
+    }
+
+    <span class="comment">// These traits are usually derived but let&#39;s not rely on that.</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fuzz_polygon_traits</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>);
+      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">clone</span>();
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fuzz_validate</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+      <span class="comment">// make sure there&#39;s no input that can cause a panic. Err is okay, panic is not.</span>
+      <span class="ident">Polygon::new_unchecked</span>(<span class="ident">pts</span>).<span class="ident">validate</span>().<span class="ident">ok</span>();
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fuzz_validate_weakly</span>(<span class="ident">pts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+      <span class="comment">// make sure there&#39;s no input that can cause a panic. Err is okay, panic is not.</span>
+      <span class="ident">Polygon::new_unchecked</span>(<span class="ident">pts</span>).<span class="ident">validate_weakly</span>().<span class="ident">ok</span>();
+    }
+
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">fuzz_centroid</span>(<span class="ident">poly</span> <span class="kw">in</span> <span class="ident">polygon_nn</span>()) {
       <span class="ident">poly</span>.<span class="ident">centroid</span>();
@@ -1775,6 +1787,14 @@
     <span class="kw">fn</span> <span class="ident">fuzz_ensure_ccw</span>(<span class="ident">pts</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any_nn</span>(), <span class="number">2</span>..<span class="number">100</span>)) {
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">poly</span> <span class="op">=</span> <span class="ident">Polygon::new_unchecked</span>(<span class="ident">pts</span>);
       <span class="ident">poly</span>.<span class="ident">ensure_ccw</span>().<span class="ident">ok</span>();
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">locate_id_prop</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>, <span class="ident">origin</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+      <span class="macro">prop_assert_eq!</span>(
+        <span class="ident">locate_by_triangulation</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>, <span class="kw-2">&amp;</span><span class="ident">origin</span>),
+        <span class="ident">poly</span>.<span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="ident">origin</span>)
+      )
     }
   }
 
@@ -1854,14 +1874,6 @@
       }
     }
     <span class="kw">return</span> <span class="ident">PointLocation::Outside</span>;
-  }
-
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">locate_id_prop</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>, <span class="ident">origin</span>: <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-    <span class="macro">prop_assert_eq!</span>(
-      <span class="ident">locate_by_triangulation</span>(<span class="kw-2">&amp;</span><span class="ident">poly</span>, <span class="kw-2">&amp;</span><span class="ident">origin</span>),
-      <span class="ident">poly</span>.<span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="ident">origin</span>)
-    )
   }
 }
 </code></pre></div>

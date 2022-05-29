@@ -320,6 +320,19 @@
 <span id="294">294</span>
 <span id="295">295</span>
 <span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">ordered_float::OrderedFloat</span>;
@@ -353,9 +366,7 @@
   <span class="doccomment">/// # Time complexity</span>
   <span class="doccomment">/// $O(1)$</span>
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">convex</span> <span class="op">=</span> <span class="ident">PolygonConvex</span>(<span class="ident">poly</span>);
-    <span class="macro">debug_assert_ok!</span>(<span class="ident">convex</span>.<span class="ident">validate</span>());
-    <span class="ident">convex</span>
+    <span class="ident">PolygonConvex</span>(<span class="ident">poly</span>)
   }
 
   <span class="doccomment">/// Locate a point relative to a convex polygon.</span>
@@ -560,60 +571,75 @@
 <span class="comment">// Tests</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
   <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
   <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+  <span class="kw">use</span> <span class="ident">proptest::proptest</span> <span class="kw">as</span> <span class="ident">proptest_block</span>;
   <span class="kw">use</span> <span class="ident">test_strategy::proptest</span>;
 
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid_i8</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>)
-  }
+  <span class="macro">proptest_block!</span> {
+    <span class="comment">// These traits are usually derived but let&#39;s not rely on that.</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fuzz_convex_traits</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>);
+      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">clone</span>();
+    }
 
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">random_convex_prop</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-    <span class="kw">let</span> (<span class="ident">min</span>, <span class="ident">max</span>) <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">bounding_box</span>();
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">min</span>.<span class="ident">y_coord</span>(), <span class="kw-2">&amp;</span><span class="number">0</span>);
-    <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">x_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">x_coord</span>();
-    <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">y_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">y_coord</span>();
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">width</span>, <span class="ident">i8::MAX</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">height</span>, <span class="ident">i8::MAX</span>);
-  }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fuzz_validate</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+      <span class="kw">let</span> <span class="ident">convex</span> <span class="op">=</span> <span class="ident">PolygonConvex::new_unchecked</span>(<span class="ident">poly</span>);
+      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">convex</span>.<span class="ident">validate</span>();
+    }
 
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid_i64</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>) {
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>)
-  }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid_i8</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>)
+    }
 
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">sum_to_max</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="number">1</span>..<span class="number">1000</span>)]</span> <span class="ident">n</span>: <span class="ident">i32</span>) {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
-    <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between_iter</span>::<span class="op">&lt;</span><span class="ident">i8</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>(), <span class="ident">i8::MAX</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">random_convex_prop</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
+      <span class="kw">let</span> (<span class="ident">min</span>, <span class="ident">max</span>) <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">bounding_box</span>();
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">min</span>.<span class="ident">y_coord</span>(), <span class="kw-2">&amp;</span><span class="number">0</span>);
+      <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">x_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">x_coord</span>();
+      <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">y_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">y_coord</span>();
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">width</span>, <span class="ident">i8::MAX</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">height</span>, <span class="ident">i8::MAX</span>);
+    }
 
-    <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between_iter</span>::<span class="op">&lt;</span><span class="ident">i64</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>(), <span class="ident">i64::MAX</span>);
-  }
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid_i64</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>) {
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>)
+    }
 
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">random_between_zero_properties</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="number">2</span>..<span class="number">1000</span>)]</span> <span class="ident">n</span>: <span class="ident">i32</span>) {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
-    <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_between_zero</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>(), <span class="number">0</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">len</span>(), <span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">sum_to_max</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">1</span>..<span class="number">1000</span>) {
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
+      <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between_iter</span>::<span class="op">&lt;</span><span class="ident">i8</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>(), <span class="ident">i8::MAX</span>);
 
-    <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_between_zero</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>(), <span class="number">0</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">len</span>(), <span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>);
-  }
+      <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between_iter</span>::<span class="op">&lt;</span><span class="ident">i64</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>(), <span class="ident">i64::MAX</span>);
+    }
 
-  <span class="attribute">#[<span class="ident">proptest</span>]</span>
-  <span class="kw">fn</span> <span class="ident">sum_to_zero_vector</span>(<span class="attribute">#[<span class="ident">strategy</span>(<span class="number">2</span>..<span class="number">1000</span>)]</span> <span class="ident">n</span>: <span class="ident">i32</span>) {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
-    <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-    <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">into_iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="ident">Vector</span>([<span class="number">0</span>, <span class="number">0</span>]))
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">random_between_zero_properties</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">2</span>..<span class="number">1000</span>) {
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
+      <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_between_zero</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>(), <span class="number">0</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">len</span>(), <span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>);
+
+      <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_between_zero</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>(), <span class="number">0</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">len</span>(), <span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">sum_to_zero_vector</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">2</span>..<span class="number">1000</span>) {
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
+      <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
+      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">into_iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="ident">Vector</span>([<span class="number">0</span>, <span class="number">0</span>]))
+    }
   }
 }
 </code></pre></div>
