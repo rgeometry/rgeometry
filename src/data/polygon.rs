@@ -774,7 +774,6 @@ impl Position {
 }
 
 #[cfg(test)]
-#[cfg(not(tarpaulin_include))]
 pub mod tests {
   use super::*;
 
@@ -785,30 +784,37 @@ pub mod tests {
   use proptest::proptest as proptest_block;
   use test_strategy::proptest;
 
-  #[proptest]
-  fn random_polygon(poly: Polygon<i8>) {
-    prop_assert_eq!(poly.validate().err(), None);
-  }
-
-  #[proptest]
-  fn fuzz_new_polygon(pts: Vec<Point<i8>>) {
-    // make sure there's no input that can cause a panic. Err is okay, panic is not.
-    Polygon::new(pts).ok();
-  }
-
-  #[proptest]
-  fn fuzz_validate(pts: Vec<Point<i8>>) {
-    // make sure there's no input that can cause a panic. Err is okay, panic is not.
-    Polygon::new_unchecked(pts).validate().ok();
-  }
-
-  #[proptest]
-  fn fuzz_validate_weakly(pts: Vec<Point<i8>>) {
-    // make sure there's no input that can cause a panic. Err is okay, panic is not.
-    Polygon::new_unchecked(pts).validate_weakly().ok();
-  }
-
   proptest_block! {
+    #[test]
+    fn random_polygon(poly: Polygon<i8>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[test]
+    fn fuzz_new_polygon(pts: Vec<Point<i8>>) {
+      // make sure there's no input that can cause a panic. Err is okay, panic is not.
+      Polygon::new(pts).ok();
+    }
+
+    // These traits are usually derived but let's not rely on that.
+    #[test]
+    fn fuzz_polygon_traits(poly: Polygon<i8>) {
+      let _ = format!("{:?}", &poly);
+      let _ = poly.clone();
+    }
+
+    #[test]
+    fn fuzz_validate(pts: Vec<Point<i8>>) {
+      // make sure there's no input that can cause a panic. Err is okay, panic is not.
+      Polygon::new_unchecked(pts).validate().ok();
+    }
+
+    #[test]
+    fn fuzz_validate_weakly(pts: Vec<Point<i8>>) {
+      // make sure there's no input that can cause a panic. Err is okay, panic is not.
+      Polygon::new_unchecked(pts).validate_weakly().ok();
+    }
+
     #[test]
     fn fuzz_centroid(poly in polygon_nn()) {
       poly.centroid();
@@ -829,6 +835,14 @@ pub mod tests {
     fn fuzz_ensure_ccw(pts in vec(any_nn(), 2..100)) {
       let mut poly = Polygon::new_unchecked(pts);
       poly.ensure_ccw().ok();
+    }
+
+    #[test]
+    fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8>) {
+      prop_assert_eq!(
+        locate_by_triangulation(&poly, &origin),
+        poly.locate(&origin)
+      )
     }
   }
 
@@ -908,13 +922,5 @@ pub mod tests {
       }
     }
     return PointLocation::Outside;
-  }
-
-  #[proptest]
-  fn locate_id_prop(poly: Polygon<i8>, origin: Point<i8>) {
-    prop_assert_eq!(
-      locate_by_triangulation(&poly, &origin),
-      poly.locate(&origin)
-    )
   }
 }

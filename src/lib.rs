@@ -1,4 +1,5 @@
 // #![deny(warnings)]
+#![cfg_attr(coverage_nightly, feature(no_coverage))]
 #![doc(test(no_crate_inject))]
 #![allow(unused_imports)]
 // #![allow(incomplete_features)]
