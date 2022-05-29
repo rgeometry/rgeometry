@@ -31,9 +31,7 @@ where
   /// # Time complexity
   /// $O(1)$
   pub fn new_unchecked(poly: Polygon<T>) -> PolygonConvex<T> {
-    let convex = PolygonConvex(poly);
-    // debug_assert_ok!(convex.validate());
-    convex
+    PolygonConvex(poly)
   }
 
   /// Locate a point relative to a convex polygon.
