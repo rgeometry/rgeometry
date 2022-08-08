@@ -179,7 +179,7 @@ impl<T, const N: usize> Index<usize> for Point<T, N> {
   }
 }
 
-impl<'a, const N: usize> TryFrom<Point<f64, N>> for Point<NotNan<f64>, N> {
+impl<const N: usize> TryFrom<Point<f64, N>> for Point<NotNan<f64>, N> {
   type Error = FloatIsNan;
   fn try_from(point: Point<f64, N>) -> Result<Point<NotNan<f64>, N>, FloatIsNan> {
     Ok(Point {
