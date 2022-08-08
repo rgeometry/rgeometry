@@ -14,18 +14,74 @@ use std::ops::Deref;
 use std::ops::Index;
 
 use super::{Direction, Vector};
-use crate::{Orientation, PolygonScalar};
+use crate::{Orientation, PolygonScalar, TotalOrd};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy)]
 #[repr(transparent)] // Required for correctness!
 pub struct Point<T, const N: usize = 2> {
   pub array: [T; N],
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+impl<T: TotalOrd, const N: usize> TotalOrd for Point<T, N> {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    for i in 0..N {
+      match self.array[i].total_cmp(&other.array[i]) {
+        Ordering::Equal => continue,
+        other => return other,
+      }
+    }
+    Ordering::Equal
+  }
+}
+
+impl<T: TotalOrd, const N: usize> PartialEq for Point<T, N> {
+  fn eq(&self, other: &Self) -> bool {
+    self.total_cmp(other).is_eq()
+  }
+}
+impl<T: TotalOrd, const N: usize> Eq for Point<T, N> {}
+
+impl<T: TotalOrd, const N: usize> PartialOrd for Point<T, N> {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.total_cmp(other))
+  }
+}
+
+impl<T: TotalOrd, const N: usize> Ord for Point<T, N> {
+  fn cmp(&self, other: &Self) -> Ordering {
+    self.total_cmp(other)
+  }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct PointSoS<'a, T, const N: usize = 2> {
   pub index: u32,
   pub point: &'a Point<T, N>,
+}
+
+impl<'a, T: TotalOrd, const N: usize> TotalOrd for PointSoS<'a, T, N> {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    (self.index, self.point).total_cmp(&(other.index, other.point))
+  }
+}
+
+impl<'a, T: TotalOrd, const N: usize> PartialEq for PointSoS<'a, T, N> {
+  fn eq(&self, other: &Self) -> bool {
+    self.total_cmp(other).is_eq()
+  }
+}
+impl<'a, T: TotalOrd, const N: usize> Eq for PointSoS<'a, T, N> {}
+
+impl<'a, T: TotalOrd, const N: usize> PartialOrd for PointSoS<'a, T, N> {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.total_cmp(other))
+  }
+}
+
+impl<'a, T: TotalOrd, const N: usize> Ord for PointSoS<'a, T, N> {
+  fn cmp(&self, other: &Self) -> Ordering {
+    self.total_cmp(other)
+  }
 }
 
 // Random sampling.

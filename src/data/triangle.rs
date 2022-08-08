@@ -1,5 +1,5 @@
 use super::{Point, PointLocation};
-use crate::{Error, Orientation, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 use claim::debug_assert_ok;
 use num_traits::*;
 use rand::distributions::uniform::SampleUniform;
@@ -130,23 +130,23 @@ where
   pub fn bounding_box(&self) -> (Point<T, 2>, Point<T, 2>) {
     let min_x = self.0[0]
       .x_coord()
-      .min(self.0[1].x_coord())
-      .min(self.0[2].x_coord())
+      .total_min(self.0[1].x_coord())
+      .total_min(self.0[2].x_coord())
       .clone();
     let max_x = self.0[0]
       .x_coord()
-      .max(self.0[1].x_coord())
-      .max(self.0[2].x_coord())
+      .total_max(self.0[1].x_coord())
+      .total_max(self.0[2].x_coord())
       .clone();
     let min_y = self.0[0]
       .y_coord()
-      .min(self.0[1].y_coord())
-      .min(self.0[2].y_coord())
+      .total_min(self.0[1].y_coord())
+      .total_min(self.0[2].y_coord())
       .clone();
     let max_y = self.0[0]
       .y_coord()
-      .max(self.0[1].y_coord())
-      .max(self.0[2].y_coord())
+      .total_max(self.0[1].y_coord())
+      .total_max(self.0[2].y_coord())
       .clone();
     (Point::new([min_x, min_y]), Point::new([max_x, max_y]))
   }
