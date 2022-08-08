@@ -422,6 +422,13 @@ floating_precision!(f32);
 floating_precision!(f64);
 
 #[cfg(feature = "rug")]
+impl TotalOrd for rug::Integer {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    self.cmp(other)
+  }
+}
+
+#[cfg(feature = "rug")]
 impl PolygonScalar for rug::Integer {
   fn from_constant(val: i8) -> Self {
     rug::Integer::from(val)
