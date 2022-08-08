@@ -1,5 +1,5 @@
 use crate::data::{Point, Polygon, PolygonConvex};
-use crate::{Error, Orientation, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 
 // https://en.wikipedia.org/wiki/Graham_scan
 
@@ -85,7 +85,7 @@ where
   pts.sort_unstable_by(|a, b| {
     smallest
       .ccw_cmp_around(a, b)
-      .then_with(|| (a.y_coord(), a.x_coord()).cmp(&(b.y_coord(), b.x_coord())))
+      .then_with(|| (a.y_coord(), a.x_coord()).total_cmp(&(b.y_coord(), b.x_coord())))
     // .then_with(|| smallest.cmp_distance_to(a, b))
   });
   if pts.len() < 3 {
@@ -138,7 +138,7 @@ where
   Ok(
     pts
       .iter()
-      .min_by_key(|a| (a.y_coord(), a.x_coord()))
+      .min_by(|a, b| TotalOrd::total_cmp(&(a.y_coord(), a.x_coord()), &(b.y_coord(), b.x_coord())))
       .ok_or(Error::InsufficientVertices)?
       .clone(),
   )

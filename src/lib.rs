@@ -51,9 +51,55 @@ impl std::fmt::Display for Error {
   }
 }
 
+pub trait TotalOrd {
+  fn total_cmp(&self, other: &Self) -> Ordering;
+
+  fn total_min(self, other: Self) -> Self
+  where
+    Self: Sized,
+  {
+    std::cmp::min_by(self, other, TotalOrd::total_cmp)
+  }
+
+  fn total_max(self, other: Self) -> Self
+  where
+    Self: Sized,
+  {
+    std::cmp::max_by(self, other, TotalOrd::total_cmp)
+  }
+}
+
+impl TotalOrd for u32 {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    self.cmp(other)
+  }
+}
+
+impl<A: TotalOrd> TotalOrd for &A {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    (*self).total_cmp(*other)
+  }
+}
+
+impl<A: TotalOrd, B: TotalOrd> TotalOrd for (A, B) {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    self
+      .0
+      .total_cmp(&other.0)
+      .then_with(|| self.1.total_cmp(&other.1))
+  }
+}
+
 // FIXME: Should include ZHashable.
 pub trait PolygonScalar:
-  std::fmt::Debug + Neg<Output = Self> + NumAssignOps + NumOps<Self, Self> + Ord + Sum + Clone
+  std::fmt::Debug
+  + Neg<Output = Self>
+  + NumAssignOps
+  + NumOps<Self, Self>
+  + TotalOrd
+  + PartialOrd
+  + Sum
+  + Clone
 {
   fn from_constant(val: i8) -> Self;
   fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
@@ -64,6 +110,12 @@ pub trait PolygonScalar:
 
 macro_rules! fixed_precision {
   ( $ty:ty, $uty:ty, $long:ty, $ulong: ty ) => {
+    impl TotalOrd for $ty {
+      fn total_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+      }
+    }
+
     impl PolygonScalar for $ty {
       fn from_constant(val: i8) -> Self {
         val as $ty
@@ -188,6 +240,12 @@ macro_rules! fixed_precision {
 macro_rules! arbitrary_precision {
   ( $( $ty:ty ),* ) => {
     $(
+      impl TotalOrd for $ty {
+        fn total_cmp(&self, other: &Self) -> Ordering {
+          self.cmp(other)
+        }
+      }
+
       impl PolygonScalar for $ty {
       fn from_constant(val: i8) -> Self {
         <$ty>::from_i8(val).unwrap()
@@ -224,9 +282,16 @@ macro_rules! arbitrary_precision {
     })*
   };
 }
-macro_rules! floating_precision {
+
+macro_rules! wrapped_floating_precision {
   ( $( $ty:ty ),* ) => {
     $(
+      impl TotalOrd for $ty {
+        fn total_cmp(&self, other: &Self) -> Ordering {
+          self.cmp(other)
+        }
+      }
+
       impl PolygonScalar for $ty {
       fn from_constant(val: i8) -> Self {
         <$ty>::from_i8(val).unwrap()
@@ -280,6 +345,68 @@ macro_rules! floating_precision {
   };
 }
 
+macro_rules! floating_precision {
+  ( $( $ty:ty ),* ) => {
+    $(
+      impl TotalOrd for $ty {
+        fn total_cmp(&self, other: &Self) -> Ordering {
+          <$ty>::total_cmp(self, other)
+        }
+      }
+
+      impl PolygonScalar for $ty {
+      fn from_constant(val: i8) -> Self {
+        <$ty>::from_i8(val).unwrap()
+      }
+      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
+      // roughly 100x slower than necessary.
+      fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        PolygonScalar::cmp_dist(
+          &[float_to_rational(p[0]), float_to_rational(p[1])],
+          &[float_to_rational(q[0]), float_to_rational(q[1])],
+          &[float_to_rational(r[0]), float_to_rational(r[1])],
+        )
+      }
+
+      // This function uses the arbitrary precision machinery of `geometry_predicates` to
+      // quickly compute the orientation of three 2D points. This is about 10x-50x slower
+      // than the inexact version.
+      fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+        let orient = geometry_predicates::predicates::orient2d(
+          [p[0] as f64, p[1] as f64],
+          [q[0] as f64, q[1] as f64],
+          [r[0] as f64, r[1] as f64],
+        );
+        if orient > 0.0 {
+          Ordering::Greater
+        } else if orient < 0.0 {
+          Ordering::Less
+        } else {
+          Ordering::Equal
+        }
+      }
+      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
+      // roughly 100x slower than necessary.
+      fn cmp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
+        PolygonScalar::cmp_vector_slope(
+          &[float_to_rational(vector[0]), float_to_rational(vector[1])],
+          &[float_to_rational(p[0]), float_to_rational(p[1])],
+          &[float_to_rational(q[0]), float_to_rational(q[1])],
+        )
+      }
+      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
+      // roughly 100x slower than necessary.
+      fn cmp_perp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
+        PolygonScalar::cmp_perp_vector_slope(
+          &[float_to_rational(vector[0]), float_to_rational(vector[1])],
+          &[float_to_rational(p[0]), float_to_rational(p[1])],
+          &[float_to_rational(q[0]), float_to_rational(q[1])],
+        )
+      }
+    })*
+  };
+}
+
 fixed_precision!(i8, u8, i16, u16);
 fixed_precision!(i16, u16, i32, u32);
 fixed_precision!(i32, u32, i64, u64);
@@ -287,10 +414,19 @@ fixed_precision!(i64, u64, i128, u128);
 fixed_precision!(isize, usize, i128, u128);
 arbitrary_precision!(num_bigint::BigInt);
 arbitrary_precision!(num_rational::BigRational);
-floating_precision!(ordered_float::OrderedFloat<f32>);
-floating_precision!(ordered_float::OrderedFloat<f64>);
-floating_precision!(ordered_float::NotNan<f32>);
-floating_precision!(ordered_float::NotNan<f64>);
+wrapped_floating_precision!(ordered_float::OrderedFloat<f32>);
+wrapped_floating_precision!(ordered_float::OrderedFloat<f64>);
+wrapped_floating_precision!(ordered_float::NotNan<f32>);
+wrapped_floating_precision!(ordered_float::NotNan<f64>);
+floating_precision!(f32);
+floating_precision!(f64);
+
+#[cfg(feature = "rug")]
+impl TotalOrd for rug::Integer {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    self.cmp(other)
+  }
+}
 
 #[cfg(feature = "rug")]
 impl PolygonScalar for rug::Integer {

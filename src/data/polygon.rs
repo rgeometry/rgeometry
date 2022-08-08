@@ -1,6 +1,7 @@
 // use claim::debug_assert_ok;
 use num_traits::*;
 use ordered_float::OrderedFloat;
+use std::cmp::Ordering;
 use std::iter::Sum;
 use std::ops::Bound::*;
 use std::ops::*;
@@ -9,7 +10,7 @@ use crate::data::{
   DirectedEdge, HalfLineSoS, IHalfLineLineSegmentSoS::*, Point, PointLocation, TriangleView, Vector,
 };
 use crate::intersection::*;
-use crate::{Error, Orientation, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 
 mod iter;
 pub use iter::*;
@@ -623,6 +624,12 @@ impl Polygon<OrderedFloat<f64>> {
 pub struct Cursor<'a, T> {
   polygon: &'a Polygon<T>,
   pub(crate) position: Position,
+}
+
+impl<'a, T: TotalOrd> TotalOrd for Cursor<'a, T> {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    self.deref().total_cmp(other.deref())
+  }
 }
 
 impl<'a, T> Deref for Cursor<'a, T> {

@@ -3,6 +3,7 @@
 use crate::data::Cursor;
 use crate::data::DirectedEdge;
 use crate::data::Point;
+use crate::TotalOrd;
 
 pub struct Iter<'a, T: 'a> {
   pub(crate) iter: std::slice::Iter<'a, Point<T, 2>>,
@@ -29,7 +30,7 @@ pub struct EdgeIter<'a, T: 'a> {
   pub(crate) iter: CursorIter<'a, T>,
 }
 
-impl<'a, T: Clone> Iterator for EdgeIter<'a, T> {
+impl<'a, T: TotalOrd + Clone> Iterator for EdgeIter<'a, T> {
   type Item = DirectedEdge<'a, T, 2>;
   fn next(&mut self) -> Option<Self::Item> {
     let cursor = self.iter.next()?;

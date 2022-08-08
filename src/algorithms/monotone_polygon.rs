@@ -1,6 +1,6 @@
 // https://en.wikipedia.org/wiki/Monotone_polygon
 use crate::data::{Cursor, Point, Polygon, Vector};
-use crate::{Error, Orientation, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 
 use std::cmp::Ordering;
 use std::collections::VecDeque;
@@ -14,7 +14,8 @@ where
   // We can only check polygons without. It would be nice to enforce this with types.
   assert_eq!(poly.rings.len(), 1);
 
-  let cmp_cursors = |a: &Cursor<'_, T>, b: &Cursor<'_, T>| direction.cmp_along(a, b).then(a.cmp(b));
+  let cmp_cursors =
+    |a: &Cursor<'_, T>, b: &Cursor<'_, T>| direction.cmp_along(a, b).then_with(|| a.total_cmp(b));
   // XXX: Is there a way to get both the min and max element at the same time?
   let max_cursor = {
     match poly.iter_boundary().max_by(cmp_cursors) {
@@ -58,7 +59,11 @@ where
 {
   // First compare along the direction vector.
   // If two points are the same distance along the vector, compare their X and Y components.
-  points.sort_by(|prev, curr| direction.cmp_along(prev, curr).then(prev.cmp(curr)));
+  points.sort_by(|prev, curr| {
+    direction
+      .cmp_along(prev, curr)
+      .then_with(|| prev.total_cmp(curr))
+  });
 
   points.dedup();
   if points.len() < 3 {

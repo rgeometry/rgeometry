@@ -88,7 +88,7 @@ impl<'a, T, const N: usize> From<&'a Point<T, N>> for VectorView<'a, T, N> {
   }
 }
 
-impl<'a, const N: usize> TryFrom<Vector<f64, N>> for Vector<BigRational, N> {
+impl<const N: usize> TryFrom<Vector<f64, N>> for Vector<BigRational, N> {
   type Error = ();
   fn try_from(point: Vector<f64, N>) -> Result<Vector<BigRational, N>, ()> {
     Ok(Vector(try_array_init(|i| {

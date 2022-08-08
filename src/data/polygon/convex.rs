@@ -8,7 +8,7 @@ use rand::Rng;
 use std::ops::*;
 
 use crate::data::{Point, PointLocation, TriangleView, Vector};
-use crate::{Error, Orientation, PolygonScalar};
+use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 
 use super::Polygon;
 
@@ -193,7 +193,7 @@ where
   while pts.len() < n - 1 {
     pts.push(rng.gen_range(zero..max));
   }
-  pts.sort_unstable();
+  pts.sort_unstable_by(TotalOrd::total_cmp);
   pts.push(max);
   pts.into_iter().scan(zero, |from, x| {
     let out = x - *from;
