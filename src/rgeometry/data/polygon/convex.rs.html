@@ -343,7 +343,7 @@
 <span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data</span>::{<span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">TriangleView</span>, <span class="ident">Vector</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>, <span class="ident">TotalOrd</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Polygon</span>;
 
@@ -528,7 +528,7 @@
   <span class="kw">while</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> {
     <span class="ident">pts</span>.<span class="ident">push</span>(<span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="ident">zero</span>..<span class="ident">max</span>));
   }
-  <span class="ident">pts</span>.<span class="ident">sort_unstable</span>();
+  <span class="ident">pts</span>.<span class="ident">sort_unstable_by</span>(<span class="ident">TotalOrd::total_cmp</span>);
   <span class="ident">pts</span>.<span class="ident">push</span>(<span class="ident">max</span>);
   <span class="ident">pts</span>.<span class="ident">into_iter</span>().<span class="ident">scan</span>(<span class="ident">zero</span>, <span class="op">|</span><span class="ident">from</span>, <span class="ident">x</span><span class="op">|</span> {
     <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">x</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">from</span>;
@@ -643,5 +643,5 @@
   }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="rgeometry" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="rgeometry" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>

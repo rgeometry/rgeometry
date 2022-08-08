@@ -206,7 +206,7 @@
 <span id="180">180</span>
 <span id="181">181</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Point</span>, <span class="ident">PointLocation</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>, <span class="ident">TotalOrd</span>};
 <span class="kw">use</span> <span class="ident">claim::debug_assert_ok</span>;
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">rand::distributions::uniform::SampleUniform</span>;
@@ -337,23 +337,23 @@
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bounding_box</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>, <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">min_x</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>[<span class="number">0</span>]
       .<span class="ident">x_coord</span>()
-      .<span class="ident">min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">x_coord</span>())
-      .<span class="ident">min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">x_coord</span>())
+      .<span class="ident">total_min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">x_coord</span>())
+      .<span class="ident">total_min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">x_coord</span>())
       .<span class="ident">clone</span>();
     <span class="kw">let</span> <span class="ident">max_x</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>[<span class="number">0</span>]
       .<span class="ident">x_coord</span>()
-      .<span class="ident">max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">x_coord</span>())
-      .<span class="ident">max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">x_coord</span>())
+      .<span class="ident">total_max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">x_coord</span>())
+      .<span class="ident">total_max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">x_coord</span>())
       .<span class="ident">clone</span>();
     <span class="kw">let</span> <span class="ident">min_y</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>[<span class="number">0</span>]
       .<span class="ident">y_coord</span>()
-      .<span class="ident">min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">y_coord</span>())
-      .<span class="ident">min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">y_coord</span>())
+      .<span class="ident">total_min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">y_coord</span>())
+      .<span class="ident">total_min</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">y_coord</span>())
       .<span class="ident">clone</span>();
     <span class="kw">let</span> <span class="ident">max_y</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>[<span class="number">0</span>]
       .<span class="ident">y_coord</span>()
-      .<span class="ident">max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">y_coord</span>())
-      .<span class="ident">max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">y_coord</span>())
+      .<span class="ident">total_max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>].<span class="ident">y_coord</span>())
+      .<span class="ident">total_max</span>(<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>].<span class="ident">y_coord</span>())
       .<span class="ident">clone</span>();
     (<span class="ident">Point::new</span>([<span class="ident">min_x</span>, <span class="ident">min_y</span>]), <span class="ident">Point::new</span>([<span class="ident">max_x</span>, <span class="ident">max_y</span>]))
   }
@@ -387,5 +387,5 @@
   <span class="comment">//     v = v3^.core .-. v1^.core</span>
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rgeometry" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rgeometry" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>

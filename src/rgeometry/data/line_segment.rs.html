@@ -619,21 +619,21 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data::point::PointSoS</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Intersects</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>, <span class="ident">TotalOrd</span>};
 <span class="kw">use</span> <span class="ident">Orientation</span>::<span class="kw-2">*</span>;
 
 <span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
 <span class="comment">// EndPoint</span>
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span><span class="op">&gt;</span> {
   <span class="ident">Exclusive</span>(<span class="ident">T</span>),
   <span class="ident">Inclusive</span>(<span class="ident">T</span>),
 }
 
 <span class="kw">use</span> <span class="ident">EndPoint</span>::<span class="kw-2">*</span>;
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span><span class="op">&gt;</span> <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">T</span> {
     <span class="kw">match</span> <span class="self">self</span> {
       <span class="ident">Exclusive</span>(<span class="ident">t</span>) =&gt; <span class="ident">t</span>,
@@ -703,10 +703,10 @@
   }
 }
 
-<span class="kw">fn</span> <span class="ident">inner_between</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PartialOrd</span><span class="op">&gt;</span>(<span class="ident">inner</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>, <span class="ident">a</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">b</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">inner_between</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span><span class="op">&gt;</span>(<span class="ident">inner</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>, <span class="ident">a</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">b</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
   <span class="kw">let</span> <span class="ident">left</span>;
   <span class="kw">let</span> <span class="ident">right</span>;
-  <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">inner</span>() <span class="op">&lt;</span> <span class="ident">b</span>.<span class="ident">inner</span>() {
+  <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">inner</span>().<span class="ident">total_cmp</span>(<span class="ident">b</span>.<span class="ident">inner</span>()).<span class="ident">is_lt</span>() {
     <span class="ident">left</span> <span class="op">=</span> <span class="ident">a</span>;
     <span class="ident">right</span> <span class="op">=</span> <span class="ident">b</span>;
   } <span class="kw">else</span> {
@@ -714,12 +714,12 @@
     <span class="ident">right</span> <span class="op">=</span> <span class="ident">a</span>;
   }
   <span class="kw">let</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">left</span> {
-    <span class="ident">Exclusive</span>(<span class="ident">l</span>) =&gt; <span class="ident">l</span> <span class="op">&lt;</span> <span class="ident">inner</span>,
-    <span class="ident">Inclusive</span>(<span class="ident">l</span>) =&gt; <span class="ident">l</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">inner</span>,
+    <span class="ident">Exclusive</span>(<span class="ident">l</span>) =&gt; <span class="ident">l</span>.<span class="ident">total_cmp</span>(<span class="ident">inner</span>).<span class="ident">is_lt</span>(),
+    <span class="ident">Inclusive</span>(<span class="ident">l</span>) =&gt; <span class="ident">l</span>.<span class="ident">total_cmp</span>(<span class="ident">inner</span>).<span class="ident">is_le</span>(),
   };
   <span class="kw">let</span> <span class="ident">rhs</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">right</span> {
-    <span class="ident">Exclusive</span>(<span class="ident">r</span>) =&gt; <span class="ident">inner</span> <span class="op">&lt;</span> <span class="ident">r</span>,
-    <span class="ident">Inclusive</span>(<span class="ident">r</span>) =&gt; <span class="ident">inner</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">r</span>,
+    <span class="ident">Exclusive</span>(<span class="ident">r</span>) =&gt; <span class="ident">inner</span>.<span class="ident">total_cmp</span>(<span class="ident">r</span>).<span class="ident">is_lt</span>(),
+    <span class="ident">Inclusive</span>(<span class="ident">r</span>) =&gt; <span class="ident">inner</span>.<span class="ident">total_cmp</span>(<span class="ident">r</span>).<span class="ident">is_le</span>(),
   };
   <span class="ident">lhs</span> <span class="op">&amp;&amp;</span> <span class="ident">rhs</span>
 }
@@ -728,15 +728,15 @@
 <span class="comment">// LineSegment</span>
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="ident">min</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
   <span class="kw">pub</span> <span class="ident">max</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">a</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">b</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
   <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Ord</span>,
+    <span class="ident">T</span>: <span class="ident">TotalOrd</span>,
   {
     <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">inner</span>() <span class="op">&lt;</span> <span class="ident">b</span>.<span class="ident">inner</span>() {
       <span class="ident">LineSegment</span> { <span class="ident">min</span>: <span class="ident">a</span>, <span class="ident">max</span>: <span class="ident">b</span> }
@@ -752,7 +752,7 @@
     }
   }
 }
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span><span class="op">&gt;</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
@@ -761,7 +761,7 @@
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Ord</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
   <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">range</span>: <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
     <span class="ident">LineSegment::new</span>(
       <span class="ident">EndPoint::Inclusive</span>(<span class="ident">range</span>.<span class="ident">start</span>),
@@ -770,7 +770,7 @@
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Ord</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span>(<span class="ident">T</span>, <span class="ident">T</span>)<span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span>(<span class="ident">T</span>, <span class="ident">T</span>)<span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
   <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">range</span>: <span class="ident">Range</span><span class="op">&lt;</span>(<span class="ident">T</span>, <span class="ident">T</span>)<span class="op">&gt;</span>) -&gt; <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">LineSegment::new</span>(
       <span class="ident">EndPoint::Inclusive</span>(<span class="ident">range</span>.<span class="ident">start</span>.<span class="ident">into</span>()),
@@ -779,7 +779,7 @@
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Ord</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
   <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">range</span>: <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">LineSegment</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
     <span class="kw">let</span> (<span class="ident">start</span>, <span class="ident">end</span>) <span class="op">=</span> <span class="ident">range</span>.<span class="ident">into_inner</span>();
     <span class="ident">LineSegment::new</span>(<span class="ident">EndPoint::Inclusive</span>(<span class="ident">start</span>), <span class="ident">EndPoint::Inclusive</span>(<span class="ident">end</span>))
@@ -790,18 +790,18 @@
 <span class="comment">// LineSegmentView</span>
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="ident">min</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
   <span class="kw">pub</span> <span class="ident">max</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegmentSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineSegmentSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="ident">min</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">PointSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
   <span class="kw">pub</span> <span class="ident">max</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="ident">PointSoS</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
   <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
     <span class="ident">LineSegmentView</span> {
       <span class="ident">min</span>: <span class="self">self</span>.<span class="ident">min</span>,
@@ -809,15 +809,15 @@
     }
   }
 }
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Copy</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {}
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">Copy</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {}
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
     <span class="ident">a</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">b</span>: <span class="ident">EndPoint</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
   ) -&gt; <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
   <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Ord</span>,
+    <span class="ident">T</span>: <span class="ident">TotalOrd</span>,
   {
     <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">inner</span>() <span class="op">&lt;</span> <span class="ident">b</span>.<span class="ident">inner</span>() {
       <span class="ident">LineSegmentView</span> { <span class="ident">min</span>: <span class="ident">a</span>, <span class="ident">max</span>: <span class="ident">b</span> }
@@ -827,7 +827,7 @@
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span><span class="op">&gt;</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span>
   <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
@@ -837,7 +837,7 @@
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Ord</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
   <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">range</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
     <span class="ident">LineSegmentView::new</span>(
       <span class="ident">EndPoint::Inclusive</span>(<span class="kw-2">&amp;</span><span class="ident">range</span>.<span class="ident">start</span>),
@@ -846,7 +846,7 @@
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Ord</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
   <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">range</span>: <span class="ident">Range</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
     <span class="ident">LineSegmentView::new</span>(
       <span class="ident">EndPoint::Inclusive</span>(<span class="ident">range</span>.<span class="ident">start</span>),
@@ -855,7 +855,7 @@
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Ord</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>
   <span class="kw">for</span> <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
 {
   <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">range</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
@@ -870,7 +870,7 @@
 <span class="comment">// ILineSegment</span>
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ILineSegment</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ILineSegment</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TotalOrd</span><span class="op">&gt;</span> {
   <span class="ident">Crossing</span>,                        <span class="comment">// Lines touch but are not parallel.</span>
   <span class="ident">Overlap</span>(<span class="ident">LineSegmentView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>), <span class="comment">// Lines touch and are parallel.</span>
 }
@@ -1193,5 +1193,5 @@
   }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rgeometry" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rgeometry" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>

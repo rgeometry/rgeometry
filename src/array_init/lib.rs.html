@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/array-init-2.0.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/array-init-2.0.1/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
     <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../array_init/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"></h2>
     </nav>
@@ -377,6 +377,90 @@
 <span id="372">372</span>
 <span id="373">373</span>
 <span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">no_std</span>]</span>
 
 <span class="doccomment">//! The `array-init` crate allows you to initialize arrays</span>
@@ -482,13 +566,48 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// let four = [1,2,3,4];</span>
 <span class="doccomment">/// let mut iter = four.iter().copied().cycle();</span>
-<span class="doccomment">/// let arr: [u32; 50] = array_init::from_iter(iter).unwrap();</span>
+<span class="doccomment">/// let arr: [u32; 10] = array_init::from_iter(iter).unwrap();</span>
+<span class="doccomment">/// assert_eq!(arr, [1, 2, 3, 4, 1, 2, 3, 4, 1, 2]);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_iter</span><span class="op">&lt;</span><span class="ident">Iterable</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span>(<span class="ident">iterable</span>: <span class="ident">Iterable</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="ident">N</span>]<span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Iterable</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
 {
-    <span class="ident">try_array_init</span>({
+    <span class="ident">try_array_init_impl</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">T</span>, <span class="ident">N</span>, <span class="number">1</span><span class="op">&gt;</span>({
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iterator</span> <span class="op">=</span> <span class="ident">iterable</span>.<span class="ident">into_iter</span>();
+        <span class="kw">move</span> <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">iterator</span>.<span class="ident">next</span>().<span class="ident">ok_or</span>(())
+    })
+    .<span class="ident">ok</span>()
+}
+
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="doccomment">/// Initialize an array in reverse given an iterator</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// We will iterate until the array is full or the iterator is exhausted. Returns</span>
+<span class="doccomment">/// `None` if the iterator is exhausted before we can fill the array.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///   - Once the array is full, extra elements from the iterator (if any)</span>
+<span class="doccomment">///     won&#39;t be consumed.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// # #![allow(unused)]</span>
+<span class="doccomment">/// # extern crate array_init;</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// // Initialize an array from an iterator</span>
+<span class="doccomment">/// // producing an array of [4,3,2,1] repeated, finishing with 1.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let four = [1,2,3,4];</span>
+<span class="doccomment">/// let mut iter = four.iter().copied().cycle();</span>
+<span class="doccomment">/// let arr: [u32; 10] = array_init::from_iter_reversed(iter).unwrap();</span>
+<span class="doccomment">/// assert_eq!(arr, [2, 1, 4, 3, 2, 1, 4, 3, 2, 1]);</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_iter_reversed</span><span class="op">&lt;</span><span class="ident">Iterable</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span>(<span class="ident">iterable</span>: <span class="ident">Iterable</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="ident">N</span>]<span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">Iterable</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
+{
+    <span class="ident">try_array_init_impl</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">T</span>, <span class="ident">N</span>, <span class="op">-</span><span class="number">1</span><span class="op">&gt;</span>({
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iterator</span> <span class="op">=</span> <span class="ident">iterable</span>.<span class="ident">into_iter</span>();
         <span class="kw">move</span> <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">iterator</span>.<span class="ident">next</span>().<span class="ident">ok_or</span>(())
     })
@@ -526,7 +645,17 @@
 <span class="doccomment">/// let res : Result&lt;[f64;4], DivideByZero&gt; = array_init::try_array_init(|i| inv(3-i));</span>
 <span class="doccomment">/// assert_eq!(res,Err(DivideByZero));</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_array_init</span><span class="op">&lt;</span><span class="prelude-val">Err</span>, <span class="ident">F</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">initializer</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="ident">N</span>], <span class="prelude-val">Err</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_array_init</span><span class="op">&lt;</span><span class="prelude-val">Err</span>, <span class="ident">F</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span><span class="op">&gt;</span>(<span class="ident">initializer</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="ident">N</span>], <span class="prelude-val">Err</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="prelude-val">Err</span><span class="op">&gt;</span>,
+{
+    <span class="ident">try_array_init_impl</span>::<span class="op">&lt;</span><span class="prelude-val">Err</span>, <span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">N</span>, <span class="number">1</span><span class="op">&gt;</span>(<span class="ident">initializer</span>)
+}
+
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">fn</span> <span class="ident">try_array_init_impl</span><span class="op">&lt;</span><span class="prelude-val">Err</span>, <span class="ident">F</span>, <span class="ident">T</span>, <span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span>, <span class="kw">const</span> <span class="ident">D</span>: <span class="ident">i8</span><span class="op">&gt;</span>(
+    <span class="kw-2">mut</span> <span class="ident">initializer</span>: <span class="ident">F</span>,
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="ident">N</span>], <span class="prelude-val">Err</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="prelude-val">Err</span><span class="op">&gt;</span>,
 {
@@ -542,13 +671,25 @@
 
         <span class="comment">// # Safety</span>
         <span class="comment">//</span>
-        <span class="comment">//   - we are within the array since we have `0 &lt;= i &lt; N`</span>
+        <span class="comment">//   - for D &gt; 0, we are within the array since we start from the</span>
+        <span class="comment">//     beginning of the array, and we have `0 &lt;= i &lt; N`.</span>
+        <span class="comment">//   - for D &lt; 0, we start at the end of the array and go back one</span>
+        <span class="comment">//     place before writing, going back N times in total, finishing</span>
+        <span class="comment">//     at the start of the array.</span>
         <span class="kw">unsafe</span> {
+            <span class="kw">if</span> <span class="ident">D</span> <span class="op">&lt;</span> <span class="number">0</span> {
+                <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">add</span>(<span class="ident">N</span>);
+            }
             <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">N</span> {
                 <span class="kw">let</span> <span class="ident">value_i</span> <span class="op">=</span> <span class="ident">initializer</span>(<span class="ident">i</span>)<span class="question-mark">?</span>;
                 <span class="comment">// We overwrite *ptr_i previously undefined value without reading or dropping it.</span>
+                <span class="kw">if</span> <span class="ident">D</span> <span class="op">&lt;</span> <span class="number">0</span> {
+                    <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">sub</span>(<span class="number">1</span>);
+                }
                 <span class="ident">ptr_i</span>.<span class="ident">write</span>(<span class="ident">value_i</span>);
-                <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">add</span>(<span class="number">1</span>);
+                <span class="kw">if</span> <span class="ident">D</span> <span class="op">&gt;</span> <span class="number">0</span> {
+                    <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">add</span>(<span class="number">1</span>);
+                }
             }
             <span class="prelude-val">Ok</span>(<span class="ident">array</span>.<span class="ident">assume_init</span>())
         }
@@ -585,14 +726,25 @@
         <span class="comment">//</span>
         <span class="comment">// # Safety</span>
         <span class="comment">//</span>
-        <span class="comment">//  1. By construction, array[.. initiliazed_count] only contains</span>
-        <span class="comment">//     init elements, thus there is no risk of dropping uninit data;</span>
+        <span class="comment">//  1. - For D &gt; 0, by construction, array[.. initiliazed_count] only</span>
+        <span class="comment">//       contains init elements, thus there is no risk of dropping</span>
+        <span class="comment">//       uninit data;</span>
+        <span class="comment">//     - For D &lt; 0, by construction, array[N - initialized_count..] only</span>
+        <span class="comment">//       contains init elements.</span>
         <span class="comment">//</span>
-        <span class="comment">//  2. we are within the array since we have `0 &lt;= i &lt; N`</span>
+        <span class="comment">//  2. - for D &gt; 0, we are within the array since we start from the</span>
+        <span class="comment">//       beginning of the array, and we have `0 &lt;= i &lt; N`.</span>
+        <span class="comment">//     - for D &lt; 0, we start at the end of the array and go back one</span>
+        <span class="comment">//       place before writing, going back N times in total, finishing</span>
+        <span class="comment">//       at the start of the array.</span>
+        <span class="comment">//</span>
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">array</span>: <span class="ident">MaybeUninit</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="ident">N</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">MaybeUninit::uninit</span>();
             <span class="comment">// pointer to array = *mut [T; N] &lt;-&gt; *mut T = pointer to first element</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">array</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">T</span>;
+            <span class="kw">if</span> <span class="ident">D</span> <span class="op">&lt;</span> <span class="number">0</span> {
+                <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">add</span>(<span class="ident">N</span>);
+            }
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">panic_guard</span> <span class="op">=</span> <span class="ident">UnsafeDropSliceGuard</span> {
                 <span class="ident">base_ptr</span>: <span class="ident">ptr_i</span>,
                 <span class="ident">initialized_count</span>: <span class="number">0</span>,
@@ -602,12 +754,19 @@
                 <span class="comment">// Invariant: `i` elements have already been initialized</span>
                 <span class="ident">panic_guard</span>.<span class="ident">initialized_count</span> <span class="op">=</span> <span class="ident">i</span>;
                 <span class="comment">// If this panics or fails, `panic_guard` is dropped, thus</span>
-                <span class="comment">// dropping the elements in `base_ptr[.. i]`</span>
+                <span class="comment">// dropping the elements in `base_ptr[.. i]` for D &gt; 0 or</span>
+                <span class="comment">// `base_ptr[N - i..]` for D &lt; 0.</span>
                 <span class="kw">let</span> <span class="ident">value_i</span> <span class="op">=</span> <span class="ident">initializer</span>(<span class="ident">i</span>)<span class="question-mark">?</span>;
                 <span class="comment">// this cannot panic</span>
                 <span class="comment">// the previously uninit value is overwritten without being read or dropped</span>
+                <span class="kw">if</span> <span class="ident">D</span> <span class="op">&lt;</span> <span class="number">0</span> {
+                    <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">sub</span>(<span class="number">1</span>);
+                    <span class="ident">panic_guard</span>.<span class="ident">base_ptr</span> <span class="op">=</span> <span class="ident">ptr_i</span>;
+                }
                 <span class="ident">ptr_i</span>.<span class="ident">write</span>(<span class="ident">value_i</span>);
-                <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">add</span>(<span class="number">1</span>);
+                <span class="kw">if</span> <span class="ident">D</span> <span class="op">&gt;</span> <span class="number">0</span> {
+                    <span class="ident">ptr_i</span> <span class="op">=</span> <span class="ident">ptr_i</span>.<span class="ident">add</span>(<span class="number">1</span>);
+                }
             }
             <span class="comment">// From now on, the code can no longer `panic!`, let&#39;s take the</span>
             <span class="comment">// symbolic ownership back</span>
@@ -654,6 +813,15 @@
         <span class="ident">DropChecker::with</span>(<span class="op">|</span><span class="ident">drop_checker</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">iterator</span> <span class="op">=</span> (<span class="number">0</span>..<span class="number">3</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">drop_checker</span>.<span class="ident">new_element</span>());
             <span class="kw">let</span> <span class="ident">result</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>[<span class="kw">_</span>; <span class="number">5</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">from_iter</span>(<span class="ident">iterator</span>);
+            <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_none</span>());
+        });
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">from_iter_reversed_no_drop</span>() {
+        <span class="ident">DropChecker::with</span>(<span class="op">|</span><span class="ident">drop_checker</span><span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">iterator</span> <span class="op">=</span> (<span class="number">0</span>..<span class="number">3</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">drop_checker</span>.<span class="ident">new_element</span>());
+            <span class="kw">let</span> <span class="ident">result</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>[<span class="kw">_</span>; <span class="number">5</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">from_iter_reversed</span>(<span class="ident">iterator</span>);
             <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_none</span>());
         });
     }
@@ -752,5 +920,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="array_init" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="array_init" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.1 (e092d0b6b 2022-07-16)" ></div>
 </body></html>
