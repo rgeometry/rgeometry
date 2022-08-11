@@ -621,6 +621,13 @@ impl<T> Polygon<T> {
     ring.swap(pa.position_id.0, pb.position_id.0);
     self.position_index.swap(pa_point_id.0, pb_point_id.0);
   }
+
+  pub fn is_monotone(&self, direction: &Vector<T, 2>) -> bool
+  where
+    T: PolygonScalar,
+  {
+    crate::algorithms::polygonization::monotone::is_monotone(self, direction)
+  }
 }
 
 impl Polygon<OrderedFloat<f64>> {

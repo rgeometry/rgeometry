@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::panic::Location;
 
-use crate::algorithms::monotone_polygon::new_monotone_polygon;
+use crate::algorithms::polygonization::new_monotone_polygon;
 use crate::data::{
   point, Cursor, DirectedEdge, Direction, EndPoint, HalfLineSoS, IHalfLineLineSegmentSoS, Line,
   LineSegment, LineSegmentView, LineSoS, Point, PointLocation, Polygon, Vector,

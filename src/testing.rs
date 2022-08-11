@@ -255,7 +255,9 @@ where
       // eprintln!("Generating poly: {:?}", &actual);
       let rng = &mut rand::rngs::SmallRng::seed_from_u64(0);
       // If all the points are colinear then two_opt_moves will fail.
-      match crate::algorithms::two_opt_moves(actual, rng).map_err(|err| err.to_string()) {
+      match crate::algorithms::polygonization::two_opt_moves(actual, rng)
+        .map_err(|err| err.to_string())
+      {
         Err(_err) => continue,
         Ok(poly) => {
           assert_eq!(poly.rings[0].len(), points.len());
