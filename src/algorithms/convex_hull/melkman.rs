@@ -35,4 +35,15 @@ mod tests {
   fn is_idempotent(poly: PolygonConvex<i8>) {
     assert!(convex_hull(poly.polygon()).is(&poly))
   }
+
+  #[proptest]
+  fn graham_scan_eq_prop(poly: Polygon<i8>) {
+    let points: Vec<Point<i8>> = poly
+      .iter_boundary()
+      .map(|cursor| cursor.point())
+      .cloned()
+      .collect();
+    let by_scan = crate::algorithms::convex_hull::graham_scan::convex_hull(points).unwrap();
+    assert!(convex_hull(&poly).is(&by_scan))
+  }
 }
