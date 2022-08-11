@@ -1,5 +1,5 @@
 // #![deny(warnings)]
-#![deny(clippy::cast_lossless)]
+#![deny(clippy::cast_precision_loss)]
 #![doc(test(no_crate_inject))]
 #![doc(html_playground_url = "https://rgeometry.org/playground.html")]
 #![doc(test(no_crate_inject))]
