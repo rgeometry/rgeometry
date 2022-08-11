@@ -442,7 +442,7 @@ impl<T> Polygon<T> {
     &self.rings[0]
   }
 
-  pub fn is(&self, other: &Self) -> bool
+  pub fn equals(&self, other: &Self) -> bool
   where
     T: PolygonScalar,
   {
