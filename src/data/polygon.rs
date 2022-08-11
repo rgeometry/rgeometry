@@ -459,7 +459,7 @@ impl<T> Polygon<T> {
         return true;
       }
     }
-    return false;
+    false
   }
 
   pub fn iter_boundary(&self) -> CursorIter<'_, T> {
