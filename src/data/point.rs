@@ -1,4 +1,4 @@
-use array_init::{array_init, try_array_init};
+use array_init::try_array_init;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
@@ -6,6 +6,7 @@ use ordered_float::OrderedFloat;
 use ordered_float::{FloatIsNan, NotNan};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
+use std::array;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Debug;
@@ -92,7 +93,7 @@ where
   // FIXME: Unify with code for Vector.
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Point<T, N> {
     Point {
-      array: array_init(|_| rng.gen()),
+      array: array::from_fn(|_| rng.gen()),
     }
   }
 }
@@ -110,7 +111,7 @@ impl<T, const N: usize> Point<T, N> {
   where
     T: Float,
   {
-    Point::new(array_init(|i| NotNan::new(array[i]).unwrap()))
+    Point::new(array::from_fn(|i| NotNan::new(array[i]).unwrap()))
   }
 
   pub fn as_vec(&self) -> &Vector<T, N> {
@@ -141,7 +142,7 @@ impl<T, const N: usize> Point<T, N> {
     T: Sum,
   {
     Point {
-      array: array_init(|_| std::iter::empty().sum()),
+      array: array::from_fn(|_| std::iter::empty().sum()),
     }
   }
 
@@ -151,7 +152,7 @@ impl<T, const N: usize> Point<T, N> {
     F: Fn(T) -> U,
   {
     Point {
-      array: array_init(|i| f(self.array[i].clone())),
+      array: array::from_fn(|i| f(self.array[i].clone())),
     }
   }
 
@@ -160,7 +161,7 @@ impl<T, const N: usize> Point<T, N> {
     T: Clone + Into<U>,
   {
     Point {
-      array: array_init(|i| self.array[i].clone().into()),
+      array: array::from_fn(|i| self.array[i].clone().into()),
     }
   }
 
@@ -207,7 +208,7 @@ impl From<Point<i64, 2>> for Point<BigInt, 2> {
 impl<'a, const N: usize> From<&'a Point<BigRational, N>> for Point<f64, N> {
   fn from(point: &Point<BigRational, N>) -> Point<f64, N> {
     Point {
-      array: array_init(|i| point.array[i].to_f64().unwrap()),
+      array: array::from_fn(|i| point.array[i].to_f64().unwrap()),
     }
   }
 }
@@ -215,7 +216,7 @@ impl<'a, const N: usize> From<&'a Point<BigRational, N>> for Point<f64, N> {
 impl<const N: usize> From<Point<BigRational, N>> for Point<f64, N> {
   fn from(point: Point<BigRational, N>) -> Point<f64, N> {
     Point {
-      array: array_init(|i| point.array[i].to_f64().unwrap()),
+      array: array::from_fn(|i| point.array[i].to_f64().unwrap()),
     }
   }
 }
@@ -223,7 +224,7 @@ impl<const N: usize> From<Point<BigRational, N>> for Point<f64, N> {
 impl<'a, const N: usize> From<&'a Point<f64, N>> for Point<BigRational, N> {
   fn from(point: &Point<f64, N>) -> Point<BigRational, N> {
     Point {
-      array: array_init(|i| BigRational::from_f64(point.array[i]).unwrap()),
+      array: array::from_fn(|i| BigRational::from_f64(point.array[i]).unwrap()),
     }
   }
 }
@@ -231,7 +232,7 @@ impl<'a, const N: usize> From<&'a Point<f64, N>> for Point<BigRational, N> {
 impl<const N: usize> From<Point<f64, N>> for Point<BigRational, N> {
   fn from(point: Point<f64, N>) -> Point<BigRational, N> {
     Point {
-      array: array_init(|i| BigRational::from_f64(point.array[i]).unwrap()),
+      array: array::from_fn(|i| BigRational::from_f64(point.array[i]).unwrap()),
     }
   }
 }

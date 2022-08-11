@@ -44,10 +44,6 @@ name    = "convex_polygon"
 
 [[bench]]
 harness = false
-name    = "graham_scan"
-
-[[bench]]
-harness = false
 name    = "two_opt"
 
 [profile.release]

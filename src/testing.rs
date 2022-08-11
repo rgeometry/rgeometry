@@ -9,7 +9,7 @@ use crate::data::{
 };
 use crate::PolygonScalar;
 
-use array_init::{array_init, try_array_init};
+use array_init::try_array_init;
 use core::ops::Range;
 use num::BigRational;
 use num_bigint::BigInt;
@@ -22,6 +22,7 @@ use proptest::strategy::*;
 use proptest::test_runner::*;
 use rand::distributions::uniform::SampleUniform;
 use rand::SeedableRng;
+use std::array;
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 use std::fmt::Debug;
@@ -346,7 +347,7 @@ where
   type Value = Point<<T as ValueTree>::Value, N>;
   fn current(&self) -> Point<T::Value, N> {
     Point {
-      array: array_init(|i| self.point.array.index(i).current()),
+      array: array::from_fn(|i| self.point.array.index(i).current()),
     }
   }
   fn simplify(&mut self) -> bool {

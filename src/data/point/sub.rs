@@ -1,4 +1,4 @@
-use array_init::array_init;
+use std::array;
 use std::ops::Index;
 use std::ops::Sub;
 
@@ -16,7 +16,7 @@ where
 
   fn sub(self: &'b Point<T, N>, other: &'a Point<T, N>) -> Self::Output {
     // Vector(raw_arr_sub(&self.array, &other.array))
-    Vector(array_init(|i| {
+    Vector(array::from_fn(|i| {
       self.array.index(i).clone() - other.array.index(i).clone()
     }))
   }

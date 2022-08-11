@@ -1,7 +1,7 @@
 use super::Point;
 use super::Vector;
-use array_init::array_init;
 use num_traits::NumOps;
+use std::array;
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Index;
@@ -15,7 +15,7 @@ where
 
   fn add(self: &'b Point<T, N>, other: &'a Vector<T, N>) -> Self::Output {
     Point {
-      array: array_init(|i| self.array.index(i).clone() + other.0.index(i).clone()),
+      array: array::from_fn(|i| self.array.index(i).clone() + other.0.index(i).clone()),
     }
   }
 }
