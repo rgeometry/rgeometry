@@ -881,12 +881,12 @@ pub mod tests {
     }
 
     #[test]
-    fn is_eq_prop(poly: Polygon<i8>, offset: usize) {
+    fn equals_identity_prop(poly: Polygon<i8>, offset: usize) {
       let points: Vec<Point<i8>> = poly.iter_boundary().map(|cursor| cursor.point()).cloned().collect();
       let offset = offset % points.len();
       let rotated_points: Vec<Point<i8>> = [&points[offset..], &points[0..offset]].concat();
       prop_assert!(
-        poly.is(&Polygon::new(rotated_points).unwrap())
+        poly.equals(&Polygon::new(rotated_points).unwrap())
       )
     }
   }
