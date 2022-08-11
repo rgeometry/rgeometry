@@ -3,7 +3,7 @@ use crate::PolygonScalar;
 
 // Wikipedia description of the convex hull problem: https://en.wikipedia.org/wiki/Convex_hull_of_a_simple_polygon
 // Melkman's algorithm: https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.512.9681&rep=rep1&type=pdf
-pub fn convex_hull<T>(_polygon: Polygon<T>) -> PolygonConvex<T>
+pub fn convex_hull<T>(_polygon: &Polygon<T>) -> PolygonConvex<T>
 where
   T: PolygonScalar,
 {
@@ -23,16 +23,16 @@ mod tests {
 
   #[proptest]
   fn does_not_panic(poly: Polygon<i8>) {
-    convex_hull(poly);
+    convex_hull(&poly);
   }
 
   #[proptest]
   fn is_valid_convex_polygon(poly: Polygon<i8>) {
-    assert_ok!(convex_hull(poly).validate());
+    assert_ok!(convex_hull(&poly).validate());
   }
 
-  //   #[proptest]
-  //   fn is_idempotent(poly: PolygonConvex<i8>) {
-  //     assert_eq!(convex_hull(poly), poly)
-  //   }
+  #[proptest]
+  fn is_idempotent(poly: PolygonConvex<i8>) {
+    assert!(convex_hull(poly.polygon()).is(&poly))
+  }
 }
