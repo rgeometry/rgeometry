@@ -817,7 +817,6 @@ pub mod tests {
   use proptest::collection::vec;
   use proptest::prelude::*;
   use proptest::proptest as proptest_block;
-  use test_strategy::proptest;
 
   proptest_block! {
     #[test]

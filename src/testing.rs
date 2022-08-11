@@ -4,8 +4,7 @@
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
 use crate::data::{
-  Direction, Direction_, Line, LineSoS, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex,
-  Triangle, Vector,
+  Direction_, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex, Triangle, Vector,
 };
 use crate::PolygonScalar;
 
