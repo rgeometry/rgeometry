@@ -49,6 +49,30 @@ pub struct CursorIter<'a, T: 'a> {
   pub(crate) exhausted: bool,
 }
 
+impl<'a, T> Clone for CursorIter<'a, T> {
+  fn clone(&self) -> Self {
+    CursorIter {
+      cursor_head: self.cursor_head,
+      cursor_tail: self.cursor_tail,
+      exhausted: self.exhausted,
+    }
+  }
+}
+
+impl<'a, 'b, T: TotalOrd> PartialEq<CursorIter<'b, T>> for CursorIter<'a, T> {
+  fn eq(&self, other: &CursorIter<'b, T>) -> bool {
+    if self.len() != other.len() {
+      return false;
+    }
+    for (a, b) in self.clone().zip(other.clone()) {
+      if a.point() != b.point() {
+        return false;
+      }
+    }
+    true
+  }
+}
+
 impl<'a, T> Iterator for CursorIter<'a, T> {
   type Item = Cursor<'a, T>;
 
