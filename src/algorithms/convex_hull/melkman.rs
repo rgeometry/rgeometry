@@ -21,6 +21,7 @@ mod tests {
   use proptest::prelude::*;
   use test_strategy::proptest;
 
+  // Basic test with a concave input and a convex output:
   // Input:
   // /\  /\
   // | \/ |
@@ -38,6 +39,39 @@ mod tests {
       Point::new([2, 2]),
       Point::new([1, 1]),
       Point::new([0, 2]),
+    ])
+    .unwrap();
+    let output = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([2, 0]),
+      Point::new([2, 2]),
+      Point::new([0, 2]),
+    ])
+    .unwrap();
+    assert!(convex_hull(&input).is(&output));
+  }
+
+  // The input is not concave but some edges are colinear:
+  // Input:
+  // /-x-\
+  // x   x
+  // \-x-/
+  //
+  // Output:
+  // /---\
+  // |   |
+  // \---/
+  #[test]
+  fn unit_test_2() {
+    let input = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([2, 0]),
+      Point::new([2, 1]),
+      Point::new([2, 2]),
+      Point::new([1, 2]),
+      Point::new([0, 2]),
+      Point::new([0, 1]),
     ])
     .unwrap();
     let output = Polygon::new(vec![
