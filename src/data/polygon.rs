@@ -442,6 +442,26 @@ impl<T> Polygon<T> {
     &self.rings[0]
   }
 
+  pub fn is(&self, other: &Self) -> bool
+  where
+    T: PolygonScalar,
+  {
+    if self.boundary_slice().len() != other.boundary_slice().len() {
+      return false;
+    }
+    for pos in self.iter_boundary() {
+      let iter = CursorIter {
+        cursor_head: pos,
+        cursor_tail: pos.prev(),
+        exhausted: false,
+      };
+      if iter == other.iter_boundary() {
+        return true;
+      }
+    }
+    false
+  }
+
   pub fn iter_boundary(&self) -> CursorIter<'_, T> {
     let root_cursor = Cursor {
       polygon: self,
@@ -641,6 +661,7 @@ impl<'a, T> Deref for Cursor<'a, T> {
 
 impl<'a, T> PartialEq for Cursor<'a, T> {
   fn eq(&self, other: &Cursor<'a, T>) -> bool {
+    // FIXME: Make sure the two polygons are the same.
     self.position == other.position
   }
 }
@@ -849,6 +870,16 @@ pub mod tests {
       prop_assert_eq!(
         locate_by_triangulation(&poly, &origin),
         poly.locate(&origin)
+      )
+    }
+
+    #[test]
+    fn is_eq_prop(poly: Polygon<i8>, offset: usize) {
+      let points: Vec<Point<i8>> = poly.iter_boundary().map(|cursor| cursor.point()).cloned().collect();
+      let offset = offset % points.len();
+      let rotated_points: Vec<Point<i8>> = [&points[offset..], &points[0..offset]].concat();
+      prop_assert!(
+        poly.is(&Polygon::new(rotated_points).unwrap())
       )
     }
   }
