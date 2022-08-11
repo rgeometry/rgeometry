@@ -21,6 +21,35 @@ mod tests {
   use proptest::prelude::*;
   use test_strategy::proptest;
 
+  // Input:
+  // /\  /\
+  // | \/ |
+  // \----/
+  //
+  // Output:
+  // /----\
+  // |    |
+  // \----/
+  #[test]
+  fn unit_test_1() {
+    let input = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([2, 0]),
+      Point::new([2, 2]),
+      Point::new([1, 1]),
+      Point::new([0, 2]),
+    ])
+    .unwrap();
+    let output = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([2, 0]),
+      Point::new([2, 2]),
+      Point::new([0, 2]),
+    ])
+    .unwrap();
+    assert!(convex_hull(&input).is(&output));
+  }
+
   #[proptest]
   fn does_not_panic(poly: Polygon<i8>) {
     convex_hull(&poly);
