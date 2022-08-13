@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["new_star_polygon",""]]});

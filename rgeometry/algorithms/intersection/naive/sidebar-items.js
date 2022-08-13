@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["segment_intersections","Find all line segment intersections."]]});
+window.SIDEBAR_ITEMS = {"fn":[["segment_intersections","Find all line segment intersections."]]};

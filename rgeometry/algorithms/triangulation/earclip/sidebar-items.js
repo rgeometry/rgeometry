@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["earclip","$O(n^2)$ Polygon triangulation. Ears are selected in a pseudo-random manner."],["earclip_hashed","$O(n)$ Polygon triangulation. Ears are selected in a pseudo-random manner."],["triangulate_list",""],["triangulate_list_hashed",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["earclip","$O(n^2)$ Polygon triangulation. Ears are selected in a pseudo-random manner."],["earclip_hashed","$O(n)$ Polygon triangulation. Ears are selected in a pseudo-random manner."],["triangulate_list",""],["triangulate_list_hashed",""]]};

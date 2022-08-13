@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["zhash_pair",""],["zunhash_pair",""]],"struct":[["ZHashBox",""]],"trait":[["ZHashable",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["zhash_pair",""],["zunhash_pair",""]],"struct":[["ZHashBox",""]],"trait":[["ZHashable",""]]};

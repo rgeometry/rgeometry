@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["is_monotone","Check if the given polyon is monotone with resprect to given direction"],["new_monotone_polygon","Generates a monotone polygon from given points with respect to given direction"]]});

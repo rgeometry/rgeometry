@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["earclip",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["earclip",""]]};

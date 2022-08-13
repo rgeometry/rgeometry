@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["predicates",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["predicates",""]]};
