@@ -17,7 +17,7 @@ use crate::Orientation;
 
 pub fn resolve_self_intersections<T, R>(poly: &mut Polygon<T>, rng: &mut R) -> Result<(), Error>
 where
-  T: PolygonScalar + std::fmt::Debug,
+  T: PolygonScalar,
   R: Rng + ?Sized,
 {
   assert_eq!(poly.rings.len(), 1);
