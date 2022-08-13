@@ -1,14 +1,9 @@
 use std::cmp::Ordering;
-use std::collections::HashSet;
-use std::iter::FromIterator;
-use std::panic::Location;
 
-use crate::algorithms::monotone_polygon::new_monotone_polygon;
 use crate::data::{
-  point, Cursor, DirectedEdge, Direction, EndPoint, HalfLineSoS, IHalfLineLineSegmentSoS, Line,
-  LineSegment, LineSegmentView, LineSoS, Point, PointLocation, Polygon, Vector,
+  Cursor, DirectedEdge, Direction, HalfLineSoS, IHalfLineLineSegmentSoS, Line, Point, Polygon,
 };
-use crate::{Intersects, Orientation, PolygonScalar, SoS};
+use crate::{Intersects, Orientation, PolygonScalar};
 
 // Note: The description on wikipedia is quite bad.
 // Wikipedia: https://en.wikipedia.org/wiki/Visibility_polygon#Naive_algorithms

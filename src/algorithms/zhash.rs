@@ -42,7 +42,7 @@ impl ZHashable for f64 {
   }
   fn zhash_fn(key: Self::ZHashKey, point: &Point<Self>) -> u64 {
     let (min_x, min_y, width, height) = key;
-    let z_hash_max = u32::MAX as f64;
+    let z_hash_max = f64::from(u32::MAX);
     let x = ((point.x_coord() - min_x) / width * z_hash_max) as u32;
     let y = ((point.y_coord() - min_y) / height * z_hash_max) as u32;
     zhash_pair(x, y)
@@ -73,8 +73,8 @@ impl ZHashable for i8 {
   }
   fn zhash_fn(key: Self::ZHashKey, point: &Point<Self>) -> u64 {
     let (min_x, min_y) = key;
-    let x = (point.x_coord().wrapping_sub(min_x) as u8) as u32;
-    let y = (point.y_coord().wrapping_sub(min_y) as u8) as u32;
+    let x = point.x_coord().abs_diff(min_x) as u32;
+    let y = point.y_coord().abs_diff(min_y) as u32;
     // dbg!(point.x_coord(), min_x, x);
     // dbg!(point.y_coord(), min_y, y);
     zhash_pair(x, y)

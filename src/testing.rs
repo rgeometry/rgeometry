@@ -4,8 +4,7 @@
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
 use crate::data::{
-  Direction, Direction_, Line, LineSoS, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex,
-  Triangle, Vector,
+  Direction_, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex, Triangle, Vector,
 };
 use crate::PolygonScalar;
 
@@ -255,7 +254,9 @@ where
       // eprintln!("Generating poly: {:?}", &actual);
       let rng = &mut rand::rngs::SmallRng::seed_from_u64(0);
       // If all the points are colinear then two_opt_moves will fail.
-      match crate::algorithms::two_opt_moves(actual, rng).map_err(|err| err.to_string()) {
+      match crate::algorithms::polygonization::two_opt_moves(actual, rng)
+        .map_err(|err| err.to_string())
+      {
         Err(_err) => continue,
         Ok(poly) => {
           assert_eq!(poly.rings[0].len(), points.len());

@@ -5,6 +5,15 @@
 ### Added
 ### Changed
 
+## [0.9.0] 2022-08-13
+
+### Added
+- `Polygon::equals`
+### Changed
+- Re-arranged module layout for polygonization.
+- Added support for using `f64` and `f32`.
+- Improved fuzzy testing.
+
 ## [0.8.1] 2022-05-23
 ### Changed
 - Fixed bug in 'squared_magnitude'.
