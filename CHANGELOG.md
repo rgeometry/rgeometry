@@ -5,7 +5,7 @@
 ### Added
 ### Changed
 
-## [0.9.0] 2022-08-11
+## [0.9.0] 2022-08-13
 
 ### Added
 - `Polygon::equals`
