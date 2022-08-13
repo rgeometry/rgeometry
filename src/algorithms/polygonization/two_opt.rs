@@ -58,7 +58,7 @@ where
 /// $O(n^2)$
 pub fn two_opt_moves<T, R>(pts: Vec<Point<T>>, rng: &mut R) -> Result<Polygon<T>, Error>
 where
-  T: PolygonScalar + std::fmt::Debug,
+  T: PolygonScalar,
   R: Rng + ?Sized,
 {
   {
@@ -87,7 +87,7 @@ fn endpoint<T: TotalOrd>(a: PointId, b: PointId, c: PointId, t: T) -> EndPoint<T
 
 fn intersects<T>(poly: &Polygon<T>, a: IndexEdge, b: IndexEdge) -> Option<IndexIntersection>
 where
-  T: PolygonScalar + std::fmt::Debug,
+  T: PolygonScalar,
 {
   let a_min = endpoint(a.min, b.min, b.max, poly.point(a.min));
   let a_max = endpoint(a.max, b.min, b.max, poly.point(a.max));
@@ -130,7 +130,7 @@ where
 // The edge length from 'b1->b2' is identical to 'b1->a1->b2'.
 // The edge length from 'prev->a1->a2' is always greater than 'prev -> a2'.
 // We therefore know that the total circumference has decreased. QED.
-fn untangle<T: PolygonScalar + std::fmt::Debug>(
+fn untangle<T: PolygonScalar>(
   poly: &mut Polygon<T>,
   set: &mut IndexIntersectionSet,
   isect: IndexIntersection,
