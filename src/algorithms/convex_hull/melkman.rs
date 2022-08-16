@@ -99,7 +99,6 @@ mod tests {
 
   use claim::assert_ok;
 
-  use crate::PolygonScalar;
   use proptest::collection::*;
   use proptest::prelude::*;
   use test_strategy::proptest;
