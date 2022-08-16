@@ -1,4 +1,4 @@
-use crate::data::{polygon::PointId, Point, Polygon, PolygonConvex};
+use crate::data::{Point, Polygon, PolygonConvex};
 use crate::PolygonScalar;
 use std::collections::VecDeque;
 
@@ -103,7 +103,7 @@ mod tests {
   use proptest::collection::*;
   use proptest::prelude::*;
   use test_strategy::proptest;
-  
+
 
   #[test]
   fn unit_test_1() {
