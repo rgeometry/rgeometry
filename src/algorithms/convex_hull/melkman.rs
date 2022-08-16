@@ -40,7 +40,7 @@ where
       && Point::orient(&p, &convex_hull[1], &convex_hull[0]).is_cw()
     {
       continue;
-    // Check for wrong rotarions/colinear (fron and back) and remove vedices until correct
+    // Check for wrong rotations/colinear (fron and back) and remove verdices until correct
     } else {
 
       convex_hull.push_front(p);
