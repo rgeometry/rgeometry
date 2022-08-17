@@ -94,12 +94,8 @@ fn convert_deque_to_vec<T: PolygonScalar>(dque: VecDeque<&Point<T, 2>>) -> Vec<P
 #[cfg(test)]
 mod tests {
   use super::*;
-  //use crate::testing::*;
 
   use claim::assert_ok;
-
-  //use proptest::collection::*;
-  //use proptest::prelude::*;
   use test_strategy::proptest;
 
   #[test]
