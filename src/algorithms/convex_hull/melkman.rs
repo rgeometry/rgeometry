@@ -94,12 +94,12 @@ fn convert_deque_to_vec<T: PolygonScalar>(dque: VecDeque<&Point<T, 2>>) -> Vec<P
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::testing::*;
+  //use crate::testing::*;
 
   use claim::assert_ok;
 
-  use proptest::collection::*;
-  use proptest::prelude::*;
+  //use proptest::collection::*;
+  //use proptest::prelude::*;
   use test_strategy::proptest;
 
   #[test]
@@ -121,7 +121,7 @@ mod tests {
     .unwrap();
     // println!("EXPECTED --- {:?}\n", output);
     // println!("GOT --- {:?}\n", convex_hull(&input));
-    assert!(convex_hull(&input).is(&output));
+    assert!(Polygon::equals(&convex_hull(&input), &output));
   }
   #[test]
   fn unit_test_2() {
@@ -145,7 +145,7 @@ mod tests {
     .unwrap();
     // println!("EXPECTED --- {:?}\n", output);
     // println!("GOT --- {:?}\n", convex_hull(&input));
-    assert!(convex_hull(&input).is(&output));
+    assert!(Polygon::equals(&convex_hull(&input), &output));
   }
 
   #[test]
@@ -171,7 +171,7 @@ mod tests {
     .unwrap();
     // println!("EXPECTED --- {:?}\n", output);
     // println!("GOT --- {:?}\n", convex_hull(&input));
-    assert!(convex_hull(&input).is(&output));
+    assert!(Polygon::equals(&convex_hull(&input), &output));
   }
 
   #[proptest]
@@ -186,7 +186,7 @@ mod tests {
 
   #[proptest]
   fn is_idempotent(poly: PolygonConvex<i8>) {
-    assert!(convex_hull(poly.polygon()).is(&poly))
+    assert!(Polygon::equals(&convex_hull(poly.polygon()), &poly));
   }
 
   #[proptest]
@@ -197,6 +197,6 @@ mod tests {
       .cloned()
       .collect();
     let by_scan = crate::algorithms::convex_hull::graham_scan::convex_hull(points).unwrap();
-    assert!(convex_hull(&poly).is(&by_scan))
+    assert!(Polygon::equals(&convex_hull(&poly), &by_scan));
   }
 }
