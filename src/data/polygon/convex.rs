@@ -1,4 +1,3 @@
-use claim::debug_assert_ok;
 use num_traits::*;
 use ordered_float::OrderedFloat;
 use rand::distributions::uniform::SampleUniform;
@@ -43,7 +42,6 @@ where
   /// <iframe src="https://web.rgeometry.org/wasm/gist/2cb9ff5bd6ce24f395a5ea30280aabee"></iframe>
   ///
   pub fn locate(&self, pt: &Point<T, 2>) -> PointLocation {
-    // debug_assert_ok!(self.validate());
     let poly = &self.0;
     let vertices = self.boundary_slice();
     let p0 = poly.point(vertices[0]);
@@ -241,7 +239,6 @@ mod tests {
 
   use proptest::prelude::*;
   use proptest::proptest as proptest_block;
-  use test_strategy::proptest;
 
   proptest_block! {
     // These traits are usually derived but let's not rely on that.
