@@ -9,13 +9,13 @@ use std::collections::VecDeque;
 // In the right region we pop from the left side, and vice versa.
 // In the composition region, which is the region shared by right and left, we pop the deque from both sides.
 
-pub fn convex_hull<T>(_polygon: &Polygon<T>) -> PolygonConvex<T>
+pub fn convex_hull<T>(polygon: &Polygon<T>) -> PolygonConvex<T>
 where
   T: PolygonScalar,
 {
   let mut convex_hull: VecDeque<&Point<T, 2>> = VecDeque::new();
   let mut last_idx = 0;
-  for p in _polygon.iter() {
+  for p in polygon.iter() {
     // Creat a deque with the first 3 points
     if convex_hull.len() < 2 {
       convex_hull.push_back(p);
@@ -97,8 +97,6 @@ mod tests {
 
   use claim::assert_ok;
 
-  use proptest::collection::*;
-  use proptest::prelude::*;
   use test_strategy::proptest;
 
   #[test]
@@ -122,6 +120,7 @@ mod tests {
     // println!("GOT --- {:?}\n", convex_hull(&input));
     assert!(Polygon::equals(&convex_hull(&input), &output));
   }
+
   #[test]
   fn unit_test_2() {
     let input = Polygon::new(vec![
