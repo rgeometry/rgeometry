@@ -1,10 +1,7 @@
 // #![deny(warnings)]
-#![cfg_attr(coverage_nightly, feature(no_coverage))]
+#![deny(clippy::cast_precision_loss)]
+#![deny(clippy::lossy_float_literal)]
 #![doc(test(no_crate_inject))]
-#![allow(unused_imports)]
-// #![allow(incomplete_features)]
-// #![feature(const_generics)]
-// #![feature(const_evaluatable_checked)]
 #![doc(html_playground_url = "https://rgeometry.org/playground.html")]
 #![doc(test(no_crate_inject))]
 use num_traits::*;

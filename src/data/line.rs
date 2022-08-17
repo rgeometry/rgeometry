@@ -3,7 +3,7 @@ use super::LineSegmentView;
 use super::Point;
 use super::Vector;
 use crate::Intersects;
-use crate::{Orientation, PolygonScalar, SoS};
+use crate::{Orientation, PolygonScalar};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Line

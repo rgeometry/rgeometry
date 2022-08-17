@@ -442,7 +442,7 @@ impl<T> Polygon<T> {
     &self.rings[0]
   }
 
-  pub fn is(&self, other: &Self) -> bool
+  pub fn equals(&self, other: &Self) -> bool
   where
     T: PolygonScalar,
   {
@@ -620,6 +620,13 @@ impl<T> Polygon<T> {
     let pb_point_id: PointId = ring[pb.position_id.0];
     ring.swap(pa.position_id.0, pb.position_id.0);
     self.position_index.swap(pa_point_id.0, pb_point_id.0);
+  }
+
+  pub fn is_monotone(&self, direction: &Vector<T, 2>) -> bool
+  where
+    T: PolygonScalar,
+  {
+    crate::algorithms::polygonization::monotone::is_monotone(self, direction)
   }
 }
 
@@ -810,7 +817,6 @@ pub mod tests {
   use proptest::collection::vec;
   use proptest::prelude::*;
   use proptest::proptest as proptest_block;
-  use test_strategy::proptest;
 
   proptest_block! {
     #[test]
@@ -874,12 +880,12 @@ pub mod tests {
     }
 
     #[test]
-    fn is_eq_prop(poly: Polygon<i8>, offset: usize) {
+    fn equals_identity_prop(poly: Polygon<i8>, offset: usize) {
       let points: Vec<Point<i8>> = poly.iter_boundary().map(|cursor| cursor.point()).cloned().collect();
       let offset = offset % points.len();
       let rotated_points: Vec<Point<i8>> = [&points[offset..], &points[0..offset]].concat();
       prop_assert!(
-        poly.is(&Polygon::new(rotated_points).unwrap())
+        poly.equals(&Polygon::new(rotated_points).unwrap())
       )
     }
   }

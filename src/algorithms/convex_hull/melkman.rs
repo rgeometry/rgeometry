@@ -1,4 +1,5 @@
 use crate::data::{Point, Polygon, PolygonConvex};
+
 use crate::PolygonScalar;
 use std::collections::VecDeque;
 
@@ -21,7 +22,7 @@ where
 
     // Check for colinear of the first 3 points and remove last verdix if so
     } else if convex_hull.len() == 2 {
-      if Point::orient(&convex_hull[0], &convex_hull[1], &p).is_colinear() {
+      if Point::orient(convex_hull[0], convex_hull[1], p).is_colinear() {
         convex_hull.pop_back();
         convex_hull.push_back(p);
         continue;
@@ -30,33 +31,32 @@ where
       convex_hull.push_back(p);
 
       // Check and correct(if needed) the orientation if the first 3 verdices
-      if Point::orient(&convex_hull[1], &convex_hull[2], &convex_hull[3]).is_cw() {
+      if Point::orient(convex_hull[1], convex_hull[2], convex_hull[3]).is_cw() {
         convex_hull.make_contiguous().reverse();
       }
       last_idx = convex_hull.len() - 1;
 
     // If the new point is within the polygon, then don't add it to convex hull
-    } else if Point::orient(&convex_hull[last_idx - 1], &convex_hull[last_idx], &p).is_ccw()
-      && Point::orient(&p, &convex_hull[1], &convex_hull[0]).is_cw()
+    } else if Point::orient(convex_hull[last_idx - 1], convex_hull[last_idx], p).is_ccw()
+      && Point::orient(p, convex_hull[1], convex_hull[0]).is_cw()
     {
       continue;
     // Check for wrong rotations/colinear (fron and back) and remove verdices until correct
     } else {
-
       convex_hull.push_front(p);
       convex_hull.push_back(p);
       last_idx = convex_hull.len() - 1;
-      
+
       while Point::orient(
-        &convex_hull[last_idx - 2],
-        &convex_hull[last_idx - 1],
-        &convex_hull[last_idx],
+        convex_hull[last_idx - 2],
+        convex_hull[last_idx - 1],
+        convex_hull[last_idx],
       )
       .is_cw()
         || Point::orient(
-          &convex_hull[last_idx - 2],
-          &convex_hull[last_idx - 1],
-          &convex_hull[last_idx],
+          convex_hull[last_idx - 2],
+          convex_hull[last_idx - 1],
+          convex_hull[last_idx],
         )
         .is_colinear()
       {
@@ -64,13 +64,13 @@ where
         last_idx = convex_hull.len() - 1;
       }
 
-      while Point::orient(&convex_hull[2], &convex_hull[1], &convex_hull[0]).is_ccw()
-        || Point::orient(&convex_hull[2], &convex_hull[1], &convex_hull[0]).is_colinear()
+      while Point::orient(convex_hull[2], convex_hull[1], convex_hull[0]).is_ccw()
+        || Point::orient(convex_hull[2], convex_hull[1], convex_hull[0]).is_colinear()
       {
         convex_hull.remove(1);
         last_idx = convex_hull.len() - 1;
       }
-      if Point::orient(&convex_hull[1], &convex_hull[0], &convex_hull[last_idx - 1]).is_colinear() {
+      if Point::orient(convex_hull[1], convex_hull[0], convex_hull[last_idx - 1]).is_colinear() {
         convex_hull.remove(0);
         last_idx = convex_hull.len() - 1;
       }
@@ -89,20 +89,17 @@ fn convert_deque_to_vec<T: PolygonScalar>(dque: VecDeque<&Point<T, 2>>) -> Vec<P
     vec.push(i.clone());
   }
   vec
-
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::testing::*;
 
   use claim::assert_ok;
 
   use proptest::collection::*;
   use proptest::prelude::*;
   use test_strategy::proptest;
-
 
   #[test]
   fn unit_test_1() {
@@ -123,7 +120,7 @@ mod tests {
     .unwrap();
     // println!("EXPECTED --- {:?}\n", output);
     // println!("GOT --- {:?}\n", convex_hull(&input));
-    assert!(convex_hull(&input).is(&output));
+    assert!(Polygon::equals(&convex_hull(&input), &output));
   }
   #[test]
   fn unit_test_2() {
@@ -147,7 +144,7 @@ mod tests {
     .unwrap();
     // println!("EXPECTED --- {:?}\n", output);
     // println!("GOT --- {:?}\n", convex_hull(&input));
-    assert!(convex_hull(&input).is(&output));
+    assert!(Polygon::equals(&convex_hull(&input), &output));
   }
 
   #[test]
@@ -173,7 +170,7 @@ mod tests {
     .unwrap();
     // println!("EXPECTED --- {:?}\n", output);
     // println!("GOT --- {:?}\n", convex_hull(&input));
-    assert!(convex_hull(&input).is(&output));
+    assert!(Polygon::equals(&convex_hull(&input), &output));
   }
 
   #[proptest]
@@ -188,7 +185,7 @@ mod tests {
 
   #[proptest]
   fn is_idempotent(poly: PolygonConvex<i8>) {
-    assert!(convex_hull(poly.polygon()).is(&poly))
+    assert!(Polygon::equals(&convex_hull(poly.polygon()), &poly));
   }
 
   #[proptest]
@@ -199,6 +196,6 @@ mod tests {
       .cloned()
       .collect();
     let by_scan = crate::algorithms::convex_hull::graham_scan::convex_hull(points).unwrap();
-    assert!(convex_hull(&poly).is(&by_scan))
+    assert!(Polygon::equals(&convex_hull(&poly), &by_scan));
   }
 }
