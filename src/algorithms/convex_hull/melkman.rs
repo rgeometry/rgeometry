@@ -96,6 +96,9 @@ mod tests {
   use super::*;
 
   use claim::assert_ok;
+
+  use proptest::collection::*;
+  use proptest::prelude::*;
   use test_strategy::proptest;
 
   #[test]
