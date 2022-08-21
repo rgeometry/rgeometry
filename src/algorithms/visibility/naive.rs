@@ -117,27 +117,27 @@ where
         }
         // Ray blocked on the left side.
         Some(Crossing(CounterClockWise)) => {
-          left_intersection.push(get_intersection(ray_sos, edge));
+          left_intersection.push(get_intersection_colinear(ray_sos, edge));
         }
         // Ray blocked on the right side.
         Some(Crossing(ClockWise)) => {
-          right_intersection.push(get_intersection(ray_sos, edge));
+          right_intersection.push(get_intersection_colinear(ray_sos, edge));
         }
       }
     }
 
     match right_intersection.take() {
-      Some(interesction) => {
-        if point.cmp_distance_to(&interesction, &vertex) != Ordering::Less {
-          polygon_points.push(interesction);
+      Some(interesection) => {
+        if point.cmp_distance_to(&interesection, &vertex) != Ordering::Less {
+          polygon_points.push(interesection);
         }
       }
       None => return Option::None,
     };
     match left_intersection.take() {
-      Some(interesction) => {
-        if point.cmp_distance_to(&interesction, &vertex) != Ordering::Less {
-          polygon_points.push(interesction);
+      Some(intersection) => {
+        if point.cmp_distance_to(&intersection, &vertex) != Ordering::Less {
+          polygon_points.push(intersection);
         }
       }
       None => return Option::None,
@@ -146,6 +146,18 @@ where
   polygon_points.dedup();
 
   Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
+}
+
+fn get_intersection_colinear<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdge<'_, T>) -> Point<T>
+where
+  T: PolygonScalar,
+{
+  let line: Line<T> = sos_line.into();
+  match Point::orient_along_direction(line.origin, line.direction, &edge.src) {
+    Orientation::CoLinear => edge.src.clone(),
+    // edge.dst should be colinear with the ray
+    _ => edge.dst.clone(),
+  }
 }
 
 fn get_intersection<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdge<'_, T>) -> Point<T>
@@ -290,6 +302,31 @@ mod naive_testing {
         assert_eq!(out_test_points.len(), polygon.points.len())
       }
       None => panic!(),
+    }
+  }
+
+  // test with rotating square
+  #[test]
+  fn test_rotating_square() {
+    use std::f64::consts::{FRAC_PI_2, PI};
+
+    fn get_point(theta: f64) -> Point<f64> {
+      Point::new([theta.sin(), theta.cos()])
+    }
+
+    for i in 0..100 {
+      let theta = PI / 2.0 * i as f64 / 100.0;
+      let points = vec![
+        get_point(theta),
+        get_point(theta - FRAC_PI_2),
+        get_point(theta - FRAC_PI_2 * 2.0),
+        get_point(theta - FRAC_PI_2 * 3.0),
+      ];
+
+      let point = Point::new([0.0, 0.0]);
+      let polygon = Polygon::new(points.clone()).unwrap();
+      let out_polygon = get_visibility_polygon(&point, &polygon).expect("get_visibility_polygon");
+      assert_eq!(points, out_polygon.points);
     }
   }
 }
