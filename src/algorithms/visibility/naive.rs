@@ -153,7 +153,7 @@ where
   T: PolygonScalar,
 {
   let line: Line<T> = sos_line.into();
-  match Point::orient_along_direction(line.origin, line.direction, &edge.src) {
+  match Point::orient_along_direction(line.origin, line.direction, edge.src) {
     Orientation::CoLinear => edge.src.clone(),
     // edge.dst should be colinear with the ray
     _ => edge.dst.clone(),
