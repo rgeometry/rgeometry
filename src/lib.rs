@@ -384,6 +384,21 @@ macro_rules! wrapped_floating_precision {
           &[float_to_rational(q[0].into_inner()), float_to_rational(q[1].into_inner())],
         )
       }
+
+      fn inside_circle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> bool {
+        let [a1, a2] = *a;
+        let [b1, b2] = *b;
+        let [c1, c2] = *c;
+        let [d1, d2] = *d;
+        PolygonScalar::inside_circle(
+          &[a1.into_inner(), a2.into_inner()],
+          &[b1.into_inner(), b2.into_inner()],
+          &[c1.into_inner(), c2.into_inner()],
+          &[d1.into_inner(), d2.into_inner()])
+      }
+
+
+
     })*
   };
 }
@@ -446,6 +461,20 @@ macro_rules! floating_precision {
           &[float_to_rational(q[0]), float_to_rational(q[1])],
         )
       }
+
+      fn inside_circle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> bool {
+        let [a1, a2] = *a;
+        let [b1, b2] = *b;
+        let [c1, c2] = *c;
+        let [d1, d2] = *d;
+        geometry_predicates::predicates::incircle(
+          [a1 as f64,a2 as f64],
+          [b1 as f64, b2 as f64],
+          [c1 as f64, c2 as f64],
+          [d1 as f64, d2 as f64]) > 0.0
+      }
+
+
     })*
   };
 }
