@@ -440,7 +440,7 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
     Some(idx_self)
   }
 
-  fn cut_apply_prepare<'a>(&'a self, res: Cut) -> Vec<CutEdge> {
+  fn cut_apply_prepare(&self, res: Cut) -> Vec<CutEdge> {
     let first = res.contour_cw[0];
     let mut verts = vec![CutEdge {
       inner: first,
@@ -465,12 +465,12 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
     verts
   }
 
-  pub unsafe fn cut_apply(&mut self, res: Cut) -> Vec<(VertIdx, VertIdx)> {
+  pub fn cut_apply(&mut self, res: Cut) -> Vec<(VertIdx, VertIdx)> {
     self.cut_apply_inner(res)
   }
 
   fn cut_apply_inner(&mut self, res: Cut) -> Vec<(VertIdx, VertIdx)> {
-    if res.cut_triangles.len() == 0 {
+    if res.cut_triangles.is_empty() {
       return vec![];
     }
 
@@ -641,12 +641,10 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
 
     let should_swap = if v0.is_super() || v2.is_super() {
       true
+    } else if v1.is_super() || v2.is_super() {
+      false
     } else {
-      if v1.is_super() || v2.is_super() {
-        false
-      } else {
-        inside_circle(p0, p1, p2, p3)
-      }
+      inside_circle(p0, p1, p2, p3)
     };
 
     if !should_swap {
@@ -875,7 +873,7 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
     let d2 = Point::orient_along_direction(p2, Direction::Through(p0), p);
 
     match (d0, d1, d2) {
-      (CounterClockWise, CounterClockWise, CounterClockWise) => return InTriangle(start),
+      (CounterClockWise, CounterClockWise, CounterClockWise) => InTriangle(start),
       // handle cw case first
       (ClockWise, _, _) => Outside(Edge::new(start, SubIdx(1))),
       (_, ClockWise, _) => Outside(Edge::new(start, SubIdx(2))),
