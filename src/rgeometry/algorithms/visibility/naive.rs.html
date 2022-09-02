@@ -320,6 +320,43 @@
 <span id="293">293</span>
 <span id="294">294</span>
 <span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data</span>::{
@@ -439,27 +476,27 @@
         }
         <span class="comment">// Ray blocked on the left side.</span>
         <span class="prelude-val">Some</span>(<span class="ident">Crossing</span>(<span class="ident">CounterClockWise</span>)) =&gt; {
-          <span class="ident">left_intersection</span>.<span class="ident">push</span>(<span class="ident">get_intersection</span>(<span class="ident">ray_sos</span>, <span class="ident">edge</span>));
+          <span class="ident">left_intersection</span>.<span class="ident">push</span>(<span class="ident">get_intersection_colinear</span>(<span class="ident">ray_sos</span>, <span class="ident">edge</span>));
         }
         <span class="comment">// Ray blocked on the right side.</span>
         <span class="prelude-val">Some</span>(<span class="ident">Crossing</span>(<span class="ident">ClockWise</span>)) =&gt; {
-          <span class="ident">right_intersection</span>.<span class="ident">push</span>(<span class="ident">get_intersection</span>(<span class="ident">ray_sos</span>, <span class="ident">edge</span>));
+          <span class="ident">right_intersection</span>.<span class="ident">push</span>(<span class="ident">get_intersection_colinear</span>(<span class="ident">ray_sos</span>, <span class="ident">edge</span>));
         }
       }
     }
 
     <span class="kw">match</span> <span class="ident">right_intersection</span>.<span class="ident">take</span>() {
-      <span class="prelude-val">Some</span>(<span class="ident">interesction</span>) =&gt; {
-        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="kw-2">&amp;</span><span class="ident">interesction</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
-          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">interesction</span>);
+      <span class="prelude-val">Some</span>(<span class="ident">interesection</span>) =&gt; {
+        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="kw-2">&amp;</span><span class="ident">interesection</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
+          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">interesection</span>);
         }
       }
       <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="ident">Option::None</span>,
     };
     <span class="kw">match</span> <span class="ident">left_intersection</span>.<span class="ident">take</span>() {
-      <span class="prelude-val">Some</span>(<span class="ident">interesction</span>) =&gt; {
-        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="kw-2">&amp;</span><span class="ident">interesction</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
-          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">interesction</span>);
+      <span class="prelude-val">Some</span>(<span class="ident">intersection</span>) =&gt; {
+        <span class="kw">if</span> <span class="ident">point</span>.<span class="ident">cmp_distance_to</span>(<span class="kw-2">&amp;</span><span class="ident">intersection</span>, <span class="kw-2">&amp;</span><span class="ident">vertex</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Less</span> {
+          <span class="ident">polygon_points</span>.<span class="ident">push</span>(<span class="ident">intersection</span>);
         }
       }
       <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="ident">Option::None</span>,
@@ -468,6 +505,18 @@
   <span class="ident">polygon_points</span>.<span class="ident">dedup</span>();
 
   <span class="prelude-val">Some</span>(<span class="ident">Polygon::new</span>(<span class="ident">polygon_points</span>).<span class="ident">expect</span>(<span class="string">&quot;Polygon Creation failed&quot;</span>))
+}
+
+<span class="kw">fn</span> <span class="ident">get_intersection_colinear</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">sos_line</span>: <span class="ident">HalfLineSoS</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">edge</span>: <span class="ident">DirectedEdge</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+  <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+{
+  <span class="kw">let</span> <span class="ident">line</span>: <span class="ident">Line</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">sos_line</span>.<span class="ident">into</span>();
+  <span class="kw">match</span> <span class="ident">Point::orient_along_direction</span>(<span class="ident">line</span>.<span class="ident">origin</span>, <span class="ident">line</span>.<span class="ident">direction</span>, <span class="ident">edge</span>.<span class="ident">src</span>) {
+    <span class="ident">Orientation::CoLinear</span> =&gt; <span class="ident">edge</span>.<span class="ident">src</span>.<span class="ident">clone</span>(),
+    <span class="comment">// edge.dst should be colinear with the ray</span>
+    <span class="kw">_</span> =&gt; <span class="ident">edge</span>.<span class="ident">dst</span>.<span class="ident">clone</span>(),
+  }
 }
 
 <span class="kw">fn</span> <span class="ident">get_intersection</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">sos_line</span>: <span class="ident">HalfLineSoS</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">edge</span>: <span class="ident">DirectedEdge</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
@@ -612,6 +661,31 @@
         <span class="macro">assert_eq!</span>(<span class="ident">out_test_points</span>.<span class="ident">len</span>(), <span class="ident">polygon</span>.<span class="ident">points</span>.<span class="ident">len</span>())
       }
       <span class="prelude-val">None</span> =&gt; <span class="macro">panic!</span>(),
+    }
+  }
+
+  <span class="comment">// test with rotating square</span>
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">test_rotating_square</span>() {
+    <span class="kw">use</span> <span class="ident">std::f64::consts</span>::{<span class="ident">FRAC_PI_2</span>, <span class="ident">PI</span>};
+
+    <span class="kw">fn</span> <span class="ident">get_point</span>(<span class="ident">theta</span>: <span class="ident">f64</span>) -&gt; <span class="ident">Point</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+      <span class="ident">Point::new</span>([<span class="ident">theta</span>.<span class="ident">sin</span>(), <span class="ident">theta</span>.<span class="ident">cos</span>()])
+    }
+
+    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100</span> {
+      <span class="kw">let</span> <span class="ident">theta</span> <span class="op">=</span> <span class="ident">PI</span> <span class="op">/</span> <span class="number">2.0</span> <span class="op">*</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="number">100.0</span>;
+      <span class="kw">let</span> <span class="ident">points</span> <span class="op">=</span> <span class="macro">vec!</span>[
+        <span class="ident">get_point</span>(<span class="ident">theta</span>),
+        <span class="ident">get_point</span>(<span class="ident">theta</span> <span class="op">-</span> <span class="ident">FRAC_PI_2</span>),
+        <span class="ident">get_point</span>(<span class="ident">theta</span> <span class="op">-</span> <span class="ident">FRAC_PI_2</span> <span class="op">*</span> <span class="number">2.0</span>),
+        <span class="ident">get_point</span>(<span class="ident">theta</span> <span class="op">-</span> <span class="ident">FRAC_PI_2</span> <span class="op">*</span> <span class="number">3.0</span>),
+      ];
+
+      <span class="kw">let</span> <span class="ident">point</span> <span class="op">=</span> <span class="ident">Point::new</span>([<span class="number">0.0</span>, <span class="number">0.0</span>]);
+      <span class="kw">let</span> <span class="ident">polygon</span> <span class="op">=</span> <span class="ident">Polygon::new</span>(<span class="ident">points</span>.<span class="ident">clone</span>()).<span class="ident">unwrap</span>();
+      <span class="kw">let</span> <span class="ident">out_polygon</span> <span class="op">=</span> <span class="ident">get_visibility_polygon</span>(<span class="kw-2">&amp;</span><span class="ident">point</span>, <span class="kw-2">&amp;</span><span class="ident">polygon</span>).<span class="ident">expect</span>(<span class="string">&quot;get_visibility_polygon&quot;</span>);
+      <span class="macro">assert_eq!</span>(<span class="ident">points</span>, <span class="ident">out_polygon</span>.<span class="ident">points</span>);
     }
   }
 }
