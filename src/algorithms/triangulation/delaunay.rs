@@ -76,46 +76,6 @@ pub enum TriangularNetworkLocation {
   Outside(Edge),
 }
 
-fn det2<T>(v: [T; 4]) -> T
-where
-  T: PolygonScalar,
-{
-  let [a, b, c, d] = v;
-  a * d - b * c
-}
-
-fn det3<T>(v: [T; 9]) -> T
-where
-  T: PolygonScalar + Copy,
-{
-  let [a, b, c, d, e, f, g, h, i] = v;
-  a * det2([e, f, h, i]) - b * det2([d, f, g, i]) + c * det2([d, e, g, h])
-}
-
-// TODO: PolygonScalar::inside_circle
-fn inside_circle<T>(a: &Point<T>, b: &Point<T>, c: &Point<T>, d: &Point<T>) -> bool
-where
-  T: PolygonScalar + Copy,
-{
-  let [ax, ay] = a.array;
-  let [bx, by] = b.array;
-  let [cx, cy] = c.array;
-  let [dx, dy] = d.array;
-
-  let d = det3([
-    ax - dx,
-    ay - dy,
-    ax * ax - dx * dx + ay * ay - dy * dy,
-    bx - dx,
-    by - dy,
-    bx * bx - dx * dx + by * by - dy * dy,
-    cx - dx,
-    cy - dy,
-    cx * cx - dx * dx + cy * cy - dy * dy,
-  ]);
-  d > T::from_constant(0)
-}
-
 #[derive(Debug)]
 struct CutEdge {
   inner: Edge,
@@ -140,7 +100,7 @@ pub struct TriangularNetwork<T> {
   pub triangles: Vec<Triangle>,
 }
 
-impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
+impl<T: PolygonScalar> TriangularNetwork<T> {
   /// Create new triangluar network.
   pub fn new(p0: Point<T>, p1: Point<T>, p2: Point<T>) -> Self {
     let (p1, p2) = match Point::orient_along_direction(&p0, Direction::Through(&p1), &p2) {
@@ -406,7 +366,7 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
       let cur = self.vert(slice[i_mid].vert);
       let next = self.vert(slice[i].vert);
 
-      if inside_circle(p_start, cur, p_end, next) {
+      if T::inside_circle(&p_start.array, &cur.array, &p_end.array, &next.array) {
         i_mid = i;
       }
     }
@@ -644,7 +604,7 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
     } else if v1.is_super() || v2.is_super() {
       false
     } else {
-      inside_circle(p0, p1, p2, p3)
+      T::inside_circle(&p0.array, &p1.array, &p2.array, &p3.array)
     };
 
     if !should_swap {
@@ -711,7 +671,7 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
 
     match self.locate_recursive(p) {
       InTriangle(idx_t) => {
-        let idx_v = self.add_vert(*p);
+        let idx_v = self.add_vert(p.clone());
         let t = self.tri(idx_t).clone();
 
         let idx_t0 = idx_t;
@@ -781,7 +741,7 @@ impl<T: PolygonScalar + Copy> TriangularNetwork<T> {
         let v0 = t0.vert(idx_neighbor);
         let v1 = t0.vert(idx_neighbor.ccw());
         let v2 = t0.vert(idx_neighbor.cw());
-        let idx_v = self.add_vert(*p);
+        let idx_v = self.add_vert(p.clone());
 
         //       v2(v0)
         //     t3     t2
