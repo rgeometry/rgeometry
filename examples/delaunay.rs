@@ -34,7 +34,7 @@ pub fn main() {
     let y = rng.gen_range(-view..view);
     let p = Point::new([x, y]);
 
-    net.insert(&p).unwrap();
+    net.insert(&p);
   }
 
   println!("delaunay triangles");
