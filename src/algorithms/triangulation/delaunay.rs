@@ -70,6 +70,8 @@ pub struct Cut {
 pub enum TriangularNetworkLocation {
   /// The point is inside the triangle
   InTriangle(TriIdx),
+  /// The points is at the vertex of the triangle
+  OnVertex(TriIdx, SubIdx),
   /// The points lies on an edge of the triangle
   OnEdge(Edge),
   /// The point lies outside the triangle
@@ -137,6 +139,10 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     TriIdx(idx)
   }
 
+  pub fn find_vert(&self, p: &Point<T>) -> Option<VertIdx> {
+    self.vertices.iter().position(|v| v == p).map(VertIdx)
+  }
+
   pub fn vert(&self, idx: VertIdx) -> &Point<T> {
     &self.vertices[idx.0]
   }
@@ -167,20 +173,78 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     Some(Edge::new(idx_neighbor, sub_neighbor))
   }
 
+  pub fn edge_to(&self, edge: &Edge) -> VertIdx {
+    let t = self.tri(edge.tri);
+    t.vert(edge.sub)
+  }
+
+  pub fn edge_from(&self, edge: &Edge) -> VertIdx {
+    let t = self.tri(edge.tri);
+    t.vert(edge.sub.cw())
+  }
+
   fn find_vert_dest(&self, v_from: VertIdx, v_to: VertIdx) -> Option<CutIter> {
     use Orientation::*;
+
+    let p_from = self.vert(v_from);
+    let l = self.locate_recursive(p_from);
+
+    let (tri0, sub0) = match l {
+      TriangularNetworkLocation::OnVertex(tri, sub) => (tri, sub),
+      _ => return None,
+    };
 
     let p_end = self.vert(v_to);
     let mut candidates = Vec::new();
 
-    for (t_idx, t) in self.triangles.iter().enumerate() {
-      let t_idx = TriIdx(t_idx);
-      if let Some(idx) = t.vertex_idx(v_from) {
-        if t.vert(idx.ccw()) == v_to || t.vert(idx.cw()) == v_to {
-          // already splitted
-          return None;
+    // TODO: to iterator
+    // ccw triangles
+    let mut curtri = tri0;
+    let mut cursub = sub0;
+    loop {
+      let t = self.tri(curtri);
+      assert_eq!(t.vert(cursub), v_from);
+      if t.vert(cursub.cw()) == v_to {
+        return None;
+      }
+      if candidates.contains(&(curtri, cursub)) {
+        break;
+      }
+      candidates.push((curtri, cursub));
+
+      match self.edge_duel(&Edge::new(curtri, cursub)) {
+        Some(Edge { tri, sub }) => {
+          curtri = tri;
+          cursub = sub.cw();
         }
-        candidates.push((t_idx, idx));
+        None => break,
+      }
+    }
+
+    // TODO: to iterator
+    // cw triangles
+    let mut curtri = tri0;
+    let mut cursub = sub0;
+    loop {
+      let t = self.tri(curtri);
+      assert_eq!(t.vert(cursub), v_from);
+      if t.vert(cursub.ccw()) == v_to {
+        return None;
+      }
+      if candidates.contains(&(curtri, cursub)) {
+        break;
+      }
+      candidates.push((curtri, cursub));
+
+      match self.edge_duel(&Edge::new(curtri, cursub.ccw())) {
+        Some(Edge { tri, sub }) => {
+          if tri == tri0 {
+            break;
+          }
+          curtri = tri;
+          cursub = sub;
+        }
+        None => break,
       }
     }
 
@@ -242,10 +306,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
 
           contour_ccw.push(Edge::new(t_idx, idx));
           contour_cw.push(Edge::new(t_idx, idx.ccw()));
-          let v1 = t.vert(idx.ccw());
-          let v2 = t.vert(idx.cw());
-
-          cuts.push((v1, v2));
+          cuts.push((t.vert(idx.cw()), t.vert(idx.ccw())));
 
           let next = self.edge_duel(&Edge::new(t_idx, idx.cw())).unwrap();
           cur = Some(CutIter::ToEdge(next));
@@ -286,10 +347,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
             todo!();
           };
 
-          let v_t_from = t.vert(idx_n.cw());
-          let v_t_to = t.vert(idx_n);
-
-          cuts.push((v_t_from, v_t_to));
+          cuts.push((t.vert(idx_n), t.vert(idx_n.cw())));
 
           let next = self.edge_duel(&Edge::new(t_idx, idx_n)).unwrap();
           cur = Some(CutIter::ToEdge(next));
@@ -327,30 +385,30 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     &mut self,
     idx_p: Option<Edge>,
     slice: &[CutEdge],
-    indices: &mut Vec<TriIdx>,
-    proj: &mut Vec<(Edge, Edge)>,
+    indices: &[TriIdx],
+    indices_remain: &mut Vec<TriIdx>,
+    dirty: &mut Vec<Edge>,
     out: &mut Vec<(VertIdx, VertIdx)>,
   ) -> Option<TriIdx> {
     assert!(slice.len() > 1);
+
     if slice.len() == 2 {
       if let CutEdge {
-        inner,
-        outer: Some(mut outer),
+        inner: _inner,
+        outer: Some(outer),
         vert: _,
       } = slice[1]
       {
-        if let Some(p) = idx_p {
-          proj.push((inner, p));
+        if indices.contains(&outer.tri) {
+          dirty.push(idx_p.unwrap());
+          return None;
+        } else {
+          *self.tri_mut(outer.tri).neighbor_mut(outer.sub) = idx_p.map(|e| e.tri);
+          return Some(outer.tri);
         }
-
-        if let Some((_before, after)) = proj.iter().find(|t| t.0 == outer) {
-          outer = *after;
-        }
-
-        *self.tri_mut(outer.tri).neighbor_mut(outer.sub) = idx_p.map(|e| e.tri);
-        return Some(outer.tri);
+      } else {
+        todo!();
       }
-      return None;
     }
 
     let last = slice.len() - 1;
@@ -366,26 +424,28 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       let cur = self.vert(slice[i_mid].vert);
       let next = self.vert(slice[i].vert);
 
-      if T::inside_circle(&p_start.array, &cur.array, &p_end.array, &next.array) {
+      if T::inside_circle(p_start, cur, p_end, next) {
         i_mid = i;
       }
     }
     let v_mid = slice[i_mid].vert;
 
-    let idx_self = indices.pop().unwrap();
+    let idx_self = indices_remain.pop().unwrap();
 
     let idx_t0 = self.cut_apply_subdivide(
       Some(Edge::new(idx_self, SubIdx(1))),
       &slice[..i_mid + 1],
       indices,
-      proj,
+      indices_remain,
+      dirty,
       out,
     );
     let idx_t1 = self.cut_apply_subdivide(
       Some(Edge::new(idx_self, SubIdx(2))),
       &slice[i_mid..],
       indices,
-      proj,
+      indices_remain,
+      dirty,
       out,
     );
 
@@ -400,7 +460,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     Some(idx_self)
   }
 
-  fn cut_apply_prepare(&self, res: Cut) -> Vec<CutEdge> {
+  fn cut_apply_prepare(&mut self, res: &Cut) -> Vec<CutEdge> {
     let first = res.contour_cw[0];
     let mut verts = vec![CutEdge {
       inner: first,
@@ -425,24 +485,29 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     verts
   }
 
-  pub fn cut_apply(&mut self, res: Cut) -> Vec<(VertIdx, VertIdx)> {
+  /// # Safety
+  /// If there's no need for intermediate results, use `constrain_edge` instead. The function is
+  /// safe only when
+  ///  - `Cut` returned from `TriangularNetwork::cut` is applied without any changes, and
+  ///  - `TriangularNetwork` should not be modified before applying `Cut`.
+  pub unsafe fn cut_apply(&mut self, res: &Cut) -> Vec<(VertIdx, VertIdx)> {
     self.cut_apply_inner(res)
   }
 
-  fn cut_apply_inner(&mut self, res: Cut) -> Vec<(VertIdx, VertIdx)> {
+  fn cut_apply_inner(&mut self, res: &Cut) -> Vec<(VertIdx, VertIdx)> {
     if res.cut_triangles.is_empty() {
       return vec![];
     }
 
     let mut indices = res.cut_triangles.clone();
-    let mut proj = Vec::new();
-
-    let p_start = self.vert(res.from).clone();
-    let p_end = self.vert(res.to).clone();
+    let mut dirty = Vec::new();
 
     let mut out = Vec::new();
     let verts = self.cut_apply_prepare(res);
     let mut slice = verts.as_slice();
+
+    let p_start = self.vert(res.from).clone();
+    let p_end = self.vert(res.to).clone();
 
     let mut out_triangles = Vec::new();
     while slice.len() > 1 {
@@ -455,7 +520,14 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
         None => slice.len() - 1,
       };
       let idx = self
-        .cut_apply_subdivide(None, &slice[..i + 1], &mut indices, &mut proj, &mut out)
+        .cut_apply_subdivide(
+          None,
+          &slice[..i + 1],
+          &res.cut_triangles,
+          &mut indices,
+          &mut dirty,
+          &mut out,
+        )
         .unwrap();
       out_triangles.push(idx);
       slice = &slice[i..];
@@ -470,6 +542,18 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       *self.tri_mut(t_cw).neighbor_mut(SubIdx(0)) = Some(t_ccw);
     }
 
+    for i in 0..dirty.len() {
+      for j in (i + 1)..dirty.len() {
+        let e0 = &dirty[i];
+        let e1 = &dirty[j];
+
+        if self.edge_from(e0) == self.edge_to(e1) && self.edge_to(e0) == self.edge_from(e1) {
+          *self.tri_mut(e0.tri).neighbor_mut(e0.sub) = Some(e1.tri);
+          *self.tri_mut(e1.tri).neighbor_mut(e1.sub) = Some(e0.tri);
+        }
+      }
+    }
+
     assert!(indices.is_empty());
     self.check_invariant("post-cut_resolve");
 
@@ -479,7 +563,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
   /// Constraint an edge between two vertices
   pub fn constrain_edge(&mut self, v0: VertIdx, v1: VertIdx) {
     let cut = self.cut(v0, v1);
-    self.cut_apply_inner(cut);
+    self.cut_apply_inner(&cut);
   }
 
   #[allow(unused)]
@@ -665,8 +749,9 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     true
   }
 
-  /// Add a new point to the network. Returns `None` if given point already presents on the network
-  pub fn insert(&mut self, p: &Point<T>) -> Option<VertIdx> {
+  /// Add a new point to the network. Returns existing `VertIdx` of the point is already in the
+  /// network.
+  pub fn insert(&mut self, p: &Point<T>) -> VertIdx {
     use TriangularNetworkLocation::*;
 
     match self.locate_recursive(p) {
@@ -711,21 +796,14 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
 
         self.check_invariant("post-InTriangle");
 
-        Some(idx_v)
+        idx_v
       }
+      OnVertex(tri, sub) => self.tri(tri).vert(sub),
 
       OnEdge(Edge {
         tri: idx_t,
         sub: idx_neighbor,
       }) => {
-        if p == self.tri_vert(idx_t, SubIdx(0))
-          || p == self.tri_vert(idx_t, SubIdx(1))
-          || p == self.tri_vert(idx_t, SubIdx(2))
-        {
-          // ignore duplicated points
-          return None;
-        }
-
         let idx_t0 = idx_t;
         let t0 = self.tri(idx_t0).clone();
 
@@ -808,7 +886,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
 
         self.check_invariant("post-Colinear");
 
-        Some(idx_v)
+        idx_v
       }
 
       Outside(_e) => {
@@ -820,6 +898,12 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
   pub fn locate(&self, start: TriIdx, p: &Point<T>) -> TriangularNetworkLocation {
     use Orientation::*;
     use TriangularNetworkLocation::*;
+
+    for i in 0..3 {
+      if p == self.tri_vert(start, SubIdx(i)) {
+        return OnVertex(start, SubIdx(i));
+      }
+    }
 
     let p0 = self.tri_vert(start, SubIdx(0));
     let p1 = self.tri_vert(start, SubIdx(1));
@@ -853,8 +937,6 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       use TriangularNetworkLocation::*;
 
       start = match self.locate(start, p) {
-        InTriangle(idx) => return InTriangle(idx),
-        OnEdge(e) => return OnEdge(e),
         Outside(e) => {
           match self.tri(e.tri).neighbor(e.sub) {
             Some(idx) => idx,
@@ -865,6 +947,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
             }
           }
         }
+        e => return e,
       };
     }
   }
@@ -927,6 +1010,7 @@ impl Triangle {
     todo!();
   }
 
+  #[allow(unused)]
   fn vertex_idx(&self, v_idx: VertIdx) -> Option<SubIdx> {
     self.vertices.iter().position(|p| *p == v_idx).map(SubIdx)
   }
