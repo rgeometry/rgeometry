@@ -1,4 +1,5 @@
 // https://www.personal.psu.edu/cxc11/AERSP560/DELAUNEY/13_Two_algorithms_Delauney.pdf
+use crate::Error;
 use crate::{data::*, Orientation, PolygonScalar};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
@@ -102,23 +103,24 @@ pub struct TriangularNetwork<T> {
   pub triangles: Vec<Triangle>,
 }
 
+type Result<T> = std::result::Result<T, Error>;
+
 impl<T: PolygonScalar> TriangularNetwork<T> {
   /// Create new triangluar network.
-  pub fn new(p0: Point<T>, p1: Point<T>, p2: Point<T>) -> Self {
+  pub fn new(p0: Point<T>, p1: Point<T>, p2: Point<T>) -> Result<Self> {
     let (p1, p2) = match Point::orient_along_direction(&p0, Direction::Through(&p1), &p2) {
       Orientation::CounterClockWise => (p1, p2),
-      Orientation::CoLinear => todo!(),
-      // TODO: colinear?
+      Orientation::CoLinear => return Err(Error::CoLinearViolation),
       _ => (p2, p1),
     };
 
-    Self {
+    Ok(Self {
       vertices: vec![p0, p1, p2],
       triangles: vec![Triangle {
         vertices: [VertIdx(0), VertIdx(1), VertIdx(2)],
         neighbors: [None, None, None],
       }],
-    }
+    })
   }
 
   pub fn tri(&self, idx: TriIdx) -> &Triangle {
@@ -157,20 +159,20 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     self.vert(self.tri(tri_idx).vertices[idx.0])
   }
 
-  pub fn edge_duel(&self, edge: &Edge) -> Option<Edge> {
+  pub fn edge_duel(&self, edge: &Edge) -> Result<Option<Edge>> {
     let t = self.tri(edge.tri);
-    let idx_neighbor = t.neighbor(edge.sub)?;
+    let idx_neighbor = match t.neighbor(edge.sub) {
+      Some(idx) => idx,
+      None => return Ok(None),
+    };
     let t_neighbor = self.tri(idx_neighbor);
     let sub_neighbor = match t_neighbor.neighbor_idx(edge.tri) {
       Some(idx) => idx,
       None => {
-        panic!(
-          "invariant: t1={:?}={:?}, t2={:?}={:?}",
-          edge.tri, t, idx_neighbor, t_neighbor
-        );
+        return Err(Error::InvariantViolation);
       }
     };
-    Some(Edge::new(idx_neighbor, sub_neighbor))
+    Ok(Some(Edge::new(idx_neighbor, sub_neighbor)))
   }
 
   pub fn edge_to(&self, edge: &Edge) -> VertIdx {
@@ -183,15 +185,15 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     t.vert(edge.sub.cw())
   }
 
-  fn find_vert_dest(&self, v_from: VertIdx, v_to: VertIdx) -> Option<CutIter> {
+  fn find_vert_dest(&self, v_from: VertIdx, v_to: VertIdx) -> Result<Option<CutIter>> {
     use Orientation::*;
 
     let p_from = self.vert(v_from);
-    let l = self.locate_recursive(p_from);
+    let l = self.locate_recursive(p_from)?;
 
     let (tri0, sub0) = match l {
       TriangularNetworkLocation::OnVertex(tri, sub) => (tri, sub),
-      _ => return None,
+      _ => return Ok(None),
     };
 
     let p_end = self.vert(v_to);
@@ -205,14 +207,14 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       let t = self.tri(curtri);
       assert_eq!(t.vert(cursub), v_from);
       if t.vert(cursub.cw()) == v_to {
-        return None;
+        return Ok(None);
       }
       if candidates.contains(&(curtri, cursub)) {
         break;
       }
       candidates.push((curtri, cursub));
 
-      match self.edge_duel(&Edge::new(curtri, cursub)) {
+      match self.edge_duel(&Edge::new(curtri, cursub))? {
         Some(Edge { tri, sub }) => {
           curtri = tri;
           cursub = sub.cw();
@@ -229,14 +231,14 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       let t = self.tri(curtri);
       assert_eq!(t.vert(cursub), v_from);
       if t.vert(cursub.ccw()) == v_to {
-        return None;
+        return Ok(None);
       }
       if candidates.contains(&(curtri, cursub)) {
         break;
       }
       candidates.push((curtri, cursub));
 
-      match self.edge_duel(&Edge::new(curtri, cursub.ccw())) {
+      match self.edge_duel(&Edge::new(curtri, cursub.ccw()))? {
         Some(Edge { tri, sub }) => {
           if tri == tri0 {
             break;
@@ -257,31 +259,26 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       let d1 = Point::orient_along_direction(p1, Direction::Through(p2), p_end);
       let d2 = Point::orient_along_direction(p2, Direction::Through(p0), p_end);
 
-      match (d0, d1, d2) {
-        (CounterClockWise, ClockWise, CounterClockWise) => {
-          return Some(CutIter::FromVertex(t_idx, idx));
-        }
-        (CoLinear, ClockWise, CounterClockWise) => {
-          return Some(CutIter::CoLinear {
-            tri: t_idx,
-            src: idx,
-            dst: idx.ccw(),
-          });
-        }
-        (CounterClockWise, ClockWise, CoLinear) => {
-          return Some(CutIter::CoLinear {
-            tri: t_idx,
-            src: idx,
-            dst: idx.cw(),
-          });
-        }
-        _ => (),
-      }
+      let res = match (d0, d1, d2) {
+        (CounterClockWise, ClockWise, CounterClockWise) => CutIter::FromVertex(t_idx, idx),
+        (CoLinear, ClockWise, CounterClockWise) => CutIter::CoLinear {
+          tri: t_idx,
+          src: idx,
+          dst: idx.ccw(),
+        },
+        (CounterClockWise, ClockWise, CoLinear) => CutIter::CoLinear {
+          tri: t_idx,
+          src: idx,
+          dst: idx.cw(),
+        },
+        _ => continue,
+      };
+      return Ok(Some(res));
     }
-    None
+    Ok(None)
   }
 
-  pub fn cut(&self, v_from: VertIdx, v_to: VertIdx) -> Cut {
+  pub fn cut(&self, v_from: VertIdx, v_to: VertIdx) -> Result<Cut> {
     use Orientation::*;
 
     let mut cuts = vec![];
@@ -292,7 +289,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     let p_start = self.vert(v_from);
     let p_end = self.vert(v_to);
 
-    let mut cur = self.find_vert_dest(v_from, v_to);
+    let mut cur = self.find_vert_dest(v_from, v_to)?;
     while let Some(iter) = cur.take() {
       match iter {
         // ray from vertex idx
@@ -308,7 +305,9 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
           contour_cw.push(Edge::new(t_idx, idx.ccw()));
           cuts.push((t.vert(idx.cw()), t.vert(idx.ccw())));
 
-          let next = self.edge_duel(&Edge::new(t_idx, idx.cw())).unwrap();
+          let next = self
+            .edge_duel(&Edge::new(t_idx, idx.cw()))?
+            .ok_or(Error::InvariantViolation)?;
           cur = Some(CutIter::ToEdge(next));
         }
 
@@ -334,7 +333,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
             contour_ccw.push(Edge::new(t_idx, idx.cw()));
             contour_cw.push(Edge::new(t_idx, idx.ccw()));
 
-            cur = self.find_vert_dest(t.vert(idx.ccw()), v_to);
+            cur = self.find_vert_dest(t.vert(idx.ccw()), v_to)?;
             continue;
           } else if d1.reverse() == d0 {
             contour_ccw.push(Edge::new(t_idx, idx.cw()));
@@ -343,42 +342,45 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
             contour_cw.push(Edge::new(t_idx, idx.ccw()));
             idx.cw()
           } else {
-            dbg!((d0, d1, d2));
-            todo!();
+            return Err(Error::InvariantViolation);
           };
 
           cuts.push((t.vert(idx_n), t.vert(idx_n.cw())));
 
-          let next = self.edge_duel(&Edge::new(t_idx, idx_n)).unwrap();
+          let next = self
+            .edge_duel(&Edge::new(t_idx, idx.cw()))?
+            .ok_or(Error::InvariantViolation)?;
           cur = Some(CutIter::ToEdge(next));
         }
 
         CutIter::CoLinear { tri, src, dst } => {
           let (edge_cw, edge_ccw) = if src.ccw() == dst {
             let edge_cw = Edge::new(tri, dst);
-            let edge_ccw = self.edge_duel(&edge_cw).unwrap();
+            let edge_ccw = self.edge_duel(&edge_cw)?.ok_or(Error::InvariantViolation)?;
             (edge_cw, edge_ccw)
           } else {
             let edge_ccw = Edge::new(tri, src);
-            let edge_cw = self.edge_duel(&edge_ccw).unwrap();
+            let edge_cw = self
+              .edge_duel(&edge_ccw)?
+              .ok_or(Error::InvariantViolation)?;
             (edge_cw, edge_ccw)
           };
           contour_cw.push(edge_cw);
           contour_ccw.push(edge_ccw);
 
-          cur = self.find_vert_dest(self.tri(tri).vert(dst), v_to);
+          cur = self.find_vert_dest(self.tri(tri).vert(dst), v_to)?;
         }
       }
     }
 
-    Cut {
+    Ok(Cut {
       from: v_from,
       to: v_to,
       cut_triangles,
       cuts,
       contour_cw,
       contour_ccw,
-    }
+    })
   }
 
   fn cut_apply_subdivide(
@@ -389,8 +391,10 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     indices_remain: &mut Vec<TriIdx>,
     dirty: &mut Vec<Edge>,
     out: &mut Vec<(VertIdx, VertIdx)>,
-  ) -> Option<TriIdx> {
-    assert!(slice.len() > 1);
+  ) -> Result<Option<TriIdx>> {
+    if slice.len() <= 1 {
+      return Err(Error::InvariantViolation);
+    }
 
     if slice.len() == 2 {
       if let CutEdge {
@@ -400,14 +404,14 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       } = slice[1]
       {
         if indices.contains(&outer.tri) {
-          dirty.push(idx_p.unwrap());
-          return None;
+          dirty.push(idx_p.ok_or(Error::InvariantViolation)?);
+          return Ok(None);
         } else {
           *self.tri_mut(outer.tri).neighbor_mut(outer.sub) = idx_p.map(|e| e.tri);
-          return Some(outer.tri);
+          return Ok(Some(outer.tri));
         }
       } else {
-        todo!();
+        return Err(Error::InvariantViolation);
       }
     }
 
@@ -430,7 +434,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     }
     let v_mid = slice[i_mid].vert;
 
-    let idx_self = indices_remain.pop().unwrap();
+    let idx_self = indices_remain.pop().ok_or(Error::InvariantViolation)?;
 
     let idx_t0 = self.cut_apply_subdivide(
       Some(Edge::new(idx_self, SubIdx(1))),
@@ -439,7 +443,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       indices_remain,
       dirty,
       out,
-    );
+    )?;
     let idx_t1 = self.cut_apply_subdivide(
       Some(Edge::new(idx_self, SubIdx(2))),
       &slice[i_mid..],
@@ -447,7 +451,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       indices_remain,
       dirty,
       out,
-    );
+    )?;
 
     *self.tri_mut(idx_self) = Triangle {
       vertices: [v_start, v_mid, v_end],
@@ -457,10 +461,10 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     out.push((v_start, v_mid));
     out.push((v_mid, v_end));
 
-    Some(idx_self)
+    Ok(Some(idx_self))
   }
 
-  fn cut_apply_prepare(&mut self, res: &Cut) -> Vec<CutEdge> {
+  fn cut_apply_prepare(&mut self, res: &Cut) -> Result<Vec<CutEdge>> {
     let first = res.contour_cw[0];
     let mut verts = vec![CutEdge {
       inner: first,
@@ -471,18 +475,18 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     for edge in res.contour_cw.iter() {
       verts.push(CutEdge {
         inner: *edge,
-        outer: self.edge_duel(edge),
+        outer: self.edge_duel(edge)?,
         vert: self.tri(edge.tri).vert(edge.sub),
       });
     }
     for edge in res.contour_ccw.iter().rev() {
       verts.push(CutEdge {
         inner: *edge,
-        outer: self.edge_duel(edge),
+        outer: self.edge_duel(edge)?,
         vert: self.tri(edge.tri).vert(edge.sub),
       });
     }
-    verts
+    Ok(verts)
   }
 
   /// # Safety
@@ -490,20 +494,20 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
   /// safe only when
   ///  - `Cut` returned from `TriangularNetwork::cut` is applied without any changes, and
   ///  - `TriangularNetwork` should not be modified before applying `Cut`.
-  pub unsafe fn cut_apply(&mut self, res: &Cut) -> Vec<(VertIdx, VertIdx)> {
+  pub unsafe fn cut_apply(&mut self, res: &Cut) -> Result<Vec<(VertIdx, VertIdx)>> {
     self.cut_apply_inner(res)
   }
 
-  fn cut_apply_inner(&mut self, res: &Cut) -> Vec<(VertIdx, VertIdx)> {
+  fn cut_apply_inner(&mut self, res: &Cut) -> Result<Vec<(VertIdx, VertIdx)>> {
     if res.cut_triangles.is_empty() {
-      return vec![];
+      return Ok(vec![]);
     }
 
     let mut indices = res.cut_triangles.clone();
     let mut dirty = Vec::new();
 
     let mut out = Vec::new();
-    let verts = self.cut_apply_prepare(res);
+    let verts = self.cut_apply_prepare(res)?;
     let mut slice = verts.as_slice();
 
     let p_start = self.vert(res.from).clone();
@@ -527,8 +531,8 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
           &mut indices,
           &mut dirty,
           &mut out,
-        )
-        .unwrap();
+        )?
+        .ok_or(Error::InvariantViolation)?;
       out_triangles.push(idx);
       slice = &slice[i..];
     }
@@ -555,34 +559,40 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     }
 
     assert!(indices.is_empty());
-    self.check_invariant("post-cut_resolve");
+    self.check_invariant("post-cut_resolve")?;
 
-    out
+    Ok(out)
   }
 
   /// Constraint an edge between two vertices
-  pub fn constrain_edge(&mut self, v0: VertIdx, v1: VertIdx) {
-    let cut = self.cut(v0, v1);
-    self.cut_apply_inner(&cut);
+  pub fn constrain_edge(&mut self, v0: VertIdx, v1: VertIdx) -> Result<()> {
+    let cut = self.cut(v0, v1)?;
+    self.cut_apply_inner(&cut)?;
+    Ok(())
   }
 
   #[allow(unused)]
   #[cfg(not(debug_assertions))]
-  fn check_invariant_tri_opt(&self, _idx: Option<TriIdx>, msg: &str) {}
+  fn check_invariant_tri_opt(&self, _idx: Option<TriIdx>, msg: &str) -> Result<()> {
+    Ok(())
+  }
 
   #[cfg(debug_assertions)]
-  fn check_invariant_tri_opt(&self, idx: Option<TriIdx>, msg: &str) {
+  fn check_invariant_tri_opt(&self, idx: Option<TriIdx>, msg: &str) -> Result<()> {
     if let Some(idx) = idx {
-      self.check_invariant_tri(idx, msg)
+      self.check_invariant_tri(idx, msg)?;
     }
+    Ok(())
   }
 
   #[allow(unused)]
   #[cfg(not(debug_assertions))]
-  fn check_invariant_tri(&self, _idx: TriIdx, _msg: &str) {}
+  fn check_invariant_tri(&self, _idx: TriIdx, _msg: &str) -> Result<()> {
+    Ok(())
+  }
 
   #[cfg(debug_assertions)]
-  fn check_invariant_tri(&self, idx: TriIdx, msg: &str) {
+  fn check_invariant_tri(&self, idx: TriIdx, _msg: &str) -> Result<()> {
     let t = self.tri(idx);
     for i in 0..3 {
       let i = SubIdx(i);
@@ -596,52 +606,41 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
         };
 
         if violated {
-          panic!(
-            "invariant violated: {}, {:?}={:?}, {:?}={:?}",
-            msg, idx, t, idx_neighbor, n
-          );
+          return Err(Error::InvariantViolation);
         }
       }
 
       let e = Edge::new(idx, i);
-      if let Some(d) = self.edge_duel(&e) {
-        assert_eq!(Some(e), self.edge_duel(&d));
+      if let Some(d) = self.edge_duel(&e)? {
+        if Some(e) != self.edge_duel(&d)? {
+          return Err(Error::InvariantViolation);
+        }
       }
     }
+    Ok(())
   }
 
   #[allow(unused)]
   #[cfg(not(debug_assertions))]
-  fn check_invariant(&self, msg: &str) {}
+  fn check_invariant(&self, msg: &str) -> Result<()> {
+    Ok(())
+  }
 
   #[cfg(debug_assertions)]
-  fn check_invariant(&self, msg: &str) {
+  fn check_invariant(&self, msg: &str) -> Result<()> {
     for idx in 0..self.triangles.len() {
-      self.check_invariant_tri(TriIdx(idx), msg);
+      self.check_invariant_tri(TriIdx(idx), msg)?;
     }
+    Ok(())
   }
 
-  fn debug_tri(&self, idx: TriIdx) -> String {
-    let p0 = self.tri_vert(idx, SubIdx(0));
-    let p1 = self.tri_vert(idx, SubIdx(1));
-    let p2 = self.tri_vert(idx, SubIdx(2));
-    format!(
-      "{:?}={:?}, ({:?}, {:?}, {:?})",
-      idx,
-      self.tri(idx),
-      p0,
-      p1,
-      p2
-    )
-  }
-
-  fn maybe_swap(&mut self, idx0: TriIdx) -> bool {
+  fn maybe_swap(&mut self, idx0: TriIdx) -> Result<bool> {
     use Orientation::*;
 
     let t0_t1_idx = SubIdx(2);
     let idx1 = match self.tri(idx0).neighbor(t0_t1_idx) {
       Some(idx) => idx,
-      None => return false,
+      None => return Ok(false),
     };
 
     let t0 = self.tri(idx0);
@@ -650,12 +649,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     let t1_t0_idx = match t1.neighbor_idx(idx0) {
       Some(idx) => idx,
       None => {
-        panic!(
-          "invalid tri pair: \n{}\n{}\n{:#?}",
-          self.debug_tri(idx0),
-          self.debug_tri(idx1),
-          self,
-        );
+        return Err(Error::InvariantViolation);
       }
     };
 
@@ -676,11 +670,11 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     let d3 = Point::orient_along_direction(p1, Direction::Through(p3), p2);
 
     if d0 == CoLinear || d1 == CoLinear || d2 == CoLinear || d3 == CoLinear {
-      return false;
+      return Ok(false);
     }
 
     if d0 == d1 || d2 == d3 {
-      return false;
+      return Ok(false);
     }
 
     let should_swap = if v0.is_super() || v2.is_super() {
@@ -692,7 +686,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
     };
 
     if !should_swap {
-      return false;
+      return Ok(false);
     }
 
     // swap
@@ -713,48 +707,34 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
 
     // n0, n2 stays same, n1, n3 changes neighbor
     if let Some(idx) = n1 {
-      if !self.tri_mut(idx).update_neighbor(idx0, idx1) {
-        panic!(
-          "invalid tri pair: \nt0={}\nt1={}\nn1={}",
-          self.debug_tri(idx0),
-          self.debug_tri(idx1),
-          self.debug_tri(idx)
-        );
-      }
+      self.tri_mut(idx).update_neighbor(idx0, idx1)?;
     }
     if let Some(idx) = n3 {
-      if !self.tri_mut(idx).update_neighbor(idx1, idx0) {
-        panic!(
-          "invalid tri pair: \nt0={}\nt1={}\nn3={}",
-          self.debug_tri(idx0),
-          self.debug_tri(idx1),
-          self.debug_tri(idx)
-        );
-      }
+      self.tri_mut(idx).update_neighbor(idx1, idx0)?;
     }
 
-    self.check_invariant_tri(idx0, "pre-swap idx0");
-    self.check_invariant_tri(idx1, "pre-swap idx1");
+    self.check_invariant_tri(idx0, "pre-swap idx0")?;
+    self.check_invariant_tri(idx1, "pre-swap idx1")?;
 
-    self.check_invariant_tri_opt(n0, "pre-swap n0");
-    self.check_invariant_tri_opt(n1, "pre-swap n1");
-    self.check_invariant_tri_opt(n2, "pre-swap n2");
-    self.check_invariant_tri_opt(n3, "pre-swap n3");
+    self.check_invariant_tri_opt(n0, "pre-swap n0")?;
+    self.check_invariant_tri_opt(n1, "pre-swap n1")?;
+    self.check_invariant_tri_opt(n2, "pre-swap n2")?;
+    self.check_invariant_tri_opt(n3, "pre-swap n3")?;
 
-    self.maybe_swap(idx0);
-    self.maybe_swap(idx1);
+    self.maybe_swap(idx0)?;
+    self.maybe_swap(idx1)?;
 
-    self.check_invariant("post-swap");
+    self.check_invariant("post-swap")?;
 
-    true
+    Ok(true)
   }
 
   /// Add a new point to the network. Returns existing `VertIdx` of the point is already in the
   /// network.
-  pub fn insert(&mut self, p: &Point<T>) -> VertIdx {
+  pub fn insert(&mut self, p: &Point<T>) -> Result<VertIdx> {
     use TriangularNetworkLocation::*;
 
-    match self.locate_recursive(p) {
+    let res = match self.locate_recursive(p)? {
       InTriangle(idx_t) => {
         let idx_v = self.add_vert(p.clone());
         let t = self.tri(idx_t).clone();
@@ -780,21 +760,21 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
         };
 
         if let Some(idx_neighbor) = n2 {
-          self.tri_mut(idx_neighbor).update_neighbor(idx_t0, idx_t1);
+          self.tri_mut(idx_neighbor).update_neighbor(idx_t0, idx_t1)?;
         }
         if let Some(idx_neighbor) = n0 {
-          self.tri_mut(idx_neighbor).update_neighbor(idx_t0, idx_t2);
+          self.tri_mut(idx_neighbor).update_neighbor(idx_t0, idx_t2)?;
         }
 
-        self.check_invariant_tri(idx_t0, "InTriangle(t0)");
-        self.check_invariant_tri(idx_t1, "InTriangle(t1)");
-        self.check_invariant_tri(idx_t2, "InTriangle(t2)");
+        self.check_invariant_tri(idx_t0, "InTriangle(t0)")?;
+        self.check_invariant_tri(idx_t1, "InTriangle(t1)")?;
+        self.check_invariant_tri(idx_t2, "InTriangle(t2)")?;
 
-        self.maybe_swap(idx_t0);
-        self.maybe_swap(idx_t1);
-        self.maybe_swap(idx_t2);
+        self.maybe_swap(idx_t0)?;
+        self.maybe_swap(idx_t1)?;
+        self.maybe_swap(idx_t2)?;
 
-        self.check_invariant("post-InTriangle");
+        self.check_invariant("post-InTriangle")?;
 
         idx_v
       }
@@ -838,14 +818,14 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
           neighbors: [idx_t3, Some(idx_t0), n],
         };
         if let Some(n) = n {
-          self.tri_mut(n).update_neighbor(idx_t0, idx_t2);
+          self.tri_mut(n).update_neighbor(idx_t0, idx_t2)?;
         }
 
         if let Some(idx_t1) = idx_t1 {
           let idx_t3 = idx_t3.unwrap();
 
           let t1 = self.tri(idx_t1).clone();
-          let idx_neighbor = t1.neighbor_idx(idx_t).unwrap();
+          let idx_neighbor = t1.neighbor_idx(idx_t).ok_or(Error::InvariantViolation)?;
 
           let v0 = t1.vert(idx_neighbor);
           let v1 = t1.vert(idx_neighbor.ccw());
@@ -862,37 +842,38 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
             neighbors: [Some(idx_t1), Some(idx_t2), n],
           };
           if let Some(n) = n {
-            self.tri_mut(n).update_neighbor(idx_t1, idx_t3);
+            self.tri_mut(n).update_neighbor(idx_t1, idx_t3)?;
           }
         }
 
-        self.check_invariant_tri(idx_t0, "Colinear(t0)");
+        self.check_invariant_tri(idx_t0, "Colinear(t0)")?;
         if let Some(idx_t1) = idx_t1 {
-          self.check_invariant_tri(idx_t1, "Colinear(t1)");
+          self.check_invariant_tri(idx_t1, "Colinear(t1)")?;
         }
-        self.check_invariant_tri(idx_t2, "Colinear(t2)");
+        self.check_invariant_tri(idx_t2, "Colinear(t2)")?;
         if let Some(idx_t3) = idx_t3 {
-          self.check_invariant_tri(idx_t3, "Colinear(t3)");
+          self.check_invariant_tri(idx_t3, "Colinear(t3)")?;
         }
 
-        self.maybe_swap(idx_t0);
-        self.maybe_swap(idx_t2);
+        self.maybe_swap(idx_t0)?;
+        self.maybe_swap(idx_t2)?;
         if let Some(idx) = idx_t1 {
-          self.maybe_swap(idx);
+          self.maybe_swap(idx)?;
         }
         if let Some(idx) = idx_t3 {
-          self.maybe_swap(idx);
+          self.maybe_swap(idx)?;
         }
 
-        self.check_invariant("post-Colinear");
+        self.check_invariant("post-Colinear")?;
 
         idx_v
       }
 
       Outside(_e) => {
-        todo!();
+        return Err(Error::InvariantViolation);
       }
-    }
+    };
+    Ok(res)
   }
 
   pub fn locate(&self, start: TriIdx, p: &Point<T>) -> TriangularNetworkLocation {
@@ -926,11 +907,11 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
       (CoLinear, CounterClockWise, CounterClockWise) => OnEdge(Edge::new(start, SubIdx(1))),
       (CounterClockWise, CoLinear, CounterClockWise) => OnEdge(Edge::new(start, SubIdx(2))),
       (CounterClockWise, CounterClockWise, CoLinear) => OnEdge(Edge::new(start, SubIdx(0))),
-      _ => panic!("{:?}", (d0, d1, d2)),
+      _ => unreachable!(),
     }
   }
 
-  pub fn locate_recursive(&self, p: &Point<T>) -> TriangularNetworkLocation {
+  pub fn locate_recursive(&self, p: &Point<T>) -> Result<TriangularNetworkLocation> {
     let mut start = TriIdx(0);
 
     loop {
@@ -941,13 +922,12 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
           match self.tri(e.tri).neighbor(e.sub) {
             Some(idx) => idx,
             None => {
-              eprintln!("{:?}, {:?}", e, self.tri(e.tri));
-              todo!();
-              // return Outside(idx, idx_neighbor);
+              // given point is outside of the network
+              return Err(Error::InvariantViolation);
             }
           }
         }
-        e => return e,
+        e => return Ok(e),
       };
     }
   }
@@ -1000,14 +980,14 @@ impl Triangle {
     &mut self.neighbors[idx.0]
   }
 
-  fn update_neighbor(&mut self, idx_from: TriIdx, idx_to: TriIdx) -> bool {
+  fn update_neighbor(&mut self, idx_from: TriIdx, idx_to: TriIdx) -> Result<()> {
     for i in 0..3 {
       if self.neighbors[i] == Some(idx_from) {
         self.neighbors[i] = Some(idx_to);
-        return true;
+        return Ok(());
       }
     }
-    todo!();
+    Err(Error::InvariantViolation)
   }
 
   #[allow(unused)]
@@ -1035,7 +1015,7 @@ mod test {
     let p1 = Point::new([1.0, 0.0]);
     let p2 = Point::new([1.0, 1.0]);
 
-    let net = TriangularNetwork::new(p0, p1, p2);
+    let net = TriangularNetwork::new(p0, p1, p2).unwrap();
 
     let cases = vec![
       (0.5, 0.0, OnEdge(Edge::new(TriIdx(0), SubIdx(1)))),
