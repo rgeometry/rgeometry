@@ -23,7 +23,8 @@ pub fn main() {
     Point::new([-v, -v]),
     Point::new([v, -v]),
     Point::new([0.0, v]),
-  );
+  )
+  .expect("TriangularNetwork::new");
 
   let num_vertices = 10;
 
@@ -34,7 +35,7 @@ pub fn main() {
     let y = rng.gen_range(-view..view);
     let p = Point::new([x, y]);
 
-    net.insert(&p);
+    net.insert(&p).expect("TriangularNetwork::insert");
   }
 
   println!("delaunay triangles");
@@ -53,7 +54,9 @@ pub fn main() {
       "delaunay triangles, after contrainting edge between {:?} and {:?}",
       v0, v1
     );
-    net.constrain_edge(v0, v1);
+    net
+      .constrain_edge(v0, v1)
+      .expect("TriangularNetwork::constrain_edge");
 
     print_net(&net);
   }

@@ -30,6 +30,8 @@ pub enum Error {
   ConvexViolation,
   ClockWiseViolation,
   CoLinearViolation,
+
+  InvariantViolation,
 }
 
 impl std::fmt::Display for Error {
@@ -44,6 +46,7 @@ impl std::fmt::Display for Error {
         f,
         "Two or more points are colinear and no valid solution exists"
       ),
+      Error::InvariantViolation => write!(f, "Invariant violation"),
     }
   }
 }
