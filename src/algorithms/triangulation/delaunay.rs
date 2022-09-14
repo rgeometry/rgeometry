@@ -565,6 +565,7 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
   }
 
   /// Constraint an edge between two vertices
+  /// [reference]: https://people.eecs.berkeley.edu/~jrs/papers/inccdtj.pdf
   pub fn constrain_edge(&mut self, v0: VertIdx, v1: VertIdx) -> Result<()> {
     let cut = self.cut(v0, v1)?;
     self.cut_apply_inner(&cut)?;
