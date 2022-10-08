@@ -1,6 +1,7 @@
 // https://www.personal.psu.edu/cxc11/AERSP560/DELAUNEY/13_Two_algorithms_Delauney.pdf
 use crate::Error;
 use crate::{data::*, Orientation, PolygonScalar};
+use std::convert::TryFrom;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct TriIdx(pub usize);
@@ -934,6 +935,26 @@ impl<T: PolygonScalar> TriangularNetwork<T> {
   }
 }
 
+impl<T: PolygonScalar> TryFrom<&Polygon<T>> for TriangularNetwork<T> {
+  type Error = crate::Error;
+  fn try_from(polygon: &Polygon<T>) -> std::result::Result<Self, Error> {
+    let mut net = TriangularNetwork::new(
+      polygon.cursor(polygon.boundary_slice()[0]).point().clone(),
+      polygon.cursor(polygon.boundary_slice()[1]).point().clone(),
+      polygon.cursor(polygon.boundary_slice()[2]).point().clone(),
+    )?;
+    for &pt in &polygon.boundary_slice()[3..] {
+      net.insert(polygon.cursor(pt).point())?;
+    }
+    for edge in polygon.iter_boundary_edges() {
+      let v0 = net.find_vert(edge.src).unwrap();
+      let v1 = net.find_vert(edge.dst).unwrap();
+      net.constrain_edge(v0, v1)?;
+    }
+    Ok(net)
+  }
+}
+
 /// Triangle representation
 #[derive(Clone)]
 pub struct Triangle {
@@ -1008,6 +1029,7 @@ impl Triangle {
 #[cfg(test)]
 mod test {
   use super::*;
+  use num_bigint::BigInt;
 
   #[test]
   fn locate() {
@@ -1031,5 +1053,70 @@ mod test {
     for (x, y, expected) in cases {
       assert_eq!(net.locate(TriIdx(0), &Point::new([x, y])), expected);
     }
+  }
+
+  fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
+    let mut trig_area_2x = BigInt::from(0);
+    let net = TriangularNetwork::try_from(p).unwrap();
+    for trig in &net.triangles {
+      let trig = TriangleView::new_unchecked([
+        net.vert(trig.vertices[0]),
+        net.vert(trig.vertices[1]),
+        net.vert(trig.vertices[2]),
+      ]);
+      trig_area_2x += trig.signed_area_2x::<BigInt>();
+    }
+    trig_area_2x
+  }
+
+  #[test]
+  fn basic_1() {
+    let p = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([1, 1]),
+    ])
+    .unwrap();
+
+    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
+  }
+
+  #[test]
+  fn basic_2() {
+    let p = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([2, 0]),
+      Point::new([3, 0]),
+      Point::new([4, 0]),
+      Point::new([1, 1]),
+    ])
+    .unwrap();
+
+    assert_eq!(
+      TriangularNetwork::try_from(&p).err(),
+      Some(Error::CoLinearViolation)
+    );
+  }
+
+  #[test]
+  fn basic_3() {
+    let p = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([1, 1]),
+      Point::new([0, 1]),
+    ])
+    .unwrap();
+
+    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
+  }
+
+  use proptest::prelude::*;
+  use test_strategy::proptest;
+
+  #[proptest]
+  fn equal_area_prop(poly: Polygon<i64>) {
+    prop_assert_eq!(poly.signed_area_2x::<BigInt>(), trig_area_2x(&poly));
   }
 }

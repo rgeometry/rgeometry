@@ -30,7 +30,6 @@ pub enum Error {
   ConvexViolation,
   ClockWiseViolation,
   CoLinearViolation,
-
   InvariantViolation,
 }
 
