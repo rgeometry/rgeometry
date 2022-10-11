@@ -1,6 +1,6 @@
 use super::{Point, PointLocation};
 use crate::{Error, Orientation, PolygonScalar, TotalOrd};
-use claim::debug_assert_ok;
+use claims::debug_assert_ok;
 use num_traits::*;
 use rand::distributions::uniform::SampleUniform;
 use rand::Rng;
