@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/ordered-float-3.0.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../ordered_float/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../ordered_float/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../ordered_float/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/ordered-float-3.2.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../ordered_float/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../ordered_float/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../ordered_float/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -2032,9 +2026,70 @@
 <span id="2026">2026</span>
 <span id="2027">2027</span>
 <span id="2028">2028</span>
+<span id="2029">2029</span>
+<span id="2030">2030</span>
+<span id="2031">2031</span>
+<span id="2032">2032</span>
+<span id="2033">2033</span>
+<span id="2034">2034</span>
+<span id="2035">2035</span>
+<span id="2036">2036</span>
+<span id="2037">2037</span>
+<span id="2038">2038</span>
+<span id="2039">2039</span>
+<span id="2040">2040</span>
+<span id="2041">2041</span>
+<span id="2042">2042</span>
+<span id="2043">2043</span>
+<span id="2044">2044</span>
+<span id="2045">2045</span>
+<span id="2046">2046</span>
+<span id="2047">2047</span>
+<span id="2048">2048</span>
+<span id="2049">2049</span>
+<span id="2050">2050</span>
+<span id="2051">2051</span>
+<span id="2052">2052</span>
+<span id="2053">2053</span>
+<span id="2054">2054</span>
+<span id="2055">2055</span>
+<span id="2056">2056</span>
+<span id="2057">2057</span>
+<span id="2058">2058</span>
+<span id="2059">2059</span>
+<span id="2060">2060</span>
+<span id="2061">2061</span>
+<span id="2062">2062</span>
+<span id="2063">2063</span>
+<span id="2064">2064</span>
+<span id="2065">2065</span>
+<span id="2066">2066</span>
+<span id="2067">2067</span>
+<span id="2068">2068</span>
+<span id="2069">2069</span>
+<span id="2070">2070</span>
+<span id="2071">2071</span>
+<span id="2072">2072</span>
+<span id="2073">2073</span>
+<span id="2074">2074</span>
+<span id="2075">2075</span>
+<span id="2076">2076</span>
+<span id="2077">2077</span>
+<span id="2078">2078</span>
+<span id="2079">2079</span>
+<span id="2080">2080</span>
+<span id="2081">2081</span>
+<span id="2082">2082</span>
+<span id="2083">2083</span>
+<span id="2084">2084</span>
+<span id="2085">2085</span>
+<span id="2086">2086</span>
+<span id="2087">2087</span>
+<span id="2088">2088</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">no_std</span>]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">test</span>, <span class="ident">deny</span>(<span class="ident">warnings</span>))]</span>
 <span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
+<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::derive_partial_eq_without_eq</span>)]</span>
 
 <span class="doccomment">//! Wrappers for total order on Floats.  See the [`OrderedFloat`] and [`NotNan`] docs for details.</span>
 
@@ -2061,7 +2116,9 @@
 <span class="kw">use</span> <span class="ident">num_traits::float::FloatCore</span> <span class="kw">as</span> <span class="ident">Float</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">num_traits::Float</span>;
-<span class="kw">use</span> <span class="ident">num_traits</span>::{<span class="ident">Bounded</span>, <span class="ident">FromPrimitive</span>, <span class="ident">Num</span>, <span class="ident">NumCast</span>, <span class="ident">One</span>, <span class="ident">Signed</span>, <span class="ident">ToPrimitive</span>, <span class="ident">Zero</span>};
+<span class="kw">use</span> <span class="ident">num_traits</span>::{
+    <span class="ident">AsPrimitive</span>, <span class="ident">Bounded</span>, <span class="ident">FromPrimitive</span>, <span class="ident">Num</span>, <span class="ident">NumCast</span>, <span class="ident">One</span>, <span class="ident">Signed</span>, <span class="ident">ToPrimitive</span>, <span class="ident">Zero</span>,
+};
 
 <span class="comment">// masks for the parts of the IEEE 754 float</span>
 <span class="kw">const</span> <span class="ident">SIGN_MASK</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x8000000000000000u64</span>;
@@ -2200,6 +2257,20 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Float</span> <span class="op">+</span> <span class="ident">fmt::Display</span><span class="op">&gt;</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Float</span> <span class="op">+</span> <span class="ident">fmt::LowerExp</span><span class="op">&gt;</span> <span class="ident">fmt::LowerExp</span> <span class="kw">for</span> <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Float</span> <span class="op">+</span> <span class="ident">fmt::UpperExp</span><span class="op">&gt;</span> <span class="ident">fmt::UpperExp</span> <span class="kw">for</span> <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
     }
 }
@@ -2485,6 +2556,49 @@
         <span class="ident">T::from</span>(<span class="ident">n</span>).<span class="ident">map</span>(<span class="ident">OrderedFloat</span>)
     }
 }
+
+<span class="macro">macro_rules!</span> <span class="ident">impl_as_primitive</span> {
+    (@ (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>: <span class="ident">ty</span><span class="op">&gt;</span>) =&gt; $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>:<span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="kw">impl</span> (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>: <span class="ident">ty</span><span class="op">&gt;</span>) ) =&gt; {
+        $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>]</span>)<span class="op">*</span>
+        <span class="kw">impl</span> <span class="ident">AsPrimitive</span><span class="op">&lt;</span><span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span> {
+            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">as_</span>(<span class="self">self</span>) -&gt; <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span><span class="op">&gt;</span> { <span class="ident">OrderedFloat</span>(<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>) }
+        }
+    };
+    (@ (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>: <span class="ident">ty</span>) =&gt; $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>:<span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="kw">impl</span> (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>: <span class="ident">ty</span><span class="op">&gt;</span>) ) =&gt; {
+        $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>]</span>)<span class="op">*</span>
+        <span class="kw">impl</span> <span class="ident">AsPrimitive</span><span class="op">&lt;</span><span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
+            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">as_</span>(<span class="self">self</span>) -&gt; <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span><span class="op">&gt;</span> { <span class="ident">OrderedFloat</span>(<span class="self">self</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>) }
+        }
+    };
+    (@ (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>: <span class="ident">ty</span><span class="op">&gt;</span>) =&gt; $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>:<span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="kw">impl</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>: <span class="ident">ty</span>) ) =&gt; {
+        $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>]</span>)<span class="op">*</span>
+        <span class="kw">impl</span> <span class="ident">AsPrimitive</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span><span class="op">&gt;</span> {
+            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">as_</span>(<span class="self">self</span>) -&gt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span> { <span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span> }
+        }
+    };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>: <span class="ident">tt</span> =&gt; { $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>: <span class="ident">tt</span> ),<span class="op">*</span> } ) =&gt; {$(
+        <span class="macro">impl_as_primitive!</span>(@ <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> =&gt; <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>);
+    )<span class="kw-2">*</span>};
+}
+
+<span class="macro">impl_as_primitive!</span>((<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+
+<span class="macro">impl_as_primitive!</span>((<span class="ident">u8</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">i8</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">u16</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">i16</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">u32</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">i32</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">u64</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">i64</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">usize</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">isize</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">f32</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">f64</span>) =&gt; { (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>), (<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) });
+
+<span class="macro">impl_as_primitive!</span>((<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>) =&gt; { (<span class="ident">u8</span>), (<span class="ident">u16</span>), (<span class="ident">u32</span>), (<span class="ident">u64</span>), (<span class="ident">usize</span>), (<span class="ident">i8</span>), (<span class="ident">i16</span>), (<span class="ident">i32</span>), (<span class="ident">i64</span>), (<span class="ident">isize</span>), (<span class="ident">f32</span>), (<span class="ident">f64</span>) });
+<span class="macro">impl_as_primitive!</span>((<span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) =&gt; { (<span class="ident">u8</span>), (<span class="ident">u16</span>), (<span class="ident">u32</span>), (<span class="ident">u64</span>), (<span class="ident">usize</span>), (<span class="ident">i8</span>), (<span class="ident">i16</span>), (<span class="ident">i32</span>), (<span class="ident">i64</span>), (<span class="ident">isize</span>), (<span class="ident">f32</span>), (<span class="ident">f64</span>) });
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">FromPrimitive</span><span class="op">&gt;</span> <span class="ident">FromPrimitive</span> <span class="kw">for</span> <span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">from_i64</span>(<span class="ident">n</span>: <span class="ident">i64</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
@@ -4061,5 +4175,4 @@
     <span class="macro">impl_arbitrary!</span> { <span class="ident">f32</span>, <span class="ident">f64</span> }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="ordered_float" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="ordered_float" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
