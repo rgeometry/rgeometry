@@ -138,6 +138,25 @@ where
       }
     }
   }
+
+  pub fn extrema(&self) -> (&Point<T, 2>, &Point<T, 2>) 
+  where T: Bounded + Ord + Copy
+  {
+    let idx_minx = self.boundary_slice().iter().min_by_key(|idx| self.0.point(**idx).array[0]).unwrap();
+    let minx = self.0.point(*idx_minx).array[0];
+    let all_idx_minx = self.boundary_slice().iter().filter(|idx| self.0.point(**idx).array[0] == minx);
+    let idx_minxy = all_idx_minx.min_by_key(|idx| self.0.point(**idx).array[1]).unwrap();
+    let minxy = self.0.point(*idx_minxy);
+
+    let idx_maxx = self.boundary_slice().iter().max_by_key(|idx| self.0.point(**idx).array[0]).unwrap();
+    let maxx = self.0.point(*idx_maxx).array[0];
+    let all_idx_maxx = self.boundary_slice().iter().filter(|idx| self.0.point(**idx).array[0] == maxx);
+    let idx_maxxy = all_idx_maxx.max_by_key(|idx| self.0.point(**idx).array[1]).unwrap();
+    let maxxy = self.0.point(*idx_maxxy);
+
+    (minxy, maxxy)
+  }
+
 }
 
 impl PolygonConvex<OrderedFloat<f64>> {
