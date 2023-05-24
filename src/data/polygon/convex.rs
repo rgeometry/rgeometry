@@ -142,8 +142,42 @@ where
   pub fn extrema(&self) -> (&Point<T, 2>, &Point<T, 2>) 
   where T: Bounded + Ord + Copy
   {
-    let idx_minx = self.boundary_slice().iter().min_by_key(|idx| self.0.point(**idx).array[0]).unwrap();
-    let minx = self.0.point(*idx_minx).array[0];
+    // 1. FIND minx coordinate O(n)
+    let (idx_minx, pid_minx) = self.boundary_slice().iter()
+                    .enumerate()
+                    .min_by_key(|ele| self.0.point(*((*ele).1)).array[0])
+                    .unwrap();
+    let minx = self.0.point(*pid_minx).array[0];
+    
+    // 2. FIND maxy coordinate O(log n)
+    // --> cycle array so that idx_minx is the first element
+    let n_points = self.0.boundary_slice().len();
+    let idx_minx_prev = if idx_minx == 0 {n_points-1} else {idx_minx-1};
+    let idx_minx_prev_prev = if idx_minx_prev == 0 {n_points-1} else {idx_minx_prev-1};
+    // --> if points[0].y > if points[N].y then maxy = points[0].y
+    if self.boundary_slice()[idx_minx] > self.boundary_slice()[idx_minx_prev] {
+      let (idx_maxy, pid_maxy) = (idx_minx, self.boundary_slice()[idx_minx]);
+    }
+    // --> if points[0].y < if points[N].y and points[N].y > if points[N-1].y then maxy = points[N].y
+    if self.boundary_slice()[idx_minx] < self.boundary_slice()[idx_minx_prev] 
+      && self.boundary_slice()[idx_minx_prev] > self.boundary_slice()[idx_minx_prev_prev]{
+      let (idx_maxy, pid_maxy) = (idx_minx_prev, self.boundary_slice()[idx_minx_prev]);
+    }
+    // --> else binary search (stop when points[i] < points[i-1])
+    let (last_part, first_part) = self.boundary_slice().split_at(idx_minx);
+    let boundary_iter = first_part.iter().chain(last_part.iter());
+    for element in boundary_iter {
+    }
+
+    // 3. FIND maxx coordinate O(log n)
+    // --> cycle array so that idx_maxy is the first element
+    // --> if points[0].y > if points[N].y then maxy = points[0].y
+    // --> if points[0].y < if points[N].y and points[N].y > if points[N-1].y then maxy = points[N].y
+    // --> else binary search (stop when points[i] < points[i-1])
+
+    // 4. FIND miny coordinate O(log n)
+
+    // PLACEHOLDER REMOVE WHEN IMPLEMENTED
     let all_idx_minx = self.boundary_slice().iter().filter(|idx| self.0.point(**idx).array[0] == minx);
     let idx_minxy = all_idx_minx.min_by_key(|idx| self.0.point(**idx).array[1]).unwrap();
     let minxy = self.0.point(*idx_minxy);
