@@ -256,6 +256,12 @@ impl<'a, T: TotalOrd, const N: usize> From<&'a RangeInclusive<Point<T, N>>>
   }
 }
 
+impl<'a, T: TotalOrd, const N: usize> From<&'a LineSegment<T, N>> for LineSegmentView<'a, T, N> {
+  fn from(line: &'a LineSegment<T, N>) -> LineSegmentView<'a, T, N> {
+    line.as_ref()
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ILineSegment
 
