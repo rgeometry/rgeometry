@@ -1,4 +1,5 @@
 use array_init::{array_init, try_array_init};
+use float::FloatCore;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
@@ -108,7 +109,7 @@ impl<T, const N: usize> Point<T, N> {
   /// Panics if any of the inputs are NaN.
   pub fn new_nn(array: [T; N]) -> Point<NotNan<T>, N>
   where
-    T: Float,
+    T: FloatCore,
   {
     Point::new(array_init(|i| NotNan::new(array[i]).unwrap()))
   }

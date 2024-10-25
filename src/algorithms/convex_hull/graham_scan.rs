@@ -49,33 +49,33 @@ use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 /// # }
 /// ```
 ///
-/// ```no_run
-/// # pub fn main() {
-/// #   use rgeometry::algorithms::convex_hull;
-/// #   use rgeometry_wasm::playground::*;
-/// #
-/// #   static START: std::sync::Once = std::sync::Once::new();
-/// #   START.call_once(|| on_mousemove(|_event| main()));
-/// #
-/// #   clear_screen();
-/// #   set_viewport(2., 2.);
-/// #
-/// #   let pts = with_points(7);
-/// #   let points = pts.clone();
-/// if let Ok(convex) = convex_hull(points) {
-///   render_polygon(&convex);
-/// #   context().set_fill_style(&"grey".into());
-/// #   context().fill();
-/// }
-/// #   for pt in &pts {
-/// #     render_point(&pt);
-/// #   }
-/// # }
-/// ```
-///
-/// <iframe src="https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca"></iframe>
-///
 /// [wiki]: https://en.wikipedia.org/wiki/Graham_scan
+// ```no_run
+// # pub fn main() {
+// #   use rgeometry::algorithms::convex_hull;
+// #   use rgeometry_wasm::playground::*;
+// #
+// #   static START: std::sync::Once = std::sync::Once::new();
+// #   START.call_once(|| on_mousemove(|_event| main()));
+// #
+// #   clear_screen();
+// #   set_viewport(2., 2.);
+// #
+// #   let pts = with_points(7);
+// #   let points = pts.clone();
+// if let Ok(convex) = convex_hull(points) {
+//   render_polygon(&convex);
+// #   context().set_fill_style(&"grey".into());
+// #   context().fill();
+// }
+// #   for pt in &pts {
+// #     render_point(&pt);
+// #   }
+// # }
+// ```
+//
+// <iframe src="https://web.rgeometry.org/wasm/gist/eac484cd855d001815d23a053919b5ca"></iframe>
+//
 pub fn convex_hull<T>(mut pts: Vec<Point<T>>) -> Result<PolygonConvex<T>, Error>
 where
   T: PolygonScalar,

@@ -95,18 +95,18 @@ where
   /// # Time complexity
   /// $O(n \log n)$
   ///
-  /// # Examples
-  /// ```no_run
-  /// # use rgeometry_wasm::playground::*;
-  /// # use rgeometry::data::*;
-  /// # clear_screen();
-  /// # set_viewport(2.0, 2.0);
-  /// # let convex: PolygonConvex<i8> = {
-  /// PolygonConvex::random(3, &mut rand::thread_rng())
-  /// # };
-  /// # render_polygon(&convex.float().normalize());
-  /// ```
-  /// <iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"></iframe>
+  // # Examples
+  // ```no_run
+  // # use rgeometry_wasm::playground::*;
+  // # use rgeometry::data::*;
+  // # clear_screen();
+  // # set_viewport(2.0, 2.0);
+  // # let convex: PolygonConvex<i8> = {
+  // PolygonConvex::random(3, &mut rand::thread_rng())
+  // # };
+  // # render_polygon(&convex.float().normalize());
+  // ```
+  // <iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
   where
     T: Bounded + PolygonScalar + SampleUniform + Copy,
