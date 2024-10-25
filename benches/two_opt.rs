@@ -32,7 +32,8 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     b.iter(|| {
       let mut pts = Vec::new();
       while pts.len() < SET_SIZE {
-        let pt: Point<OrderedFloat<f64>> = rng.sample::<Point<f64, 2>, _>(Standard).map(OrderedFloat);
+        let pt: Point<OrderedFloat<f64>> =
+          rng.sample::<Point<f64, 2>, _>(Standard).map(OrderedFloat);
         pts.push(pt)
       }
       two_opt_moves(pts, &mut rng)
