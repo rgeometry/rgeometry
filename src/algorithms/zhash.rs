@@ -18,12 +18,7 @@ impl<'a, T> Copy for ZHashBox<'a, T> {}
 
 impl<'a, T> Clone for ZHashBox<'a, T> {
   fn clone(&self) -> ZHashBox<'a, T> {
-    ZHashBox {
-      min_x: self.min_x,
-      max_x: self.max_x,
-      min_y: self.min_y,
-      max_y: self.max_y,
-    }
+    *self
   }
 }
 

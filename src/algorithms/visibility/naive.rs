@@ -250,7 +250,7 @@ mod naive_testing {
       Point::new([0, 6]),
     ])
     .unwrap();
-    let out_test_points = vec![
+    let out_test_points = [
       Point::new([0, 0]),
       Point::new([8, 0]),
       Point::new([8, 3]),
@@ -288,7 +288,7 @@ mod naive_testing {
       Point::new([0, 6]),
     ])
     .unwrap();
-    let out_test_points = vec![
+    let out_test_points = [
       Point::new([0, 0]),
       Point::new([10, 0]),
       Point::new([10, 3]),

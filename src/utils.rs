@@ -122,10 +122,10 @@ where
   T: Copy,
 {
   let end: usize = source.iter().map(|x| x.len()).product();
-  (0..end).into_iter().map(move |mut nth| {
+  (0..end).map(move |mut nth| {
     array_init::array_init(|i| {
       let my_index = nth % source[i].len();
-      nth = nth / source[i].len();
+      nth /= source[i].len();
       source[i][my_index]
     })
   })

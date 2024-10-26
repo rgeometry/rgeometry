@@ -676,10 +676,7 @@ impl<'a, T> PartialEq for Cursor<'a, T> {
 // Can't derive it because T should not be 'Clone'.
 impl<'a, T> Clone for Cursor<'a, T> {
   fn clone(&self) -> Self {
-    Cursor {
-      polygon: self.polygon,
-      position: self.position,
-    }
+    *self
   }
 }
 impl<'a, T> Copy for Cursor<'a, T> {}
@@ -965,6 +962,6 @@ pub mod tests {
         return PointLocation::Inside;
       }
     }
-    return PointLocation::Outside;
+    PointLocation::Outside
   }
 }

@@ -14,7 +14,7 @@ default = ["console_error_panic_hook"]
 base64       = "*"
 rand         = "0.8"
 getrandom    = { version="0.2.2", features=["js"] }
-num-traits   = "0.1"
+num-traits   = "0.2.19"
 num-rational = "0.4"
 num-bigint   = "*"
 rgeometry    = { path="../../" }

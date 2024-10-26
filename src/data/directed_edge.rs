@@ -55,10 +55,7 @@ pub struct DirectedEdge<'a, T: TotalOrd, const N: usize = 2> {
 impl<'a, T: TotalOrd, const N: usize> Copy for DirectedEdge<'a, T, N> {}
 impl<'a, T: TotalOrd, const N: usize> Clone for DirectedEdge<'a, T, N> {
   fn clone(&self) -> Self {
-    DirectedEdge {
-      src: self.src,
-      dst: self.dst,
-    }
+    *self
   }
 }
 
