@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["get_visibility_polygon","Naive alogrithn for calculating visibility polygon"]]};
+window.SIDEBAR_ITEMS = {"fn":["get_visibility_polygon"]};

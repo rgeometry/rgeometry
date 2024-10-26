@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["earclip",""]]};
+window.SIDEBAR_ITEMS = {"mod":["earclip"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["naive",""]]};
+window.SIDEBAR_ITEMS = {"mod":["naive"]};

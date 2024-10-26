@@ -1,132 +1,71 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/util.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>util.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" href="https://www.rust-lang.org/favicon.ico"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../getrandom/index.html"><div class="logo-container"><img src="https://www.rust-lang.org/logos/rust-logo-128x128-blk.png" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../getrandom/index.html"><div class="logo-container">
-                    <img src="https://www.rust-lang.org/logos/rust-logo-128x128-blk.png" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../getrandom/index.html">
-                        <img src="https://www.rust-lang.org/logos/rust-logo-128x128-blk.png" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
-<span id="2">2</span>
-<span id="3">3</span>
-<span id="4">4</span>
-<span id="5">5</span>
-<span id="6">6</span>
-<span id="7">7</span>
-<span id="8">8</span>
-<span id="9">9</span>
-<span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright 2019 Developers of the Rand project.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// https://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or https://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="kw">use</span> <span class="ident">core::sync::atomic</span>::{<span class="ident">AtomicUsize</span>, <span class="ident">Ordering::Relaxed</span>};
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.15/src/util.rs`."><title>util.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="getrandom" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="icon" href="https://www.rust-lang.org/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+</pre></div><pre class="rust"><code><span class="attr">#![allow(dead_code)]
+</span><span class="kw">use </span>core::{mem::MaybeUninit, ptr};
 
-<span class="comment">// This structure represents a lazily initialized static usize value. Useful</span>
-<span class="comment">// when it is preferable to just rerun initialization instead of locking.</span>
-<span class="comment">// Both unsync_init and sync_init will invoke an init() function until it</span>
-<span class="comment">// succeeds, then return the cached value for future calls.</span>
-<span class="comment">//</span>
-<span class="comment">// Both methods support init() &quot;failing&quot;. If the init() method returns UNINIT,</span>
-<span class="comment">// that value will be returned as normal, but will not be cached.</span>
-<span class="comment">//</span>
-<span class="comment">// Users should only depend on the _value_ returned by init() functions.</span>
-<span class="comment">// Specifically, for the following init() function:</span>
-<span class="comment">//      fn init() -&gt; usize {</span>
-<span class="comment">//          a();</span>
-<span class="comment">//          let v = b();</span>
-<span class="comment">//          c();</span>
-<span class="comment">//          v</span>
-<span class="comment">//      }</span>
-<span class="comment">// the effects of c() or writes to shared memory will not necessarily be</span>
-<span class="comment">// observed and additional synchronization methods with be needed.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LazyUsize</span>(<span class="ident">AtomicUsize</span>);
-
-<span class="kw">impl</span> <span class="ident">LazyUsize</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">AtomicUsize::new</span>(<span class="ident"><span class="self">Self</span>::UNINIT</span>))
-    }
-
-    <span class="comment">// The initialization is not completed.</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">UNINIT</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">usize::max_value</span>();
-
-    <span class="comment">// Runs the init() function at least once, returning the value of some run</span>
-    <span class="comment">// of init(). Multiple callers can run their init() functions in parallel.</span>
-    <span class="comment">// init() should always return the same value, if it succeeds.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unsync_init</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">init</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>() -&gt; <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
-        <span class="comment">// Relaxed ordering is fine, as we only have a single atomic variable.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">load</span>(<span class="ident">Relaxed</span>);
-        <span class="kw">if</span> <span class="ident">val</span> <span class="op">==</span> <span class="ident"><span class="self">Self</span>::UNINIT</span> {
-            <span class="ident">val</span> <span class="op">=</span> <span class="ident">init</span>();
-            <span class="self">self</span>.<span class="number">0</span>.<span class="ident">store</span>(<span class="ident">val</span>, <span class="ident">Relaxed</span>);
-        }
-        <span class="ident">val</span>
-    }
+<span class="doccomment">/// Polyfill for `maybe_uninit_slice` feature's
+/// `MaybeUninit::slice_assume_init_mut`. Every element of `slice` must have
+/// been initialized.
+</span><span class="attr">#[inline(always)]
+</span><span class="kw">pub unsafe fn </span>slice_assume_init_mut&lt;T&gt;(slice: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;T&gt;]) -&gt; <span class="kw-2">&amp;mut </span>[T] {
+    <span class="comment">// SAFETY: `MaybeUninit&lt;T&gt;` is guaranteed to be layout-compatible with `T`.
+    </span><span class="kw-2">&amp;mut *</span>(slice <span class="kw">as </span><span class="kw-2">*mut </span>[MaybeUninit&lt;T&gt;] <span class="kw">as </span><span class="kw-2">*mut </span>[T])
 }
 
-<span class="comment">// Identical to LazyUsize except with bool instead of usize.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LazyBool</span>(<span class="ident">LazyUsize</span>);
-
-<span class="kw">impl</span> <span class="ident">LazyBool</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">LazyUsize::new</span>())
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unsync_init</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">init</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>() -&gt; <span class="ident">bool</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">unsync_init</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">init</span>() <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
-    }
+<span class="attr">#[inline]
+</span><span class="kw">pub fn </span>uninit_slice_fill_zero(slice: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;]) -&gt; <span class="kw-2">&amp;mut </span>[u8] {
+    <span class="kw">unsafe </span>{ ptr::write_bytes(slice.as_mut_ptr(), <span class="number">0</span>, slice.len()) };
+    <span class="kw">unsafe </span>{ slice_assume_init_mut(slice) }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="getrandom" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+
+<span class="attr">#[inline(always)]
+</span><span class="kw">pub fn </span>slice_as_uninit&lt;T&gt;(slice: <span class="kw-2">&amp;</span>[T]) -&gt; <span class="kw-2">&amp;</span>[MaybeUninit&lt;T&gt;] {
+    <span class="comment">// SAFETY: `MaybeUninit&lt;T&gt;` is guaranteed to be layout-compatible with `T`.
+    // There is no risk of writing a `MaybeUninit&lt;T&gt;` into the result since
+    // the result isn't mutable.
+    </span><span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>(slice <span class="kw">as </span><span class="kw-2">*const </span>[T] <span class="kw">as </span><span class="kw-2">*const </span>[MaybeUninit&lt;T&gt;]) }
+}
+
+<span class="doccomment">/// View an mutable initialized array as potentially-uninitialized.
+///
+/// This is unsafe because it allows assigning uninitialized values into
+/// `slice`, which would be undefined behavior.
+</span><span class="attr">#[inline(always)]
+</span><span class="kw">pub unsafe fn </span>slice_as_uninit_mut&lt;T&gt;(slice: <span class="kw-2">&amp;mut </span>[T]) -&gt; <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;T&gt;] {
+    <span class="comment">// SAFETY: `MaybeUninit&lt;T&gt;` is guaranteed to be layout-compatible with `T`.
+    </span><span class="kw-2">&amp;mut *</span>(slice <span class="kw">as </span><span class="kw-2">*mut </span>[T] <span class="kw">as </span><span class="kw-2">*mut </span>[MaybeUninit&lt;T&gt;])
+}
+</code></pre></div></section></main></body></html>

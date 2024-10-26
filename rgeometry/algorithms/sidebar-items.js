@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["convex_hull","Convex hull of a set of points."],["segment_intersections","Find all line segment intersections."]],"mod":[["convex_hull",""],["intersection",""],["polygonization",""],["triangulation",""],["visibility",""],["zhash",""]]};
+window.SIDEBAR_ITEMS = {"fn":["convex_hull","segment_intersections"],"mod":["convex_hull","intersection","polygonization","triangulation","visibility","zhash"]};

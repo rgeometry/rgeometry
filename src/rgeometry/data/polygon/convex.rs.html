@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/data/polygon/convex.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>convex.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/data/polygon/convex.rs`."><title>convex.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="rgeometry" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js"                  integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js"    integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"></script>
 <script>
@@ -19,617 +19,616 @@
   }
 </style>
 
-</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../rgeometry/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../rgeometry/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../rgeometry/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
-<span id="2">2</span>
-<span id="3">3</span>
-<span id="4">4</span>
-<span id="5">5</span>
-<span id="6">6</span>
-<span id="7">7</span>
-<span id="8">8</span>
-<span id="9">9</span>
-<span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
-<span id="86">86</span>
-<span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
-<span id="130">130</span>
-<span id="131">131</span>
-<span id="132">132</span>
-<span id="133">133</span>
-<span id="134">134</span>
-<span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-<span id="140">140</span>
-<span id="141">141</span>
-<span id="142">142</span>
-<span id="143">143</span>
-<span id="144">144</span>
-<span id="145">145</span>
-<span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">num_traits</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">ordered_float::OrderedFloat</span>;
-<span class="kw">use</span> <span class="ident">rand::distributions::uniform::SampleUniform</span>;
-<span class="kw">use</span> <span class="ident">rand::distributions</span>::{<span class="ident">Distribution</span>, <span class="ident">Standard</span>};
-<span class="kw">use</span> <span class="ident">rand::seq::SliceRandom</span>;
-<span class="kw">use</span> <span class="ident">rand::Rng</span>;
-<span class="kw">use</span> <span class="ident">std::ops</span>::<span class="kw-2">*</span>;
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>num_traits::<span class="kw-2">*</span>;
+<span class="kw">use </span>ordered_float::OrderedFloat;
+<span class="kw">use </span>rand::distributions::uniform::SampleUniform;
+<span class="kw">use </span>rand::distributions::{Distribution, Standard};
+<span class="kw">use </span>rand::seq::SliceRandom;
+<span class="kw">use </span>rand::Rng;
+<span class="kw">use </span>std::ops::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data</span>::{<span class="ident">Point</span>, <span class="ident">PointLocation</span>, <span class="ident">TriangleView</span>, <span class="ident">Vector</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">Orientation</span>, <span class="ident">PolygonScalar</span>, <span class="ident">TotalOrd</span>};
+<span class="kw">use </span><span class="kw">crate</span>::data::{Point, PointLocation, TriangleView, Vector};
+<span class="kw">use crate</span>::{Error, Orientation, PolygonScalar, TotalOrd};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Polygon</span>;
+<span class="kw">use </span><span class="kw">super</span>::Polygon;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+<span class="attr">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>PolygonConvex&lt;T&gt;(Polygon&lt;T&gt;);
 
-<span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
-<span class="comment">// PolygonConvex</span>
+<span class="comment">///////////////////////////////////////////////////////////////////////////////
+// PolygonConvex
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">PolygonScalar</span>,
+</span><span class="kw">impl</span>&lt;T&gt; PolygonConvex&lt;T&gt;
+<span class="kw">where
+  </span>T: PolygonScalar,
 {
-  <span class="doccomment">/// Assume that a polygon is convex.</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// # Safety</span>
-  <span class="doccomment">/// The input polygon has to be strictly convex, ie. no vertices are allowed to</span>
-  <span class="doccomment">/// be concave or colinear.</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// # Time complexity</span>
-  <span class="doccomment">/// $O(1)$</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">PolygonConvex</span>(<span class="ident">poly</span>)
+  <span class="doccomment">/// Assume that a polygon is convex.
+  ///
+  /// # Safety
+  /// The input polygon has to be strictly convex, ie. no vertices are allowed to
+  /// be concave or colinear.
+  ///
+  /// # Time complexity
+  /// $O(1)$
+  </span><span class="kw">pub fn </span>new_unchecked(poly: Polygon&lt;T&gt;) -&gt; PolygonConvex&lt;T&gt; {
+    PolygonConvex(poly)
   }
 
-  <span class="doccomment">/// Locate a point relative to a convex polygon.</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// # Time complexity</span>
-  <span class="doccomment">/// $O(\log n)$</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// # Examples</span>
-  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org/wasm/gist/2cb9ff5bd6ce24f395a5ea30280aabee&quot;&gt;&lt;/iframe&gt;</span>
-  <span class="doccomment">///</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pt</span>: <span class="kw-2">&amp;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span>) -&gt; <span class="ident">PointLocation</span> {
-    <span class="kw">let</span> <span class="ident">poly</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
-    <span class="kw">let</span> <span class="ident">vertices</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">boundary_slice</span>();
-    <span class="kw">let</span> <span class="ident">p0</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="number">0</span>]);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lower</span> <span class="op">=</span> <span class="number">1</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">upper</span> <span class="op">=</span> <span class="ident">vertices</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>;
-    <span class="kw">while</span> <span class="ident">lower</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&lt;</span> <span class="ident">upper</span> {
-      <span class="kw">let</span> <span class="ident">middle</span> <span class="op">=</span> (<span class="ident">lower</span> <span class="op">+</span> <span class="ident">upper</span>) <span class="op">/</span> <span class="number">2</span>;
-      <span class="kw">if</span> <span class="ident">Point::orient</span>(<span class="ident">p0</span>, <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">middle</span>]), <span class="ident">pt</span>) <span class="op">==</span> <span class="ident">Orientation::CounterClockWise</span> {
-        <span class="ident">lower</span> <span class="op">=</span> <span class="ident">middle</span>;
-      } <span class="kw">else</span> {
-        <span class="ident">upper</span> <span class="op">=</span> <span class="ident">middle</span>;
+  <span class="doccomment">/// Locate a point relative to a convex polygon.
+  ///
+  /// # Time complexity
+  /// $O(\log n)$
+  ///
+  /// # Examples
+  /// &lt;iframe src="https://web.rgeometry.org/wasm/gist/2cb9ff5bd6ce24f395a5ea30280aabee"&gt;&lt;/iframe&gt;
+  ///
+  </span><span class="kw">pub fn </span>locate(<span class="kw-2">&amp;</span><span class="self">self</span>, pt: <span class="kw-2">&amp;</span>Point&lt;T, <span class="number">2</span>&gt;) -&gt; PointLocation {
+    <span class="kw">let </span>poly = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
+    <span class="kw">let </span>vertices = <span class="self">self</span>.boundary_slice();
+    <span class="kw">let </span>p0 = poly.point(vertices[<span class="number">0</span>]);
+    <span class="kw">let </span><span class="kw-2">mut </span>lower = <span class="number">1</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>upper = vertices.len() - <span class="number">1</span>;
+    <span class="kw">while </span>lower + <span class="number">1 </span>&lt; upper {
+      <span class="kw">let </span>middle = (lower + upper) / <span class="number">2</span>;
+      <span class="kw">if </span>Point::orient(p0, poly.point(vertices[middle]), pt) == Orientation::CounterClockWise {
+        lower = middle;
+      } <span class="kw">else </span>{
+        upper = middle;
       }
     }
-    <span class="kw">let</span> <span class="ident">p1</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">lower</span>]);
-    <span class="kw">let</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">point</span>(<span class="ident">vertices</span>[<span class="ident">upper</span>]);
-    <span class="kw">let</span> <span class="ident">triangle</span> <span class="op">=</span> <span class="ident">TriangleView::new_unchecked</span>([<span class="ident">p0</span>, <span class="ident">p1</span>, <span class="ident">p2</span>]);
-    <span class="ident">triangle</span>.<span class="ident">locate</span>(<span class="ident">pt</span>)
+    <span class="kw">let </span>p1 = poly.point(vertices[lower]);
+    <span class="kw">let </span>p2 = poly.point(vertices[upper]);
+    <span class="kw">let </span>triangle = TriangleView::new_unchecked([p0, p1, p2]);
+    triangle.locate(pt)
   }
 
-  <span class="doccomment">/// Validates the following properties:</span>
-  <span class="doccomment">///  * Each vertex is convex, ie. not concave or colinear.</span>
-  <span class="doccomment">///  * All generate polygon properties hold true (eg. no duplicate points, no self-intersections).</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// # Time complexity</span>
-  <span class="doccomment">/// $O(n \log n)$</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">for</span> <span class="ident">cursor</span> <span class="kw">in</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">iter_boundary</span>() {
-      <span class="kw">if</span> <span class="ident">cursor</span>.<span class="ident">orientation</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">Orientation::CounterClockWise</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::ConvexViolation</span>);
+  <span class="doccomment">/// Validates the following properties:
+  ///  * Each vertex is convex, ie. not concave or colinear.
+  ///  * All generate polygon properties hold true (eg. no duplicate points, no self-intersections).
+  ///
+  /// # Time complexity
+  /// $O(n \log n)$
+  </span><span class="kw">pub fn </span>validate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">for </span>cursor <span class="kw">in </span><span class="self">self</span>.<span class="number">0</span>.iter_boundary() {
+      <span class="kw">if </span>cursor.orientation() != Orientation::CounterClockWise {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::ConvexViolation);
       }
     }
-    <span class="self">self</span>.<span class="number">0</span>.<span class="ident">validate</span>()
+    <span class="self">self</span>.<span class="number">0</span>.validate()
   }
 
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">float</span>(<span class="self">self</span>) -&gt; <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>
-  <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>,
+  <span class="kw">pub fn </span>float(<span class="self">self</span>) -&gt; PolygonConvex&lt;OrderedFloat&lt;f64&gt;&gt;
+  <span class="kw">where
+    </span>T: Clone + Into&lt;f64&gt;,
   {
-    <span class="ident">PolygonConvex::new_unchecked</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">float</span>())
+    PolygonConvex::new_unchecked(<span class="self">self</span>.<span class="number">0</span>.float())
   }
 
-  <span class="doccomment">/// $O(1)$</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">polygon</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="self">self</span>.<span class="ident">into</span>()
+  <span class="doccomment">/// $O(1)$
+  </span><span class="kw">pub fn </span>polygon(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Polygon&lt;T&gt; {
+    <span class="self">self</span>.into()
   }
 
-  <span class="doccomment">/// Uniformly sample a random convex polygon.</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// The output polygon is rooted in `(0,0)`, grows upwards, and has a height and width of [`T::max_value()`](Bounded::max_value).</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// # Time complexity</span>
-  <span class="doccomment">/// $O(n \log n)$</span>
-  <span class="doccomment">///</span>
-  <span class="doccomment">/// # Examples</span>
-  <span class="doccomment">/// ```no_run</span>
-  <span class="doccomment">/// # use rgeometry_wasm::playground::*;</span>
-  <span class="doccomment">/// # use rgeometry::data::*;</span>
-  <span class="doccomment">/// # clear_screen();</span>
-  <span class="doccomment">/// # set_viewport(2.0, 2.0);</span>
-  <span class="doccomment">/// # let convex: PolygonConvex&lt;i8&gt; = {</span>
-  <span class="doccomment">/// PolygonConvex::random(3, &amp;mut rand::thread_rng())</span>
-  <span class="doccomment">/// # };</span>
-  <span class="doccomment">/// # render_polygon(&amp;convex.float().normalize());</span>
-  <span class="doccomment">/// ```</span>
-  <span class="doccomment">/// &lt;iframe src=&quot;https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2&quot;&gt;&lt;/iframe&gt;</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;mut</span> <span class="ident">R</span>) -&gt; <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-  <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
-    <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+  <span class="doccomment">/// Uniformly sample a random convex polygon.
+  ///
+  /// The output polygon is rooted in `(0,0)`, grows upwards, and has a height and width of [`T::max_value()`](Bounded::max_value).
+  ///
+  /// # Time complexity
+  /// $O(n \log n)$
+  ///
+  </span><span class="comment">// # Examples
+  // ```no_run
+  // # use rgeometry_wasm::playground::*;
+  // # use rgeometry::data::*;
+  // # clear_screen();
+  // # set_viewport(2.0, 2.0);
+  // # let convex: PolygonConvex&lt;i8&gt; = {
+  // PolygonConvex::random(3, &amp;mut rand::thread_rng())
+  // # };
+  // # render_polygon(&amp;convex.float().normalize());
+  // ```
+  // &lt;iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"&gt;&lt;/iframe&gt;
+  </span><span class="kw">pub fn </span>random&lt;R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; PolygonConvex&lt;T&gt;
+  <span class="kw">where
+    </span>T: Bounded + PolygonScalar + SampleUniform + Copy,
+    R: Rng + <span class="question-mark">?</span>Sized,
   {
-    <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">n</span>.<span class="ident">max</span>(<span class="number">3</span>);
-    <span class="kw">loop</span> {
-      <span class="kw">let</span> <span class="ident">vs</span> <span class="op">=</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vs</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span>, <span class="ident">rng</span>);
-        <span class="ident">Vector::sort_around</span>(<span class="kw-2">&amp;mut</span> <span class="ident">vs</span>);
-        <span class="ident">vs</span>
+    <span class="kw">let </span>n = n.max(<span class="number">3</span>);
+    <span class="kw">loop </span>{
+      <span class="kw">let </span>vs = {
+        <span class="kw">let </span><span class="kw-2">mut </span>vs = random_vectors(n, rng);
+        Vector::sort_around(<span class="kw-2">&amp;mut </span>vs);
+        vs
       };
-      <span class="kw">let</span> <span class="ident">vertices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Point</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">vs</span>
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">scan</span>(<span class="ident">Point::zero</span>(), <span class="op">|</span><span class="ident">st</span>, <span class="ident">vec</span><span class="op">|</span> {
-          <span class="kw-2">*</span><span class="ident">st</span> <span class="op">+</span><span class="op">=</span> <span class="ident">vec</span>;
-          <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">st</span>)
+      <span class="kw">let </span>vertices: Vec&lt;Point&lt;T, <span class="number">2</span>&gt;&gt; = vs
+        .into_iter()
+        .scan(Point::zero(), |st, vec| {
+          <span class="kw-2">*</span>st += vec;
+          <span class="prelude-val">Some</span>(<span class="kw-2">*</span>st)
         })
-        .<span class="ident">collect</span>();
-      <span class="kw">let</span> <span class="ident">n_vertices</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">vertices</span>).<span class="ident">len</span>();
-      <span class="macro">debug_assert_eq!</span>(<span class="ident">n_vertices</span>, <span class="ident">n</span>);
-      <span class="comment">// FIXME: Use the convex hull algorithm for polygons rather than point sets.</span>
-      <span class="comment">//        It runs in O(n) rather than O(n log n). Hasn&#39;t been implemented, yet, though.</span>
-      <span class="comment">// If the vertices are all colinear then give up and try again.</span>
-      <span class="comment">// FIXME: If the RNG always returns zero then we might loop forever.</span>
-      <span class="comment">//        Maybe limit the number of recursions.</span>
-      <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::algorithms::convex_hull</span>(<span class="ident">vertices</span>) {
-        <span class="kw">return</span> <span class="ident">p</span>;
+        .collect();
+      <span class="kw">let </span>n_vertices = (<span class="kw-2">*</span>vertices).len();
+      <span class="macro">debug_assert_eq!</span>(n_vertices, n);
+      <span class="comment">// FIXME: Use the convex hull algorithm for polygons rather than point sets.
+      //        It runs in O(n) rather than O(n log n). Hasn't been implemented, yet, though.
+      // If the vertices are all colinear then give up and try again.
+      // FIXME: If the RNG always returns zero then we might loop forever.
+      //        Maybe limit the number of recursions.
+      </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(p) = <span class="kw">crate</span>::algorithms::convex_hull(vertices) {
+        <span class="kw">return </span>p;
       }
     }
   }
 }
 
-<span class="kw">impl</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-  <span class="attribute">#[<span class="ident">must_use</span>]</span>
-  <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">OrderedFloat</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">PolygonConvex::new_unchecked</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">normalize</span>())
+<span class="kw">impl </span>PolygonConvex&lt;OrderedFloat&lt;f64&gt;&gt; {
+  <span class="attr">#[must_use]
+  </span><span class="kw">pub fn </span>normalize(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PolygonConvex&lt;OrderedFloat&lt;f64&gt;&gt; {
+    PolygonConvex::new_unchecked(<span class="self">self</span>.<span class="number">0</span>.normalize())
   }
 }
 
-<span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
-<span class="comment">// Trait Implementations</span>
+<span class="comment">///////////////////////////////////////////////////////////////////////////////
+// Trait Implementations
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-  <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
-  <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
-    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>
+</span><span class="kw">impl</span>&lt;T&gt; Deref <span class="kw">for </span>PolygonConvex&lt;T&gt; {
+  <span class="kw">type </span>Target = Polygon&lt;T&gt;;
+  <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
+    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+  </span>}
+}
+
+<span class="kw">impl</span>&lt;T&gt; From&lt;PolygonConvex&lt;T&gt;&gt; <span class="kw">for </span>Polygon&lt;T&gt; {
+  <span class="kw">fn </span>from(convex: PolygonConvex&lt;T&gt;) -&gt; Polygon&lt;T&gt; {
+    convex.<span class="number">0
+  </span>}
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>PolygonConvex&lt;T&gt;&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>Polygon&lt;T&gt; {
+  <span class="kw">fn </span>from(convex: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>PolygonConvex&lt;T&gt;) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Polygon&lt;T&gt; {
+    <span class="kw-2">&amp;</span>convex.<span class="number">0
+  </span>}
+}
+
+<span class="kw">impl </span>Distribution&lt;PolygonConvex&lt;isize&gt;&gt; <span class="kw">for </span>Standard {
+  <span class="kw">fn </span>sample&lt;R: Rng + <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, rng: <span class="kw-2">&amp;mut </span>R) -&gt; PolygonConvex&lt;isize&gt; {
+    PolygonConvex::random(<span class="number">100</span>, rng)
   }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">convex</span>.<span class="number">0</span>
-  }
-}
+<span class="comment">///////////////////////////////////////////////////////////////////////////////
+// Helper functions
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-  <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">convex</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw-2">&amp;</span><span class="ident">convex</span>.<span class="number">0</span>
-  }
-}
-
-<span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Standard</span> {
-  <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;mut</span> <span class="ident">R</span>) -&gt; <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> {
-    <span class="ident">PolygonConvex::random</span>(<span class="number">100</span>, <span class="ident">rng</span>)
-  }
-}
-
-<span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
-<span class="comment">// Helper functions</span>
-
-<span class="comment">// Property: random_between(n, max, &amp;mut rng).sum::&lt;usize&gt;() == max</span>
-<span class="kw">fn</span> <span class="ident">random_between_iter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;mut</span> <span class="ident">R</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
-  <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+// Property: random_between(n, max, &amp;mut rng).sum::&lt;usize&gt;() == max
+</span><span class="kw">fn </span>random_between_iter&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; <span class="kw">impl </span>Iterator&lt;Item = T&gt;
+<span class="kw">where
+  </span>T: PolygonScalar + Bounded + SampleUniform + Copy,
+  R: Rng + <span class="question-mark">?</span>Sized,
 {
-  <span class="kw">let</span> <span class="ident">zero</span>: <span class="ident">T</span> <span class="op">=</span> <span class="ident">T::from_constant</span>(<span class="number">0</span>);
-  <span class="kw">let</span> <span class="ident">max</span>: <span class="ident">T</span> <span class="op">=</span> <span class="ident">Bounded::max_value</span>();
-  <span class="macro">assert!</span>(<span class="ident">n</span> <span class="op">&gt;</span> <span class="number">0</span>);
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pts</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">n</span>);
-  <span class="kw">while</span> <span class="ident">pts</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> {
-    <span class="ident">pts</span>.<span class="ident">push</span>(<span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="ident">zero</span>..<span class="ident">max</span>));
+  <span class="kw">let </span>zero: T = T::from_constant(<span class="number">0</span>);
+  <span class="kw">let </span>max: T = Bounded::max_value();
+  <span class="macro">assert!</span>(n &gt; <span class="number">0</span>);
+  <span class="kw">let </span><span class="kw-2">mut </span>pts = Vec::with_capacity(n);
+  <span class="kw">while </span>pts.len() &lt; n - <span class="number">1 </span>{
+    pts.push(rng.gen_range(zero..max));
   }
-  <span class="ident">pts</span>.<span class="ident">sort_unstable_by</span>(<span class="ident">TotalOrd::total_cmp</span>);
-  <span class="ident">pts</span>.<span class="ident">push</span>(<span class="ident">max</span>);
-  <span class="ident">pts</span>.<span class="ident">into_iter</span>().<span class="ident">scan</span>(<span class="ident">zero</span>, <span class="op">|</span><span class="ident">from</span>, <span class="ident">x</span><span class="op">|</span> {
-    <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">x</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">from</span>;
-    <span class="kw-2">*</span><span class="ident">from</span> <span class="op">=</span> <span class="ident">x</span>;
-    <span class="prelude-val">Some</span>(<span class="ident">out</span>)
+  pts.sort_unstable_by(TotalOrd::total_cmp);
+  pts.push(max);
+  pts.into_iter().scan(zero, |from, x| {
+    <span class="kw">let </span>out = x - <span class="kw-2">*</span>from;
+    <span class="kw-2">*</span>from = x;
+    <span class="prelude-val">Some</span>(out)
   })
 }
 
-<span class="comment">// Property: random_between_zero(10, 100, &amp;mut rng).iter().sum::&lt;isize&gt;() == 0</span>
-<span class="kw">fn</span> <span class="ident">random_between_zero</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;mut</span> <span class="ident">R</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
-  <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="comment">// Property: random_between_zero(10, 100, &amp;mut rng).iter().sum::&lt;isize&gt;() == 0
+</span><span class="kw">fn </span>random_between_zero&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; Vec&lt;T&gt;
+<span class="kw">where
+  </span>T: Bounded + PolygonScalar + SampleUniform + Copy,
+  R: Rng + <span class="question-mark">?</span>Sized,
 {
-  <span class="macro">assert!</span>(<span class="ident">n</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">2</span>);
-  <span class="kw">let</span> <span class="ident">n_positive</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">1</span>..<span class="ident">n</span>); <span class="comment">// [1;n[</span>
-  <span class="kw">let</span> <span class="ident">n_negative</span> <span class="op">=</span> <span class="ident">n</span> <span class="op">-</span> <span class="ident">n_positive</span>;
-  <span class="macro">assert!</span>(<span class="ident">n_positive</span> <span class="op">+</span> <span class="ident">n_negative</span> <span class="op">==</span> <span class="ident">n</span>);
-  <span class="kw">let</span> <span class="ident">positive</span> <span class="op">=</span> <span class="ident">random_between_iter</span>(<span class="ident">n_positive</span>, <span class="ident">rng</span>);
-  <span class="kw">let</span> <span class="ident">negative</span> <span class="op">=</span> <span class="ident">random_between_iter</span>(<span class="ident">n_negative</span>, <span class="ident">rng</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span>: <span class="ident">T</span><span class="op">|</span> <span class="op">-</span><span class="ident">i</span>);
-  <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">positive</span>.<span class="ident">chain</span>(<span class="ident">negative</span>).<span class="ident">collect</span>();
-  <span class="ident">result</span>.<span class="ident">shuffle</span>(<span class="ident">rng</span>);
-  <span class="ident">result</span>
+  <span class="macro">assert!</span>(n &gt;= <span class="number">2</span>);
+  <span class="kw">let </span>n_positive = rng.gen_range(<span class="number">1</span>..n); <span class="comment">// [1;n[
+  </span><span class="kw">let </span>n_negative = n - n_positive;
+  <span class="macro">assert!</span>(n_positive + n_negative == n);
+  <span class="kw">let </span>positive = random_between_iter(n_positive, rng);
+  <span class="kw">let </span>negative = random_between_iter(n_negative, rng).map(|i: T| -i);
+  <span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;T&gt; = positive.chain(negative).collect();
+  result.shuffle(rng);
+  result
 }
 
-<span class="comment">// Random vectors that sum to zero.</span>
-<span class="kw">fn</span> <span class="ident">random_vectors</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;mut</span> <span class="ident">R</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-  <span class="ident">T</span>: <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">PolygonScalar</span> <span class="op">+</span> <span class="ident">SampleUniform</span> <span class="op">+</span> <span class="ident">Copy</span>,
-  <span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="comment">// Random vectors that sum to zero.
+</span><span class="kw">fn </span>random_vectors&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; Vec&lt;Vector&lt;T, <span class="number">2</span>&gt;&gt;
+<span class="kw">where
+  </span>T: Bounded + PolygonScalar + SampleUniform + Copy,
+  R: Rng + <span class="question-mark">?</span>Sized,
 {
-  <span class="ident">random_between_zero</span>(<span class="ident">n</span>, <span class="ident">rng</span>)
-    .<span class="ident">into_iter</span>()
-    .<span class="ident">zip</span>(<span class="ident">random_between_zero</span>(<span class="ident">n</span>, <span class="ident">rng</span>).<span class="ident">into_iter</span>())
-    .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> <span class="ident">Vector</span>([<span class="ident">a</span>, <span class="ident">b</span>]))
-    .<span class="ident">collect</span>()
+  random_between_zero(n, rng)
+    .into_iter()
+    .zip(random_between_zero(n, rng))
+    .map(|(a, b)| Vector([a, b]))
+    .collect()
 }
 
-<span class="comment">///////////////////////////////////////////////////////////////////////////////</span>
-<span class="comment">// Tests</span>
+<span class="comment">///////////////////////////////////////////////////////////////////////////////
+// Tests
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-  <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+</span><span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+  <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-  <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
-  <span class="kw">use</span> <span class="ident">proptest::proptest</span> <span class="kw">as</span> <span class="ident">proptest_block</span>;
+  <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
+  <span class="kw">use </span>proptest::proptest <span class="kw">as </span>proptest_block;
 
   <span class="macro">proptest_block!</span> {
-    <span class="comment">// These traits are usually derived but let&#39;s not rely on that.</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">fuzz_convex_traits</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">poly</span>);
-      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">clone</span>();
+    <span class="comment">// These traits are usually derived but let's not rely on that.
+    </span><span class="attr">#[test]
+    </span><span class="kw">fn </span>fuzz_convex_traits(poly: PolygonConvex&lt;i8&gt;) {
+      <span class="kw">let _ </span>= <span class="macro">format!</span>(<span class="string">"{:?}"</span>, <span class="kw-2">&amp;</span>poly);
+      <span class="kw">let _ </span>= poly.clone();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">fuzz_validate</span>(<span class="ident">poly</span>: <span class="ident">Polygon</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-      <span class="kw">let</span> <span class="ident">convex</span> <span class="op">=</span> <span class="ident">PolygonConvex::new_unchecked</span>(<span class="ident">poly</span>);
-      <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">convex</span>.<span class="ident">validate</span>();
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>fuzz_validate(poly: Polygon&lt;i8&gt;) {
+      <span class="kw">let </span>convex = PolygonConvex::new_unchecked(poly);
+      <span class="kw">let _ </span>= convex.validate();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid_i8</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>)
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>all_random_convex_polygons_are_valid_i8(poly: PolygonConvex&lt;i8&gt;) {
+      <span class="macro">prop_assert_eq!</span>(poly.validate().err(), <span class="prelude-val">None</span>)
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">random_convex_prop</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>) {
-      <span class="kw">let</span> (<span class="ident">min</span>, <span class="ident">max</span>) <span class="op">=</span> <span class="ident">poly</span>.<span class="ident">bounding_box</span>();
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">min</span>.<span class="ident">y_coord</span>(), <span class="kw-2">&amp;</span><span class="number">0</span>);
-      <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">x_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">x_coord</span>();
-      <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">y_coord</span>() <span class="op">-</span> <span class="ident">min</span>.<span class="ident">y_coord</span>();
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">width</span>, <span class="ident">i8::MAX</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">height</span>, <span class="ident">i8::MAX</span>);
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>random_convex_prop(poly: PolygonConvex&lt;i8&gt;) {
+      <span class="kw">let </span>(min, max) = poly.bounding_box();
+      <span class="macro">prop_assert_eq!</span>(min.y_coord(), <span class="kw-2">&amp;</span><span class="number">0</span>);
+      <span class="kw">let </span>width = max.x_coord() - min.x_coord();
+      <span class="kw">let </span>height = max.y_coord() - min.y_coord();
+      <span class="macro">prop_assert_eq!</span>(width, i8::MAX);
+      <span class="macro">prop_assert_eq!</span>(height, i8::MAX);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">all_random_convex_polygons_are_valid_i64</span>(<span class="ident">poly</span>: <span class="ident">PolygonConvex</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>) {
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">poly</span>.<span class="ident">validate</span>().<span class="ident">err</span>(), <span class="prelude-val">None</span>)
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>all_random_convex_polygons_are_valid_i64(poly: PolygonConvex&lt;i64&gt;) {
+      <span class="macro">prop_assert_eq!</span>(poly.validate().err(), <span class="prelude-val">None</span>)
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sum_to_max</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">1</span>..<span class="number">1000</span>) {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
-      <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between_iter</span>::<span class="op">&lt;</span><span class="ident">i8</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>(), <span class="ident">i8::MAX</span>);
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>sum_to_max(n <span class="kw">in </span><span class="number">1</span>..<span class="number">1000</span>) {
+      <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
+      <span class="kw">let </span>vecs = random_between_iter::&lt;i8, <span class="kw">_</span>&gt;(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
+      <span class="macro">prop_assert_eq!</span>(vecs.sum::&lt;i8&gt;(), i8::MAX);
 
-      <span class="kw">let</span> <span class="ident">vecs</span> <span class="op">=</span> <span class="ident">random_between_iter</span>::<span class="op">&lt;</span><span class="ident">i64</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>(), <span class="ident">i64::MAX</span>);
+      <span class="kw">let </span>vecs = random_between_iter::&lt;i64, <span class="kw">_</span>&gt;(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
+      <span class="macro">prop_assert_eq!</span>(vecs.sum::&lt;i64&gt;(), i64::MAX);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">random_between_zero_properties</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">2</span>..<span class="number">1000</span>) {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
-      <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_between_zero</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span>(), <span class="number">0</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">len</span>(), <span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>);
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>random_between_zero_properties(n <span class="kw">in </span><span class="number">2</span>..<span class="number">1000</span>) {
+      <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
+      <span class="kw">let </span>vecs: Vec&lt;i8&gt; = random_between_zero(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
+      <span class="macro">prop_assert_eq!</span>(vecs.iter().sum::&lt;i8&gt;(), <span class="number">0</span>);
+      <span class="macro">prop_assert_eq!</span>(vecs.len(), n <span class="kw">as </span>usize);
 
-      <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_between_zero</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>(), <span class="number">0</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">len</span>(), <span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>);
+      <span class="kw">let </span>vecs: Vec&lt;i64&gt; = random_between_zero(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
+      <span class="macro">prop_assert_eq!</span>(vecs.iter().sum::&lt;i64&gt;(), <span class="number">0</span>);
+      <span class="macro">prop_assert_eq!</span>(vecs.len(), n <span class="kw">as </span>usize);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sum_to_zero_vector</span>(<span class="ident">n</span> <span class="kw">in</span> <span class="number">2</span>..<span class="number">1000</span>) {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
-      <span class="kw">let</span> <span class="ident">vecs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">random_vectors</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
-      <span class="macro">prop_assert_eq!</span>(<span class="ident">vecs</span>.<span class="ident">into_iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">Vector</span><span class="op">&lt;</span><span class="ident">i8</span>, <span class="number">2</span><span class="op">&gt;</span><span class="op">&gt;</span>(), <span class="ident">Vector</span>([<span class="number">0</span>, <span class="number">0</span>]))
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>sum_to_zero_vector(n <span class="kw">in </span><span class="number">2</span>..<span class="number">1000</span>) {
+      <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
+      <span class="kw">let </span>vecs: Vec&lt;Vector&lt;i8, <span class="number">2</span>&gt;&gt; = random_vectors(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
+      <span class="macro">prop_assert_eq!</span>(vecs.into_iter().sum::&lt;Vector&lt;i8, <span class="number">2</span>&gt;&gt;(), Vector([<span class="number">0</span>, <span class="number">0</span>]))
     }
   }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="rgeometry" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</code></pre></div></section></main></body></html>
