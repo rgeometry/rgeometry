@@ -193,10 +193,7 @@ pub struct LineSegmentSoS<'a, T: TotalOrd, const N: usize> {
 
 impl<'a, T: TotalOrd, const N: usize> Clone for LineSegmentView<'a, T, N> {
   fn clone(&self) -> Self {
-    LineSegmentView {
-      min: self.min,
-      max: self.max,
-    }
+    *self
   }
 }
 impl<'a, T: TotalOrd, const N: usize> Copy for LineSegmentView<'a, T, N> {}

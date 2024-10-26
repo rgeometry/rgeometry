@@ -17,10 +17,7 @@ pub struct Line<'a, T, const N: usize = 2> {
 impl<'a, T, const N: usize> Copy for Line<'a, T, N> {}
 impl<'a, T, const N: usize> Clone for Line<'a, T, N> {
   fn clone(&self) -> Self {
-    Line {
-      origin: self.origin,
-      direction: self.direction,
-    }
+    *self
   }
 }
 
@@ -99,10 +96,7 @@ pub enum Direction<'a, T, const N: usize> {
 impl<'a, T, const N: usize> Copy for Direction<'a, T, N> {}
 impl<'a, T, const N: usize> Clone for Direction<'a, T, N> {
   fn clone(&self) -> Self {
-    match self {
-      Direction::Vector(v) => Direction::Vector(v),
-      Direction::Through(p) => Direction::Through(p),
-    }
+    *self
   }
 }
 
@@ -229,7 +223,7 @@ pub struct HalfLineSoS<'a, T, const N: usize = 2> {
 impl<'a, T, const N: usize> Copy for HalfLineSoS<'a, T, N> {}
 impl<'a, T, const N: usize> Clone for HalfLineSoS<'a, T, N> {
   fn clone(&self) -> Self {
-    HalfLineSoS { line: self.line }
+    *self
   }
 }
 

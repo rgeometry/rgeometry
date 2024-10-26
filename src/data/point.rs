@@ -1,4 +1,5 @@
 use array_init::{array_init, try_array_init};
+use float::FloatCore;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
@@ -43,7 +44,7 @@ impl<T: TotalOrd, const N: usize> Eq for Point<T, N> {}
 
 impl<T: TotalOrd, const N: usize> PartialOrd for Point<T, N> {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(self.total_cmp(other))
+    Some(std::cmp::Ord::cmp(self, other))
   }
 }
 
@@ -74,7 +75,7 @@ impl<'a, T: TotalOrd, const N: usize> Eq for PointSoS<'a, T, N> {}
 
 impl<'a, T: TotalOrd, const N: usize> PartialOrd for PointSoS<'a, T, N> {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(self.total_cmp(other))
+    Some(std::cmp::Ord::cmp(self, other))
   }
 }
 
@@ -108,7 +109,7 @@ impl<T, const N: usize> Point<T, N> {
   /// Panics if any of the inputs are NaN.
   pub fn new_nn(array: [T; N]) -> Point<NotNan<T>, N>
   where
-    T: Float,
+    T: FloatCore,
   {
     Point::new(array_init(|i| NotNan::new(array[i]).unwrap()))
   }

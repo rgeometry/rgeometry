@@ -147,15 +147,12 @@ where
   })
 }
 
-fn is_ear_hashed<T: ZHashable>(
+fn is_ear_hashed<T: PolygonScalar + ZHashable>(
   key: <T as ZHashable>::ZHashKey,
   a: Cursor<'_, T>,
   b: Cursor<'_, T>,
   c: Cursor<'_, T>,
-) -> bool
-where
-  T: PolygonScalar,
-{
+) -> bool {
   let trig = TriangleView::new_unchecked([a.point(), b.point(), c.point()]);
   if trig.orientation() == Orientation::CounterClockWise {
     // Points inside the triangle are guaranteed to have a zhash
@@ -245,105 +242,6 @@ where
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Tests
-
-#[cfg(test)]
-#[cfg(not(tarpaulin_include))]
-mod tests {
-  use super::*;
-  use crate::data::*;
-  use num_bigint::BigInt;
-  use rand::rngs::SmallRng;
-  use rand::SeedableRng;
-
-  fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
-    let mut trig_area_2x = BigInt::from(0);
-    // let mut rng = StepRng::new(0,0);
-    let rng = SmallRng::seed_from_u64(0);
-    for (a, b, c) in triangulate_list(&p.points, &p.rings[0], rng) {
-      let trig = TriangleView::new_unchecked([p.point(a), p.point(b), p.point(c)]);
-      trig_area_2x += trig.signed_area_2x::<BigInt>();
-    }
-    trig_area_2x
-  }
-
-  #[test]
-  fn basic_1() {
-    let p = Polygon::new(vec![
-      Point::new([0, 0]),
-      Point::new([1, 0]),
-      Point::new([1, 1]),
-    ])
-    .unwrap();
-
-    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
-  }
-
-  #[test]
-  fn basic_2() {
-    let p = Polygon::new(vec![
-      Point::new([0, 0]),
-      Point::new([1, 0]),
-      Point::new([2, 0]),
-      Point::new([3, 0]),
-      Point::new([4, 0]),
-      Point::new([1, 1]),
-    ])
-    .unwrap();
-
-    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
-  }
-
-  #[test]
-  fn basic_3() {
-    let rng = SmallRng::seed_from_u64(0);
-    let p: Polygon<i8> = Polygon::new(vec![
-      Point { array: [-44, -11] },
-      Point { array: [-43, 23] },
-      Point { array: [-64, 44] },
-      Point { array: [-52, 114] },
-      Point { array: [-82, 69] },
-    ])
-    .unwrap();
-
-    triangulate_list_hashed(&p.points, &p.rings[0], rng).count();
-  }
-
-  #[test]
-  fn basic_4() {
-    let rng = SmallRng::seed_from_u64(0);
-    let p: Polygon<i8> = Polygon::new(vec![
-      Point { array: [12, 5] },   // 0
-      Point { array: [0, 8] },    // 1
-      Point { array: [-10, -6] }, // 2 cut
-      Point { array: [-3, 3] },   // 3
-      Point { array: [-2, 4] },   // 4
-    ])
-    .unwrap();
-
-    triangulate_list_hashed(&p.points, &p.rings[0], rng).count();
-  }
-
-  use proptest::prelude::*;
-  use test_strategy::proptest;
-
-  #[proptest]
-  fn equal_area_prop(poly: Polygon<i64>) {
-    prop_assert_eq!(poly.signed_area_2x::<BigInt>(), trig_area_2x(&poly));
-  }
-
-  #[proptest]
-  fn hashed_identity_prop(poly: Polygon<i8>) {
-    let rng = SmallRng::seed_from_u64(0);
-    let not_hashed: Vec<(PointId, PointId, PointId)> =
-      triangulate_list(&poly.points, &poly.rings[0], rng.clone()).collect();
-    let hashed: Vec<(PointId, PointId, PointId)> =
-      triangulate_list_hashed(&poly.points, &poly.rings[0], rng).collect();
-    prop_assert_eq!(not_hashed, hashed);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Linked List that supports deletions and re-insertions (of deleted items)
 
 struct Cursor<'a, T> {
@@ -363,10 +261,7 @@ impl<'a, T> Copy for Cursor<'a, T> {}
 
 impl<'a, T> Clone for Cursor<'a, T> {
   fn clone(&self) -> Cursor<'a, T> {
-    Cursor {
-      list: self.list,
-      position: self.position,
-    }
+    *self
   }
 }
 
@@ -553,5 +448,104 @@ impl IntSet {
 
   fn delete(&mut self, value: usize) {
     self.set[value] = false
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Tests
+
+#[cfg(test)]
+#[cfg(not(tarpaulin_include))]
+mod tests {
+  use super::*;
+  use crate::data::*;
+  use num_bigint::BigInt;
+  use rand::rngs::SmallRng;
+  use rand::SeedableRng;
+
+  fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
+    let mut trig_area_2x = BigInt::from(0);
+    // let mut rng = StepRng::new(0,0);
+    let rng = SmallRng::seed_from_u64(0);
+    for (a, b, c) in triangulate_list(&p.points, &p.rings[0], rng) {
+      let trig = TriangleView::new_unchecked([p.point(a), p.point(b), p.point(c)]);
+      trig_area_2x += trig.signed_area_2x::<BigInt>();
+    }
+    trig_area_2x
+  }
+
+  #[test]
+  fn basic_1() {
+    let p = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([1, 1]),
+    ])
+    .unwrap();
+
+    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
+  }
+
+  #[test]
+  fn basic_2() {
+    let p = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([1, 0]),
+      Point::new([2, 0]),
+      Point::new([3, 0]),
+      Point::new([4, 0]),
+      Point::new([1, 1]),
+    ])
+    .unwrap();
+
+    assert_eq!(p.signed_area_2x::<BigInt>(), trig_area_2x(&p));
+  }
+
+  #[test]
+  fn basic_3() {
+    let rng = SmallRng::seed_from_u64(0);
+    let p: Polygon<i8> = Polygon::new(vec![
+      Point { array: [-44, -11] },
+      Point { array: [-43, 23] },
+      Point { array: [-64, 44] },
+      Point { array: [-52, 114] },
+      Point { array: [-82, 69] },
+    ])
+    .unwrap();
+
+    triangulate_list_hashed(&p.points, &p.rings[0], rng).count();
+  }
+
+  #[test]
+  fn basic_4() {
+    let rng = SmallRng::seed_from_u64(0);
+    let p: Polygon<i8> = Polygon::new(vec![
+      Point { array: [12, 5] },   // 0
+      Point { array: [0, 8] },    // 1
+      Point { array: [-10, -6] }, // 2 cut
+      Point { array: [-3, 3] },   // 3
+      Point { array: [-2, 4] },   // 4
+    ])
+    .unwrap();
+
+    triangulate_list_hashed(&p.points, &p.rings[0], rng).count();
+  }
+
+  use proptest::prelude::*;
+  use test_strategy::proptest;
+
+  #[proptest]
+  fn equal_area_prop(poly: Polygon<i64>) {
+    prop_assert_eq!(poly.signed_area_2x::<BigInt>(), trig_area_2x(&poly));
+  }
+
+  #[proptest]
+  fn hashed_identity_prop(poly: Polygon<i8>) {
+    let rng = SmallRng::seed_from_u64(0);
+    let not_hashed: Vec<(PointId, PointId, PointId)> =
+      triangulate_list(&poly.points, &poly.rings[0], rng.clone()).collect();
+    let hashed: Vec<(PointId, PointId, PointId)> =
+      triangulate_list_hashed(&poly.points, &poly.rings[0], rng).collect();
+    prop_assert_eq!(not_hashed, hashed);
   }
 }
