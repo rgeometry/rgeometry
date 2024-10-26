@@ -44,7 +44,7 @@ impl<T: TotalOrd, const N: usize> Eq for Point<T, N> {}
 
 impl<T: TotalOrd, const N: usize> PartialOrd for Point<T, N> {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(std::cmp::Ord::cmp(self,other))
+    Some(std::cmp::Ord::cmp(self, other))
   }
 }
 

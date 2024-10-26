@@ -152,8 +152,7 @@ fn is_ear_hashed<T: PolygonScalar + ZHashable>(
   a: Cursor<'_, T>,
   b: Cursor<'_, T>,
   c: Cursor<'_, T>,
-) -> bool
-{
+) -> bool {
   let trig = TriangleView::new_unchecked([a.point(), b.point(), c.point()]);
   if trig.orientation() == Orientation::CounterClockWise {
     // Points inside the triangle are guaranteed to have a zhash
