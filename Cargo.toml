@@ -64,3 +64,6 @@ rustdoc-args = ["--html-in-header", "doc-header.html"]
 
 [patch."https://github.com/rgeometry/rgeometry"]
 rgeometry = { path = "." }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(tarpaulin_include)"] }
