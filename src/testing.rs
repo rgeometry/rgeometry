@@ -52,7 +52,7 @@ where
 {
   fn new(points: Vec<ShrinkablePoint<T, 2>>) -> Self {
     ShrinkablePolygon {
-      points: points,
+      points,
       cut: Vec::new(),
       cut_prev: None,
       uncut: Vec::new(),
@@ -152,16 +152,15 @@ where
         }
         // eprintln!("Phew. Fixed: {}", self.next_shrink);
         self.prev_shrink = Some(self.next_shrink);
-        return true;
+        true
       } else {
         self.done = true;
-        return false;
+        false
       }
     } else {
       self.done = true;
-      return false;
+      false
     }
-    // return false;
   }
 
   // The value has been shrunk so much that the test-cases no longer fail.
@@ -218,7 +217,7 @@ where
     // } else {
     //   return false;
     // }
-    return false;
+    false
   }
 }
 
@@ -305,7 +304,7 @@ pub fn polygon_nn() -> impl Strategy<Value = Polygon<NotNan<f64>>> {
 
 pub fn polygon_big() -> impl Strategy<Value = Polygon<BigRational>> {
   PolygonStrat(
-    any::<f64>().prop_filter_map("Check for NaN", |pt| BigRational::from_float(pt)),
+    any::<f64>().prop_filter_map("Check for NaN", BigRational::from_float),
     3..50,
   )
 }
@@ -325,8 +324,7 @@ where
     }
     (range, any::<u64>()).prop_map(|(n, seed)| {
       let rng = &mut rand::rngs::SmallRng::seed_from_u64(seed);
-      let p = PolygonConvex::random(n.max(3), rng);
-      p
+      PolygonConvex::random(n.max(3), rng)
     })
   }
 }
@@ -504,6 +502,7 @@ pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> 
   any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.map(rem_float).try_into().ok())
 }
 
+#[allow(clippy::cast_precision_loss)]
 // Float representation: mantissa * 2^exponent * sign
 // This function changes the exponent modulo 250. This rules out extreme
 // numbers (very large, very small, very close to zero). Such extremes

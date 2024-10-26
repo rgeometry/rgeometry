@@ -100,7 +100,7 @@ mod monotone_testing {
 
   #[proptest]
   fn convex_polygon_is_montone(convex_polygon: PolygonConvex<i8>, direction: Vector<i8, 2>) {
-    prop_assert!(is_monotone(&convex_polygon.polygon(), &direction));
+    prop_assert!(is_monotone(convex_polygon.polygon(), &direction));
   }
 
   #[test]
@@ -143,7 +143,7 @@ mod monotone_testing {
     // dedup points
     let mut points = points;
     let mut set = BTreeSet::new();
-    points.retain(|pt| set.insert(pt.clone()));
+    points.retain(|pt| set.insert(*pt));
     // If we have at least three, non-colinear points, then we must be able to
     // create a monotone polygon.
     if !points

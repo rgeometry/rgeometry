@@ -5,12 +5,11 @@ use crate::{Intersects, PolygonScalar};
 ///
 /// # Time complexity
 /// $O(n^2)$
-pub fn segment_intersections<'a, Edge, T: 'a>(
+pub fn segment_intersections<'a, Edge, T: PolygonScalar + 'a>(
   edges: &'a [Edge],
 ) -> impl Iterator<Item = (&Edge, &Edge)>
 where
   &'a Edge: Into<LineSegmentView<'a, T, 2>>,
-  T: PolygonScalar,
 {
   pairs(edges).filter_map(|(a, b)| {
     let a_edge: LineSegmentView<'a, T, 2> = a.into();

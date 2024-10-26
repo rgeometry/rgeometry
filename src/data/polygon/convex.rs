@@ -225,7 +225,7 @@ where
 {
   random_between_zero(n, rng)
     .into_iter()
-    .zip(random_between_zero(n, rng).into_iter())
+    .zip(random_between_zero(n, rng))
     .map(|(a, b)| Vector([a, b]))
     .collect()
 }
