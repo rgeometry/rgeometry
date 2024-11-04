@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/syn-2.0.85/src/expr.rs`."><title>expr.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="syn" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/syn-2.0.87/src/expr.rs`."><title>expr.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="syn" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -4029,18 +4029,31 @@
 <a href="#4029" id="4029">4029</a>
 <a href="#4030" id="4030">4030</a>
 <a href="#4031" id="4031">4031</a>
+<a href="#4032" id="4032">4032</a>
+<a href="#4033" id="4033">4033</a>
+<a href="#4034" id="4034">4034</a>
+<a href="#4035" id="4035">4035</a>
+<a href="#4036" id="4036">4036</a>
+<a href="#4037" id="4037">4037</a>
+<a href="#4038" id="4038">4038</a>
+<a href="#4039" id="4039">4039</a>
+<a href="#4040" id="4040">4040</a>
+<a href="#4041" id="4041">4041</a>
+<a href="#4042" id="4042">4042</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::attr::Attribute;
 <span class="attr">#[cfg(all(feature = <span class="string">"parsing"</span>, feature = <span class="string">"full"</span>))]
 </span><span class="kw">use </span><span class="kw">crate</span>::error::Result;
+<span class="attr">#[cfg(feature = <span class="string">"parsing"</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::ext::IdentExt <span class="kw">as _</span>;
 <span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::generics::BoundLifetimes;
 <span class="kw">use </span><span class="kw">crate</span>::ident::Ident;
-<span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
+<span class="attr">#[cfg(any(feature = <span class="string">"parsing"</span>, feature = <span class="string">"full"</span>))]
 </span><span class="kw">use </span><span class="kw">crate</span>::lifetime::Lifetime;
 <span class="kw">use </span><span class="kw">crate</span>::lit::Lit;
 <span class="kw">use </span><span class="kw">crate</span>::mac::Macro;
 <span class="kw">use </span><span class="kw">crate</span>::op::{BinOp, UnOp};
-<span class="attr">#[cfg(all(feature = <span class="string">"parsing"</span>, feature = <span class="string">"full"</span>))]
+<span class="attr">#[cfg(feature = <span class="string">"parsing"</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::parse::ParseStream;
 <span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::pat::Pat;
@@ -4920,6 +4933,36 @@
         parsing::parse_with_earlier_boundary_rule(input)
     }
 
+    <span class="doccomment">/// Returns whether the next token in the parse stream is one that might
+    /// possibly form the beginning of an expr.
+    ///
+    /// This classification is a load-bearing part of the grammar of some Rust
+    /// expressions, notably `return` and `break`. For example `return &lt; …` will
+    /// never parse `&lt;` as a binary operator regardless of what comes after,
+    /// because `&lt;` is a legal starting token for an expression and so it's
+    /// required to be continued as a return value, such as `return &lt;Struct as
+    /// Trait&gt;::CONST`. Meanwhile `return &gt; …` treats the `&gt;` as a binary
+    /// operator because it cannot be a starting token for any Rust expression.
+    </span><span class="attr">#[cfg(feature = <span class="string">"parsing"</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">"parsing"</span>)))]
+    </span><span class="kw">pub fn </span>peek(input: ParseStream) -&gt; bool {
+        input.peek(Ident::peek_any) <span class="comment">// value name or keyword
+            </span>|| input.peek(token::Paren) <span class="comment">// tuple
+            </span>|| input.peek(token::Bracket) <span class="comment">// array
+            </span>|| input.peek(token::Brace) <span class="comment">// block
+            </span>|| input.peek(Lit) <span class="comment">// literal
+            </span>|| input.peek(<span class="macro">Token!</span>[!]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[!=]) <span class="comment">// operator not
+            </span>|| input.peek(<span class="macro">Token!</span>[-]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[-=]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[-&gt;]) <span class="comment">// unary minus
+            </span>|| input.peek(<span class="macro">Token!</span>[<span class="kw-2">*</span>]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[<span class="kw-2">*</span>=]) <span class="comment">// dereference
+            </span>|| input.peek(<span class="macro">Token!</span>[|]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[|=]) <span class="comment">// closure
+            </span>|| input.peek(<span class="macro">Token!</span>[<span class="kw-2">&amp;</span>]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[&amp;=]) <span class="comment">// reference
+            </span>|| input.peek(<span class="macro">Token!</span>[..]) <span class="comment">// range
+            </span>|| input.peek(<span class="macro">Token!</span>[&lt;]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[&lt;=]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[&lt;&lt;=]) <span class="comment">// associated path
+            </span>|| input.peek(<span class="macro">Token!</span>[::]) <span class="comment">// absolute path
+            </span>|| input.peek(Lifetime) <span class="comment">// labeled loop
+            </span>|| input.peek(<span class="macro">Token!</span>[#]) <span class="comment">// expression attributes
+    </span>}
+
     <span class="attr">#[cfg(all(feature = <span class="string">"parsing"</span>, feature = <span class="string">"full"</span>))]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>replace_attrs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, new: Vec&lt;Attribute&gt;) -&gt; Vec&lt;Attribute&gt; {
         <span class="kw">match </span><span class="self">self </span>{
@@ -5178,8 +5221,6 @@
         FieldValue, Index, Member,
     };
     <span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
-    </span><span class="kw">use </span><span class="kw">crate</span>::ext::IdentExt <span class="kw">as _</span>;
-    <span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
     </span><span class="kw">use </span><span class="kw">crate</span>::generics::BoundLifetimes;
     <span class="kw">use </span><span class="kw">crate</span>::ident::Ident;
     <span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
@@ -5296,25 +5337,6 @@
             <span class="kw-2">*</span><span class="self">self
         </span>}
     }
-
-    <span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
-    </span><span class="kw">fn </span>can_begin_expr(input: ParseStream) -&gt; bool {
-        input.peek(Ident::peek_any) <span class="comment">// value name or keyword
-            </span>|| input.peek(token::Paren) <span class="comment">// tuple
-            </span>|| input.peek(token::Bracket) <span class="comment">// array
-            </span>|| input.peek(token::Brace) <span class="comment">// block
-            </span>|| input.peek(Lit) <span class="comment">// literal
-            </span>|| input.peek(<span class="macro">Token!</span>[!]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[!=]) <span class="comment">// operator not
-            </span>|| input.peek(<span class="macro">Token!</span>[-]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[-=]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[-&gt;]) <span class="comment">// unary minus
-            </span>|| input.peek(<span class="macro">Token!</span>[<span class="kw-2">*</span>]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[<span class="kw-2">*</span>=]) <span class="comment">// dereference
-            </span>|| input.peek(<span class="macro">Token!</span>[|]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[|=]) <span class="comment">// closure
-            </span>|| input.peek(<span class="macro">Token!</span>[<span class="kw-2">&amp;</span>]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[&amp;=]) <span class="comment">// reference
-            </span>|| input.peek(<span class="macro">Token!</span>[..]) <span class="comment">// range notation
-            </span>|| input.peek(<span class="macro">Token!</span>[&lt;]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[&lt;=]) &amp;&amp; !input.peek(<span class="macro">Token!</span>[&lt;&lt;=]) <span class="comment">// associated path
-            </span>|| input.peek(<span class="macro">Token!</span>[::]) <span class="comment">// global path
-            </span>|| input.peek(Lifetime) <span class="comment">// labeled loop
-            </span>|| input.peek(<span class="macro">Token!</span>[#]) <span class="comment">// expression attributes
-    </span>}
 
     <span class="attr">#[cfg(feature = <span class="string">"full"</span>)]
     </span><span class="kw">fn </span>parse_expr(
@@ -6470,7 +6492,7 @@
                 attrs: Vec::new(),
                 return_token: input.parse()<span class="question-mark">?</span>,
                 expr: {
-                    <span class="kw">if </span>can_begin_expr(input) {
+                    <span class="kw">if </span>Expr::peek(input) {
                         <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>)
                     } <span class="kw">else </span>{
                         <span class="prelude-val">None
@@ -6508,7 +6530,7 @@
                 attrs: Vec::new(),
                 yield_token: input.parse()<span class="question-mark">?</span>,
                 expr: {
-                    <span class="kw">if </span>can_begin_expr(input) {
+                    <span class="kw">if </span>Expr::peek(input) {
                         <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>)
                     } <span class="kw">else </span>{
                         <span class="prelude-val">None
@@ -6721,7 +6743,7 @@
         }
 
         input.advance_to(<span class="kw-2">&amp;</span>ahead);
-        <span class="kw">let </span>expr = <span class="kw">if </span>can_begin_expr(input) &amp;&amp; (allow_struct.<span class="number">0 </span>|| !input.peek(token::Brace)) {
+        <span class="kw">let </span>expr = <span class="kw">if </span>Expr::peek(input) &amp;&amp; (allow_struct.<span class="number">0 </span>|| !input.peek(token::Brace)) {
             <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>)
         } <span class="kw">else </span>{
             <span class="prelude-val">None
