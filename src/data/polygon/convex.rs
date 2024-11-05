@@ -109,7 +109,7 @@ where
   // <iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"></iframe>
   pub fn random<R>(n: usize, rng: &mut R) -> PolygonConvex<T>
   where
-    T: Bounded + PolygonScalar + SampleUniform + Copy,
+    T: Bounded + PolygonScalar + SampleUniform,
     R: Rng + ?Sized,
   {
     let n = n.max(3);
@@ -123,7 +123,7 @@ where
         .into_iter()
         .scan(Point::zero(), |st, vec| {
           *st += vec;
-          Some(*st)
+          Some((*st).clone())
         })
         .collect();
       let n_vertices = (*vertices).len();
@@ -181,7 +181,7 @@ impl Distribution<PolygonConvex<isize>> for Standard {
 // Property: random_between(n, max, &mut rng).sum::<usize>() == max
 fn random_between_iter<T, R>(n: usize, rng: &mut R) -> impl Iterator<Item = T>
 where
-  T: PolygonScalar + Bounded + SampleUniform + Copy,
+  T: PolygonScalar + Bounded + SampleUniform,
   R: Rng + ?Sized,
 {
   let zero: T = T::from_constant(0);
@@ -189,12 +189,12 @@ where
   assert!(n > 0);
   let mut pts = Vec::with_capacity(n);
   while pts.len() < n - 1 {
-    pts.push(rng.gen_range(zero..max));
+    pts.push(rng.gen_range(zero.clone()..max.clone()));
   }
   pts.sort_unstable_by(TotalOrd::total_cmp);
   pts.push(max);
   pts.into_iter().scan(zero, |from, x| {
-    let out = x - *from;
+    let out = x.clone() - (*from).clone();
     *from = x;
     Some(out)
   })
@@ -203,7 +203,7 @@ where
 // Property: random_between_zero(10, 100, &mut rng).iter().sum::<isize>() == 0
 fn random_between_zero<T, R>(n: usize, rng: &mut R) -> Vec<T>
 where
-  T: Bounded + PolygonScalar + SampleUniform + Copy,
+  T: Bounded + PolygonScalar + SampleUniform,
   R: Rng + ?Sized,
 {
   assert!(n >= 2);
@@ -220,7 +220,7 @@ where
 // Random vectors that sum to zero.
 fn random_vectors<T, R>(n: usize, rng: &mut R) -> Vec<Vector<T, 2>>
 where
-  T: Bounded + PolygonScalar + SampleUniform + Copy,
+  T: Bounded + PolygonScalar + SampleUniform,
   R: Rng + ?Sized,
 {
   random_between_zero(n, rng)
