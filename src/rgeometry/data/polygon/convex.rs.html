@@ -436,7 +436,7 @@
   // &lt;iframe src="https://web.rgeometry.org/wasm/gist/9abc54a5e2e3d33e3dd1785a71e812d2"&gt;&lt;/iframe&gt;
   </span><span class="kw">pub fn </span>random&lt;R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; PolygonConvex&lt;T&gt;
   <span class="kw">where
-    </span>T: Bounded + PolygonScalar + SampleUniform + Copy,
+    </span>T: Bounded + PolygonScalar + SampleUniform,
     R: Rng + <span class="question-mark">?</span>Sized,
   {
     <span class="kw">let </span>n = n.max(<span class="number">3</span>);
@@ -450,7 +450,7 @@
         .into_iter()
         .scan(Point::zero(), |st, vec| {
           <span class="kw-2">*</span>st += vec;
-          <span class="prelude-val">Some</span>(<span class="kw-2">*</span>st)
+          <span class="prelude-val">Some</span>((<span class="kw-2">*</span>st).clone())
         })
         .collect();
       <span class="kw">let </span>n_vertices = (<span class="kw-2">*</span>vertices).len();
@@ -508,7 +508,7 @@
 // Property: random_between(n, max, &amp;mut rng).sum::&lt;usize&gt;() == max
 </span><span class="kw">fn </span>random_between_iter&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; <span class="kw">impl </span>Iterator&lt;Item = T&gt;
 <span class="kw">where
-  </span>T: PolygonScalar + Bounded + SampleUniform + Copy,
+  </span>T: PolygonScalar + Bounded + SampleUniform,
   R: Rng + <span class="question-mark">?</span>Sized,
 {
   <span class="kw">let </span>zero: T = T::from_constant(<span class="number">0</span>);
@@ -516,12 +516,12 @@
   <span class="macro">assert!</span>(n &gt; <span class="number">0</span>);
   <span class="kw">let </span><span class="kw-2">mut </span>pts = Vec::with_capacity(n);
   <span class="kw">while </span>pts.len() &lt; n - <span class="number">1 </span>{
-    pts.push(rng.gen_range(zero..max));
+    pts.push(rng.gen_range(zero.clone()..max.clone()));
   }
   pts.sort_unstable_by(TotalOrd::total_cmp);
   pts.push(max);
   pts.into_iter().scan(zero, |from, x| {
-    <span class="kw">let </span>out = x - <span class="kw-2">*</span>from;
+    <span class="kw">let </span>out = x.clone() - (<span class="kw-2">*</span>from).clone();
     <span class="kw-2">*</span>from = x;
     <span class="prelude-val">Some</span>(out)
   })
@@ -530,7 +530,7 @@
 <span class="comment">// Property: random_between_zero(10, 100, &amp;mut rng).iter().sum::&lt;isize&gt;() == 0
 </span><span class="kw">fn </span>random_between_zero&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; Vec&lt;T&gt;
 <span class="kw">where
-  </span>T: Bounded + PolygonScalar + SampleUniform + Copy,
+  </span>T: Bounded + PolygonScalar + SampleUniform,
   R: Rng + <span class="question-mark">?</span>Sized,
 {
   <span class="macro">assert!</span>(n &gt;= <span class="number">2</span>);
@@ -547,7 +547,7 @@
 <span class="comment">// Random vectors that sum to zero.
 </span><span class="kw">fn </span>random_vectors&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; Vec&lt;Vector&lt;T, <span class="number">2</span>&gt;&gt;
 <span class="kw">where
-  </span>T: Bounded + PolygonScalar + SampleUniform + Copy,
+  </span>T: Bounded + PolygonScalar + SampleUniform,
   R: Rng + <span class="question-mark">?</span>Sized,
 {
   random_between_zero(n, rng)
