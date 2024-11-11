@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.161/src/unix/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.162/src/unix/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1680,6 +1680,30 @@
 <a href="#1680" id="1680">1680</a>
 <a href="#1681" id="1681">1681</a>
 <a href="#1682" id="1682">1682</a>
+<a href="#1683" id="1683">1683</a>
+<a href="#1684" id="1684">1684</a>
+<a href="#1685" id="1685">1685</a>
+<a href="#1686" id="1686">1686</a>
+<a href="#1687" id="1687">1687</a>
+<a href="#1688" id="1688">1688</a>
+<a href="#1689" id="1689">1689</a>
+<a href="#1690" id="1690">1690</a>
+<a href="#1691" id="1691">1691</a>
+<a href="#1692" id="1692">1692</a>
+<a href="#1693" id="1693">1693</a>
+<a href="#1694" id="1694">1694</a>
+<a href="#1695" id="1695">1695</a>
+<a href="#1696" id="1696">1696</a>
+<a href="#1697" id="1697">1697</a>
+<a href="#1698" id="1698">1698</a>
+<a href="#1699" id="1699">1699</a>
+<a href="#1700" id="1700">1700</a>
+<a href="#1701" id="1701">1701</a>
+<a href="#1702" id="1702">1702</a>
+<a href="#1703" id="1703">1703</a>
+<a href="#1704" id="1704">1704</a>
+<a href="#1705" id="1705">1705</a>
+<a href="#1706" id="1706">1706</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Definitions found commonly among almost all Unix derivatives
 //!
 //! More functions and definitions can be found in the more specific modules
@@ -1917,9 +1941,9 @@
 }
 <span class="kw">pub const </span>SIGIOT: ::c_int = <span class="number">6</span>;
 
-<span class="kw">pub const </span>S_ISUID: ::mode_t = <span class="number">0x800</span>;
-<span class="kw">pub const </span>S_ISGID: ::mode_t = <span class="number">0x400</span>;
-<span class="kw">pub const </span>S_ISVTX: ::mode_t = <span class="number">0x200</span>;
+<span class="kw">pub const </span>S_ISUID: ::mode_t = <span class="number">0o4000</span>;
+<span class="kw">pub const </span>S_ISGID: ::mode_t = <span class="number">0o2000</span>;
+<span class="kw">pub const </span>S_ISVTX: ::mode_t = <span class="number">0o1000</span>;
 
 <span class="macro">cfg_if!</span> {
     <span class="kw">if </span><span class="attr">#[cfg(not(any(target_os = <span class="string">"haiku"</span>, target_os = <span class="string">"illumos"</span>,
@@ -1996,8 +2020,18 @@
 <span class="kw">pub const </span>ATF_USETRAILERS: ::c_int = <span class="number">0x10</span>;
 
 <span class="kw">pub const </span>FNM_PERIOD: c_int = <span class="number">1 </span>&lt;&lt; <span class="number">2</span>;
-<span class="kw">pub const </span>FNM_CASEFOLD: c_int = <span class="number">1 </span>&lt;&lt; <span class="number">4</span>;
 <span class="kw">pub const </span>FNM_NOMATCH: c_int = <span class="number">1</span>;
+
+<span class="macro">cfg_if!</span> {
+    <span class="kw">if </span><span class="attr">#[cfg(any(
+        target_os = <span class="string">"illumos"</span>,
+        target_os = <span class="string">"solaris"</span>,
+    ))] </span>{
+        <span class="kw">pub const </span>FNM_CASEFOLD: c_int = <span class="number">1 </span>&lt;&lt; <span class="number">3</span>;
+    } <span class="kw">else </span>{
+        <span class="kw">pub const </span>FNM_CASEFOLD: c_int = <span class="number">1 </span>&lt;&lt; <span class="number">4</span>;
+    }
+}
 
 <span class="macro">cfg_if!</span> {
     <span class="kw">if </span><span class="attr">#[cfg(any(
@@ -2064,9 +2098,9 @@
                    link(name = <span class="string">"c"</span>, cfg(not(target_feature = <span class="string">"crt-static"</span>))))]
         </span><span class="kw">extern </span>{}
     } <span class="kw">else if </span><span class="attr">#[cfg(target_os = <span class="string">"emscripten"</span>)] </span>{
-        <span class="attr">#[link(name = <span class="string">"c"</span>)]
-        </span><span class="kw">extern </span>{}
-    } <span class="kw">else if </span><span class="attr">#[cfg(all(target_os = <span class="string">"android"</span>, feature = <span class="string">"rustc-dep-of-std"</span>))] </span>{
+        <span class="comment">// Don't pass -lc to Emscripten, it breaks. See:
+        // https://github.com/emscripten-core/emscripten/issues/22758
+    </span>} <span class="kw">else if </span><span class="attr">#[cfg(all(target_os = <span class="string">"android"</span>, feature = <span class="string">"rustc-dep-of-std"</span>))] </span>{
         <span class="attr">#[link(name = <span class="string">"c"</span>, kind = <span class="string">"static"</span>, modifiers = <span class="string">"-bundle"</span>,
             cfg(target_feature = <span class="string">"crt-static"</span>))]
         #[link(name = <span class="string">"m"</span>, kind = <span class="string">"static"</span>, modifiers = <span class="string">"-bundle"</span>,
@@ -2304,10 +2338,8 @@
         target_vendor = <span class="string">"nintendo"
     </span>)))]
     #[cfg_attr(target_os = <span class="string">"netbsd"</span>, link_name = <span class="string">"__socket30"</span>)]
-    #[cfg_attr(
-        any(target_os = <span class="string">"illumos"</span>, target_os = <span class="string">"solaris"</span>),
-        link_name = <span class="string">"__xnet_socket"
-    </span>)]
+    #[cfg_attr(target_os = <span class="string">"illumos"</span>, link_name = <span class="string">"__xnet_socket"</span>)]
+    #[cfg_attr(target_os = <span class="string">"solaris"</span>, link_name = <span class="string">"__xnet7_socket"</span>)]
     #[cfg_attr(target_os = <span class="string">"espidf"</span>, link_name = <span class="string">"lwip_socket"</span>)]
     </span><span class="kw">pub fn </span>socket(domain: ::c_int, ty: ::c_int, protocol: ::c_int) -&gt; ::c_int;
     <span class="attr">#[cfg(not(all(
@@ -2613,7 +2645,8 @@
     <span class="kw">pub fn </span>getppid() -&gt; pid_t;
     <span class="kw">pub fn </span>getuid() -&gt; uid_t;
     <span class="kw">pub fn </span>isatty(fd: ::c_int) -&gt; ::c_int;
-    <span class="kw">pub fn </span>link(src: <span class="kw-2">*const </span>c_char, dst: <span class="kw-2">*const </span>c_char) -&gt; ::c_int;
+    <span class="attr">#[cfg_attr(target_os = <span class="string">"solaris"</span>, link_name = <span class="string">"__link_xpg4"</span>)]
+    </span><span class="kw">pub fn </span>link(src: <span class="kw-2">*const </span>c_char, dst: <span class="kw-2">*const </span>c_char) -&gt; ::c_int;
     <span class="kw">pub fn </span>lseek(fd: ::c_int, offset: off_t, whence: ::c_int) -&gt; off_t;
     <span class="kw">pub fn </span>pathconf(path: <span class="kw-2">*const </span>c_char, name: ::c_int) -&gt; c_long;
     <span class="kw">pub fn </span>pipe(fds: <span class="kw-2">*mut </span>::c_int) -&gt; ::c_int;
@@ -2650,7 +2683,10 @@
         all(target_os = <span class="string">"macos"</span>, target_arch = <span class="string">"x86"</span>),
         link_name = <span class="string">"ttyname_r$UNIX2003"
     </span>)]
-    #[cfg_attr(target_os = <span class="string">"illumos"</span>, link_name = <span class="string">"__posix_ttyname_r"</span>)]
+    #[cfg_attr(
+        any(target_os = <span class="string">"illumos"</span>, target_os = <span class="string">"solaris"</span>),
+        link_name = <span class="string">"__posix_ttyname_r"
+    </span>)]
     </span><span class="kw">pub fn </span>ttyname_r(fd: ::c_int, buf: <span class="kw-2">*mut </span>c_char, buflen: ::size_t) -&gt; ::c_int;
     <span class="kw">pub fn </span>unlink(c: <span class="kw-2">*const </span>c_char) -&gt; ::c_int;
     <span class="attr">#[cfg_attr(
@@ -2770,8 +2806,6 @@
         link_name = <span class="string">"realpath$DARWIN_EXTSN"
     </span>)]
     </span><span class="kw">pub fn </span>realpath(pathname: <span class="kw-2">*const </span>::c_char, resolved: <span class="kw-2">*mut </span>::c_char) -&gt; <span class="kw-2">*mut </span>::c_char;
-
-    <span class="kw">pub fn </span>flock(fd: ::c_int, operation: ::c_int) -&gt; ::c_int;
 
     <span class="attr">#[cfg_attr(target_os = <span class="string">"netbsd"</span>, link_name = <span class="string">"__times13"</span>)]
     </span><span class="kw">pub fn </span>times(buf: <span class="kw-2">*mut </span>::tms) -&gt; ::clock_t;
@@ -3081,7 +3115,8 @@
     <span class="attr">#[cfg_attr(target_os = <span class="string">"netbsd"</span>, link_name = <span class="string">"__sigpending14"</span>)]
     </span><span class="kw">pub fn </span>sigpending(set: <span class="kw-2">*mut </span>sigset_t) -&gt; ::c_int;
 
-    <span class="kw">pub fn </span>sysconf(name: ::c_int) -&gt; ::c_long;
+    <span class="attr">#[cfg_attr(target_os = <span class="string">"solaris"</span>, link_name = <span class="string">"__sysconf_xpg7"</span>)]
+    </span><span class="kw">pub fn </span>sysconf(name: ::c_int) -&gt; ::c_long;
 
     <span class="kw">pub fn </span>mkfifo(path: <span class="kw-2">*const </span>c_char, mode: mode_t) -&gt; ::c_int;
 
@@ -3134,9 +3169,14 @@
     <span class="kw">if </span><span class="attr">#[cfg(not(any(target_os = <span class="string">"emscripten"</span>,
                      target_os = <span class="string">"android"</span>,
                      target_os = <span class="string">"haiku"</span>,
-                     target_os = <span class="string">"nto"</span>)))] </span>{
+                     target_os = <span class="string">"nto"</span>,
+                     target_os = <span class="string">"solaris"</span>)))] </span>{
         <span class="kw">extern </span><span class="string">"C" </span>{
             <span class="kw">pub fn </span>adjtime(delta: <span class="kw-2">*const </span>timeval, olddelta: <span class="kw-2">*mut </span>timeval) -&gt; ::c_int;
+        }
+    } <span class="kw">else if </span><span class="attr">#[cfg(target_os = <span class="string">"solaris"</span>)] </span>{
+        <span class="kw">extern </span><span class="string">"C" </span>{
+            <span class="kw">pub fn </span>adjtime(delta: <span class="kw-2">*mut </span>timeval, olddelta: <span class="kw-2">*mut </span>timeval) -&gt; ::c_int;
         }
     }
 }
@@ -3155,6 +3195,14 @@
     <span class="kw">if </span><span class="attr">#[cfg(not(target_os = <span class="string">"aix"</span>))] </span>{
         <span class="kw">extern </span><span class="string">"C" </span>{
             <span class="kw">pub fn </span>dladdr(addr: <span class="kw-2">*const </span>::c_void, info: <span class="kw-2">*mut </span>Dl_info) -&gt; ::c_int;
+        }
+    }
+}
+
+<span class="macro">cfg_if!</span> {
+    <span class="kw">if </span><span class="attr">#[cfg(not(target_os = <span class="string">"solaris"</span>))] </span>{
+        <span class="kw">extern </span><span class="string">"C" </span>{
+            <span class="kw">pub fn </span>flock(fd: ::c_int, operation: ::c_int) -&gt; ::c_int;
         }
     }
 }

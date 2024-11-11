@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.161/src/unix/linux_like/linux/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.162/src/unix/linux_like/linux/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -5968,6 +5968,20 @@
 <a href="#5968" id="5968">5968</a>
 <a href="#5969" id="5969">5969</a>
 <a href="#5970" id="5970">5970</a>
+<a href="#5971" id="5971">5971</a>
+<a href="#5972" id="5972">5972</a>
+<a href="#5973" id="5973">5973</a>
+<a href="#5974" id="5974">5974</a>
+<a href="#5975" id="5975">5975</a>
+<a href="#5976" id="5976">5976</a>
+<a href="#5977" id="5977">5977</a>
+<a href="#5978" id="5978">5978</a>
+<a href="#5979" id="5979">5979</a>
+<a href="#5980" id="5980">5980</a>
+<a href="#5981" id="5981">5981</a>
+<a href="#5982" id="5982">5982</a>
+<a href="#5983" id="5983">5983</a>
+<a href="#5984" id="5984">5984</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Linux-specific definitions for linux-like values
 
 </span><span class="kw">pub type </span>useconds_t = u32;
@@ -6850,6 +6864,15 @@
         <span class="kw">pub </span>salt: [::c_uchar; TLS_CIPHER_CHACHA20_POLY1305_SALT_SIZE],
         <span class="kw">pub </span>rec_seq: [::c_uchar; TLS_CIPHER_CHACHA20_POLY1305_REC_SEQ_SIZE],
     }
+
+    <span class="comment">// #include &lt;linux/eventpoll.h&gt;
+
+    </span><span class="kw">pub struct </span>epoll_params {
+        <span class="kw">pub </span>busy_poll_usecs: u32,
+        <span class="kw">pub </span>busy_poll_budget: u16,
+        <span class="kw">pub </span>prefer_busy_poll: u8,
+        <span class="kw">pub </span>__pad: u8, <span class="comment">// Must be zero
+    </span>}
 }
 
 <span class="macro">s_no_extra_traits!</span> {
@@ -8001,9 +8024,9 @@
 <span class="kw">pub const </span>POSIX_SPAWN_USEVFORK: ::c_int = <span class="number">64</span>;
 <span class="kw">pub const </span>POSIX_SPAWN_SETSID: ::c_int = <span class="number">128</span>;
 
-<span class="kw">pub const </span>S_IEXEC: mode_t = <span class="number">64</span>;
-<span class="kw">pub const </span>S_IWRITE: mode_t = <span class="number">128</span>;
-<span class="kw">pub const </span>S_IREAD: mode_t = <span class="number">256</span>;
+<span class="kw">pub const </span>S_IEXEC: mode_t = <span class="number">0o0100</span>;
+<span class="kw">pub const </span>S_IWRITE: mode_t = <span class="number">0o0200</span>;
+<span class="kw">pub const </span>S_IREAD: mode_t = <span class="number">0o0400</span>;
 
 <span class="kw">pub const </span>F_LOCK: ::c_int = <span class="number">1</span>;
 <span class="kw">pub const </span>F_TEST: ::c_int = <span class="number">3</span>;
@@ -8109,6 +8132,7 @@
 <span class="kw">pub const </span>IFLA_INFO_SLAVE_DATA: ::c_ushort = <span class="number">5</span>;
 
 <span class="comment">// linux/if_tun.h
+/* TUNSETIFF ifr flags */
 </span><span class="kw">pub const </span>IFF_TUN: ::c_int = <span class="number">0x0001</span>;
 <span class="kw">pub const </span>IFF_TAP: ::c_int = <span class="number">0x0002</span>;
 <span class="kw">pub const </span>IFF_NAPI: ::c_int = <span class="number">0x0010</span>;
@@ -10905,6 +10929,10 @@
     | SCHED_FLAG_DL_OVERRUN
     | SCHED_FLAG_KEEP_ALL
     | SCHED_FLAG_UTIL_CLAMP;
+
+<span class="comment">// ioctl_eventpoll: added in Linux 6.9
+</span><span class="kw">pub const </span>EPIOCSPARAMS: ::Ioctl = <span class="number">0x40088a01</span>;
+<span class="kw">pub const </span>EPIOCGPARAMS: ::Ioctl = <span class="number">0x80088a02</span>;
 
 <span class="macro">f!</span> {
     <span class="kw">pub fn </span>NLA_ALIGN(len: ::c_int) -&gt; ::c_int {
