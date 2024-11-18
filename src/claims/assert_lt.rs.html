@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/claims-0.7.1/src/assert_lt.rs`."><title>assert_lt.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="claims" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/claims-0.8.0/src/assert_lt.rs`."><title>assert_lt.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="claims" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -88,19 +88,96 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
-</pre></div><pre class="rust"><code><span class="doccomment">/// Asserts that first expression is less than the second.
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+</pre></div><pre class="rust"><code><span class="doccomment">/// Asserts that the first expression is less than the second.
 ///
 /// Requires that both expressions be comparable with `&lt;`.
 ///
 /// ## Uses
 ///
 /// Assertions are always checked in both debug and release builds, and cannot be disabled.
-/// See [`debug_assert_lt`] for assertions that are not enabled in release builds by default.
+/// See [`debug_assert_lt!`] for assertions that are not enabled in release builds by default.
 ///
 /// ## Custom messages
 ///
-/// This macro has a second form, where a custom panic message can be provided
-/// with or without arguments for formatting. See [`std::fmt`] for syntax for this form.
+/// This macro has a second form, where a custom panic message can be provided with or without
+/// arguments for formatting. See [`std::fmt`] for syntax for this form.
 ///
 /// ## Examples
 ///
@@ -109,7 +186,7 @@
 /// # fn main() {
 /// assert_lt!(1, 2);
 ///
-/// // With custom messages
+/// // With a custom message
 /// assert_lt!(4, 5, "Expecting that {} is less than {}", 4, 5);
 /// # }
 /// ```
@@ -120,31 +197,28 @@
 /// assert_lt!(5, 5);  // Will panic
 /// assert_lt!(6, 5);
 ///
-/// // With custom messages
+/// // With a custom message
 /// assert_lt!(6, 5, "Not expecting {} to be less than {}", 6, 5);
 /// # }
 /// ```
 ///
 /// [`std::fmt`]: https://doc.rust-lang.org/std/fmt/index.html
-/// [`debug_assert_lt!`]: ./macro.debug_assert_lt.html
+/// [`debug_assert_lt!`]: crate::debug_assert_lt!
 </span><span class="attr">#[macro_export]
 </span><span class="macro">macro_rules!</span> assert_lt {
-    (<span class="macro-nonterminal">$left</span>:expr, <span class="macro-nonterminal">$right</span>:expr) =&gt; {
+    (<span class="macro-nonterminal">$left</span>:expr, <span class="macro-nonterminal">$right</span>:expr $(,)<span class="question-mark">?</span>) =&gt; {
         <span class="kw">match </span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$left</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$right</span>) {
             (left_val, right_val) =&gt; {
                 <span class="kw">if </span>!(<span class="kw-2">*</span>left_val &lt; <span class="kw-2">*</span>right_val) {
                     <span class="comment">// The reborrows below are intentional. Without them, the stack slot for the
                     // borrow is initialized even before the values are compared, leading to a
                     // noticeable slow down.
-                    </span><span class="macro">panic!</span>(<span class="string">r#"assertion failed: `(left &lt; right)`
+                    </span><span class="macro">::core::panic!</span>(<span class="string">r#"assertion failed: `(left &lt; right)`
     left: `{:?}`,
     right: `{:?}`"#</span>, <span class="kw-2">&amp;*</span>left_val, <span class="kw-2">&amp;*</span>right_val)
                 }
             }
         }
-    };
-    (<span class="macro-nonterminal">$left</span>:expr, <span class="macro-nonterminal">$right</span>:expr,) =&gt; {
-        <span class="macro-nonterminal">$</span><span class="macro">crate::assert_lt!</span>(<span class="macro-nonterminal">$left</span>, <span class="macro-nonterminal">$right</span>);
     };
     (<span class="macro-nonterminal">$left</span>:expr, <span class="macro-nonterminal">$right</span>:expr, $(<span class="macro-nonterminal">$arg</span>:tt)+) =&gt; {
         <span class="kw">match </span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$left</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$right</span>) {
@@ -153,29 +227,109 @@
                     <span class="comment">// The reborrows below are intentional. Without them, the stack slot for the
                     // borrow is initialized even before the values are compared, leading to a
                     // noticeable slow down.
-                    </span><span class="macro">panic!</span>(<span class="string">r#"assertion failed: `(left &lt; right)`
+                    </span><span class="macro">::core::panic!</span>(<span class="string">r#"assertion failed: `(left &lt; right)`
     left: `{:?}`,
-    right: `{:?}`: {}"#</span>, <span class="kw-2">&amp;*</span>left_val, <span class="kw-2">&amp;*</span>right_val, <span class="macro">format_args!</span>($(<span class="macro-nonterminal">$arg</span>)+))
+    right: `{:?}`: {}"#</span>, <span class="kw-2">&amp;*</span>left_val, <span class="kw-2">&amp;*</span>right_val, <span class="macro">::core::format_args!</span>($(<span class="macro-nonterminal">$arg</span>)+))
                 }
             }
         }
     };
 }
 
-<span class="doccomment">/// Asserts that first expression is less than the second in runtime.
+<span class="doccomment">/// Asserts that the first expression is less than the second on debug builds.
 ///
-/// Like [`assert_lt!`], this macro also has a second version,
-/// where a custom panic message can be provided.
-///
-/// ## Uses
-///
-/// See [`debug_assert!`] documentation for possible use cases.
-/// The same applies to this macro.
-///
-/// [`debug_assert!`]: https://doc.rust-lang.org/std/macro.debug_assert.html
-/// [`assert_lt`]: ./macro.assert_lt.html
+/// This macro behaves the same as [`assert_lt!`] on debug builds. On release builds it is a no-op.
 </span><span class="attr">#[macro_export]
 </span><span class="macro">macro_rules!</span> debug_assert_lt {
-    ($(<span class="macro-nonterminal">$arg</span>:tt)<span class="kw-2">*</span>) =&gt; (<span class="kw">if </span><span class="macro">cfg!</span>(debug_assertions) { <span class="macro-nonterminal">$</span><span class="macro">crate::assert_lt!</span>($(<span class="macro-nonterminal">$arg</span>)<span class="kw-2">*</span>); })
+    ($(<span class="macro-nonterminal">$arg</span>:tt)<span class="kw-2">*</span>) =&gt; {
+        <span class="attr">#[cfg(debug_assertions)]
+        </span><span class="macro-nonterminal">$</span><span class="macro">crate::assert_lt!</span>($(<span class="macro-nonterminal">$arg</span>)<span class="kw-2">*</span>);
+    }
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="attr">#[test]
+    #[should_panic(expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `5`,\n    right: `3`"</span>)]
+    </span><span class="kw">fn </span>greater_than() {
+        <span class="macro">assert_lt!</span>(<span class="number">5</span>, <span class="number">3</span>);
+    }
+
+    <span class="attr">#[test]
+    #[should_panic(expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `3`,\n    right: `3`"</span>)]
+    </span><span class="kw">fn </span>equal() {
+        <span class="macro">assert_lt!</span>(<span class="number">3</span>, <span class="number">3</span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>less_than() {
+        <span class="macro">assert_lt!</span>(<span class="number">1</span>, <span class="number">3</span>);
+    }
+
+    <span class="attr">#[test]
+    #[should_panic(
+        expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `5`,\n    right: `3`: foo"
+    </span>)]
+    </span><span class="kw">fn </span>greater_than_custom_message() {
+        <span class="macro">assert_lt!</span>(<span class="number">5</span>, <span class="number">3</span>, <span class="string">"foo"</span>);
+    }
+
+    <span class="attr">#[test]
+    #[should_panic(
+        expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `3`,\n    right: `3`: foo"
+    </span>)]
+    </span><span class="kw">fn </span>equal_custom_message() {
+        <span class="macro">assert_lt!</span>(<span class="number">3</span>, <span class="number">3</span>, <span class="string">"foo"</span>);
+    }
+
+    <span class="attr">#[test]
+    #[cfg_attr(not(debug_assertions), ignore = <span class="string">"only run in debug mode"</span>)]
+    #[should_panic(expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `5`,\n    right: `3`"</span>)]
+    </span><span class="kw">fn </span>debug_greater_than() {
+        <span class="macro">debug_assert_lt!</span>(<span class="number">5</span>, <span class="number">3</span>);
+    }
+
+    <span class="attr">#[test]
+    #[cfg_attr(not(debug_assertions), ignore = <span class="string">"only run in debug mode"</span>)]
+    #[should_panic(expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `3`,\n    right: `3`"</span>)]
+    </span><span class="kw">fn </span>debug_equal() {
+        <span class="macro">debug_assert_lt!</span>(<span class="number">3</span>, <span class="number">3</span>);
+    }
+
+    <span class="attr">#[test]
+    #[cfg_attr(not(debug_assertions), ignore = <span class="string">"only run in debug mode"</span>)]
+    </span><span class="kw">fn </span>debug_less_than() {
+        <span class="macro">debug_assert_lt!</span>(<span class="number">1</span>, <span class="number">3</span>);
+    }
+
+    <span class="attr">#[test]
+    #[cfg_attr(not(debug_assertions), ignore = <span class="string">"only run in debug mode"</span>)]
+    #[should_panic(
+        expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `5`,\n    right: `3`: foo"
+    </span>)]
+    </span><span class="kw">fn </span>debug_greater_than_custom_message() {
+        <span class="macro">debug_assert_lt!</span>(<span class="number">5</span>, <span class="number">3</span>, <span class="string">"foo"</span>);
+    }
+
+    <span class="attr">#[test]
+    #[cfg_attr(not(debug_assertions), ignore = <span class="string">"only run in debug mode"</span>)]
+    #[should_panic(
+        expected = <span class="string">"assertion failed: `(left &lt; right)`\n    left: `3`,\n    right: `3`: foo"
+    </span>)]
+    </span><span class="kw">fn </span>debug_equal_custom_message() {
+        <span class="macro">debug_assert_lt!</span>(<span class="number">3</span>, <span class="number">3</span>, <span class="string">"foo"</span>);
+    }
+
+    <span class="attr">#[test]
+    #[cfg_attr(debug_assertions, ignore = <span class="string">"only run in release mode"</span>)]
+    </span><span class="kw">fn </span>debug_release_greater_than() {
+        <span class="macro">debug_assert_lt!</span>(<span class="number">5</span>, <span class="number">3</span>);
+    }
+
+    <span class="attr">#[test]
+    #[cfg_attr(debug_assertions, ignore = <span class="string">"only run in release mode"</span>)]
+    </span><span class="kw">fn </span>debug_release_equal() {
+        <span class="macro">debug_assert_lt!</span>(<span class="number">3</span>, <span class="number">3</span>);
+    }
 }
 </code></pre></div></section></main></body></html>

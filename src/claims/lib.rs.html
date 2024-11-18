@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/claims-0.7.1/src/lib.rs`."><title>lib.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="claims" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/claims-0.8.0/src/lib.rs`."><title>lib.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="claims" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -72,158 +72,62 @@
 <a href="#72" id="72">72</a>
 <a href="#73" id="73">73</a>
 <a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-</pre></div><pre class="rust"><code><span class="attr">#![cfg_attr(rustc_1_6, no_std)]
-#![doc(html_root_url = <span class="string">"https://docs.rs/claims/0.7.1"</span>)]
-#![allow(unknown_lints, unused_extern_crates)]
-#![forbid(
-    rust_2018_idioms,
-    unused,
-    unused_imports,
-    unused_features,
-    bare_trait_objects,
-    future_incompatible,
-    missing_debug_implementations,
-    missing_docs,
-    nonstandard_style,
-    dead_code,
-    deprecated,
-    broken_intra_doc_links,
-    trivial_casts,
-    trivial_numeric_casts,
-    unused_import_braces,
-    unused_results,
-    unsafe_code
-)]
+</pre></div><pre class="rust"><code><span class="attr">#![no_std]
 
-</span><span class="doccomment">//! Assertion macros.
-//!
-//! This crate provides additional assert macros to make testing a bit easier.
-//!
-//! ## `#![no_std]` support
-//!
-//! `claims` can be used in a `no-std` environments too.
+</span><span class="doccomment">//! Additional assertion macros for testing.
 //!
 //! ## Available macros
 //!
-//! Note that same to [`core`]/[`std`] macros,
-//! all macros in this crate has the [`debug_*`](#macros) counterparts.
+//! Note that, like [`core`]/[`std`] macros, all macros in this crate have [`debug_*`](#macros)
+//! counterparts.
 //!
 //! ### Comparison
 //!
 //! Assertions similar to [`assert_eq`] or [`assert_ne`]:
 //!
-//! * [`assert_ge`]
-//! * [`assert_gt`]
-//! * [`assert_le`]
-//! * [`assert_lt`]
+//! * [`assert_ge!`]
+//! * [`assert_gt!`]
+//! * [`assert_le!`]
+//! * [`assert_lt!`]
 //!
 //! ### Matching
 //!
-//! * [`assert_matches`]
+//! * [`assert_matches!`]
 //!
 //! ### `Result` macros
 //!
 //! Assertions for [`Result`] variants:
 //!
-//! * [`assert_ok`]
-//! * [`assert_err`]
-//! * [`assert_ok_eq`]
-//! * [`assert_err_eq`]
+//! * [`assert_ok!`]
+//! * [`assert_err!`]
+//! * [`assert_ok_eq!`]
+//! * [`assert_err_eq!`]
 //!
 //! ### `Option` macros
 //!
 //! Assertions for [`Option`] variants:
 //!
-//! * [`assert_some`]
-//! * [`assert_none`]
-//! * [`assert_some_eq`]
+//! * [`assert_some!`]
+//! * [`assert_none!`]
+//! * [`assert_some_eq!`]
 //!
 //! ### `Poll` macros
 //!
 //! Assertions for [`Poll`] variants:
 //!
-//! * [`assert_ready`]
-//! * [`assert_ready_ok`]
-//! * [`assert_ready_err`]
-//! * [`assert_ready_pending`]
-//! * [`assert_ready_eq`]
+//! * [`assert_pending!`]
+//! * [`assert_ready!`]
+//! * [`assert_ready_ok!`]
+//! * [`assert_ready_err!`]
+//! * [`assert_ready_eq!`]
 //!
 //! [`core`]: https://doc.rust-lang.org/stable/core/#macros
 //! [`std`]: https://doc.rust-lang.org/stable/std/#macros
 //! [`Option`]: https://doc.rust-lang.org/core/option/enum.Option.html
 //! [`Result`]: https://doc.rust-lang.org/core/result/enum.Result.html
 //! [`Poll`]: https://doc.rust-lang.org/core/task/enum.Poll.html
-//! [`assert_eq`]: https://doc.rust-lang.org/std/macro.assert_eq.html
-//! [`assert_ne`]: https://doc.rust-lang.org/std/macro.assert_ne.html
-//! [`assert_ge`]: ./macro.assert_ge.html
-//! [`assert_gt`]: ./macro.assert_gt.html
-//! [`assert_le`]: ./macro.assert_le.html
-//! [`assert_lt`]: ./macro.assert_lt.html
-//! [`assert_some`]: ./macro.assert_some.html
-//! [`assert_none`]: ./macro.assert_none.html
-//! [`assert_some_eq`]: ./macro.assert_some_eq.html
-//! [`assert_ok`]: ./macro.assert_ok.html
-//! [`assert_err`]: ./macro.assert_err.html
-//! [`assert_ok_eq`]: ./macro.assert_ok_eq.html
-//! [`assert_err_eq`]: ./macro.assert_err_eq.html
-//! [`assert_ready`]: ./macro.assert_ready.html
-//! [`assert_ready_ok`]: ./macro.assert_ready_ok.html
-//! [`assert_ready_err`]: ./macro.assert_ready_err.html
-//! [`assert_ready_pending`]: ./macro.assert_ready_pending.html
-//! [`assert_ready_eq`]: ./macro.assert_ready_eq.html
-//! [`assert_matches`]: ./macro.assert_matches.html
+//! [`assert_eq`]: https://doc.rust-lang.org/core/macro.assert_eq.html
+//! [`assert_ne`]: https://doc.rust-lang.org/core/macro.assert_ne.html
 
 </span><span class="kw">mod </span>assert_err;
 <span class="kw">mod </span>assert_err_eq;
@@ -231,23 +135,15 @@
 <span class="kw">mod </span>assert_gt;
 <span class="kw">mod </span>assert_le;
 <span class="kw">mod </span>assert_lt;
+<span class="kw">mod </span>assert_matches;
 <span class="kw">mod </span>assert_none;
 <span class="kw">mod </span>assert_ok;
 <span class="kw">mod </span>assert_ok_eq;
+<span class="kw">mod </span>assert_pending;
+<span class="kw">mod </span>assert_ready;
+<span class="kw">mod </span>assert_ready_eq;
+<span class="kw">mod </span>assert_ready_err;
+<span class="kw">mod </span>assert_ready_ok;
 <span class="kw">mod </span>assert_some;
 <span class="kw">mod </span>assert_some_eq;
-
-<span class="attr">#[cfg(has_task_poll)]
-</span><span class="kw">mod </span>assert_pending;
-<span class="attr">#[cfg(has_task_poll)]
-</span><span class="kw">mod </span>assert_ready;
-<span class="attr">#[cfg(has_task_poll)]
-</span><span class="kw">mod </span>assert_ready_eq;
-<span class="attr">#[cfg(has_task_poll)]
-</span><span class="kw">mod </span>assert_ready_err;
-<span class="attr">#[cfg(has_task_poll)]
-</span><span class="kw">mod </span>assert_ready_ok;
-
-<span class="attr">#[cfg(rustc_1_26)]
-</span><span class="kw">mod </span>assert_matches;
 </code></pre></div></section></main></body></html>
