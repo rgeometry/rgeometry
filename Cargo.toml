@@ -20,7 +20,7 @@ version = "0.10.0"
 
 [dependencies]
 array-init = "2.1"
-claims = "0.7"
+claims = "0.8"
 geometry-predicates = "0.3.0"
 getrandom = { version = "^0.2.3", features = ["js"] }
 num = "0.4.3"
