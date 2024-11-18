@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.162/src/unix/linux_like/linux/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.164/src/unix/linux_like/linux/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-492a78a4a87dcc01.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0 (f6e511eec 2024-10-15)" data-channel="1.82.0" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-921df33f47b8780c.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-3b12f09e550e0385.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -5982,6 +5982,43 @@
 <a href="#5982" id="5982">5982</a>
 <a href="#5983" id="5983">5983</a>
 <a href="#5984" id="5984">5984</a>
+<a href="#5985" id="5985">5985</a>
+<a href="#5986" id="5986">5986</a>
+<a href="#5987" id="5987">5987</a>
+<a href="#5988" id="5988">5988</a>
+<a href="#5989" id="5989">5989</a>
+<a href="#5990" id="5990">5990</a>
+<a href="#5991" id="5991">5991</a>
+<a href="#5992" id="5992">5992</a>
+<a href="#5993" id="5993">5993</a>
+<a href="#5994" id="5994">5994</a>
+<a href="#5995" id="5995">5995</a>
+<a href="#5996" id="5996">5996</a>
+<a href="#5997" id="5997">5997</a>
+<a href="#5998" id="5998">5998</a>
+<a href="#5999" id="5999">5999</a>
+<a href="#6000" id="6000">6000</a>
+<a href="#6001" id="6001">6001</a>
+<a href="#6002" id="6002">6002</a>
+<a href="#6003" id="6003">6003</a>
+<a href="#6004" id="6004">6004</a>
+<a href="#6005" id="6005">6005</a>
+<a href="#6006" id="6006">6006</a>
+<a href="#6007" id="6007">6007</a>
+<a href="#6008" id="6008">6008</a>
+<a href="#6009" id="6009">6009</a>
+<a href="#6010" id="6010">6010</a>
+<a href="#6011" id="6011">6011</a>
+<a href="#6012" id="6012">6012</a>
+<a href="#6013" id="6013">6013</a>
+<a href="#6014" id="6014">6014</a>
+<a href="#6015" id="6015">6015</a>
+<a href="#6016" id="6016">6016</a>
+<a href="#6017" id="6017">6017</a>
+<a href="#6018" id="6018">6018</a>
+<a href="#6019" id="6019">6019</a>
+<a href="#6020" id="6020">6020</a>
+<a href="#6021" id="6021">6021</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Linux-specific definitions for linux-like values
 
 </span><span class="kw">pub type </span>useconds_t = u32;
@@ -7795,6 +7832,43 @@
 <span class="kw">pub const </span>_SC_XOPEN_STREAMS: ::c_int = <span class="number">246</span>;
 <span class="kw">pub const </span>_SC_THREAD_ROBUST_PRIO_INHERIT: ::c_int = <span class="number">247</span>;
 <span class="kw">pub const </span>_SC_THREAD_ROBUST_PRIO_PROTECT: ::c_int = <span class="number">248</span>;
+
+<span class="kw">pub const </span>_CS_PATH: ::c_int = <span class="number">0</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_WIDTH_RESTRICTED_ENVS: ::c_int = <span class="number">1</span>;
+<span class="kw">pub const </span>_CS_POSIX_V5_WIDTH_RESTRICTED_ENVS: ::c_int = <span class="number">4</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_WIDTH_RESTRICTED_ENVS: ::c_int = <span class="number">5</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFF32_CFLAGS: ::c_int = <span class="number">1116</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFF32_LDFLAGS: ::c_int = <span class="number">1117</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFF32_LIBS: ::c_int = <span class="number">1118</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFF32_LINTFLAGS: ::c_int = <span class="number">1119</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFFBIG_CFLAGS: ::c_int = <span class="number">1120</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFFBIG_LDFLAGS: ::c_int = <span class="number">1121</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFFBIG_LIBS: ::c_int = <span class="number">1122</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_ILP32_OFFBIG_LINTFLAGS: ::c_int = <span class="number">1123</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LP64_OFF64_CFLAGS: ::c_int = <span class="number">1124</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LP64_OFF64_LDFLAGS: ::c_int = <span class="number">1125</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LP64_OFF64_LIBS: ::c_int = <span class="number">1126</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LP64_OFF64_LINTFLAGS: ::c_int = <span class="number">1127</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LPBIG_OFFBIG_CFLAGS: ::c_int = <span class="number">1128</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LPBIG_OFFBIG_LDFLAGS: ::c_int = <span class="number">1129</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LPBIG_OFFBIG_LIBS: ::c_int = <span class="number">1130</span>;
+<span class="kw">pub const </span>_CS_POSIX_V6_LPBIG_OFFBIG_LINTFLAGS: ::c_int = <span class="number">1131</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFF32_CFLAGS: ::c_int = <span class="number">1132</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFF32_LDFLAGS: ::c_int = <span class="number">1133</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFF32_LIBS: ::c_int = <span class="number">1134</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFF32_LINTFLAGS: ::c_int = <span class="number">1135</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFFBIG_CFLAGS: ::c_int = <span class="number">1136</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFFBIG_LDFLAGS: ::c_int = <span class="number">1137</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFFBIG_LIBS: ::c_int = <span class="number">1138</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_ILP32_OFFBIG_LINTFLAGS: ::c_int = <span class="number">1139</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LP64_OFF64_CFLAGS: ::c_int = <span class="number">1140</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LP64_OFF64_LDFLAGS: ::c_int = <span class="number">1141</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LP64_OFF64_LIBS: ::c_int = <span class="number">1142</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LP64_OFF64_LINTFLAGS: ::c_int = <span class="number">1143</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LPBIG_OFFBIG_CFLAGS: ::c_int = <span class="number">1144</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LPBIG_OFFBIG_LDFLAGS: ::c_int = <span class="number">1145</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LPBIG_OFFBIG_LIBS: ::c_int = <span class="number">1146</span>;
+<span class="kw">pub const </span>_CS_POSIX_V7_LPBIG_OFFBIG_LINTFLAGS: ::c_int = <span class="number">1147</span>;
 
 <span class="kw">pub const </span>RLIM_SAVED_MAX: ::rlim_t = RLIM_INFINITY;
 <span class="kw">pub const </span>RLIM_SAVED_CUR: ::rlim_t = RLIM_INFINITY;
