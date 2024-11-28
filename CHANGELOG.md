@@ -5,6 +5,24 @@
 ### Added
 ### Changed
 
+## [0.10.1] 2024-11-28
+
+### Added
+- `Polygon::hash`.
+### Changed
+- Bumped dependencies.
+- Drop `copy` constraint for random convex polygons.
+
+## [0.10.0] 2024-10-26
+
+### Added
+- Conversion from LineSegment to LineSegmentView.
+- Convex hull calculation using Melkman's algorithm.
+### Changed
+- Bumped dependencies.
+### Fixed
+- Fix crash in `get_visibility_polygon` for `Point<f64>`.
+
 ## [0.9.0] 2022-08-13
 
 ### Added
