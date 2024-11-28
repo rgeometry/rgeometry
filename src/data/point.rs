@@ -17,7 +17,8 @@ use std::ops::Index;
 use super::{Direction, Vector};
 use crate::{Orientation, PolygonScalar, TotalOrd};
 
-#[derive(Debug, Clone, Copy)]
+#[allow(clippy::derived_hash_with_manual_eq)]
+#[derive(Debug, Clone, Copy, Hash)]
 #[repr(transparent)] // Required for correctness!
 pub struct Point<T, const N: usize = 2> {
   pub array: [T; N],

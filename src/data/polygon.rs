@@ -20,7 +20,7 @@ pub use convex::*;
 
 use super::Transform;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PositionId(usize);
 
 impl From<PositionId> for usize {
@@ -29,7 +29,7 @@ impl From<PositionId> for usize {
   }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RingId(usize);
 
 impl From<RingId> for usize {
@@ -38,7 +38,7 @@ impl From<RingId> for usize {
   }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PointId(usize);
 
 impl From<PointId> for usize {
@@ -110,7 +110,7 @@ pub struct DirectedIndexEdge {
 // triangulate: Polygon -> Vec<Polygon>
 // triangulate: Polygon -> Vec<(PointId, PointId, PointId)>
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct Polygon<T> {
   // Use points: Arc<Vec<Point<T, 2>>>, ?
   // Key: PointId
