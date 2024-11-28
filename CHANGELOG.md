@@ -10,7 +10,6 @@
 ### Added
 - `Polygon::hash`.
 ### Changed
-- Bumped dependencies.
 - Drop `copy` constraint for random convex polygons.
 
 ## [0.10.0] 2024-10-26
