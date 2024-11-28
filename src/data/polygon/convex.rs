@@ -11,7 +11,7 @@ use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 
 use super::Polygon;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct PolygonConvex<T>(Polygon<T>);
 
 ///////////////////////////////////////////////////////////////////////////////

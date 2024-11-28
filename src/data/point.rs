@@ -17,7 +17,7 @@ use std::ops::Index;
 use super::{Direction, Vector};
 use crate::{Orientation, PolygonScalar, TotalOrd};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash)]
 #[repr(transparent)] // Required for correctness!
 pub struct Point<T, const N: usize = 2> {
   pub array: [T; N],
