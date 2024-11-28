@@ -1008,7 +1008,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::Transform;
 
-<span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+<span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub struct </span>PositionId(usize);
 
 <span class="kw">impl </span>From&lt;PositionId&gt; <span class="kw">for </span>usize {
@@ -1017,7 +1017,7 @@
   </span>}
 }
 
-<span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+<span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub struct </span>RingId(usize);
 
 <span class="kw">impl </span>From&lt;RingId&gt; <span class="kw">for </span>usize {
@@ -1026,7 +1026,7 @@
   </span>}
 }
 
-<span class="attr">#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+<span class="attr">#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub struct </span>PointId(usize);
 
 <span class="kw">impl </span>From&lt;PointId&gt; <span class="kw">for </span>usize {
@@ -1098,7 +1098,7 @@
 // triangulate: Polygon -&gt; Vec&lt;Polygon&gt;
 // triangulate: Polygon -&gt; Vec&lt;(PointId, PointId, PointId)&gt;
 
-</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="attr">#[derive(Debug, Clone, Hash)]
 </span><span class="kw">pub struct </span>Polygon&lt;T&gt; {
   <span class="comment">// Use points: Arc&lt;Vec&lt;Point&lt;T, 2&gt;&gt;&gt;, ?
   // Key: PointId

@@ -599,6 +599,7 @@
 <a href="#578" id="578">578</a>
 <a href="#579" id="579">579</a>
 <a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>array_init::{array_init, try_array_init};
 <span class="kw">use </span>float::FloatCore;
 <span class="kw">use </span>num_bigint::BigInt;
@@ -618,7 +619,8 @@
 <span class="kw">use super</span>::{Direction, Vector};
 <span class="kw">use crate</span>::{Orientation, PolygonScalar, TotalOrd};
 
-<span class="attr">#[derive(Debug, Clone, Copy)]
+<span class="attr">#[allow(clippy::derived_hash_with_manual_eq)]
+#[derive(Debug, Clone, Copy, Hash)]
 #[repr(transparent)] </span><span class="comment">// Required for correctness!
 </span><span class="kw">pub struct </span>Point&lt;T, <span class="kw">const </span>N: usize = <span class="number">2</span>&gt; {
   <span class="kw">pub </span>array: [T; N],
