@@ -38,7 +38,7 @@ impl<T: TotalOrd> EndPoint<T> {
     }
   }
 
-  pub fn as_ref(&self) -> EndPoint<&'_ T> {
+  pub fn as_ref(&self) -> EndPoint<&T> {
     match self {
       Exclusive(t) => Exclusive(t),
       Inclusive(t) => Inclusive(t),
