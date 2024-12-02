@@ -7,7 +7,7 @@ use crate::{Intersects, PolygonScalar};
 /// $O(n^2)$
 pub fn segment_intersections<'a, Edge, T: PolygonScalar + 'a>(
   edges: &'a [Edge],
-) -> impl Iterator<Item = (&Edge, &Edge)>
+) -> impl Iterator<Item = (&'a Edge, &'a Edge)>
 where
   &'a Edge: Into<LineSegmentView<'a, T, 2>>,
 {

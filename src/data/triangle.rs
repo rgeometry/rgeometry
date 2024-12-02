@@ -39,7 +39,7 @@ where
     self.view().locate(pt)
   }
 
-  pub fn view(&'_ self) -> TriangleView<'_, T> {
+  pub fn view(&self) -> TriangleView<'_, T> {
     TriangleView([&self.0[0], &self.0[1], &self.0[2]])
   }
 }

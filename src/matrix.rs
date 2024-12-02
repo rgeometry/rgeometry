@@ -54,7 +54,7 @@ impl<T> IndexMut<(usize, usize)> for Matrix<T> {
   }
 }
 
-impl<'a, 'b, T> Mul<&'b Matrix<T>> for &'a Matrix<T>
+impl<T> Mul<&Matrix<T>> for &Matrix<T>
 where
   T: Clone + Zero + AddAssign + Mul<T, Output = T>,
 {
@@ -78,7 +78,7 @@ where
   }
 }
 
-impl<'a, T> Mul<Matrix<T>> for &'a Matrix<T>
+impl<T> Mul<Matrix<T>> for &Matrix<T>
 where
   T: Clone + Zero + AddAssign + Mul<T, Output = T>,
 {
@@ -87,7 +87,7 @@ where
     self * &other
   }
 }
-impl<'a, T> Mul<&'a Matrix<T>> for Matrix<T>
+impl<T> Mul<&Matrix<T>> for Matrix<T>
 where
   T: Clone + Zero + AddAssign + Mul<T, Output = T>,
 {

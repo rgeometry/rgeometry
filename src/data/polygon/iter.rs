@@ -49,7 +49,7 @@ pub struct CursorIter<'a, T: 'a> {
   pub(crate) exhausted: bool,
 }
 
-impl<'a, T> Clone for CursorIter<'a, T> {
+impl<T> Clone for CursorIter<'_, T> {
   fn clone(&self) -> Self {
     CursorIter {
       cursor_head: self.cursor_head,
@@ -59,8 +59,8 @@ impl<'a, T> Clone for CursorIter<'a, T> {
   }
 }
 
-impl<'a, 'b, T: TotalOrd> PartialEq<CursorIter<'b, T>> for CursorIter<'a, T> {
-  fn eq(&self, other: &CursorIter<'b, T>) -> bool {
+impl<T: TotalOrd> PartialEq<CursorIter<'_, T>> for CursorIter<'_, T> {
+  fn eq(&self, other: &CursorIter<'_, T>) -> bool {
     if self.len() != other.len() {
       return false;
     }
@@ -95,7 +95,7 @@ impl<'a, T> Iterator for CursorIter<'a, T> {
   }
 }
 
-impl<'a, T> ExactSizeIterator for CursorIter<'a, T> {
+impl<T> ExactSizeIterator for CursorIter<'_, T> {
   fn len(&self) -> usize {
     let pos_head = self.cursor_head.position;
     let pos_tail = self.cursor_tail.position;
@@ -107,7 +107,7 @@ impl<'a, T> ExactSizeIterator for CursorIter<'a, T> {
   }
 }
 
-impl<'a, T> DoubleEndedIterator for CursorIter<'a, T> {
+impl<T> DoubleEndedIterator for CursorIter<'_, T> {
   fn next_back(&mut self) -> Option<Self::Item> {
     if self.exhausted {
       None

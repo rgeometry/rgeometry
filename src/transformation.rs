@@ -73,7 +73,7 @@ where
   }
 }
 
-impl<'a, 'b, T, const N: usize> Mul<&'b Transform<T, N>> for &'a Transform<T, N>
+impl<T, const N: usize> Mul<&Transform<T, N>> for &Transform<T, N>
 where
   T: TransformScalar,
 {
@@ -83,7 +83,7 @@ where
   }
 }
 
-impl<'a, 'b, T, const N: usize> Mul<&'b Point<T, N>> for &'a Transform<T, N>
+impl<T, const N: usize> Mul<&Point<T, N>> for &Transform<T, N>
 where
   T: TransformScalar,
 {
@@ -95,7 +95,7 @@ where
 }
 
 // &t * &v = v
-impl<'a, 'b, T, const N: usize> Mul<&'b Vector<T, N>> for &'a Transform<T, N>
+impl<T, const N: usize> Mul<&Vector<T, N>> for &Transform<T, N>
 where
   T: TransformScalar,
 {
@@ -113,7 +113,7 @@ where
 }
 
 // &t * v = v
-impl<'a, T, const N: usize> Mul<Vector<T, N>> for &'a Transform<T, N>
+impl<T, const N: usize> Mul<Vector<T, N>> for &Transform<T, N>
 where
   T: TransformScalar,
 {
@@ -123,7 +123,7 @@ where
   }
 }
 
-impl<'a, T, const N: usize> Mul<&'a Vector<T, N>> for Transform<T, N>
+impl<T, const N: usize> Mul<&Vector<T, N>> for Transform<T, N>
 where
   T: TransformScalar,
 {
@@ -143,7 +143,7 @@ where
   }
 }
 
-impl<'a, T, const N: usize> Mul<Point<T, N>> for &'a Transform<T, N>
+impl<T, const N: usize> Mul<Point<T, N>> for &Transform<T, N>
 where
   T: TransformScalar,
 {
@@ -153,7 +153,7 @@ where
   }
 }
 
-impl<'a, 'b, T> Mul<&'b Polygon<T>> for &'a Transform<T, 2>
+impl<T> Mul<&Polygon<T>> for &Transform<T, 2>
 where
   T: TransformScalar,
 {
@@ -163,7 +163,7 @@ where
   }
 }
 
-impl<'a, T> Mul<Polygon<T>> for &'a Transform<T, 2>
+impl<T> Mul<Polygon<T>> for &Transform<T, 2>
 where
   T: TransformScalar,
 {
@@ -186,7 +186,7 @@ where
   }
 }
 
-impl<'a, T> Mul<&'a Polygon<T>> for Transform<T, 2>
+impl<T> Mul<&Polygon<T>> for Transform<T, 2>
 where
   T: TransformScalar,
 {

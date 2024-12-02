@@ -38,7 +38,7 @@ impl<T: TotalOrd> EndPoint<T> {
     }
   }
 
-  pub fn as_ref(&self) -> EndPoint<&'_ T> {
+  pub fn as_ref(&self) -> EndPoint<&T> {
     match self {
       Exclusive(t) => Exclusive(t),
       Inclusive(t) => Inclusive(t),
@@ -191,12 +191,12 @@ pub struct LineSegmentSoS<'a, T: TotalOrd, const N: usize> {
   pub max: EndPoint<PointSoS<'a, T, N>>,
 }
 
-impl<'a, T: TotalOrd, const N: usize> Clone for LineSegmentView<'a, T, N> {
+impl<T: TotalOrd, const N: usize> Clone for LineSegmentView<'_, T, N> {
   fn clone(&self) -> Self {
     *self
   }
 }
-impl<'a, T: TotalOrd, const N: usize> Copy for LineSegmentView<'a, T, N> {}
+impl<T: TotalOrd, const N: usize> Copy for LineSegmentView<'_, T, N> {}
 
 impl<'a, T: TotalOrd, const N: usize> LineSegmentView<'a, T, N> {
   pub fn new(
@@ -214,7 +214,7 @@ impl<'a, T: TotalOrd, const N: usize> LineSegmentView<'a, T, N> {
   }
 }
 
-impl<'a, T: TotalOrd> LineSegmentView<'a, T> {
+impl<T: TotalOrd> LineSegmentView<'_, T> {
   pub fn contains(&self, pt: &Point<T>) -> bool
   where
     T: PolygonScalar,

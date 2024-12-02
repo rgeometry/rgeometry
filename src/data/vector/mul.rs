@@ -16,7 +16,7 @@ where
   }
 }
 
-impl<'a, T, const N: usize> Mul<T> for VectorView<'a, T, N>
+impl<T, const N: usize> Mul<T> for VectorView<'_, T, N>
 where
   T: NumOps + Clone,
 {
