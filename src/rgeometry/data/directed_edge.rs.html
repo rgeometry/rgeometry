@@ -164,14 +164,14 @@
   <span class="kw">pub </span>dst: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Point&lt;T, N&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: TotalOrd, <span class="kw">const </span>N: usize&gt; Copy <span class="kw">for </span>DirectedEdge&lt;<span class="lifetime">'a</span>, T, N&gt; {}
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: TotalOrd, <span class="kw">const </span>N: usize&gt; Clone <span class="kw">for </span>DirectedEdge&lt;<span class="lifetime">'a</span>, T, N&gt; {
+<span class="kw">impl</span>&lt;T: TotalOrd, <span class="kw">const </span>N: usize&gt; Copy <span class="kw">for </span>DirectedEdge&lt;<span class="lifetime">'_</span>, T, N&gt; {}
+<span class="kw">impl</span>&lt;T: TotalOrd, <span class="kw">const </span>N: usize&gt; Clone <span class="kw">for </span>DirectedEdge&lt;<span class="lifetime">'_</span>, T, N&gt; {
   <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
     <span class="kw-2">*</span><span class="self">self
   </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: TotalOrd&gt; DirectedEdge&lt;<span class="lifetime">'a</span>, T, <span class="number">2</span>&gt; {
+<span class="kw">impl</span>&lt;T: TotalOrd&gt; DirectedEdge&lt;<span class="lifetime">'_</span>, T, <span class="number">2</span>&gt; {
   <span class="kw">pub fn </span>contains(<span class="self">self</span>, pt: <span class="kw-2">&amp;</span>Point&lt;T, <span class="number">2</span>&gt;) -&gt; bool
   <span class="kw">where
     </span>T: PolygonScalar,

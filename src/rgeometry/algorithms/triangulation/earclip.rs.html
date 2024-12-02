@@ -821,7 +821,7 @@
   position: usize,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; Eq <span class="kw">for </span>Cursor&lt;<span class="lifetime">'a</span>, T&gt; {}
+<span class="kw">impl</span>&lt;T&gt; Eq <span class="kw">for </span>Cursor&lt;<span class="lifetime">'_</span>, T&gt; {}
 
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; PartialEq <span class="kw">for </span>Cursor&lt;<span class="lifetime">'a</span>, T&gt; {
   <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Cursor&lt;<span class="lifetime">'a</span>, T&gt;) -&gt; bool {
@@ -829,7 +829,7 @@
   }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; Copy <span class="kw">for </span>Cursor&lt;<span class="lifetime">'a</span>, T&gt; {}
+<span class="kw">impl</span>&lt;T&gt; Copy <span class="kw">for </span>Cursor&lt;<span class="lifetime">'_</span>, T&gt; {}
 
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; Clone <span class="kw">for </span>Cursor&lt;<span class="lifetime">'a</span>, T&gt; {
   <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Cursor&lt;<span class="lifetime">'a</span>, T&gt; {

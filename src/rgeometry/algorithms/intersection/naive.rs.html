@@ -53,7 +53,7 @@
 /// $O(n^2)$
 </span><span class="kw">pub fn </span>segment_intersections&lt;<span class="lifetime">'a</span>, Edge, T: PolygonScalar + <span class="lifetime">'a</span>&gt;(
   edges: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[Edge],
-) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span>Edge, <span class="kw-2">&amp;</span>Edge)&gt;
+) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Edge, <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Edge)&gt;
 <span class="kw">where
   </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>Edge: Into&lt;LineSegmentView&lt;<span class="lifetime">'a</span>, T, <span class="number">2</span>&gt;&gt;,
 {

@@ -218,7 +218,7 @@
   <span class="kw">pub </span>min_y: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>T,
   <span class="kw">pub </span>max_y: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>T,
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; Copy <span class="kw">for </span>ZHashBox&lt;<span class="lifetime">'a</span>, T&gt; {}
+<span class="kw">impl</span>&lt;T&gt; Copy <span class="kw">for </span>ZHashBox&lt;<span class="lifetime">'_</span>, T&gt; {}
 
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T&gt; Clone <span class="kw">for </span>ZHashBox&lt;<span class="lifetime">'a</span>, T&gt; {
   <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ZHashBox&lt;<span class="lifetime">'a</span>, T&gt; {
