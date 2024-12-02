@@ -52,14 +52,14 @@ pub struct DirectedEdge<'a, T: TotalOrd, const N: usize = 2> {
   pub dst: &'a Point<T, N>,
 }
 
-impl<'a, T: TotalOrd, const N: usize> Copy for DirectedEdge<'a, T, N> {}
-impl<'a, T: TotalOrd, const N: usize> Clone for DirectedEdge<'a, T, N> {
+impl<T: TotalOrd, const N: usize> Copy for DirectedEdge<'_, T, N> {}
+impl<T: TotalOrd, const N: usize> Clone for DirectedEdge<'_, T, N> {
   fn clone(&self) -> Self {
     *self
   }
 }
 
-impl<'a, T: TotalOrd> DirectedEdge<'a, T, 2> {
+impl<T: TotalOrd> DirectedEdge<'_, T, 2> {
   pub fn contains(self, pt: &Point<T, 2>) -> bool
   where
     T: PolygonScalar,

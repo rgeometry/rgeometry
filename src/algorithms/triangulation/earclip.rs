@@ -249,7 +249,7 @@ struct Cursor<'a, T> {
   position: usize,
 }
 
-impl<'a, T> Eq for Cursor<'a, T> {}
+impl<T> Eq for Cursor<'_, T> {}
 
 impl<'a, T> PartialEq for Cursor<'a, T> {
   fn eq(&self, other: &Cursor<'a, T>) -> bool {
@@ -257,7 +257,7 @@ impl<'a, T> PartialEq for Cursor<'a, T> {
   }
 }
 
-impl<'a, T> Copy for Cursor<'a, T> {}
+impl<T> Copy for Cursor<'_, T> {}
 
 impl<'a, T> Clone for Cursor<'a, T> {
   fn clone(&self) -> Cursor<'a, T> {

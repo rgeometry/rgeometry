@@ -61,26 +61,26 @@ pub struct PointSoS<'a, T, const N: usize = 2> {
   pub point: &'a Point<T, N>,
 }
 
-impl<'a, T: TotalOrd, const N: usize> TotalOrd for PointSoS<'a, T, N> {
+impl<T: TotalOrd, const N: usize> TotalOrd for PointSoS<'_, T, N> {
   fn total_cmp(&self, other: &Self) -> Ordering {
     (self.index, self.point).total_cmp(&(other.index, other.point))
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> PartialEq for PointSoS<'a, T, N> {
+impl<T: TotalOrd, const N: usize> PartialEq for PointSoS<'_, T, N> {
   fn eq(&self, other: &Self) -> bool {
     self.total_cmp(other).is_eq()
   }
 }
-impl<'a, T: TotalOrd, const N: usize> Eq for PointSoS<'a, T, N> {}
+impl<T: TotalOrd, const N: usize> Eq for PointSoS<'_, T, N> {}
 
-impl<'a, T: TotalOrd, const N: usize> PartialOrd for PointSoS<'a, T, N> {
+impl<T: TotalOrd, const N: usize> PartialOrd for PointSoS<'_, T, N> {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(std::cmp::Ord::cmp(self, other))
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> Ord for PointSoS<'a, T, N> {
+impl<T: TotalOrd, const N: usize> Ord for PointSoS<'_, T, N> {
   fn cmp(&self, other: &Self) -> Ordering {
     self.total_cmp(other)
   }
@@ -206,7 +206,7 @@ impl From<Point<i64, 2>> for Point<BigInt, 2> {
   }
 }
 
-impl<'a, const N: usize> From<&'a Point<BigRational, N>> for Point<f64, N> {
+impl<const N: usize> From<&Point<BigRational, N>> for Point<f64, N> {
   fn from(point: &Point<BigRational, N>) -> Point<f64, N> {
     Point {
       array: array_init(|i| point.array[i].to_f64().unwrap()),
@@ -222,7 +222,7 @@ impl<const N: usize> From<Point<BigRational, N>> for Point<f64, N> {
   }
 }
 
-impl<'a, const N: usize> From<&'a Point<f64, N>> for Point<BigRational, N> {
+impl<const N: usize> From<&Point<f64, N>> for Point<BigRational, N> {
   fn from(point: &Point<f64, N>) -> Point<BigRational, N> {
     Point {
       array: array_init(|i| BigRational::from_f64(point.array[i]).unwrap()),

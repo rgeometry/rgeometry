@@ -20,7 +20,7 @@ where
   }
 }
 
-impl<'a, 'b, T, const N: usize> Add<&'b Vector<T, N>> for &'a Vector<T, N>
+impl<T, const N: usize> Add<&'_ Vector<T, N>> for &'_ Vector<T, N>
 where
   T: NumOps + Clone,
 {

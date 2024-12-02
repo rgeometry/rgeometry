@@ -653,13 +653,13 @@ pub struct Cursor<'a, T> {
   pub(crate) position: Position,
 }
 
-impl<'a, T: TotalOrd> TotalOrd for Cursor<'a, T> {
+impl<T: TotalOrd> TotalOrd for Cursor<'_, T> {
   fn total_cmp(&self, other: &Self) -> Ordering {
     self.deref().total_cmp(other.deref())
   }
 }
 
-impl<'a, T> Deref for Cursor<'a, T> {
+impl<T> Deref for Cursor<'_, T> {
   type Target = Point<T>;
   fn deref(&self) -> &Self::Target {
     self.point()
@@ -674,12 +674,12 @@ impl<'a, T> PartialEq for Cursor<'a, T> {
 }
 
 // Can't derive it because T should not be 'Clone'.
-impl<'a, T> Clone for Cursor<'a, T> {
+impl<T> Clone for Cursor<'_, T> {
   fn clone(&self) -> Self {
     *self
   }
 }
-impl<'a, T> Copy for Cursor<'a, T> {}
+impl<T> Copy for Cursor<'_, T> {}
 
 impl<'a, T> Cursor<'a, T> {
   pub fn point_id(self) -> PointId {
