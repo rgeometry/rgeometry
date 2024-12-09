@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.167/src/unix/linux_like/linux/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">libc/unix/linux_like/linux/</div>mod.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libc-0.2.168/src/unix/linux_like/linux/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="libc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">libc/unix/linux_like/linux/</div>mod.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -6797,21 +6797,7 @@
 <a href="#6796" id="6796">6796</a>
 <a href="#6797" id="6797">6797</a>
 <a href="#6798" id="6798">6798</a>
-<a href="#6799" id="6799">6799</a>
-<a href="#6800" id="6800">6800</a>
-<a href="#6801" id="6801">6801</a>
-<a href="#6802" id="6802">6802</a>
-<a href="#6803" id="6803">6803</a>
-<a href="#6804" id="6804">6804</a>
-<a href="#6805" id="6805">6805</a>
-<a href="#6806" id="6806">6806</a>
-<a href="#6807" id="6807">6807</a>
-<a href="#6808" id="6808">6808</a>
-<a href="#6809" id="6809">6809</a>
-<a href="#6810" id="6810">6810</a>
-<a href="#6811" id="6811">6811</a>
-<a href="#6812" id="6812">6812</a>
-<a href="#6813" id="6813">6813</a></pre></div><pre class="rust"><code><span class="doccomment">//! Linux-specific definitions for linux-like values
+<a href="#6799" id="6799">6799</a></pre></div><pre class="rust"><code><span class="doccomment">//! Linux-specific definitions for linux-like values
 
 </span><span class="kw">use </span>core::mem::size_of;
 
@@ -8482,14 +8468,12 @@
     }
 
     <span class="comment">// linux/ptp_clock.h
-    </span><span class="attr">#[allow(missing_debug_implementations)]
     </span><span class="kw">pub union </span>__c_anonymous_ptp_perout_request_1 {
         <span class="kw">pub </span>start: ptp_clock_time,
         <span class="kw">pub </span>phase: ptp_clock_time,
     }
 
-    <span class="attr">#[allow(missing_debug_implementations)]
-    </span><span class="kw">pub union </span>__c_anonymous_ptp_perout_request_2 {
+    <span class="kw">pub union </span>__c_anonymous_ptp_perout_request_2 {
         <span class="kw">pub </span>on: ptp_clock_time,
         <span class="kw">pub </span>rsv: [c_uint; <span class="number">4</span>],
     }
@@ -8510,8 +8494,7 @@
         <span class="kw">pub </span>xsk_tx_metadata_union: __c_anonymous_xsk_tx_metadata_union,
     }
 
-    <span class="attr">#[allow(missing_debug_implementations)]
-    </span><span class="kw">pub union </span>__c_anonymous_xsk_tx_metadata_union {
+    <span class="kw">pub union </span>__c_anonymous_xsk_tx_metadata_union {
         <span class="kw">pub </span>request: xsk_tx_metadata_request,
         <span class="kw">pub </span>completion: xsk_tx_metadata_completion,
     }
@@ -8876,39 +8859,11 @@
                 <span class="self">self</span>.mq_curmsgs.hash(state);
             }
         }
-        <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>__c_anonymous_ifr_ifru {
-            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-                f.debug_struct(<span class="string">"ifr_ifru"</span>)
-                    .field(<span class="string">"ifru_addr"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_addr })
-                    .field(<span class="string">"ifru_dstaddr"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_dstaddr })
-                    .field(<span class="string">"ifru_broadaddr"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_broadaddr })
-                    .field(<span class="string">"ifru_netmask"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_netmask })
-                    .field(<span class="string">"ifru_hwaddr"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_hwaddr })
-                    .field(<span class="string">"ifru_flags"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_flags })
-                    .field(<span class="string">"ifru_ifindex"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_ifindex })
-                    .field(<span class="string">"ifru_metric"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_metric })
-                    .field(<span class="string">"ifru_mtu"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_mtu })
-                    .field(<span class="string">"ifru_map"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_map })
-                    .field(<span class="string">"ifru_slave"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_slave })
-                    .field(<span class="string">"ifru_newname"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_newname })
-                    .field(<span class="string">"ifru_data"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifru_data })
-                    .finish()
-            }
-        }
         <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>ifreq {
             <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
                 f.debug_struct(<span class="string">"ifreq"</span>)
                     .field(<span class="string">"ifr_name"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.ifr_name)
                     .field(<span class="string">"ifr_ifru"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.ifr_ifru)
-                    .finish()
-            }
-        }
-
-        <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>__c_anonymous_ifc_ifcu {
-            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-                f.debug_struct(<span class="string">"ifr_ifru"</span>)
-                    .field(<span class="string">"ifcu_buf"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifcu_buf })
-                    .field(<span class="string">"ifcu_req"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifcu_req })
                     .finish()
             }
         }
@@ -8985,45 +8940,12 @@
             }
         }
 
-        <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>iwreq_data {
-            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-                f.debug_struct(<span class="string">"iwreq_data"</span>)
-                    .field(<span class="string">"name"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.name })
-                    .field(<span class="string">"essid"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.essid })
-                    .field(<span class="string">"nwid"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.nwid })
-                    .field(<span class="string">"freq"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.freq })
-                    .field(<span class="string">"sens"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.sens })
-                    .field(<span class="string">"bitrate"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.bitrate })
-                    .field(<span class="string">"txpower"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.txpower })
-                    .field(<span class="string">"rts"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.rts })
-                    .field(<span class="string">"frag"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.frag })
-                    .field(<span class="string">"mode"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.mode })
-                    .field(<span class="string">"retry"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.retry })
-                    .field(<span class="string">"encoding"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.encoding })
-                    .field(<span class="string">"power"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.power })
-                    .field(<span class="string">"qual"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.qual })
-                    .field(<span class="string">"ap_addr"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ap_addr })
-                    .field(<span class="string">"addr"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.addr })
-                    .field(<span class="string">"param"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.param })
-                    .field(<span class="string">"data"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.data })
-                    .finish()
-            }
-        }
-
         <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>iw_event {
             <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
                 f.debug_struct(<span class="string">"iw_event"</span>)
                     .field(<span class="string">"len"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.len)
                     .field(<span class="string">"cmd"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.cmd)
                     .field(<span class="string">"u"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.u)
-                    .finish()
-            }
-        }
-
-        <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>__c_anonymous_iwreq {
-            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-                f.debug_struct(<span class="string">"__c_anonymous_iwreq"</span>)
-                    .field(<span class="string">"ifrn_name"</span>, <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span><span class="self">self</span>.ifrn_name })
                     .finish()
             }
         }
@@ -9581,6 +9503,7 @@
 <span class="kw">pub const </span>IFA_ANYCAST: c_ushort = <span class="number">5</span>;
 <span class="kw">pub const </span>IFA_CACHEINFO: c_ushort = <span class="number">6</span>;
 <span class="kw">pub const </span>IFA_MULTICAST: c_ushort = <span class="number">7</span>;
+<span class="kw">pub const </span>IFA_FLAGS: c_ushort = <span class="number">8</span>;
 
 <span class="kw">pub const </span>IFA_F_SECONDARY: u32 = <span class="number">0x01</span>;
 <span class="kw">pub const </span>IFA_F_TEMPORARY: u32 = <span class="number">0x01</span>;
@@ -9591,6 +9514,10 @@
 <span class="kw">pub const </span>IFA_F_DEPRECATED: u32 = <span class="number">0x20</span>;
 <span class="kw">pub const </span>IFA_F_TENTATIVE: u32 = <span class="number">0x40</span>;
 <span class="kw">pub const </span>IFA_F_PERMANENT: u32 = <span class="number">0x80</span>;
+<span class="kw">pub const </span>IFA_F_MANAGETEMPADDR: u32 = <span class="number">0x100</span>;
+<span class="kw">pub const </span>IFA_F_NOPREFIXROUTE: u32 = <span class="number">0x200</span>;
+<span class="kw">pub const </span>IFA_F_MCAUTOJOIN: u32 = <span class="number">0x400</span>;
+<span class="kw">pub const </span>IFA_F_STABLE_PRIVACY: u32 = <span class="number">0x800</span>;
 
 <span class="comment">// linux/if_link.h
 </span><span class="kw">pub const </span>IFLA_UNSPEC: c_ushort = <span class="number">0</span>;
@@ -11543,6 +11470,7 @@
 
 <span class="comment">// include/uapi/linux/mman.h
 </span><span class="kw">pub const </span>MAP_SHARED_VALIDATE: c_int = <span class="number">0x3</span>;
+<span class="kw">pub const </span>MAP_DROPPABLE: c_int = <span class="number">0x8</span>;
 
 <span class="comment">// include/uapi/asm-generic/mman-common.h
 </span><span class="kw">pub const </span>MAP_FIXED_NOREPLACE: c_int = <span class="number">0x100000</span>;
@@ -12443,31 +12371,75 @@
 <span class="kw">pub const </span>NET_IRDA: c_int = <span class="number">412</span>;
 
 <span class="comment">// include/linux/sched.h
+</span><span class="doccomment">/// I'm a virtual CPU.
 </span><span class="kw">pub const </span>PF_VCPU: c_int = <span class="number">0x00000001</span>;
-<span class="kw">pub const </span>PF_IDLE: c_int = <span class="number">0x00000002</span>;
-<span class="kw">pub const </span>PF_EXITING: c_int = <span class="number">0x00000004</span>;
-<span class="kw">pub const </span>PF_POSTCOREDUMP: c_int = <span class="number">0x00000008</span>;
-<span class="kw">pub const </span>PF_IO_WORKER: c_int = <span class="number">0x00000010</span>;
-<span class="kw">pub const </span>PF_WQ_WORKER: c_int = <span class="number">0x00000020</span>;
-<span class="kw">pub const </span>PF_FORKNOEXEC: c_int = <span class="number">0x00000040</span>;
-<span class="kw">pub const </span>PF_MCE_PROCESS: c_int = <span class="number">0x00000080</span>;
-<span class="kw">pub const </span>PF_SUPERPRIV: c_int = <span class="number">0x00000100</span>;
-<span class="kw">pub const </span>PF_DUMPCORE: c_int = <span class="number">0x00000200</span>;
-<span class="kw">pub const </span>PF_SIGNALED: c_int = <span class="number">0x00000400</span>;
-<span class="kw">pub const </span>PF_MEMALLOC: c_int = <span class="number">0x00000800</span>;
-<span class="kw">pub const </span>PF_NPROC_EXCEEDED: c_int = <span class="number">0x00001000</span>;
-<span class="kw">pub const </span>PF_USED_MATH: c_int = <span class="number">0x00002000</span>;
-<span class="kw">pub const </span>PF_USER_WORKER: c_int = <span class="number">0x00004000</span>;
-<span class="kw">pub const </span>PF_NOFREEZE: c_int = <span class="number">0x00008000</span>;
-<span class="kw">pub const </span>PF_KSWAPD: c_int = <span class="number">0x00020000</span>;
-<span class="kw">pub const </span>PF_MEMALLOC_NOFS: c_int = <span class="number">0x00040000</span>;
-<span class="kw">pub const </span>PF_MEMALLOC_NOIO: c_int = <span class="number">0x00080000</span>;
-<span class="kw">pub const </span>PF_LOCAL_THROTTLE: c_int = <span class="number">0x00100000</span>;
-<span class="kw">pub const </span>PF_KTHREAD: c_int = <span class="number">0x00200000</span>;
-<span class="kw">pub const </span>PF_RANDOMIZE: c_int = <span class="number">0x00400000</span>;
-<span class="kw">pub const </span>PF_NO_SETAFFINITY: c_int = <span class="number">0x04000000</span>;
-<span class="kw">pub const </span>PF_MCE_EARLY: c_int = <span class="number">0x08000000</span>;
-<span class="kw">pub const </span>PF_MEMALLOC_PIN: c_int = <span class="number">0x10000000</span>;
+<span class="doccomment">/// I am an IDLE thread.
+</span><span class="kw">pub const </span>PF_IDLE: c_int = <span class="number">0x00000002</span>;
+<span class="doccomment">/// Getting shut down.
+</span><span class="kw">pub const </span>PF_EXITING: c_int = <span class="number">0x00000004</span>;
+<span class="doccomment">/// Coredumps should ignore this task.
+</span><span class="kw">pub const </span>PF_POSTCOREDUMP: c_int = <span class="number">0x00000008</span>;
+<span class="doccomment">/// Task is an IO worker.
+</span><span class="kw">pub const </span>PF_IO_WORKER: c_int = <span class="number">0x00000010</span>;
+<span class="doccomment">/// I'm a workqueue worker.
+</span><span class="kw">pub const </span>PF_WQ_WORKER: c_int = <span class="number">0x00000020</span>;
+<span class="doccomment">/// Forked but didn't exec.
+</span><span class="kw">pub const </span>PF_FORKNOEXEC: c_int = <span class="number">0x00000040</span>;
+<span class="doccomment">/// Process policy on mce errors.
+</span><span class="kw">pub const </span>PF_MCE_PROCESS: c_int = <span class="number">0x00000080</span>;
+<span class="doccomment">/// Used super-user privileges.
+</span><span class="kw">pub const </span>PF_SUPERPRIV: c_int = <span class="number">0x00000100</span>;
+<span class="doccomment">/// Dumped core.
+</span><span class="kw">pub const </span>PF_DUMPCORE: c_int = <span class="number">0x00000200</span>;
+<span class="doccomment">/// Killed by a signal.
+</span><span class="kw">pub const </span>PF_SIGNALED: c_int = <span class="number">0x00000400</span>;
+<span class="doccomment">/// Allocating memory to free memory.
+///
+/// See `memalloc_noreclaim_save()`.
+</span><span class="kw">pub const </span>PF_MEMALLOC: c_int = <span class="number">0x00000800</span>;
+<span class="doccomment">/// `set_user()` noticed that `RLIMIT_NPROC` was exceeded.
+</span><span class="kw">pub const </span>PF_NPROC_EXCEEDED: c_int = <span class="number">0x00001000</span>;
+<span class="doccomment">/// If unset the fpu must be initialized before use.
+</span><span class="kw">pub const </span>PF_USED_MATH: c_int = <span class="number">0x00002000</span>;
+<span class="doccomment">/// Kernel thread cloned from userspace thread.
+</span><span class="kw">pub const </span>PF_USER_WORKER: c_int = <span class="number">0x00004000</span>;
+<span class="doccomment">/// This thread should not be frozen.
+</span><span class="kw">pub const </span>PF_NOFREEZE: c_int = <span class="number">0x00008000</span>;
+<span class="doccomment">/// I am `kswapd`.
+</span><span class="kw">pub const </span>PF_KSWAPD: c_int = <span class="number">0x00020000</span>;
+<span class="doccomment">/// All allocations inherit `GFP_NOFS`.
+///
+/// See `memalloc_nfs_save()`.
+</span><span class="kw">pub const </span>PF_MEMALLOC_NOFS: c_int = <span class="number">0x00040000</span>;
+<span class="doccomment">/// All allocations inherit `GFP_NOIO`.
+///
+/// See `memalloc_noio_save()`.
+</span><span class="kw">pub const </span>PF_MEMALLOC_NOIO: c_int = <span class="number">0x00080000</span>;
+<span class="doccomment">/// Throttle writes only against the bdi I write to, I am cleaning
+/// dirty pages from some other bdi.
+</span><span class="kw">pub const </span>PF_LOCAL_THROTTLE: c_int = <span class="number">0x00100000</span>;
+<span class="doccomment">/// I am a kernel thread.
+</span><span class="kw">pub const </span>PF_KTHREAD: c_int = <span class="number">0x00200000</span>;
+<span class="doccomment">/// Randomize virtual address space.
+</span><span class="kw">pub const </span>PF_RANDOMIZE: c_int = <span class="number">0x00400000</span>;
+<span class="doccomment">/// Userland is not allowed to meddle with `cpus_mask`.
+</span><span class="kw">pub const </span>PF_NO_SETAFFINITY: c_int = <span class="number">0x04000000</span>;
+<span class="doccomment">/// Early kill for mce process policy.
+</span><span class="kw">pub const </span>PF_MCE_EARLY: c_int = <span class="number">0x08000000</span>;
+<span class="doccomment">/// Allocations constrained to zones which allow long term pinning.
+///
+/// See `memalloc_pin_save()`.
+</span><span class="kw">pub const </span>PF_MEMALLOC_PIN: c_int = <span class="number">0x10000000</span>;
+<span class="doccomment">/// Plug has ts that needs updating.
+</span><span class="kw">pub const </span>PF_BLOCK_TS: c_int = <span class="number">0x20000000</span>;
+<span class="doccomment">/// This thread called `freeze_processes()` and should not be frozen.
+</span><span class="kw">pub const </span>PF_SUSPEND_TASK: c_int = PF_SUSPEND_TASK_UINT <span class="kw">as _</span>;
+<span class="comment">// The used value is the highest possible bit fitting on 32 bits, so directly
+// defining it as a signed integer causes the compiler to report an overflow.
+// Use instead a private intermediary that assuringly has the correct type and
+// cast it where necessary to the wanted final type, which preserves the
+// desired information as-is in terms of integer representation.
+</span><span class="kw">const </span>PF_SUSPEND_TASK_UINT: c_uint = <span class="number">0x80000000</span>;
 
 <span class="kw">pub const </span>CSIGNAL: c_int = <span class="number">0x000000ff</span>;
 
