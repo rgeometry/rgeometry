@@ -5,6 +5,11 @@
 ### Added
 ### Changed
 
+## [0.10.1] 2025-01-03
+
+### Changed
+- Support no-std environments.
+
 ## [0.10.1] 2024-11-28
 
 ### Added
