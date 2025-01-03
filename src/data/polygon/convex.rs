@@ -236,6 +236,8 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
+  use rand::rngs::SmallRng;
+  use rand::SeedableRng;
 
   use proptest::prelude::*;
   use proptest::proptest as proptest_block;
@@ -275,8 +277,8 @@ mod tests {
     }
 
     #[test]
-    fn sum_to_max(n in 1..1000) {
-      let mut rng = rand::thread_rng();
+    fn sum_to_max(n in 1..1000, seed: u64) {
+      let mut rng = SmallRng::seed_from_u64(seed);
       let vecs = random_between_iter::<i8, _>(n as usize, &mut rng);
       prop_assert_eq!(vecs.sum::<i8>(), i8::MAX);
 
@@ -285,8 +287,8 @@ mod tests {
     }
 
     #[test]
-    fn random_between_zero_properties(n in 2..1000) {
-      let mut rng = rand::thread_rng();
+    fn random_between_zero_properties(n in 2..1000, seed: u64) {
+      let mut rng = SmallRng::seed_from_u64(seed);
       let vecs: Vec<i8> = random_between_zero(n as usize, &mut rng);
       prop_assert_eq!(vecs.iter().sum::<i8>(), 0);
       prop_assert_eq!(vecs.len(), n as usize);
@@ -297,8 +299,8 @@ mod tests {
     }
 
     #[test]
-    fn sum_to_zero_vector(n in 2..1000) {
-      let mut rng = rand::thread_rng();
+    fn sum_to_zero_vector(n in 2..1000, seed: u64) {
+      let mut rng = SmallRng::seed_from_u64(seed);
       let vecs: Vec<Vector<i8, 2>> = random_vectors(n as usize, &mut rng);
       prop_assert_eq!(vecs.into_iter().sum::<Vector<i8, 2>>(), Vector([0, 0]))
     }
