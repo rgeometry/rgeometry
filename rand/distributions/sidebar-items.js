@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["BernoulliError","WeightedError"],"mod":["uniform","weighted"],"struct":["Alphanumeric","Bernoulli","DistIter","DistMap","Open01","OpenClosed01","Slice","Standard","Uniform","WeightedIndex"],"trait":["DistString","Distribution"]};
+window.SIDEBAR_ITEMS = {"enum":["BernoulliError"],"mod":["uniform"],"struct":["Alphanumeric","Bernoulli","DistIter","DistMap","Open01","OpenClosed01","Slice","Standard","Uniform"],"trait":["Distribution"]};

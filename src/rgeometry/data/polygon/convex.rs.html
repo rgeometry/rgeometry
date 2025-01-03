@@ -325,7 +325,9 @@
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
 <a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a></pre></div><pre class="rust"><code><span class="kw">use </span>num_traits::<span class="kw-2">*</span>;
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a></pre></div><pre class="rust"><code><span class="kw">use </span>num_traits::<span class="kw-2">*</span>;
 <span class="kw">use </span>ordered_float::OrderedFloat;
 <span class="kw">use </span>rand::distributions::uniform::SampleUniform;
 <span class="kw">use </span>rand::distributions::{Distribution, Standard};
@@ -563,6 +565,8 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
   <span class="kw">use super</span>::<span class="kw-2">*</span>;
+  <span class="kw">use </span>rand::rngs::SmallRng;
+  <span class="kw">use </span>rand::SeedableRng;
 
   <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
   <span class="kw">use </span>proptest::proptest <span class="kw">as </span>proptest_block;
@@ -602,8 +606,8 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>sum_to_max(n <span class="kw">in </span><span class="number">1</span>..<span class="number">1000</span>) {
-      <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
+    </span><span class="kw">fn </span>sum_to_max(n <span class="kw">in </span><span class="number">1</span>..<span class="number">1000</span>, seed: u64) {
+      <span class="kw">let </span><span class="kw-2">mut </span>rng = SmallRng::seed_from_u64(seed);
       <span class="kw">let </span>vecs = random_between_iter::&lt;i8, <span class="kw">_</span>&gt;(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
       <span class="macro">prop_assert_eq!</span>(vecs.sum::&lt;i8&gt;(), i8::MAX);
 
@@ -612,8 +616,8 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>random_between_zero_properties(n <span class="kw">in </span><span class="number">2</span>..<span class="number">1000</span>) {
-      <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
+    </span><span class="kw">fn </span>random_between_zero_properties(n <span class="kw">in </span><span class="number">2</span>..<span class="number">1000</span>, seed: u64) {
+      <span class="kw">let </span><span class="kw-2">mut </span>rng = SmallRng::seed_from_u64(seed);
       <span class="kw">let </span>vecs: Vec&lt;i8&gt; = random_between_zero(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
       <span class="macro">prop_assert_eq!</span>(vecs.iter().sum::&lt;i8&gt;(), <span class="number">0</span>);
       <span class="macro">prop_assert_eq!</span>(vecs.len(), n <span class="kw">as </span>usize);
@@ -624,8 +628,8 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>sum_to_zero_vector(n <span class="kw">in </span><span class="number">2</span>..<span class="number">1000</span>) {
-      <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
+    </span><span class="kw">fn </span>sum_to_zero_vector(n <span class="kw">in </span><span class="number">2</span>..<span class="number">1000</span>, seed: u64) {
+      <span class="kw">let </span><span class="kw-2">mut </span>rng = SmallRng::seed_from_u64(seed);
       <span class="kw">let </span>vecs: Vec&lt;Vector&lt;i8, <span class="number">2</span>&gt;&gt; = random_vectors(n <span class="kw">as </span>usize, <span class="kw-2">&amp;mut </span>rng);
       <span class="macro">prop_assert_eq!</span>(vecs.into_iter().sum::&lt;Vector&lt;i8, <span class="number">2</span>&gt;&gt;(), Vector([<span class="number">0</span>, <span class="number">0</span>]))
     }
