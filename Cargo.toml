@@ -17,18 +17,17 @@ version = "0.10.1"
 array-init = "2.1"
 claims = "0.8"
 geometry-predicates = "0.3.0"
-getrandom = { version = "^0.2.3", features = ["js"] }
 num = "0.4.3"
 num-bigint = "0.4.6"
 num-rational = "0.4.2"
 num-traits = "0.2.*"
-ordered-float = "4.4.0"
-rand = { version = "0.8", features = ["small_rng"] }
+ordered-float = "4.6.0"
+rand = { version = "0.8", default-features = false, features = ["small_rng"] }
 rug = { version = "1.12", optional = true }
 
 [dev-dependencies]
 criterion = "0.5.1"
-proptest = "1.5.0"
+proptest = "1.6.0"
 test-strategy = "0.4.0"
 # Used for doctest examples.
 # rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
