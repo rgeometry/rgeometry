@@ -20,6 +20,43 @@ RGeometry is a collection of data types such as points, polygons, lines, and seg
 
 Check out the API documentation for more details. Under each function, there is an interactive example (powered by rust->wasm).
 
+## Boolean Operations on Polygons
+
+RGeometry now includes Boolean operations on polygons, such as AND, OR, NOT, and XOR. These operations allow you to perform set operations on polygons, which are widely used in computer graphics, CAD, and EDA.
+
+### Examples
+
+```rust
+use rgeometry::data::{Point, Polygon};
+use rgeometry::algorithms::boolean_operations::BooleanOperation;
+
+let a = Polygon::new(vec![
+    Point::new([0, 0]),
+    Point::new([4, 0]),
+    Point::new([4, 4]),
+    Point::new([0, 4]),
+]).unwrap();
+
+let b = Polygon::new(vec![
+    Point::new([2, 2]),
+    Point::new([6, 2]),
+    Point::new([6, 6]),
+    Point::new([2, 6]),
+]).unwrap();
+
+let result = BooleanOperation::And.apply(&a, &b).unwrap();
+println!("AND result: {:?}", result);
+
+let result = BooleanOperation::Or.apply(&a, &b).unwrap();
+println!("OR result: {:?}", result);
+
+let result = BooleanOperation::Not.apply(&a, &b).unwrap();
+println!("NOT result: {:?}", result);
+
+let result = BooleanOperation::Xor.apply(&a, &b).unwrap();
+println!("XOR result: {:?}", result);
+```
+
 ## MSRV
 
 rust-1.59
