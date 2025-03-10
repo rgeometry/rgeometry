@@ -30,6 +30,7 @@ pub enum Error {
   ConvexViolation,
   ClockWiseViolation,
   CoLinearViolation,
+  InvariantViolation,
 }
 
 impl std::fmt::Display for Error {
@@ -44,6 +45,7 @@ impl std::fmt::Display for Error {
         f,
         "Two or more points are colinear and no valid solution exists"
       ),
+      Error::InvariantViolation => write!(f, "Invariant violation"),
     }
   }
 }
@@ -103,6 +105,52 @@ pub trait PolygonScalar:
   fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_perp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
+  fn inside_circle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> bool {
+    fn det2<T>(v: [T; 4]) -> T
+    where
+      T: PolygonScalar,
+    {
+      let [a, b, c, d] = v;
+      a * d - b * c
+    }
+
+    fn det3<T>(v: [T; 9]) -> T
+    where
+      T: PolygonScalar,
+    {
+      let [a, b, c, d, e, f, g, h, i] = v.clone();
+      let [_, _, _, d_, e_, f_, g_, h_, i_] = v;
+      a * det2([e, f, h, i]) - b * det2([d, f_, g, i_]) + c * det2([d_, e_, g_, h_])
+    }
+    let [ax, ay] = a.clone();
+    let ax_2 = ax.clone() * ax.clone();
+    let ay_2 = ay.clone() * ay.clone();
+
+    let [bx, by] = b.clone();
+    let bx_2 = bx.clone() * bx.clone();
+    let by_2 = by.clone() * by.clone();
+
+    let [cx, cy] = c.clone();
+    let cx_2 = cx.clone() * cx.clone();
+    let cy_2 = cy.clone() * cy.clone();
+
+    let [dx, dy] = d.clone();
+    let dx_2 = bx.clone() * dx.clone();
+    let dy_2 = by.clone() * dy.clone();
+
+    let d = det3([
+      ax - dx.clone(),
+      ay - dy.clone(),
+      ax_2 - dx_2.clone() + ay_2 - dy_2.clone(),
+      bx - dx.clone(),
+      by - dy.clone(),
+      bx_2 - dx_2.clone() + by_2 - dy_2.clone(),
+      cx - dx,
+      cy - dy,
+      cx_2 - dx_2 + cy_2 - dy_2,
+    ]);
+    d > Self::from_constant(0)
+  }
 }
 
 macro_rules! fixed_precision {
@@ -338,6 +386,21 @@ macro_rules! wrapped_floating_precision {
           &[float_to_rational(q[0].into_inner()), float_to_rational(q[1].into_inner())],
         )
       }
+
+      fn inside_circle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> bool {
+        let [a1, a2] = *a;
+        let [b1, b2] = *b;
+        let [c1, c2] = *c;
+        let [d1, d2] = *d;
+        PolygonScalar::inside_circle(
+          &[a1.into_inner(), a2.into_inner()],
+          &[b1.into_inner(), b2.into_inner()],
+          &[c1.into_inner(), c2.into_inner()],
+          &[d1.into_inner(), d2.into_inner()])
+      }
+
+
+
     })*
   };
 }
@@ -400,6 +463,20 @@ macro_rules! floating_precision {
           &[float_to_rational(q[0]), float_to_rational(q[1])],
         )
       }
+
+      fn inside_circle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> bool {
+        let [a1, a2] = *a;
+        let [b1, b2] = *b;
+        let [c1, c2] = *c;
+        let [d1, d2] = *d;
+        geometry_predicates::predicates::incircle(
+          [a1 as f64,a2 as f64],
+          [b1 as f64, b2 as f64],
+          [c1 as f64, c2 as f64],
+          [d1 as f64, d2 as f64]) > 0.0
+      }
+
+
     })*
   };
 }
