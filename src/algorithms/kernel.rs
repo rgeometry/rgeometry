@@ -1,5 +1,5 @@
 use crate::{
-  data::{Point, Polygon, PolygonConvex},
+  data::{Direction, Line, Point, Polygon, PolygonConvex},
   Orientation, PolygonScalar,
 };
 
@@ -134,7 +134,11 @@ where
       && current_side != Orientation::CoLinear
       && next_side != Orientation::CoLinear
     {
-      if let Some(intersection) = compute_intersection(edge_start, edge_end, current, next) {
+      // Create lines for the edge and the kernel boundary segment
+      let edge_line = Line::new_through(edge_start, edge_end);
+      let boundary_line = Line::new_through(current, next);
+
+      if let Some(intersection) = edge_line.intersection_point(&boundary_line) {
         new_vertices.push(intersection);
       }
     }
@@ -147,41 +151,12 @@ where
   kernel_vertices.len() >= 3
 }
 
-/// Compute intersection of two line segments
-fn compute_intersection<T>(
-  a1: &Point<T>,
-  a2: &Point<T>,
-  b1: &Point<T>,
-  b2: &Point<T>,
-) -> Option<Point<T>>
-where
-  T: PolygonScalar,
-{
-  let [x1, y1] = a1.array.clone();
-  let [x2, y2] = a2.array.clone();
-  let [x3, y3] = b1.array.clone();
-  let [x4, y4] = b2.array.clone();
-
-  let denom = (x1.clone() - x2.clone()) * (y3.clone() - y4.clone())
-    - (y1.clone() - y2.clone()) * (x3.clone() - x4.clone());
-
-  if denom == T::from_constant(0) {
-    return None; // Lines are parallel
-  }
-
-  let part_a = x1.clone() * y2.clone() - y1.clone() * x2.clone();
-  let part_b = x3.clone() * y4.clone() - y3.clone() * x4.clone();
-
-  let x_num = part_a.clone() * (x3 - x4) - (x1 - x2) * part_b.clone();
-  let y_num = part_a * (y3 - y4) - (y1 - y2) * part_b;
-
-  Some(Point::new([x_num / denom.clone(), y_num / denom]))
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::data::Point;
+  use crate::{data::Point, testing::polygon_nn};
+  use num::BigRational;
+  use proptest::proptest as proptest_block;
 
   #[test]
   fn test_kernel_convex_polygon() {
@@ -243,5 +218,20 @@ mod tests {
     let polygon = Polygon::new(vertices).unwrap();
     let kernel = kernel(&polygon).unwrap();
     assert!(kernel.equals(&polygon));
+  }
+
+  proptest_block! {
+    #[test]
+    fn test_kernel_convex_polygon_property(convex_polygon: PolygonConvex<i8>) {
+      let polygon: Polygon<i8> = convex_polygon.into();
+      let convex_polygon: PolygonConvex<BigRational> =
+        PolygonConvex::new_unchecked(polygon.map(|v| BigRational::from_integer(v.into())));
+      // The kernel of a convex polygon should have the same number of vertices
+      // This is a simpler property that doesn't require complex intersection computation
+      let kernel = kernel(&convex_polygon).unwrap();
+      dbg!(convex_polygon.signed_area_2x::<BigRational>());
+      dbg!(kernel.signed_area_2x::<BigRational>());
+      assert!(kernel.equals(&convex_polygon));
+    }
   }
 }
