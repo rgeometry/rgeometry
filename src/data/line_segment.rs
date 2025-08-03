@@ -398,10 +398,7 @@ mod tests {
   use test_strategy::proptest;
 
   #[proptest]
-  fn flip_intersects_prop(pts: [i8; 8]) {
-    let [a, b, c, d, e, f, g, h] = pts;
-    let l1 = LineSegment::from((a, b)..(c, d));
-    let l2 = LineSegment::from((e, f)..(g, h));
+  fn flip_intersects_prop(l1: LineSegment<i8>, l2: LineSegment<i8>) {
     assert_eq!(l1.intersect(&l2), l2.intersect(&l1));
   }
 
