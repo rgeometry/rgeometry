@@ -4,9 +4,10 @@
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
 use crate::data::{
-  Direction_, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex, Triangle, Vector,
+  Direction_, EndPoint, LineSegment, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex,
+  Triangle, Vector,
 };
-use crate::PolygonScalar;
+use crate::{PolygonScalar, TotalOrd};
 
 use array_init::{array_init, try_array_init};
 use core::ops::Range;
@@ -236,7 +237,7 @@ where
   type Tree = ShrinkablePolygon<T::Tree>;
   type Value = Polygon<T::Value>;
   fn new_tree(&self, runner: &mut TestRunner) -> Result<Self::Tree, Reason> {
-    let n = runner.rng().gen_range(self.1.clone()).max(3);
+    let n = runner.rng().random_range(self.1.clone()).max(3);
     loop {
       let mut points = Vec::with_capacity(n);
       let mut set = BTreeSet::new();
@@ -482,6 +483,54 @@ where
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     any_with::<Line_<T, N>>(params).prop_map(|line| line.into())
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary EndPoint
+
+impl<T: Arbitrary + TotalOrd> Arbitrary for EndPoint<T>
+where
+  T::Strategy: Clone,
+  T::Parameters: Clone,
+  T: Clone,
+{
+  type Strategy = Mapped<(T, bool), EndPoint<T>>;
+  type Parameters = T::Parameters;
+  fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+    (any_with::<T>(params), any::<bool>()).prop_map(|(val, inclusive)| {
+      if inclusive {
+        EndPoint::Inclusive(val)
+      } else {
+        EndPoint::Exclusive(val)
+      }
+    })
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Arbitrary LineSegment
+
+impl<T: Arbitrary, const N: usize> Arbitrary for LineSegment<T, N>
+where
+  T::Strategy: Clone,
+  T::Parameters: Clone,
+  T: Clone + TotalOrd,
+{
+  type Strategy = FilterMapped<(EndPoint<Point<T, N>>, EndPoint<Point<T, N>>), LineSegment<T, N>>;
+  type Parameters = T::Parameters;
+  fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+    (
+      any_with::<EndPoint<Point<T, N>>>(params.clone()),
+      any_with::<EndPoint<Point<T, N>>>(params),
+    )
+      .prop_filter_map("Endpoints must be different", |(p1, p2)| {
+        if p1.inner() != p2.inner() {
+          Some(LineSegment::new(p1, p2))
+        } else {
+          None
+        }
+      })
   }
 }
 
