@@ -103,6 +103,38 @@ pub trait PolygonScalar:
   fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_perp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
+  fn approx_intersection_point(
+    p1: [Self; 2],
+    p2: [Self; 2],
+    q1: [Self; 2],
+    q2: [Self; 2],
+  ) -> Option<[Self; 2]> {
+    approx_intersection_point_basic(Self::from_constant(0), p1, p2, q1, q2)
+  }
+}
+
+fn approx_intersection_point_basic<T: Clone + NumOps<T, T> + PartialEq + std::fmt::Debug>(
+  zero: T,
+  p1: [T; 2],
+  p2: [T; 2],
+  q1: [T; 2],
+  q2: [T; 2],
+) -> Option<[T; 2]> {
+  let [x1, y1] = p1;
+  let [x2, y2] = p2;
+  let [x3, y3] = q1;
+  let [x4, y4] = q2;
+  let denom: T = (x1.clone() - x2.clone()) * (y3.clone() - y4.clone())
+    - (y1.clone() - y2.clone()) * (x3.clone() - x4.clone());
+  if denom == zero {
+    return None;
+  }
+  let part_a = x1.clone() * y2.clone() - y1.clone() * x2.clone();
+  let part_b = x3.clone() * y4.clone() - y3.clone() * x4.clone();
+  let x_num =
+    part_a.clone() * (x3.clone() - x4.clone()) - (x1.clone() - x2.clone()) * part_b.clone();
+  let y_num = part_a * (y3.clone() - y4.clone()) - (y1.clone() - y2.clone()) * part_b;
+  Some([x_num / denom.clone(), y_num / denom])
 }
 
 macro_rules! fixed_precision {
@@ -229,6 +261,19 @@ macro_rules! fixed_precision {
           (true, true) => (uy * vx).cmp(&(ux * vy)),
           (false, false) => (ux * vy).cmp(&(uy * vx)),
         }
+      }
+      fn approx_intersection_point(
+        p1: [Self; 2],
+        p2: [Self; 2],
+        q1: [Self; 2],
+        q2: [Self; 2],
+      ) -> Option<[Self; 2]> {
+        let long_p1: [$long; 2] = [p1[0] as $long, p1[1] as $long];
+        let long_p2: [$long; 2] = [p2[0] as $long, p2[1] as $long];
+        let long_q1: [$long; 2] = [q1[0] as $long, q1[1] as $long];
+        let long_q2: [$long; 2] = [q2[0] as $long, q2[1] as $long];
+        let long_result = approx_intersection_point_basic(0, long_p1, long_p2, long_q1, long_q2);
+        long_result.and_then(|[x, y]| Some([Self::try_from(x).ok()?, Self::try_from(y).ok()?]))
       }
     }
   };
