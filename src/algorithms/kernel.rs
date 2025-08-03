@@ -1,5 +1,5 @@
 use crate::{
-  data::{Direction, Line, Point, Polygon, PolygonConvex},
+  data::{Line, Point, Polygon, PolygonConvex},
   Orientation, PolygonScalar,
 };
 
@@ -139,6 +139,7 @@ where
       let boundary_line = Line::new_through(current, next);
 
       if let Some(intersection) = edge_line.intersection_point(&boundary_line) {
+        dbg!(&edge_line, &boundary_line, &intersection);
         new_vertices.push(intersection);
       }
     }
@@ -154,7 +155,7 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::{data::Point, testing::polygon_nn};
+  use crate::data::Point;
   use num::BigRational;
   use proptest::proptest as proptest_block;
 
@@ -212,11 +213,25 @@ mod tests {
   }
 
   #[test]
-  fn test_kernel_triangle() {
+  fn test_kernel_triangle_1() {
     // A triangle should have itself as its kernel
     let vertices = vec![Point::new([0, 0]), Point::new([2, 0]), Point::new([1, 2])];
     let polygon = Polygon::new(vertices).unwrap();
     let kernel = kernel(&polygon).unwrap();
+    assert!(kernel.equals(&polygon));
+  }
+
+  #[test]
+  fn test_kernel_triangle_2() {
+    // A triangle should have itself as its kernel
+    let vertices = vec![
+      Point::new([0_i16, 0]),
+      Point::new([70, 6]),
+      Point::new([-57, 27]),
+    ];
+    let polygon = Polygon::new(vertices).unwrap();
+    let kernel = kernel(&polygon).unwrap();
+    dbg!(&kernel.points);
     assert!(kernel.equals(&polygon));
   }
 
@@ -226,6 +241,7 @@ mod tests {
       let polygon: Polygon<i8> = convex_polygon.into();
       let convex_polygon: PolygonConvex<BigRational> =
         PolygonConvex::new_unchecked(polygon.map(|v| BigRational::from_integer(v.into())));
+      assert!(convex_polygon.validate().is_ok());
       // The kernel of a convex polygon should have the same number of vertices
       // This is a simpler property that doesn't require complex intersection computation
       let kernel = kernel(&convex_polygon).unwrap();

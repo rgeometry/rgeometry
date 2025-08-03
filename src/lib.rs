@@ -134,6 +134,7 @@ fn approx_intersection_point_basic<T: Clone + NumOps<T, T> + PartialEq + std::fm
   let x_num =
     part_a.clone() * (x3.clone() - x4.clone()) - (x1.clone() - x2.clone()) * part_b.clone();
   let y_num = part_a * (y3.clone() - y4.clone()) - (y1.clone() - y2.clone()) * part_b;
+  dbg!(&x_num, &y_num, &denom);
   Some([x_num / denom.clone(), y_num / denom])
 }
 
