@@ -2,7 +2,9 @@ use super::DirectedEdge;
 use super::LineSegmentView;
 use super::Point;
 use super::Vector;
+use crate::data::LineSegment;
 use crate::Intersects;
+use crate::TotalOrd;
 use crate::{Orientation, PolygonScalar};
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,6 +20,12 @@ impl<T, const N: usize> Copy for Line<'_, T, N> {}
 impl<T, const N: usize> Clone for Line<'_, T, N> {
   fn clone(&self) -> Self {
     *self
+  }
+}
+
+impl<'a, T: TotalOrd, const N: usize> From<&'a LineSegment<T, N>> for Line<'a, T, N> {
+  fn from(segment: &'a LineSegment<T, N>) -> Self {
+    Line::new(segment.min.inner(), Direction::Through(segment.max.inner()))
   }
 }
 
@@ -47,16 +55,8 @@ impl<T: PolygonScalar> Line<'_, T> {
       Direction::Through(pt) => pt.array.clone(),
       _ => unimplemented!(),
     };
-    let denom: T = (x1.clone() - x2.clone()) * (y3.clone() - y4.clone())
-      - (y1.clone() - y2.clone()) * (x3.clone() - x4.clone());
-    if denom == T::from_constant(0) {
-      return None;
-    }
-    let part_a = x1.clone() * y2.clone() - y1.clone() * x2.clone();
-    let part_b = x3.clone() * y4.clone() - y3.clone() * x4.clone();
-    let x_num = part_a.clone() * (x3 - x4) - (x1 - x2) * part_b.clone();
-    let y_num = part_a * (y3 - y4) - (y1 - y2) * part_b;
-    Some(Point::new([x_num / denom.clone(), y_num / denom]))
+    T::approx_intersection_point([x1, y1], [x2, y2], [x3, y3], [x4, y4])
+      .map(|[x, y]| Point::new([x, y]))
   }
 }
 
@@ -358,7 +358,7 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::data::{LineSegment, Polygon};
+  use crate::data::{ILineSegment, LineSegment, Polygon};
 
   use proptest::prelude::*;
   use test_strategy::proptest;
@@ -447,5 +447,17 @@ mod tests {
       }
     }
     prop_assert_eq!(intersections % 2, 0);
+  }
+
+  #[proptest]
+  fn overlapping_segments_have_intersection_point(line1: LineSegment<i8>, line2: LineSegment<i8>) {
+    let overlapping = line1.intersect(&line2);
+
+    if matches!(overlapping, Some(ILineSegment::Overlap(_))) {
+      let line1: Line<i8> = (&line1).into();
+      let line2: Line<i8> = (&line2).into();
+      let intersection = line1.intersection_point(&line2);
+      prop_assert!(intersection.is_some());
+    }
   }
 }
