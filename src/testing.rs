@@ -236,7 +236,7 @@ where
   type Tree = ShrinkablePolygon<T::Tree>;
   type Value = Polygon<T::Value>;
   fn new_tree(&self, runner: &mut TestRunner) -> Result<Self::Tree, Reason> {
-    let n = runner.rng().gen_range(self.1.clone()).max(3);
+    let n = runner.rng().random_range(self.1.clone()).max(3);
     loop {
       let mut points = Vec::with_capacity(n);
       let mut set = BTreeSet::new();
