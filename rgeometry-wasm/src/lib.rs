@@ -1,18 +1,6 @@
 use std::sync::atomic::AtomicI32;
 use std::sync::atomic::Ordering::*;
 
-// mod timer {
-//   pub struct Timer {
-//     started: Option<f64>,
-//     paused: Option<f64>,
-//   }
-//   // pause(f64)
-//   // resume(f64)
-//   // reset(f64)
-//   // read() -> f64
-//   // update(f64)
-// }
-
 static MOUSE_X: AtomicI32 = AtomicI32::new(0);
 static MOUSE_Y: AtomicI32 = AtomicI32::new(0);
 
