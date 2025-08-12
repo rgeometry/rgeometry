@@ -241,7 +241,7 @@ generate_default_template() {
     JS_CONTENT_PLACEHOLDER
 
     const ui = document.getElementById('ui-message');
-    ui.innerText = 'Excuting wasm...';
+    ui.innerText = 'Executing wasm...';
 
     (async () => {
       const data = "data:application/wasm;base64,WASM_BASE64_PLACEHOLDER";
