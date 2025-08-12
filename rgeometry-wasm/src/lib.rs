@@ -230,7 +230,6 @@ pub mod playground {
     fill_with_path_2d(&path);
   }
 
-  // #[deprecated(since = "0.1.0", note = "Please use the get_points function instead")]
   pub fn with_points(n: usize) -> Vec<Point<Num, 2>> {
     get_points(n)
   }
