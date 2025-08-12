@@ -33,7 +33,6 @@ jobs:
     - uses: Swatinem/rust-cache@v2
     - uses: DeterminateSystems/nix-installer-action@main
     - uses: DeterminateSystems/magic-nix-cache-action@main
-        cp result/share/rgeometry-demos/* .
 
     - uses: actions-rs/cargo@v1
       with:
