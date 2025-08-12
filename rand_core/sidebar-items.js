@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["block","impls","le"],"struct":["Error"],"trait":["CryptoRng","RngCore","SeedableRng"]};
+window.SIDEBAR_ITEMS = {"mod":["block","impls","le"],"struct":["Error"],"trait":["CryptoRng","CryptoRngCore","RngCore","SeedableRng"]};
