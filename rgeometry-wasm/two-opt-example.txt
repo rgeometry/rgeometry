@@ -1,0 +1,49 @@
+use rgeometry::data::*;
+use rgeometry::algorithms::polygonization::two_opt_moves;
+use rgeometry::algorithms::polygonization::resolve_self_intersections;
+use rgeometry_wasm::playground::*;
+
+use num_rational::BigRational;
+use std::sync::Once;
+
+use std::{sync::Mutex};
+
+use once_cell::sync::OnceCell;
+use once_cell::sync::Lazy;
+
+static POLYGON: Lazy<Mutex<Option<Polygon<BigRational>>>> = Lazy::new(|| Mutex::new(None));
+
+pub fn main() {
+  static START: Once = Once::new();
+  START.call_once(|| on_mousemove(|_event| main()));
+  
+  clear_screen();
+  set_viewport(2.0, 2.0);
+  
+  let pts = with_points(5);
+  
+  {
+    let mut data = POLYGON.lock().unwrap();
+    match (*data).as_mut() {
+      None => {
+        let p = two_opt_moves(pts.clone(), &mut rand::thread_rng()).unwrap();
+        *data = Some(p.clone());
+        render_polygon(&p);
+      },
+      Some(p) => {
+        let mut idx = 0;
+        for pt in p.iter_mut() {
+          *pt = pts[idx].clone();
+          idx += 1;
+        }
+        resolve_self_intersections(p, &mut rand::thread_rng());
+        render_polygon(&p);
+        *data = Some(p.clone());
+      },
+    }
+  }
+  
+  for pt in &pts {
+    render_point(&pt);
+  }
+}
