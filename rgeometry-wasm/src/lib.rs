@@ -20,10 +20,8 @@ pub mod playground {
   use gloo_events::{EventListener, EventListenerOptions};
   use ordered_float::OrderedFloat;
   use rand::distributions::Standard;
-  // use rand::distributions::Uniform;
   use rand::Rng;
   use std::ops::Deref;
-  // use std::ops::DerefMut;
   use std::ops::Index;
   use std::sync::Once;
   use wasm_bindgen::{JsCast, UnwrapThrowExt};
@@ -532,7 +530,7 @@ pub mod runner {
   use gloo_events::EventListener;
 
   pub fn run(demo: fn()) {
-    // std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     let window = web_sys::window().unwrap();
 

@@ -2,7 +2,6 @@ use rgeometry_wasm::playground::*;
 use wasm_bindgen::prelude::*;
 
 use rgeometry::algorithms::convex_hull;
-use rgeometry_wasm::playground::*;
 
 fn demo() {
   set_viewport(2., 2.);

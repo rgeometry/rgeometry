@@ -33,6 +33,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bba18ee93d577a8428902687bcc2b6b45a56b1981a1f6d779731c86cc4c5db18"
 
 [[package]]
+name = "console_error_panic_hook"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
+dependencies = [
+ "cfg-if",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "earclip"
 version = "0.1.0"
 dependencies = [
@@ -268,6 +278,7 @@ dependencies = [
 name = "rgeometry-wasm"
 version = "0.1.0"
 dependencies = [
+ "console_error_panic_hook",
  "getrandom",
  "gloo-events",
  "gloo-render",
