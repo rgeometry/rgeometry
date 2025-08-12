@@ -1,8 +1,23 @@
 name: Hosted Documentation
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: "${{ github.ref != 'refs/heads/main' }}"
+
 on:
+  workflow_dispatch:
+  merge_group:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -16,6 +31,8 @@ jobs:
         toolchain: stable
         override: true
     - uses: Swatinem/rust-cache@v2
+    - uses: DeterminateSystems/nix-installer-action@main
+    - uses: DeterminateSystems/magic-nix-cache-action@main
 
     - uses: actions-rs/cargo@v1
       with:
@@ -23,9 +40,14 @@ jobs:
 
     - run: RUSTDOCFLAGS="--html-in-header doc-header.html" cargo doc --no-deps
 
+    - run: |
+        nix build .#all-demos
+        cp result/*.html target/doc/
+    
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.7.3
       with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BRANCH: gh-pages # The branch the action should deploy to.
-        FOLDER: target/doc/ # The folder the action should deploy.
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: gh-pages # The branch the action should deploy to.
+        folder: target/doc/ # The folder the action should deploy.
+        dry-run: github.ref != 'refs/heads/main'
