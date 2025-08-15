@@ -303,6 +303,16 @@ pub fn polygon_nn() -> impl Strategy<Value = Polygon<NotNan<f64>>> {
   )
 }
 
+// Returns a strategy for generating polygons with f64 coordinates.
+//
+// f64 coordinates are truncated to rule out extreme numbers (very large, very
+// small, very close to zero). Such extremes are likely to overflow since the
+// arbitrary precision machinery we're using cannot compute answers with an
+// exponent larger than 1024.
+pub fn polygon_f64() -> impl Strategy<Value = Polygon<f64>> {
+  PolygonStrat(any::<f64>().prop_map(|pt| rem_float(pt)), 3..50)
+}
+
 pub fn polygon_big() -> impl Strategy<Value = Polygon<BigRational>> {
   PolygonStrat(
     any::<f64>().prop_filter_map("Check for NaN", BigRational::from_float),

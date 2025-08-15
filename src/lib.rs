@@ -392,7 +392,15 @@ macro_rules! floating_precision {
     $(
       impl TotalOrd for $ty {
         fn total_cmp(&self, other: &Self) -> Ordering {
-          <$ty>::total_cmp(self, other)
+          // The ordering established by `<$ty>::total_cmp` does not always
+          // agree with the PartialOrd and PartialEq implementations of <$ty>. For
+          // example, they consider negative and positive zero equal, while
+          // total_cmp doesn’t.
+          if *self == 0.0 && *other == 0.0 {
+            Ordering::Equal
+          } else {
+            <$ty>::total_cmp(self, other)
+          }
         }
       }
 
