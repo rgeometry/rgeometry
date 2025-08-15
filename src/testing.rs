@@ -303,6 +303,10 @@ pub fn polygon_nn() -> impl Strategy<Value = Polygon<NotNan<f64>>> {
   )
 }
 
+pub fn polygon_f64() -> impl Strategy<Value = Polygon<f64>> {
+  PolygonStrat(any::<f64>().prop_map(|pt| rem_float(pt)), 3..50)
+}
+
 pub fn polygon_big() -> impl Strategy<Value = Polygon<BigRational>> {
   PolygonStrat(
     any::<f64>().prop_filter_map("Check for NaN", BigRational::from_float),
