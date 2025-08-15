@@ -647,10 +647,17 @@ impl Polygon<OrderedFloat<f64>> {
   }
 }
 
-#[derive(Debug)]
 pub struct Cursor<'a, T> {
   polygon: &'a Polygon<T>,
   pub(crate) position: Position,
+}
+
+impl<T> std::fmt::Debug for Cursor<'_, T> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("Cursor")
+      .field("position", &self.position)
+      .finish()
+  }
 }
 
 impl<T: TotalOrd> TotalOrd for Cursor<'_, T> {
@@ -817,7 +824,37 @@ pub mod tests {
 
   proptest_block! {
     #[test]
-    fn random_polygon(poly: Polygon<i8>) {
+    fn random_polygon_i8(poly: Polygon<i8>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[test]
+    fn random_polygon_i16(poly: Polygon<i16>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[test]
+    fn random_polygon_i32(poly: Polygon<i32>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[test]
+    fn random_polygon_i64(poly: Polygon<i64>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[test]
+    fn random_polygon_f32(poly: Polygon<f32>) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[test]
+    fn random_polygon_f64(poly in polygon_f64()) {
+      prop_assert_eq!(poly.validate().err(), None);
+    }
+
+    #[test]
+    fn random_polygon_not_nan_f64(poly in polygon_nn()) {
       prop_assert_eq!(poly.validate().err(), None);
     }
 
