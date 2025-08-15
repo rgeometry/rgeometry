@@ -417,7 +417,7 @@
 <a href=#396 id=396 data-nosnippet>396</a>          // agree with the PartialOrd and PartialEq implementations of &lt;$ty&gt;. For
 <a href=#397 id=397 data-nosnippet>397</a>          // example, they consider negative and positive zero equal, while
 <a href=#398 id=398 data-nosnippet>398</a>          // total_cmp doesn’t.
-<a href=#399 id=399 data-nosnippet>399</a>          </span><span class="kw">if </span>(<span class="kw-2">*</span><span class="self">self </span>== <span class="number">0.0 </span>|| <span class="kw-2">*</span><span class="self">self </span>== -<span class="number">0.0</span>) &amp;&amp; (<span class="kw-2">*</span>other == <span class="number">0.0 </span>|| <span class="kw-2">*</span>other == -<span class="number">0.0</span>) {
+<a href=#399 id=399 data-nosnippet>399</a>          </span><span class="kw">if </span><span class="kw-2">*</span><span class="self">self </span>== <span class="number">0.0 </span>&amp;&amp; <span class="kw-2">*</span>other == <span class="number">0.0 </span>{
 <a href=#400 id=400 data-nosnippet>400</a>            Ordering::Equal
 <a href=#401 id=401 data-nosnippet>401</a>          } <span class="kw">else </span>{
 <a href=#402 id=402 data-nosnippet>402</a>            &lt;<span class="macro-nonterminal">$ty</span>&gt;::total_cmp(<span class="self">self</span>, other)
