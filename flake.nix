@@ -7,6 +7,10 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
     alejandra.url = "github:kamadorueda/alejandra";
+    advisory-db = {
+      url = "github:rustsec/advisory-db";
+      flake = false;
+    };
   };
 
   outputs = {
@@ -16,6 +20,7 @@
     rust-overlay,
     crane,
     alejandra,
+    advisory-db,
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
@@ -28,11 +33,17 @@
 
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
-        src = ./.;
+        src = craneLib.cleanCargoSource (craneLib.path ./.);
 
         mkDemo = demoName:
           craneLib.buildPackage {
-            inherit src;
+            src = pkgs.lib.cleanSourceWith {
+              src = ./.;
+              filter = path: type:
+                (builtins.match ".*/demos/${demoName}/.*" path != null)
+                || (builtins.match ".*/rgeometry-wasm/.*" path != null)
+                || (builtins.match ".*" path != null && path != toString ./.);
+            };
             preBuild = "cd demos/${demoName}";
             buildPhaseCargoCommand = "HOME=$PWD/tmp wasm-pack build --release --target no-modules --out-dir pkg --mode no-install";
             doNotPostBuildInstallCargoBinaries = true;
@@ -57,6 +68,18 @@
           paths = builtins.map (n: mkDemo n) demoNames;
         };
       in {
+        checks = {
+          inherit allDemos;
+          audit = craneLib.cargoAudit {
+            inherit src advisory-db;
+          };
+          toml-fmt = craneLib.taploFmt {
+            src = pkgs.lib.sources.sourceFilesBySuffices src [".toml"];
+          };
+          cargo-fmt = craneLib.cargoFmt {
+            inherit src;
+          };
+        };
         packages = let
           demoPkgs = builtins.listToAttrs (map (name: {
               inherit name;
