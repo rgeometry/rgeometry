@@ -5,7 +5,17 @@
 ### Added
 ### Changed
 
-## [0.10.1] 2025-01-03
+## [0.10.3] 2025-08-16
+
+### Added
+- [#116](https://github.com/rgeometry/rgeometry/pull/116) Gift wrapping algorithm for finding convex hull
+
+### Fixed
+- [#129](https://github.com/rgeometry/rgeometry/pull/129) Fix bug in melkman algorithm.
+- [#128](https://github.com/rgeometry/rgeometry/pull/128) Fix arbitrary impls for f32 and f64 polygons.
+- [#120](https://github.com/rgeometry/rgeometry/pull/120) Avoid panic when computing line intersections.
+
+## [0.10.2] 2025-01-03
 
 ### Changed
 - Support no-std environments.
