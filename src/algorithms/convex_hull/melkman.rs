@@ -15,7 +15,8 @@ where
 {
   let mut convex_hull: VecDeque<&Point<T, 2>> = VecDeque::new();
   let mut last_idx = 0;
-  for p in polygon.iter() {
+  for cursor in polygon.iter_boundary() {
+    let p = cursor.point();
     // Creat a deque with the first 3 points
     if convex_hull.len() < 2 {
       convex_hull.push_back(p);
@@ -93,10 +94,13 @@ fn convert_deque_to_vec<T: PolygonScalar>(dque: VecDeque<&Point<T, 2>>) -> Vec<P
 
 #[cfg(test)]
 mod tests {
+  use crate::testing::{polygon_f64, polygon_ordered};
+
   use super::*;
 
   use claims::assert_ok;
 
+  use proptest::proptest as proptest_block;
   use test_strategy::proptest;
 
   #[test]
@@ -173,28 +177,75 @@ mod tests {
   }
 
   #[proptest]
-  fn does_not_panic(poly: Polygon<i8>) {
+  fn does_not_panic_i8(poly: Polygon<i8>) {
     convex_hull(&poly);
   }
 
   #[proptest]
-  fn is_valid_convex_polygon(poly: Polygon<i8>) {
+  fn does_not_panic_f32(poly: Polygon<f32>) {
+    convex_hull(&poly);
+  }
+
+  #[proptest]
+  fn is_valid_convex_polygon_i8(poly: Polygon<i8>) {
     assert_ok!(convex_hull(&poly).validate());
   }
 
   #[proptest]
-  fn is_idempotent(poly: PolygonConvex<i8>) {
-    assert!(Polygon::equals(&convex_hull(poly.polygon()), &poly));
+  fn is_valid_convex_polygon_f32(poly: Polygon<f32>) {
+    assert_ok!(convex_hull(&poly).validate());
   }
 
   #[proptest]
-  fn graham_scan_eq_prop(poly: Polygon<i8>) {
-    let points: Vec<Point<i8>> = poly
+  fn is_idempotent_i8(poly: PolygonConvex<i8>) {
+    assert!(Polygon::equals(&convex_hull(poly.polygon()), &poly));
+  }
+
+  #[track_caller]
+  fn graham_scan_eq_prop<T: PolygonScalar>(poly: Polygon<T>) {
+    let points: Vec<Point<T>> = poly
       .iter_boundary()
       .map(|cursor| cursor.point())
       .cloned()
       .collect();
     let by_scan = crate::algorithms::convex_hull::graham_scan::convex_hull(points).unwrap();
     assert!(Polygon::equals(&convex_hull(&poly), &by_scan));
+  }
+
+  proptest_block! {
+    #[test]
+    fn graham_scan_eq_prop_i8(poly: Polygon<i8>) {
+      graham_scan_eq_prop(poly);
+    }
+
+    #[test]
+    fn graham_scan_eq_prop_i16(poly: Polygon<i16>) {
+      graham_scan_eq_prop(poly);
+    }
+
+    #[test]
+    fn graham_scan_eq_prop_i32(poly: Polygon<i32>) {
+      graham_scan_eq_prop(poly);
+    }
+
+    #[test]
+    fn graham_scan_eq_prop_i64(poly: Polygon<i64>) {
+      graham_scan_eq_prop(poly);
+    }
+
+    #[test]
+    fn graham_scan_eq_prop_f32(poly: Polygon<f32>) {
+      graham_scan_eq_prop(poly);
+    }
+
+    #[test]
+    fn graham_scan_eq_prop_f64(poly in polygon_f64()) {
+      graham_scan_eq_prop(poly);
+    }
+
+    #[test]
+    fn graham_scan_eq_prop_ordered_float(poly in polygon_ordered()) {
+      graham_scan_eq_prop(poly);
+    }
   }
 }

@@ -14,7 +14,7 @@ use core::ops::Range;
 use num::BigRational;
 use num_bigint::BigInt;
 use num_traits::*;
-use ordered_float::NotNan;
+use ordered_float::{NotNan, OrderedFloat};
 use proptest::arbitrary::*;
 use proptest::collection::*;
 use proptest::prelude::*;
@@ -299,6 +299,13 @@ where
 pub fn polygon_nn() -> impl Strategy<Value = Polygon<NotNan<f64>>> {
   PolygonStrat(
     any::<f64>().prop_filter_map("Check for NaN", |pt| rem_float(pt).try_into().ok()),
+    3..50,
+  )
+}
+
+pub fn polygon_ordered() -> impl Strategy<Value = Polygon<OrderedFloat<f64>>> {
+  PolygonStrat(
+    any::<f64>().prop_map(|pt| OrderedFloat(rem_float(pt))),
     3..50,
   )
 }
