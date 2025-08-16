@@ -37,13 +37,7 @@
 
         mkDemo = demoName:
           craneLib.buildPackage {
-            src = pkgs.lib.cleanSourceWith {
-              src = ./.;
-              filter = path: type:
-                (builtins.match ".*/demos/${demoName}/.*" path != null)
-                || (builtins.match ".*/rgeometry-wasm/.*" path != null)
-                || (builtins.match ".*" path != null && path != toString ./.);
-            };
+            src = ./.;
             preBuild = "cd demos/${demoName}";
             buildPhaseCargoCommand = "HOME=$PWD/tmp wasm-pack build --release --target no-modules --out-dir pkg --mode no-install";
             doNotPostBuildInstallCargoBinaries = true;
