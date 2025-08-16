@@ -43,20 +43,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "earclip"
-version = "0.1.0"
-dependencies = [
- "gloo-events",
- "num-rational",
- "once_cell",
- "rand",
- "rgeometry",
- "rgeometry-wasm",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
 name = "geometry-predicates"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -265,7 +251,7 @@ dependencies = [
 
 [[package]]
 name = "rgeometry"
-version = "0.10.2"
+version = "0.10.3"
 dependencies = [
  "array-init",
  "claims",
@@ -311,6 +297,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "two_opt"
+version = "0.1.0"
+dependencies = [
+ "gloo-events",
+ "num-rational",
+ "once_cell",
+ "rand",
+ "rgeometry",
+ "rgeometry-wasm",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
