@@ -26,7 +26,7 @@ fn demo() {
   resolve_self_intersections(&mut p, &mut rand::thread_rng()).unwrap();
   render_polygon(&p);
 
-  context().set_fill_style(&"grey".into());
+  context().set_fill_style_str("grey");
   context().fill();
 
   for pt in &pts {
