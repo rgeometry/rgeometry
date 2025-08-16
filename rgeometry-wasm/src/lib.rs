@@ -31,7 +31,7 @@ pub mod playground {
   use once_cell::sync::OnceCell;
   use std::sync::Mutex;
 
-  pub type Num = OrderedFloat<f64>;
+  pub type Num = f32;
 
   pub fn upd_mouse(event: &web_sys::MouseEvent) {
     super::set_mouse(event.offset_x(), event.offset_y())
@@ -150,10 +150,10 @@ pub mod playground {
     let mut iter = poly.iter_boundary().map(|pt| pt.point());
     if let Some(origin) = iter.next() {
       let [x, y] = origin.array;
-      context.move_to(*x, *y);
+      context.move_to(x.into(), y.into());
       for pt in iter {
         let [x2, y2] = pt.array;
-        context.line_to(*x2, *y2);
+        context.line_to(x2.into(), y2.into());
       }
     }
     context.close_path();
@@ -169,10 +169,10 @@ pub mod playground {
     let mut iter = pts.iter();
     if let Some(origin) = iter.next() {
       let [x, y] = origin.array;
-      context.move_to(*x, *y);
+      context.move_to(x.into(), y.into());
       for pt in iter {
         let [x2, y2] = pt.array;
-        context.line_to(*x2, *y2);
+        context.line_to(x2.into(), y2.into());
       }
     }
     context.stroke();
@@ -182,8 +182,8 @@ pub mod playground {
     let path = Path2d::new().unwrap();
     path
       .arc(
-        **pt.x_coord(),
-        **pt.y_coord(),
+        pt.x_coord().clone().into(),
+        pt.y_coord().clone().into(),
         scale * from_pixels(15), // radius
         0.0,
         std::f64::consts::PI * 2.,
@@ -195,7 +195,9 @@ pub mod playground {
   pub fn at_point<F: FnOnce()>(pt: &Point<Num, 2>, cb: F) {
     let context = context();
     context.save();
-    context.translate(**pt.x_coord(), **pt.y_coord()).unwrap();
+    context
+      .translate(pt.x_coord().clone().into(), pt.y_coord().clone().into())
+      .unwrap();
     cb();
     context.restore();
   }
@@ -245,11 +247,8 @@ pub mod playground {
         let mut pts = POINTS.lock().unwrap();
         let mut rng = rand::thread_rng();
         let (width, height) = get_viewport();
-        let t = Transform::scale(Vector([
-          OrderedFloat(width * 0.8),
-          OrderedFloat(height * 0.8),
-        ]))
-          * Transform::translate(Vector([OrderedFloat(-0.5), OrderedFloat(-0.5)]));
+        let t = Transform::scale(Vector([(width as Num * 0.8), (height as Num * 0.8)]))
+          * Transform::translate(Vector([(-0.5), (-0.5)]));
         while pts.len() < n {
           let pt: Point<Num, 2> = rng.sample(Standard);
           let pt = &t * pt;
@@ -313,7 +312,7 @@ pub mod playground {
 
         let mut pts = POINTS.lock().unwrap();
         let pt = pts.index(i);
-        let vector: Vector<Num, 2> = Vector([OrderedFloat(dx), OrderedFloat(dy)]);
+        let vector: Vector<Num, 2> = Vector([dx as Num, dy as Num]);
         pts[i] = pt + &vector;
       }
     }
@@ -497,20 +496,20 @@ pub mod playground {
       context().set_line_join(join)
     }
 
-    pub fn move_to(x: f64, y: f64) {
-      context().move_to(x, y)
+    pub fn move_to(x: Num, y: Num) {
+      context().move_to(x.into(), y.into())
     }
 
     pub fn move_to_point(pt: &Point<Num, 2>) {
-      move_to(**pt.x_coord(), **pt.y_coord())
+      move_to(*pt.x_coord(), *pt.y_coord())
     }
 
-    pub fn line_to(x: f64, y: f64) {
-      context().line_to(x, y)
+    pub fn line_to(x: Num, y: Num) {
+      context().line_to(x.into(), y.into())
     }
 
     pub fn line_to_point(pt: &Point<Num, 2>) {
-      line_to(**pt.x_coord(), **pt.y_coord())
+      line_to(*pt.x_coord(), *pt.y_coord())
     }
 
     pub fn set_line_dash(dash: &[f64]) {

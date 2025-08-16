@@ -7,24 +7,12 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
-static POLYGON: Lazy<Mutex<Polygon<Num>>> = Lazy::new(|| {
-  let pts = get_points(N_VERTICES);
-  let p = two_opt_moves(pts, &mut rand::thread_rng()).unwrap();
-  Mutex::new(p)
-});
-
-const N_VERTICES: usize = 7;
+const N_VERTICES: usize = 9;
 
 fn demo() {
   set_viewport(2.0, 2.0);
 
-  let pts = get_points(N_VERTICES);
-
-  let mut p = POLYGON.lock().unwrap();
-  for (idx, pt) in p.iter_mut().enumerate() {
-    *pt = pts[idx].clone();
-  }
-  resolve_self_intersections(&mut p, &mut rand::thread_rng()).unwrap();
+  let p = get_polygon(N_VERTICES);
 
   let convex = convex_hull(&p);
   render_polygon(&convex);
@@ -35,8 +23,8 @@ fn demo() {
   context().set_fill_style(&"grey".into());
   context().fill();
 
-  for pt in &pts {
-    render_point(&pt);
+  for (nth, pt) in p.iter_boundary().enumerate() {
+    render_point(&pt.point());
   }
 }
 #[wasm_bindgen(start)]

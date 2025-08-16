@@ -104,6 +104,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 
 [[package]]
+name = "melkman"
+version = "0.1.0"
+dependencies = [
+ "gloo-events",
+ "num-rational",
+ "once_cell",
+ "rand",
+ "rgeometry",
+ "rgeometry-wasm",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "num"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -247,20 +261,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
-]
-
-[[package]]
-name = "random_monotone"
-version = "0.1.0"
-dependencies = [
- "gloo-events",
- "num-rational",
- "once_cell",
- "rand",
- "rgeometry",
- "rgeometry-wasm",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
