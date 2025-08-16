@@ -1,11 +1,6 @@
 use rgeometry::algorithms::convex_hull::melkman::*;
-use rgeometry::algorithms::polygonization::*;
-use rgeometry::data::*;
 use rgeometry_wasm::playground::*;
 use wasm_bindgen::prelude::wasm_bindgen;
-
-use once_cell::sync::Lazy;
-use std::sync::Mutex;
 
 const N_VERTICES: usize = 9;
 
@@ -16,14 +11,14 @@ fn demo() {
 
   let convex = convex_hull(&p);
   render_polygon(&convex);
-  context().set_fill_style(&"lightgrey".into());
+  context().set_fill_style_str("lightgrey");
   context().fill();
 
   render_polygon(&p);
-  context().set_fill_style(&"grey".into());
+  context().set_fill_style_str("grey");
   context().fill();
 
-  for (nth, pt) in p.iter_boundary().enumerate() {
+  for pt in p.iter_boundary() {
     render_point(&pt.point());
   }
 }

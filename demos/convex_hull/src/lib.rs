@@ -9,7 +9,7 @@ fn demo() {
   let pts = with_points(7);
   if let Ok(convex) = convex_hull(pts.clone()) {
     render_polygon(&convex);
-    context().set_fill_style(&"grey".into());
+    context().set_fill_style_str("grey");
     context().fill();
   }
   for pt in &pts {
