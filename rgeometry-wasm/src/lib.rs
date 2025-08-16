@@ -181,8 +181,8 @@ pub mod playground {
     let path = Path2d::new().unwrap();
     path
       .arc(
-        pt.x_coord().clone().into(),
-        pt.y_coord().clone().into(),
+        (*pt.x_coord()).into(),
+        (*pt.y_coord()).into(),
         scale * from_pixels(15), // radius
         0.0,
         std::f64::consts::PI * 2.,
@@ -195,7 +195,7 @@ pub mod playground {
     let context = context();
     context.save();
     context
-      .translate(pt.x_coord().clone().into(), pt.y_coord().clone().into())
+      .translate((*pt.x_coord()).into(), (*pt.y_coord()).into())
       .unwrap();
     cb();
     context.restore();
@@ -305,8 +305,8 @@ pub mod playground {
       if let Some((i, x, y)) = *selected {
         let (x, y) = inv_canvas_position(x, y);
         let (ox, oy) = inv_canvas_position(mouse_x, mouse_y);
-        let dx = (ox - x) as f64;
-        let dy = (oy - y) as f64;
+        let dx = ox - x;
+        let dy = oy - y;
         *selected = Some((i, mouse_x, mouse_y));
 
         let mut pts = POINTS.lock().unwrap();
@@ -337,7 +337,7 @@ pub mod playground {
     let pts = with_points(n);
 
     for (idx, pt) in p.iter_mut().enumerate() {
-      *pt = pts[idx].clone();
+      *pt = pts[idx];
     }
     resolve_self_intersections(&mut p, &mut rand::thread_rng()).unwrap();
     p.clone()
@@ -444,11 +444,11 @@ pub mod playground {
     }
 
     pub fn set_fill_style(style: &str) {
-      context().set_fill_style_str(&style)
+      context().set_fill_style_str(style)
     }
 
     pub fn set_stroke_style(style: &str) {
-      context().set_stroke_style_str(&style)
+      context().set_stroke_style_str(style)
     }
 
     pub fn fill() {
