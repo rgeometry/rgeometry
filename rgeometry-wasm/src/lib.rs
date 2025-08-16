@@ -18,7 +18,6 @@ pub mod playground {
   use rgeometry::data::*;
 
   use gloo_events::{EventListener, EventListenerOptions};
-  use ordered_float::OrderedFloat;
   use rand::distributions::Standard;
   use rand::Rng;
   use std::ops::Deref;
@@ -90,9 +89,9 @@ pub mod playground {
     let context = context();
     let transform = &context.get_transform().unwrap();
     let inv = transform.inverse();
-    let mut pt = web_sys::DomPointInit::new();
-    pt.x(x as f64 * ratio);
-    pt.y(y as f64 * ratio);
+    let pt = web_sys::DomPointInit::new();
+    pt.set_x(x as f64 * ratio);
+    pt.set_y(y as f64 * ratio);
     let out = inv.transform_point_with_point(&pt);
     (out.x(), out.y())
   }
@@ -445,11 +444,11 @@ pub mod playground {
     }
 
     pub fn set_fill_style(style: &str) {
-      context().set_fill_style(&style.into())
+      context().set_fill_style_str(&style)
     }
 
     pub fn set_stroke_style(style: &str) {
-      context().set_stroke_style(&style.into())
+      context().set_stroke_style_str(&style)
     }
 
     pub fn fill() {

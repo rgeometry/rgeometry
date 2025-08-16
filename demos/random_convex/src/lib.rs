@@ -43,7 +43,9 @@ static POLYGON: Lazy<Mutex<PolygonConvex<Num>>> = Lazy::new(|| Mutex::new(gen_co
 
 fn gen_convex() -> PolygonConvex<Num> {
   let n = N_CORNERS.load(Ordering::Relaxed);
-  PolygonConvex::<f32>::random(n, &mut rand::thread_rng()).normalize()
+  PolygonConvex::<i16>::random(n, &mut rand::thread_rng())
+    .cast::<Num>()
+    .normalize()
 }
 
 fn demo() {

@@ -76,6 +76,14 @@ where
     self.0.validate()
   }
 
+  pub fn cast<U>(self) -> PolygonConvex<U>
+  where
+    T: Clone + Into<U>,
+    U: PolygonScalar,
+  {
+    PolygonConvex::new_unchecked(self.0.cast())
+  }
+
   pub fn float(self) -> PolygonConvex<OrderedFloat<f64>>
   where
     T: Clone + Into<f64>,
