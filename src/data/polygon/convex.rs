@@ -147,6 +147,20 @@ impl PolygonConvex<OrderedFloat<f64>> {
   }
 }
 
+impl PolygonConvex<f64> {
+  #[must_use]
+  pub fn normalize(&self) -> PolygonConvex<f64> {
+    PolygonConvex::new_unchecked(self.0.normalize())
+  }
+}
+
+impl PolygonConvex<f32> {
+  #[must_use]
+  pub fn normalize(&self) -> PolygonConvex<f32> {
+    PolygonConvex::new_unchecked(self.0.normalize())
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Trait Implementations
 

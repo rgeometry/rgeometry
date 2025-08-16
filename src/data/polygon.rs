@@ -647,6 +647,40 @@ impl Polygon<OrderedFloat<f64>> {
   }
 }
 
+impl Polygon<f64> {
+  #[must_use]
+  // Center on <0,0>. Scale size such that max(width,height) = 1.
+  pub fn normalize(&self) -> Polygon<f64> {
+    let (min, max) = self.bounding_box();
+    let [min_x, min_y] = min.array;
+    let [max_x, max_y] = max.array;
+    let width = max_x - min_x;
+    let height = max_y - min_y;
+    let ratio = width.max(height);
+    let centroid = self.centroid();
+    let t = Transform::translate(-Vector::from(centroid));
+    let s = Transform::uniform_scale(ratio.recip());
+    s * t * self
+  }
+}
+
+impl Polygon<f32> {
+  #[must_use]
+  // Center on <0,0>. Scale size such that max(width,height) = 1.
+  pub fn normalize(&self) -> Polygon<f32> {
+    let (min, max) = self.bounding_box();
+    let [min_x, min_y] = min.array;
+    let [max_x, max_y] = max.array;
+    let width = max_x - min_x;
+    let height = max_y - min_y;
+    let ratio = width.max(height);
+    let centroid = self.centroid();
+    let t = Transform::translate(-Vector::from(centroid));
+    let s = Transform::uniform_scale(ratio.recip());
+    s * t * self
+  }
+}
+
 pub struct Cursor<'a, T> {
   polygon: &'a Polygon<T>,
   pub(crate) position: Position,
