@@ -125,6 +125,30 @@
             // {
               inherit cargoArtifacts;
             });
+
+          # Check Nix formatting
+          alejandra-check = pkgs.runCommand "alejandra-check" {} ''
+            ${alejandra.defaultPackage.${system}}/bin/alejandra --check ${src}
+            touch $out
+          '';
+
+          # Check TOML formatting
+          taplo-fmt-check = pkgs.runCommand "taplo-fmt-check" {} ''
+            cd ${src}
+            ${pkgs.taplo}/bin/taplo fmt --check
+            touch $out
+          '';
+
+          # Check Rust formatting
+          cargo-fmt-check =
+            pkgs.runCommand "cargo-fmt-check"
+            {
+              nativeBuildInputs = [rustToolchain];
+            } ''
+              cd ${src}
+              cargo fmt --all --check
+              touch $out
+            '';
         };
       }
     );
