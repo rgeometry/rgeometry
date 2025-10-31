@@ -91,27 +91,6 @@
 
         formatter = alejandra.defaultPackage.${system};
 
-        apps.pre-commit = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "pre-commit" ''
-            set -e
-            echo "Running pre-commit checks..."
-
-            echo "→ Checking Nix formatting..."
-            ${alejandra.defaultPackage.${system}}/bin/alejandra --check .
-
-            echo "→ Checking TOML formatting..."
-            ${pkgs.taplo}/bin/taplo fmt --check
-
-            echo "→ Checking Rust formatting..."
-            ${rustToolchain}/bin/cargo fmt --all --check
-
-            echo "✓ All formatting checks passed!"
-            echo ""
-            echo "Note: Run 'cargo clippy' and 'cargo test' separately to check code quality and tests."
-          '');
-        };
-
         checks = {
           # Run the library tests
           rgeometry-test = craneLib.cargoTest (commonArgs
@@ -133,22 +112,46 @@
           '';
 
           # Check TOML formatting
-          taplo-fmt-check = pkgs.runCommand "taplo-fmt-check" {} ''
-            cd ${src}
-            ${pkgs.taplo}/bin/taplo fmt --check
-            touch $out
-          '';
-
-          # Check Rust formatting
-          cargo-fmt-check =
-            pkgs.runCommand "cargo-fmt-check"
+          taplo-fmt-check =
+            pkgs.runCommand "taplo-fmt-check"
             {
-              nativeBuildInputs = [rustToolchain];
+              nativeBuildInputs = [pkgs.taplo];
             } ''
               cd ${src}
-              cargo fmt --all --check
+              taplo fmt --check
               touch $out
             '';
+
+          # Check Rust formatting with crane
+          cargo-fmt-check = craneLib.cargoFmt (commonArgs
+            // {
+              inherit cargoArtifacts;
+            });
+
+          # Build all demos
+          all-demos-check = allDemos;
+
+          # Build rgeometry-wasm
+          rgeometry-wasm-check = craneLib.buildPackage (commonArgs
+            // {
+              inherit cargoArtifacts;
+              pname = "rgeometry-wasm";
+              cargoExtraArgs = "-p rgeometry-wasm";
+            });
+        };
+
+        apps.pre-commit = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "pre-commit" ''
+            set -e
+            echo "Running pre-commit formatting checks..."
+            echo ""
+            echo "→ Nix formatting: ${self.checks.${system}.alejandra-check}"
+            echo "→ TOML formatting: ${self.checks.${system}.taplo-fmt-check}"
+            echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
+            echo ""
+            echo "✓ All formatting checks passed!"
+          '');
         };
       }
     );
