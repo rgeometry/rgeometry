@@ -28,7 +28,36 @@
 
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
-        src = ./.;
+        # Filter source to only include Rust-related files to minimize rebuilds
+        src = lib.fileset.toSource {
+          root = ./.;
+          fileset = lib.fileset.unions [
+            # Root level Rust files
+            ./Cargo.toml
+            ./Cargo.lock
+            ./src
+            ./benches
+            ./examples
+            ./tests
+            # Configuration files
+            ./rust-toolchain.toml
+            ./rustfmt.toml
+            ./taplo.toml
+            # Metadata
+            ./README.md
+            ./LICENSE
+            # rgeometry-wasm crate
+            ./rgeometry-wasm/Cargo.toml
+            ./rgeometry-wasm/src
+            ./rgeometry-wasm/rustfmt.toml
+            # Demo crates
+            (lib.fileset.fileFilter
+              (file: file.hasExt "toml" || file.hasExt "lock" || file.hasExt "rs")
+              ./demos)
+            # Utils needed for demo builds
+            ./utils
+          ];
+        };
 
         # Common arguments for building the library
         commonArgs = {
