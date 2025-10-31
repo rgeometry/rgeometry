@@ -21,10 +21,10 @@
 
 </head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">rgeometry/data/polygon/</div>convex.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span>num_traits::<span class="kw-2">*</span>;
 <a href=#2 id=2 data-nosnippet>2</a><span class="kw">use </span>ordered_float::OrderedFloat;
-<a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span>rand::distributions::uniform::SampleUniform;
-<a href=#4 id=4 data-nosnippet>4</a><span class="kw">use </span>rand::distributions::{Distribution, Standard};
-<a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>rand::seq::SliceRandom;
-<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span>rand::Rng;
+<a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span>rand::Rng;
+<a href=#4 id=4 data-nosnippet>4</a><span class="kw">use </span>rand::distributions::uniform::SampleUniform;
+<a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>rand::distributions::{Distribution, Standard};
+<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span>rand::seq::SliceRandom;
 <a href=#7 id=7 data-nosnippet>7</a><span class="kw">use </span>std::ops::<span class="kw-2">*</span>;
 <a href=#8 id=8 data-nosnippet>8</a>
 <a href=#9 id=9 data-nosnippet>9</a><span class="kw">use </span><span class="kw">crate</span>::data::{Point, PointLocation, TriangleView, Vector};
@@ -222,7 +222,7 @@
 <a href=#201 id=201 data-nosnippet>201</a>// Helper functions
 <a href=#202 id=202 data-nosnippet>202</a>
 <a href=#203 id=203 data-nosnippet>203</a>// Property: random_between(n, max, &amp;mut rng).sum::&lt;usize&gt;() == max
-<a href=#204 id=204 data-nosnippet>204</a></span><span class="kw">fn </span>random_between_iter&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; <span class="kw">impl </span>Iterator&lt;Item = T&gt;
+<a href=#204 id=204 data-nosnippet>204</a></span><span class="kw">fn </span>random_between_iter&lt;T, R&gt;(n: usize, rng: <span class="kw-2">&amp;mut </span>R) -&gt; <span class="kw">impl </span>Iterator&lt;Item = T&gt; + <span class="kw">use</span>&lt;T, R&gt;
 <a href=#205 id=205 data-nosnippet>205</a><span class="kw">where
 <a href=#206 id=206 data-nosnippet>206</a>  </span>T: PolygonScalar + Bounded + SampleUniform,
 <a href=#207 id=207 data-nosnippet>207</a>  R: Rng + <span class="question-mark">?</span>Sized,
@@ -279,8 +279,8 @@
 <a href=#258 id=258 data-nosnippet>258</a></span><span class="attr">#[cfg(test)]
 <a href=#259 id=259 data-nosnippet>259</a></span><span class="kw">mod </span>tests {
 <a href=#260 id=260 data-nosnippet>260</a>  <span class="kw">use super</span>::<span class="kw-2">*</span>;
-<a href=#261 id=261 data-nosnippet>261</a>  <span class="kw">use </span>rand::rngs::SmallRng;
-<a href=#262 id=262 data-nosnippet>262</a>  <span class="kw">use </span>rand::SeedableRng;
+<a href=#261 id=261 data-nosnippet>261</a>  <span class="kw">use </span>rand::SeedableRng;
+<a href=#262 id=262 data-nosnippet>262</a>  <span class="kw">use </span>rand::rngs::SmallRng;
 <a href=#263 id=263 data-nosnippet>263</a>
 <a href=#264 id=264 data-nosnippet>264</a>  <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
 <a href=#265 id=265 data-nosnippet>265</a>  <span class="kw">use </span>proptest::proptest <span class="kw">as </span>proptest_block;

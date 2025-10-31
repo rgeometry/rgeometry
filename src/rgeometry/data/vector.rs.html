@@ -22,8 +22,8 @@
 </head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">rgeometry/data/</div>vector.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span>array_init::{array_init, try_array_init};
 <a href=#2 id=2 data-nosnippet>2</a><span class="kw">use </span>num_rational::BigRational;
 <a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span>num_traits::NumOps;
-<a href=#4 id=4 data-nosnippet>4</a><span class="kw">use </span>rand::distributions::{Distribution, Standard};
-<a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>rand::Rng;
+<a href=#4 id=4 data-nosnippet>4</a><span class="kw">use </span>rand::Rng;
+<a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>rand::distributions::{Distribution, Standard};
 <a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span>std::cmp::Ordering;
 <a href=#7 id=7 data-nosnippet>7</a><span class="kw">use </span>std::convert::TryFrom;
 <a href=#8 id=8 data-nosnippet>8</a><span class="kw">use </span>std::iter::Sum;
@@ -48,7 +48,7 @@
 <a href=#27 id=27 data-nosnippet>27</a>  </span>Standard: Distribution&lt;T&gt;,
 <a href=#28 id=28 data-nosnippet>28</a>{
 <a href=#29 id=29 data-nosnippet>29</a>  <span class="kw">fn </span>sample&lt;R: Rng + <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, rng: <span class="kw-2">&amp;mut </span>R) -&gt; Vector&lt;T, N&gt; {
-<a href=#30 id=30 data-nosnippet>30</a>    Vector(array_init(|<span class="kw">_</span>| rng.gen()))
+<a href=#30 id=30 data-nosnippet>30</a>    Vector(array_init(|<span class="kw">_</span>| rng.r#gen()))
 <a href=#31 id=31 data-nosnippet>31</a>  }
 <a href=#32 id=32 data-nosnippet>32</a>}
 <a href=#33 id=33 data-nosnippet>33</a>
