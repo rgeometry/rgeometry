@@ -92,8 +92,8 @@ where
 #[cfg(test)]
 mod monotone_testing {
   use super::*;
-  use crate::data::{Point, Polygon, PolygonConvex, Vector};
   use crate::Orientation;
+  use crate::data::{Point, Polygon, PolygonConvex, Vector};
   use proptest::prelude::*;
   use std::collections::BTreeSet;
   use test_strategy::proptest;

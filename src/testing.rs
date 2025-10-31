@@ -4,7 +4,7 @@
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
 use crate::data::{
-  Direction_, EndPoint, LineSegment, LineSoS_, Line_, Point, PointId, Polygon, PolygonConvex,
+  Direction_, EndPoint, Line_, LineSegment, LineSoS_, Point, PointId, Polygon, PolygonConvex,
   Triangle, Vector,
 };
 use crate::{PolygonScalar, TotalOrd};
@@ -20,8 +20,8 @@ use proptest::collection::*;
 use proptest::prelude::*;
 use proptest::strategy::*;
 use proptest::test_runner::*;
-use rand::distributions::uniform::SampleUniform;
 use rand::SeedableRng;
+use rand::distributions::uniform::SampleUniform;
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 use std::fmt::Debug;
