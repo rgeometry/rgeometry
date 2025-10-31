@@ -1,3 +1,4 @@
+use crate::Intersects;
 use crate::data::Cursor;
 use crate::data::EndPoint;
 use crate::data::IndexEdge;
@@ -6,7 +7,6 @@ use crate::data::Point;
 use crate::data::PointId;
 use crate::data::Polygon;
 use crate::data::{IndexIntersection, IndexIntersectionSet};
-use crate::Intersects;
 use crate::{Error, PolygonScalar, TotalOrd};
 
 use rand::Rng;
@@ -30,11 +30,11 @@ where
   // dbg!(&poly.rings[0]);
   for e1 in edges(poly) {
     for e2 in edges(poly) {
-      if e1 < e2 {
-        if let Some(isect) = intersects(poly, e1, e2) {
-          // eprintln!("Inserting new intersection: {:?} {:?}", e1, e2);
-          isects.push(isect)
-        }
+      if e1 < e2
+        && let Some(isect) = intersects(poly, e1, e2)
+      {
+        // eprintln!("Inserting new intersection: {:?} {:?}", e1, e2);
+        isects.push(isect)
       }
     }
   }
@@ -243,11 +243,11 @@ fn untangle<T: PolygonScalar>(
   // eprintln!("New edges: {:?}", &inserted_edges);
   for &edge in inserted_edges.iter() {
     for e1 in edges(poly) {
-      if e1 != edge {
-        if let Some(isect) = intersects(poly, e1, edge) {
-          // eprintln!("Inserting new intersection: {:?} {:?}", e1, edge);
-          set.push(isect)
-        }
+      if e1 != edge
+        && let Some(isect) = intersects(poly, e1, edge)
+      {
+        // eprintln!("Inserting new intersection: {:?} {:?}", e1, edge);
+        set.push(isect)
       }
     }
   }
@@ -274,10 +274,10 @@ fn naive_intersection_set<T: PolygonScalar>(poly: &Polygon<T>) -> BTreeSet<Index
   let mut set = BTreeSet::new();
   for e1 in edges(poly) {
     for e2 in edges(poly) {
-      if e1 < e2 {
-        if let Some(isect) = intersects(poly, e1, e2) {
-          set.insert(isect);
-        }
+      if e1 < e2
+        && let Some(isect) = intersects(poly, e1, e2)
+      {
+        set.insert(isect);
       }
     }
   }
@@ -335,9 +335,9 @@ pub mod tests {
   use ordered_float::NotNan;
   use proptest::collection::vec;
   use proptest::prelude::*;
+  use rand::SeedableRng;
   use rand::prelude::SliceRandom;
   use rand::rngs::mock::StepRng;
-  use rand::SeedableRng;
   use test_strategy::proptest;
 
   #[test]

@@ -7,8 +7,8 @@ use std::ops::RangeInclusive;
 
 use super::Point;
 
-use crate::data::point::PointSoS;
 use crate::Intersects;
+use crate::data::point::PointSoS;
 use crate::{Orientation, PolygonScalar, TotalOrd};
 use Orientation::*;
 
@@ -391,8 +391,8 @@ where
 #[cfg(not(tarpaulin_include))]
 mod tests {
   use super::*;
-  use crate::data::*;
   use crate::Intersects;
+  use crate::data::*;
   use ILineSegment::*;
 
   use test_strategy::proptest;

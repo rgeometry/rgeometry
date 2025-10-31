@@ -1,6 +1,6 @@
-use criterion::{criterion_group, criterion_main, Criterion};
-use rand::rngs::SmallRng;
+use criterion::{Criterion, criterion_group, criterion_main};
 use rand::SeedableRng;
+use rand::rngs::SmallRng;
 use rgeometry::data::PolygonConvex;
 
 pub fn criterion_benchmark(c: &mut Criterion) {

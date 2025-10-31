@@ -1,8 +1,8 @@
 use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
 use num_traits::NumOps;
-use rand::distributions::{Distribution, Standard};
 use rand::Rng;
+use rand::distributions::{Distribution, Standard};
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::iter::Sum;
@@ -27,7 +27,7 @@ where
   Standard: Distribution<T>,
 {
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vector<T, N> {
-    Vector(array_init(|_| rng.gen()))
+    Vector(array_init(|_| rng.r#gen()))
   }
 }
 
