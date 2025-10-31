@@ -462,11 +462,6 @@ fixed_precision!(i16, u16, i32, u32);
 fixed_precision!(i32, u32, i64, u64);
 fixed_precision!(i64, u64, i128, u128);
 fixed_precision!(isize, usize, i128, u128);
-mod rational_polygon_scalar {
-  #![allow(deprecated)]
-  use super::*;
-  arbitrary_precision!(num::Rational);
-}
 arbitrary_precision!(num_bigint::BigInt);
 arbitrary_precision!(num_rational::BigRational);
 wrapped_floating_precision!(ordered_float::OrderedFloat<f32>);

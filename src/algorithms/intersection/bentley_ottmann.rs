@@ -10,7 +10,7 @@
 //!
 //! # High-level workflow
 //! 1. **Event queue** – A priority queue ordered lexicographically on the
-//!    `num::Rational` x/y coordinates, seeded with every segment endpoint.
+//!    `num::BigRational` x/y coordinates, seeded with every segment endpoint.
 //! 2. **Status structure** – An order-statistics tree storing the segments that
 //!    currently intersect the sweep line. The ordering uses the current sweep
 //!    position to evaluate each segment at the event's x-coordinate.
@@ -25,8 +25,8 @@
 //! The algorithm runs in `O((n + k) log n)` time where `n` is the number of
 //! segments and `k` is the number of intersections that exist. Memory usage is
 //! `O(n)` for the queue and status structure. The implementation is specialised
-//! to `num::Rational` coordinates in order to guarantee exact arithmetic and to
-//! avoid robustness issues when computing intersection points.
+//! to `num::BigRational` coordinates in order to guarantee exact arithmetic and
+//! to avoid robustness issues when computing intersection points.
 //!
 //! # Testing guidance
 //! - **Common cases** – Axes-aligned and random segments where crossings are
@@ -47,9 +47,8 @@
 //!   invariants such as “all reported pairs are unique”, “the iterator never
 //!   reports non-intersecting segments”, and “every true intersection eventually
 //!   appears”. Running both algorithms on randomly generated segment sets with
-//!   Rational coordinates is particularly effective because deviations can be
+//!   BigRational coordinates is particularly effective because deviations can be
 //!   spotted exactly.
-#![allow(deprecated)]
 
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -58,19 +57,19 @@ use crate::data::{EndPoint, LineSegmentView, Point};
 use crate::Intersects;
 
 use num::traits::Zero;
-#[allow(deprecated)]
-use num::Rational;
+use num::BigRational;
 
 type PairKey = (usize, usize);
+type Scalar = BigRational;
 
 /// Find all line segment intersections using a Bentley–Ottmann sweep.
 ///
-/// The input segments are required to use exact `num::Rational` coordinates.
+/// The input segments are required to use exact `num::BigRational` coordinates.
 pub fn segment_intersections<'a, Edge>(
   edges: &'a [Edge],
 ) -> impl Iterator<Item = (&'a Edge, &'a Edge)>
 where
-  &'a Edge: Into<LineSegmentView<'a, Rational, 2>>,
+  &'a Edge: Into<LineSegmentView<'a, Scalar, 2>>,
 {
   let segments: Vec<Segment<'a, Edge>> = edges
     .iter()
@@ -80,13 +79,13 @@ where
 
   let mut queue = EventQueue::default();
   for segment in &segments {
-    queue.add_upper(*segment.left.point, segment.index);
-    queue.add_lower(*segment.right.point, segment.index);
+    queue.add_upper(segment.left.point.clone(), segment.index);
+    queue.add_lower(segment.right.point.clone(), segment.index);
   }
 
   let mut status = Status::new(&segments);
   let mut reported = HashSet::<PairKey>::new();
-  let mut scheduled = HashMap::<PairKey, Point<Rational>>::new();
+  let mut scheduled = HashMap::<PairKey, Point<Scalar>>::new();
   let mut results = Vec::<PairKey>::new();
 
   while let Some((point, mut event)) = queue.pop() {
@@ -140,9 +139,9 @@ fn report_intersections<'a, Edge>(
   segments: &[Segment<'a, Edge>],
   reported: &mut HashSet<PairKey>,
   results: &mut Vec<PairKey>,
-  scheduled: &mut HashMap<PairKey, Point<Rational>>,
+  scheduled: &mut HashMap<PairKey, Point<Scalar>>,
 ) where
-  &'a Edge: Into<LineSegmentView<'a, Rational, 2>>,
+  &'a Edge: Into<LineSegmentView<'a, Scalar, 2>>,
 {
   if participants.len() < 2 {
     return;
@@ -181,16 +180,16 @@ fn pair_key(a: usize, b: usize) -> PairKey {
 
 struct PairProcessor<'segments, 'state, 'edge, Edge> {
   segments: &'segments [Segment<'edge, Edge>],
-  scheduled: &'state mut HashMap<PairKey, Point<Rational>>,
+  scheduled: &'state mut HashMap<PairKey, Point<Scalar>>,
   reported: &'state mut HashSet<PairKey>,
   results: &'state mut Vec<PairKey>,
 }
 
 impl<'edge, Edge> PairProcessor<'_, '_, 'edge, Edge>
 where
-  &'edge Edge: Into<LineSegmentView<'edge, Rational, 2>>,
+  &'edge Edge: Into<LineSegmentView<'edge, Scalar, 2>>,
 {
-  fn process(&mut self, pair: PairKey, current_point: &Point<Rational>, queue: &mut EventQueue) {
+  fn process(&mut self, pair: PairKey, current_point: &Point<Scalar>, queue: &mut EventQueue) {
     if self.reported.contains(&pair) || self.scheduled.contains_key(&pair) {
       return;
     }
@@ -216,7 +215,7 @@ where
               self.scheduled.remove(&pair);
             }
             Ordering::Greater => {
-              self.scheduled.insert(pair, point);
+              self.scheduled.insert(pair, point.clone());
               queue.add_crossing(point, a, b);
             }
           }
@@ -228,26 +227,26 @@ where
 
 #[derive(Default)]
 struct EventQueue {
-  map: BTreeMap<Point<Rational>, EventData>,
+  map: BTreeMap<Point<Scalar>, EventData>,
 }
 
 impl EventQueue {
-  fn add_upper(&mut self, point: Point<Rational>, segment: usize) {
+  fn add_upper(&mut self, point: Point<Scalar>, segment: usize) {
     self.map.entry(point).or_default().uppers.push(segment);
   }
 
-  fn add_lower(&mut self, point: Point<Rational>, segment: usize) {
+  fn add_lower(&mut self, point: Point<Scalar>, segment: usize) {
     self.map.entry(point).or_default().lowers.push(segment);
   }
 
-  fn add_crossing(&mut self, point: Point<Rational>, a: usize, b: usize) {
+  fn add_crossing(&mut self, point: Point<Scalar>, a: usize, b: usize) {
     let entry = self.map.entry(point).or_default();
     entry.crossing.push(a);
     entry.crossing.push(b);
   }
 
-  fn pop(&mut self) -> Option<(Point<Rational>, EventData)> {
-    let first_key = self.map.keys().next().copied()?;
+  fn pop(&mut self) -> Option<(Point<Scalar>, EventData)> {
+    let first_key = self.map.keys().next().cloned()?;
     let data = self.map.remove(&first_key)?;
     Some((first_key, data))
   }
@@ -285,26 +284,26 @@ impl EventData {
 struct Status<'s, 'a, Edge> {
   active: Vec<usize>,
   segments: &'s [Segment<'a, Edge>],
-  current: Point<Rational>,
+  current: Point<Scalar>,
 }
 
 impl<'s, 'a, Edge> Status<'s, 'a, Edge>
 where
-  &'a Edge: Into<LineSegmentView<'a, Rational, 2>>,
+  &'a Edge: Into<LineSegmentView<'a, Scalar, 2>>,
 {
   fn new(segments: &'s [Segment<'a, Edge>]) -> Self {
     Status {
       active: Vec::new(),
       segments,
-      current: Point::new([Rational::from_integer(0), Rational::from_integer(0)]),
+      current: Point::new([Scalar::zero(), Scalar::zero()]),
     }
   }
 
-  fn set_sweep_point(&mut self, point: Point<Rational>) {
+  fn set_sweep_point(&mut self, point: Point<Scalar>) {
     self.current = point;
   }
 
-  fn current_point(&self) -> &Point<Rational> {
+  fn current_point(&self) -> &Point<Scalar> {
     &self.current
   }
 
@@ -344,10 +343,10 @@ where
 fn compare_segments<'a, Edge>(
   a: &Segment<'a, Edge>,
   b: &Segment<'a, Edge>,
-  sweep_point: &Point<Rational>,
+  sweep_point: &Point<Scalar>,
 ) -> Ordering
 where
-  &'a Edge: Into<LineSegmentView<'a, Rational, 2>>,
+  &'a Edge: Into<LineSegmentView<'a, Scalar, 2>>,
 {
   if a.index == b.index {
     return Ordering::Equal;
@@ -380,17 +379,17 @@ where
 struct Segment<'a, Edge> {
   index: usize,
   edge: &'a Edge,
-  view: LineSegmentView<'a, Rational, 2>,
+  view: LineSegmentView<'a, Scalar, 2>,
   left: EndpointRef<'a>,
   right: EndpointRef<'a>,
 }
 
 impl<'a, Edge> Segment<'a, Edge>
 where
-  &'a Edge: Into<LineSegmentView<'a, Rational, 2>>,
+  &'a Edge: Into<LineSegmentView<'a, Scalar, 2>>,
 {
   fn new(index: usize, edge: &'a Edge) -> Self {
-    let view: LineSegmentView<'a, Rational, 2> = edge.into();
+    let view: LineSegmentView<'a, Scalar, 2> = edge.into();
     let left = EndpointRef::from(view.min);
     let right = EndpointRef::from(view.max);
     Segment {
@@ -402,66 +401,67 @@ where
     }
   }
 
-  fn value_at(&self, x: &Rational) -> Rational {
-    let x1 = *self.left.x();
-    let y1 = *self.left.y();
-    let x2 = *self.right.x();
-    let y2 = *self.right.y();
+  fn value_at(&self, x: &Scalar) -> Scalar {
+    let x1 = self.left.x().clone();
+    let y1 = self.left.y().clone();
+    let x2 = self.right.x().clone();
+    let y2 = self.right.y().clone();
 
     if x1 == x2 {
       return if y1 <= y2 { y1 } else { y2 };
     }
 
-    let dx = x2 - x1;
+    let dx = x2.clone() - x1.clone();
     if dx.is_zero() {
       return y1;
     }
-    let t = (*x - x1) / dx;
-    let dy = y2 - y1;
+    let t = (x.clone() - x1.clone()) / dx.clone();
+    let dy = y2 - y1.clone();
     y1 + dy * t
   }
 
-  fn slope(&self) -> Option<Rational> {
-    let dx = *self.right.x() - *self.left.x();
+  fn slope(&self) -> Option<Scalar> {
+    let dx = self.right.x().clone() - self.left.x().clone();
     if dx.is_zero() {
       return None;
     }
-    Some((*self.right.y() - *self.left.y()) / dx)
+    Some((self.right.y().clone() - self.left.y().clone()) / dx)
   }
 
-  fn intersection_point(&self, other: &Self) -> Option<Point<Rational>> {
-    let p1x = *self.left.x();
-    let p1y = *self.left.y();
-    let p2x = *self.right.x();
-    let p2y = *self.right.y();
-    let q1x = *other.left.x();
-    let q1y = *other.left.y();
-    let q2x = *other.right.x();
-    let q2y = *other.right.y();
+  fn intersection_point(&self, other: &Self) -> Option<Point<Scalar>> {
+    let p1x = self.left.x().clone();
+    let p1y = self.left.y().clone();
+    let p2x = self.right.x().clone();
+    let p2y = self.right.y().clone();
+    let q1x = other.left.x().clone();
+    let q1y = other.left.y().clone();
+    let q2x = other.right.x().clone();
+    let q2y = other.right.y().clone();
 
-    let denom = (p1x - p2x) * (q1y - q2y) - (p1y - p2y) * (q1x - q2x);
+    let denom = (p1x.clone() - p2x.clone()) * (q1y.clone() - q2y.clone())
+      - (p1y.clone() - p2y.clone()) * (q1x.clone() - q2x.clone());
     if denom.is_zero() {
       return None;
     }
-    let part_a = p1x * p2y - p1y * p2x;
-    let part_b = q1x * q2y - q1y * q2x;
-    let x_num = part_a * (q1x - q2x) - (p1x - p2x) * part_b;
+    let part_a = p1x.clone() * p2y.clone() - p1y.clone() * p2x.clone();
+    let part_b = q1x.clone() * q2y.clone() - q1y.clone() * q2x.clone();
+    let x_num = part_a.clone() * (q1x - q2x) - (p1x - p2x) * part_b.clone();
     let y_num = part_a * (q1y - q2y) - (p1y - p2y) * part_b;
-    Some(Point::new([x_num / denom, y_num / denom]))
+    Some(Point::new([x_num / denom.clone(), y_num / denom]))
   }
 }
 
 struct EndpointRef<'a> {
-  point: &'a Point<Rational, 2>,
+  point: &'a Point<Scalar, 2>,
   inclusive: bool,
 }
 
 impl EndpointRef<'_> {
-  fn x(&self) -> &Rational {
+  fn x(&self) -> &Scalar {
     &self.point.array[0]
   }
 
-  fn y(&self) -> &Rational {
+  fn y(&self) -> &Scalar {
     &self.point.array[1]
   }
 
@@ -471,8 +471,8 @@ impl EndpointRef<'_> {
   }
 }
 
-impl<'a> From<EndPoint<&'a Point<Rational, 2>>> for EndpointRef<'a> {
-  fn from(endpoint: EndPoint<&'a Point<Rational, 2>>) -> Self {
+impl<'a> From<EndPoint<&'a Point<Scalar, 2>>> for EndpointRef<'a> {
+  fn from(endpoint: EndPoint<&'a Point<Scalar, 2>>) -> Self {
     match endpoint {
       EndPoint::Inclusive(point) => EndpointRef {
         point,
