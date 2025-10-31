@@ -2,7 +2,7 @@
 authors = ["David Himmelstrup <lemmih@gmail.com>"]
 categories = ["algorithms", "data-structures", "mathematics", "graphics"]
 description = "High-Level Computational Geometry"
-edition = "2021"
+edition = "2024"
 resolver = "2"
 exclude = [".dockerignore", ".github", ".gitignore", "playground", "Dockerfile.server"]
 homepage = "https://rgeometry.org/"

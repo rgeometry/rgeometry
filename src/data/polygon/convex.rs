@@ -1,9 +1,9 @@
 use num_traits::*;
 use ordered_float::OrderedFloat;
+use rand::Rng;
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::{Distribution, Standard};
 use rand::seq::SliceRandom;
-use rand::Rng;
 use std::ops::*;
 
 use crate::data::{Point, PointLocation, TriangleView, Vector};
@@ -201,7 +201,7 @@ impl Distribution<PolygonConvex<isize>> for Standard {
 // Helper functions
 
 // Property: random_between(n, max, &mut rng).sum::<usize>() == max
-fn random_between_iter<T, R>(n: usize, rng: &mut R) -> impl Iterator<Item = T>
+fn random_between_iter<T, R>(n: usize, rng: &mut R) -> impl Iterator<Item = T> + use<T, R>
 where
   T: PolygonScalar + Bounded + SampleUniform,
   R: Rng + ?Sized,
@@ -258,8 +258,8 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use rand::rngs::SmallRng;
   use rand::SeedableRng;
+  use rand::rngs::SmallRng;
 
   use proptest::prelude::*;
   use proptest::proptest as proptest_block;

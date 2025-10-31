@@ -5,8 +5,8 @@ use num_rational::BigRational;
 use num_traits::*;
 use ordered_float::OrderedFloat;
 use ordered_float::{FloatIsNan, NotNan};
-use rand::distributions::{Distribution, Standard};
 use rand::Rng;
+use rand::distributions::{Distribution, Standard};
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Debug;
@@ -94,7 +94,7 @@ where
   // FIXME: Unify with code for Vector.
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Point<T, N> {
     Point {
-      array: array_init(|_| rng.gen()),
+      array: array_init(|_| rng.r#gen()),
     }
   }
 }
@@ -366,8 +366,8 @@ mod sub;
 #[cfg(not(tarpaulin_include))]
 pub mod tests {
   use super::*;
-  use crate::testing::*;
   use crate::Orientation::*;
+  use crate::testing::*;
 
   use proptest::prelude::*;
   use test_strategy::proptest;
