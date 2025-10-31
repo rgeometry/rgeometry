@@ -2,8 +2,8 @@ use super::{Point, PointLocation};
 use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 use claims::debug_assert_ok;
 use num_traits::*;
-use rand::distributions::uniform::SampleUniform;
 use rand::Rng;
+use rand::distributions::uniform::SampleUniform;
 
 // FIXME: Support n-dimensional triangles?
 #[derive(Debug, Clone)]

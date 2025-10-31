@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
-use crate::data::Vector;
 use crate::PolygonScalar;
+use crate::data::Vector;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
 pub enum Orientation {
