@@ -317,7 +317,7 @@ pub fn polygon_ordered() -> impl Strategy<Value = Polygon<OrderedFloat<f64>>> {
 // arbitrary precision machinery we're using cannot compute answers with an
 // exponent larger than 1024.
 pub fn polygon_f64() -> impl Strategy<Value = Polygon<f64>> {
-  PolygonStrat(any::<f64>().prop_map(|pt| rem_float(pt)), 3..50)
+  PolygonStrat(any::<f64>().prop_map(rem_float), 3..50)
 }
 
 pub fn polygon_big() -> impl Strategy<Value = Polygon<BigRational>> {

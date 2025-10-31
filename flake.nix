@@ -105,6 +105,13 @@
               inherit cargoArtifacts;
             });
 
+          # Run clippy
+          rgeometry-clippy = craneLib.cargoClippy (commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoClippyExtraArgs = "--all-targets -- -D warnings";
+            });
+
           # Check Nix formatting
           alejandra-check = pkgs.runCommand "alejandra-check" {} ''
             ${alejandra.defaultPackage.${system}}/bin/alejandra --check ${src}
