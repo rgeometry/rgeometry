@@ -1,12 +1,12 @@
-use crate::algorithms::zhash::{ZHashBox, ZHashable};
-use crate::data::{Point, PointId, PointLocation, Polygon, TriangleView};
 use crate::Orientation;
 use crate::PolygonScalar;
+use crate::algorithms::zhash::{ZHashBox, ZHashable};
+use crate::data::{Point, PointId, PointLocation, Polygon, TriangleView};
 
 // use rand::rngs::mock::StepRng;
-use rand::rngs::SmallRng;
 use rand::Rng;
 use rand::SeedableRng;
+use rand::rngs::SmallRng;
 
 /// $O(n^2)$ Polygon triangulation. Ears are selected in a pseudo-random manner.
 pub fn earclip<T>(poly: &Polygon<T>) -> impl Iterator<Item = (PointId, PointId, PointId)> + '_
@@ -460,8 +460,8 @@ mod tests {
   use super::*;
   use crate::data::*;
   use num_bigint::BigInt;
-  use rand::rngs::SmallRng;
   use rand::SeedableRng;
+  use rand::rngs::SmallRng;
 
   fn trig_area_2x<F: PolygonScalar + Into<BigInt>>(p: &Polygon<F>) -> BigInt {
     let mut trig_area_2x = BigInt::from(0);

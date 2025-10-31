@@ -2,9 +2,9 @@ use super::DirectedEdge;
 use super::LineSegmentView;
 use super::Point;
 use super::Vector;
-use crate::data::LineSegment;
 use crate::Intersects;
 use crate::TotalOrd;
+use crate::data::LineSegment;
 use crate::{Orientation, PolygonScalar};
 
 ///////////////////////////////////////////////////////////////////////////////

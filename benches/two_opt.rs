@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use rgeometry::algorithms::polygonization::two_opt_moves;
 use rgeometry::data::*;
 
@@ -6,9 +6,9 @@ use num::BigInt;
 use num::BigRational;
 use ordered_float::OrderedFloat;
 
-use rand::distributions::Standard;
 use rand::Rng;
 use rand::SeedableRng;
+use rand::distributions::Standard;
 
 const SET_SIZE: usize = 100;
 

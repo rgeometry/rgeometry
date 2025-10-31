@@ -1,9 +1,9 @@
 // use claim::debug_assert_ok;
 
+use crate::TotalOrd;
 use crate::data::Cursor;
 use crate::data::DirectedEdge;
 use crate::data::Point;
-use crate::TotalOrd;
 
 pub struct Iter<'a, T: 'a> {
   pub(crate) iter: std::slice::Iter<'a, Point<T, 2>>,
