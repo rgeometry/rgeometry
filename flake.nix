@@ -125,14 +125,6 @@
 
           # Build all demos
           all-demos-check = allDemos;
-
-          # Build rgeometry-wasm
-          rgeometry-wasm-check = craneLib.buildPackage (commonArgs
-            // {
-              inherit cargoArtifacts;
-              pname = "rgeometry-wasm";
-              cargoExtraArgs = "-p rgeometry-wasm";
-            });
         };
 
         apps.pre-commit = {
