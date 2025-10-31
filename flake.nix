@@ -81,6 +81,9 @@
             echo "→ Checking Nix formatting..."
             ${alejandra.defaultPackage.${system}}/bin/alejandra --check .
 
+            echo "→ Checking TOML formatting..."
+            ${pkgs.taplo}/bin/taplo fmt --check
+
             echo "→ Checking Rust formatting..."
             ${rustToolchain}/bin/cargo fmt --all --check
 
@@ -89,6 +92,13 @@
 
             echo "→ Running tests..."
             ${rustToolchain}/bin/cargo test --all-features
+
+            echo "→ Checking demos..."
+            for demo in ${lib.concatStringsSep " " demoNames}; do
+              echo "  → Checking demo: $demo"
+              (cd demos/$demo && ${rustToolchain}/bin/cargo check --target wasm32-unknown-unknown)
+              (cd demos/$demo && ${rustToolchain}/bin/cargo clippy --target wasm32-unknown-unknown -- -D warnings)
+            done
 
             echo "✓ All pre-commit checks passed!"
           '');
