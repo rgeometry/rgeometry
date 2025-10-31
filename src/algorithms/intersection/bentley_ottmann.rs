@@ -53,11 +53,11 @@
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use crate::data::{EndPoint, LineSegmentView, Point};
 use crate::Intersects;
+use crate::data::{EndPoint, LineSegmentView, Point};
 
-use num::traits::Zero;
 use num::BigRational;
+use num::traits::Zero;
 
 type PairKey = (usize, usize);
 type Scalar = BigRational;
@@ -92,11 +92,11 @@ where
     event.dedup();
 
     for_each_pair(&event.crossing, |pair| {
-      if let Some(scheduled_point) = scheduled.get(&pair) {
-        if scheduled_point == &point {
-          // This event is now live; drop the pending marker.
-          scheduled.remove(&pair);
-        }
+      if let Some(scheduled_point) = scheduled.get(&pair)
+        && scheduled_point == &point
+      {
+        // This event is now live; drop the pending marker.
+        scheduled.remove(&pair);
       }
     });
 
@@ -185,11 +185,7 @@ where
 }
 
 fn pair_key(a: usize, b: usize) -> PairKey {
-  if a < b {
-    (a, b)
-  } else {
-    (b, a)
-  }
+  if a < b { (a, b) } else { (b, a) }
 }
 
 struct PairProcessor<'segments, 'state, 'edge, Edge> {
