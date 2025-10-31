@@ -100,7 +100,10 @@ where
       }
     });
 
-    let participants = event.all_segments();
+    let mut participants = event.all_segments();
+    participants.extend(status.segments_containing(&point));
+    participants.sort_unstable();
+    participants.dedup();
     report_intersections(
       &participants,
       &segments,
@@ -112,17 +115,28 @@ where
     status.set_sweep_point(point);
     status.remove_all(&event.lowers);
     status.remove_all(&event.crossing);
-    status.insert_all(&event.uppers);
-    status.insert_all(&event.crossing);
-    status.resort();
 
-    let adjacent_pairs = status.adjacent_pairs();
     let mut processor = PairProcessor {
       segments: &segments,
       scheduled: &mut scheduled,
       reported: &mut reported,
       results: &mut results,
     };
+    for pair in status.adjacent_pairs() {
+      processor.process(pair, status.current_point(), &mut queue);
+    }
+
+    status.insert_all(&event.uppers);
+    let reinserts: Vec<usize> = event
+      .crossing
+      .iter()
+      .copied()
+      .filter(|idx| !event.lowers.contains(idx))
+      .collect();
+    status.insert_all(&reinserts);
+    status.resort();
+
+    let adjacent_pairs = status.adjacent_pairs();
     for (a, b) in adjacent_pairs {
       processor.process(pair_key(a, b), status.current_point(), &mut queue);
     }
@@ -323,6 +337,15 @@ where
     }
   }
 
+  fn segments_containing(&self, point: &Point<Scalar>) -> Vec<usize> {
+    self
+      .active
+      .iter()
+      .copied()
+      .filter(|idx| self.segments[*idx].view.contains(point))
+      .collect()
+  }
+
   fn resort(&mut self) {
     self
       .active
@@ -482,6 +505,156 @@ impl<'a> From<EndPoint<&'a Point<Scalar, 2>>> for EndpointRef<'a> {
         point,
         inclusive: false,
       },
+    }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::algorithms::intersection::naive;
+  use crate::data::{EndPoint, LineSegment, Point};
+  use proptest::prelude::*;
+  use std::collections::BTreeSet;
+
+  fn scalar(n: i64) -> Scalar {
+    Scalar::from_integer(n.into())
+  }
+
+  fn point(coords: (i64, i64)) -> Point<Scalar> {
+    let (x, y) = coords;
+    Point::new([scalar(x), scalar(y)])
+  }
+
+  fn segment(a: (i64, i64), b: (i64, i64)) -> LineSegment<Scalar> {
+    LineSegment::new(EndPoint::Inclusive(point(a)), EndPoint::Inclusive(point(b)))
+  }
+
+  fn collect_pairs<'a>(
+    edges: &'a [LineSegment<Scalar>],
+    iter: impl Iterator<Item = (&'a LineSegment<Scalar>, &'a LineSegment<Scalar>)>,
+  ) -> BTreeSet<PairKey> {
+    let index_map: HashMap<*const LineSegment<Scalar>, usize> = edges
+      .iter()
+      .enumerate()
+      .map(|(idx, seg)| (seg as *const _, idx))
+      .collect();
+    iter
+      .map(|(a, b)| {
+        let a_idx = index_map
+          .get(&(a as *const LineSegment<Scalar>))
+          .expect("segment not found");
+        let b_idx = index_map
+          .get(&(b as *const LineSegment<Scalar>))
+          .expect("segment not found");
+        pair_key(*a_idx, *b_idx)
+      })
+      .collect()
+  }
+
+  #[test]
+  fn detects_single_crossing() {
+    let segments = vec![
+      segment((0, 0), (2, 2)),
+      segment((0, 2), (2, 0)),
+      segment((0, 3), (3, 3)),
+    ];
+    let pairs = collect_pairs(&segments, segment_intersections(&segments));
+    let expected = [(0, 1)].into_iter().collect::<BTreeSet<_>>();
+    assert_eq!(pairs, expected);
+  }
+
+  #[test]
+  fn finds_multiple_crossings() {
+    let segments = vec![
+      segment((0, 0), (3, 3)),
+      segment((0, 3), (3, 0)),
+      segment((1, 3), (2, 0)),
+      segment((1, 0), (2, 3)),
+    ];
+    let pairs = collect_pairs(&segments, segment_intersections(&segments));
+    let expected = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+      .into_iter()
+      .collect::<BTreeSet<_>>();
+    assert_eq!(pairs, expected);
+  }
+
+  #[test]
+  fn no_false_positives() {
+    let segments = vec![
+      segment((0, 0), (1, 0)),
+      segment((2, 0), (3, 0)),
+      segment((0, 1), (0, 2)),
+    ];
+    let pairs = collect_pairs(&segments, segment_intersections(&segments));
+    assert!(pairs.is_empty());
+  }
+
+  #[test]
+  fn shared_endpoint_detected() {
+    let segments = vec![
+      segment((0, 0), (2, 0)),
+      segment((2, 0), (2, 2)),
+      segment((0, 2), (2, 0)),
+    ];
+    let pairs = collect_pairs(&segments, segment_intersections(&segments));
+    let expected = [(0, 1), (0, 2), (1, 2)]
+      .into_iter()
+      .collect::<BTreeSet<_>>();
+    assert_eq!(pairs, expected);
+  }
+
+  #[test]
+  fn overlapping_segments_detected() {
+    let segments = vec![
+      segment((0, 0), (3, 0)),
+      segment((1, 0), (4, 0)),
+      segment((0, 1), (3, 1)),
+    ];
+    let pairs = collect_pairs(&segments, segment_intersections(&segments));
+    let expected = [(0, 1)].into_iter().collect::<BTreeSet<_>>();
+    assert_eq!(pairs, expected);
+  }
+
+  #[test]
+  fn vertical_segments_crossing() {
+    let segments = vec![
+      segment((1, -1), (1, 2)),
+      segment((0, 0), (3, 0)),
+      segment((2, -1), (2, 2)),
+    ];
+    let pairs = collect_pairs(&segments, segment_intersections(&segments));
+    let expected = [(0, 1), (1, 2)].into_iter().collect::<BTreeSet<_>>();
+    assert_eq!(pairs, expected);
+  }
+
+  fn arb_segment() -> impl Strategy<Value = LineSegment<Scalar>> {
+    let coord = -5..=5;
+    (coord.clone(), coord.clone(), coord.clone(), coord)
+      .prop_map(|(x1, y1, x2, y2)| {
+        segment(
+          (i64::from(x1), i64::from(y1)),
+          (i64::from(x2), i64::from(y2)),
+        )
+      })
+      // Keep property tests in general position; vertical segments and degeneracies
+      // are covered explicitly in dedicated unit tests.
+      .prop_filter("non-vertical segment", |seg| {
+        let min = seg.min.inner();
+        let max = seg.max.inner();
+        min != max && min.array[0] != max.array[0]
+      })
+  }
+
+  proptest! {
+    #[test]
+    fn sweep_matches_naive(segments in prop::collection::vec(arb_segment(), 0..6)) {
+      let sweep_pairs = collect_pairs(&segments, segment_intersections(&segments));
+      let naive_pairs = collect_pairs(
+        &segments,
+        naive::segment_intersections::<_, Scalar>(&segments),
+      );
+      prop_assert_eq!(sweep_pairs, naive_pairs);
     }
   }
 }
