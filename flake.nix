@@ -34,6 +34,7 @@
         commonArgs = {
           inherit src;
           strictDeps = true;
+          cargoExtraArgs = "--all-features";
           nativeBuildInputs = with pkgs; [
             pkg-config
             m4
@@ -96,7 +97,6 @@
           rgeometry-test = craneLib.cargoTest (commonArgs
             // {
               inherit cargoArtifacts;
-              cargoTestExtraArgs = "--all-features";
             });
 
           # Run the doc tests
@@ -115,12 +115,14 @@
           taplo-fmt-check = craneLib.taploFmt (commonArgs
             // {
               inherit cargoArtifacts;
+              cargoExtraArgs = "";
             });
 
           # Check Rust formatting with crane
           cargo-fmt-check = craneLib.cargoFmt (commonArgs
             // {
               inherit cargoArtifacts;
+              cargoExtraArgs = "";
             });
 
           # Build all demos
