@@ -71,6 +71,28 @@
           };
 
         formatter = alejandra.defaultPackage.${system};
+
+        apps.pre-commit = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "pre-commit" ''
+            set -e
+            echo "Running pre-commit checks..."
+
+            echo "→ Checking Nix formatting..."
+            ${alejandra.defaultPackage.${system}}/bin/alejandra --check .
+
+            echo "→ Checking Rust formatting..."
+            ${rustToolchain}/bin/cargo fmt --all --check
+
+            echo "→ Running clippy..."
+            ${rustToolchain}/bin/cargo clippy --all-targets --all-features -- -D warnings
+
+            echo "→ Running tests..."
+            ${rustToolchain}/bin/cargo test --all-features
+
+            echo "✓ All pre-commit checks passed!"
+          '');
+        };
       }
     );
 }
