@@ -80,8 +80,8 @@ where
 
   let mut queue = EventQueue::default();
   for segment in &segments {
-    queue.add_upper(segment.left.point.clone(), segment.index);
-    queue.add_lower(segment.right.point.clone(), segment.index);
+    queue.add_upper(*segment.left.point, segment.index);
+    queue.add_lower(*segment.right.point, segment.index);
   }
 
   let mut status = Status::new(&segments);
@@ -110,7 +110,7 @@ where
       &mut scheduled,
     );
 
-    status.set_sweep_point(point.clone());
+    status.set_sweep_point(point);
     status.remove_all(&event.lowers);
     status.remove_all(&event.crossing);
     status.insert_all(&event.uppers);
@@ -118,17 +118,14 @@ where
     status.resort();
 
     let adjacent_pairs = status.adjacent_pairs();
+    let mut processor = PairProcessor {
+      segments: &segments,
+      scheduled: &mut scheduled,
+      reported: &mut reported,
+      results: &mut results,
+    };
     for (a, b) in adjacent_pairs {
-      check_and_schedule(
-        a,
-        b,
-        &segments,
-        &point,
-        &mut queue,
-        &mut scheduled,
-        &mut reported,
-        &mut results,
-      );
+      processor.process(pair_key(a, b), status.current_point(), &mut queue);
     }
   }
 
@@ -163,55 +160,6 @@ fn report_intersections<'a, Edge>(
   });
 }
 
-fn check_and_schedule<'a, Edge>(
-  a: usize,
-  b: usize,
-  segments: &[Segment<'a, Edge>],
-  current_point: &Point<Rational>,
-  queue: &mut EventQueue,
-  scheduled: &mut HashMap<PairKey, Point<Rational>>,
-  reported: &mut HashSet<PairKey>,
-  results: &mut Vec<PairKey>,
-) where
-  &'a Edge: Into<LineSegmentView<'a, Rational, 2>>,
-{
-  let pair = pair_key(a, b);
-  if reported.contains(&pair) || scheduled.contains_key(&pair) {
-    return;
-  }
-  let intersection = segments[a].view.intersect(segments[b].view);
-  let Some(intersection) = intersection else {
-    return;
-  };
-  match intersection {
-    crate::data::ILineSegment::Overlap(_) => {
-      reported.insert(pair);
-      results.push(pair);
-    }
-    crate::data::ILineSegment::Crossing => {
-      if let Some(point) = segments[a].intersection_point(&segments[b]) {
-        match point.cmp(current_point) {
-          Ordering::Less => {
-            // Already handled earlier; record if needed.
-            if reported.insert(pair) {
-              results.push(pair);
-            }
-          }
-          Ordering::Equal => {
-            if reported.insert(pair) {
-              results.push(pair);
-            }
-          }
-          Ordering::Greater => {
-            scheduled.insert(pair, point.clone());
-            queue.add_crossing(point, a, b);
-          }
-        }
-      }
-    }
-  }
-}
-
 fn for_each_pair<F>(items: &[usize], mut f: F)
 where
   F: FnMut(PairKey),
@@ -228,6 +176,53 @@ fn pair_key(a: usize, b: usize) -> PairKey {
     (a, b)
   } else {
     (b, a)
+  }
+}
+
+struct PairProcessor<'segments, 'state, 'edge, Edge> {
+  segments: &'segments [Segment<'edge, Edge>],
+  scheduled: &'state mut HashMap<PairKey, Point<Rational>>,
+  reported: &'state mut HashSet<PairKey>,
+  results: &'state mut Vec<PairKey>,
+}
+
+impl<'edge, Edge> PairProcessor<'_, '_, 'edge, Edge>
+where
+  &'edge Edge: Into<LineSegmentView<'edge, Rational, 2>>,
+{
+  fn process(&mut self, pair: PairKey, current_point: &Point<Rational>, queue: &mut EventQueue) {
+    if self.reported.contains(&pair) || self.scheduled.contains_key(&pair) {
+      return;
+    }
+    let (a, b) = pair;
+    let intersection = self.segments[a].view.intersect(self.segments[b].view);
+    let Some(intersection) = intersection else {
+      return;
+    };
+    match intersection {
+      crate::data::ILineSegment::Overlap(_) => {
+        if self.reported.insert(pair) {
+          self.results.push(pair);
+        }
+        self.scheduled.remove(&pair);
+      }
+      crate::data::ILineSegment::Crossing => {
+        if let Some(point) = self.segments[a].intersection_point(&self.segments[b]) {
+          match point.cmp(current_point) {
+            Ordering::Less | Ordering::Equal => {
+              if self.reported.insert(pair) {
+                self.results.push(pair);
+              }
+              self.scheduled.remove(&pair);
+            }
+            Ordering::Greater => {
+              self.scheduled.insert(pair, point);
+              queue.add_crossing(point, a, b);
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -252,7 +247,7 @@ impl EventQueue {
   }
 
   fn pop(&mut self) -> Option<(Point<Rational>, EventData)> {
-    let first_key = self.map.keys().next().cloned()?;
+    let first_key = self.map.keys().next().copied()?;
     let data = self.map.remove(&first_key)?;
     Some((first_key, data))
   }
@@ -307,6 +302,10 @@ where
 
   fn set_sweep_point(&mut self, point: Point<Rational>) {
     self.current = point;
+  }
+
+  fn current_point(&self) -> &Point<Rational> {
+    &self.current
   }
 
   fn remove_all(&mut self, segments: &[usize]) {
@@ -404,49 +403,51 @@ where
   }
 
   fn value_at(&self, x: &Rational) -> Rational {
-    let x1 = self.left.x();
-    let y1 = self.left.y();
-    let x2 = self.right.x();
-    let y2 = self.right.y();
+    let x1 = *self.left.x();
+    let y1 = *self.left.y();
+    let x2 = *self.right.x();
+    let y2 = *self.right.y();
 
     if x1 == x2 {
-      return if y1 <= y2 { y1.clone() } else { y2.clone() };
+      return if y1 <= y2 { y1 } else { y2 };
     }
 
-    let dx = x2.clone() - x1.clone();
+    let dx = x2 - x1;
     if dx.is_zero() {
-      return y1.clone();
+      return y1;
     }
-    let t = (x.clone() - x1.clone()) / dx;
-    let dy = y2.clone() - y1.clone();
-    y1.clone() + dy * t
+    let t = (*x - x1) / dx;
+    let dy = y2 - y1;
+    y1 + dy * t
   }
 
   fn slope(&self) -> Option<Rational> {
-    let dx = self.right.x().clone() - self.left.x().clone();
+    let dx = *self.right.x() - *self.left.x();
     if dx.is_zero() {
       return None;
     }
-    Some((self.right.y().clone() - self.left.y().clone()) / dx)
+    Some((*self.right.y() - *self.left.y()) / dx)
   }
 
   fn intersection_point(&self, other: &Self) -> Option<Point<Rational>> {
-    let p1 = [self.left.x().clone(), self.left.y().clone()];
-    let p2 = [self.right.x().clone(), self.right.y().clone()];
-    let q1 = [other.left.x().clone(), other.left.y().clone()];
-    let q2 = [other.right.x().clone(), other.right.y().clone()];
+    let p1x = *self.left.x();
+    let p1y = *self.left.y();
+    let p2x = *self.right.x();
+    let p2y = *self.right.y();
+    let q1x = *other.left.x();
+    let q1y = *other.left.y();
+    let q2x = *other.right.x();
+    let q2y = *other.right.y();
 
-    let denom = (p1[0].clone() - p2[0].clone()) * (q1[1].clone() - q2[1].clone())
-      - (p1[1].clone() - p2[1].clone()) * (q1[0].clone() - q2[0].clone());
+    let denom = (p1x - p2x) * (q1y - q2y) - (p1y - p2y) * (q1x - q2x);
     if denom.is_zero() {
       return None;
     }
-    let part_a = p1[0].clone() * p2[1].clone() - p1[1].clone() * p2[0].clone();
-    let part_b = q1[0].clone() * q2[1].clone() - q1[1].clone() * q2[0].clone();
-    let x_num = part_a.clone() * (q1[0].clone() - q2[0].clone())
-      - (p1[0].clone() - p2[0].clone()) * part_b.clone();
-    let y_num = part_a * (q1[1].clone() - q2[1].clone()) - (p1[1].clone() - p2[1].clone()) * part_b;
-    Some(Point::new([x_num / denom.clone(), y_num / denom]))
+    let part_a = p1x * p2y - p1y * p2x;
+    let part_b = q1x * q2y - q1y * q2x;
+    let x_num = part_a * (q1x - q2x) - (p1x - p2x) * part_b;
+    let y_num = part_a * (q1y - q2y) - (p1y - p2y) * part_b;
+    Some(Point::new([x_num / denom, y_num / denom]))
   }
 }
 
@@ -455,7 +456,7 @@ struct EndpointRef<'a> {
   inclusive: bool,
 }
 
-impl<'a> EndpointRef<'a> {
+impl EndpointRef<'_> {
   fn x(&self) -> &Rational {
     &self.point.array[0]
   }
