@@ -30,6 +30,25 @@
 
         src = ./.;
 
+        # Common arguments for building the library
+        commonArgs = {
+          inherit src;
+          strictDeps = true;
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            m4
+          ];
+          buildInputs = with pkgs; [
+            gmp
+            mpfr
+          ];
+          # Use system GMP and MPFR instead of building from source
+          GMP_MPFR_SYS_CACHE = "no-test";
+        };
+
+        # Build dependencies only (for caching)
+        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
         mkDemo = demoName:
           craneLib.buildPackage {
             inherit src;
@@ -91,6 +110,21 @@
             echo ""
             echo "Note: Run 'cargo clippy' and 'cargo test' separately to check code quality and tests."
           '');
+        };
+
+        checks = {
+          # Run the library tests
+          rgeometry-test = craneLib.cargoTest (commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoTestExtraArgs = "--all-features";
+            });
+
+          # Run the doc tests
+          rgeometry-doc-test = craneLib.cargoDocTest (commonArgs
+            // {
+              inherit cargoArtifacts;
+            });
         };
       }
     );
