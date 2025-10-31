@@ -111,16 +111,11 @@
             touch $out
           '';
 
-          # Check TOML formatting
-          taplo-fmt-check =
-            pkgs.runCommand "taplo-fmt-check"
-            {
-              nativeBuildInputs = [pkgs.taplo];
-            } ''
-              cd ${src}
-              taplo fmt --check
-              touch $out
-            '';
+          # Check TOML formatting with crane
+          taplo-fmt-check = craneLib.taploFmt (commonArgs
+            // {
+              inherit cargoArtifacts;
+            });
 
           # Check Rust formatting with crane
           cargo-fmt-check = craneLib.cargoFmt (commonArgs
