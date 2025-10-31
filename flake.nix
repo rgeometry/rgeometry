@@ -30,6 +30,26 @@
 
         src = ./.;
 
+        # Common arguments for building the library
+        commonArgs = {
+          inherit src;
+          strictDeps = true;
+          cargoExtraArgs = "--all-features";
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            m4
+          ];
+          buildInputs = with pkgs; [
+            gmp
+            mpfr
+          ];
+          # Use system GMP and MPFR instead of building from source
+          GMP_MPFR_SYS_CACHE = "no-test";
+        };
+
+        # Build dependencies only (for caching)
+        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
         mkDemo = demoName:
           craneLib.buildPackage {
             inherit src;
@@ -71,6 +91,64 @@
           };
 
         formatter = alejandra.defaultPackage.${system};
+
+        checks = {
+          # Run the library tests
+          rgeometry-test = craneLib.cargoTest (commonArgs
+            // {
+              inherit cargoArtifacts;
+            });
+
+          # Run the doc tests
+          rgeometry-doc-test = craneLib.cargoDocTest (commonArgs
+            // {
+              inherit cargoArtifacts;
+            });
+
+          # Run clippy
+          rgeometry-clippy = craneLib.cargoClippy (commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoClippyExtraArgs = "--all-targets -- -D warnings";
+            });
+
+          # Check Nix formatting
+          alejandra-check = pkgs.runCommand "alejandra-check" {} ''
+            ${alejandra.defaultPackage.${system}}/bin/alejandra --check ${src}
+            touch $out
+          '';
+
+          # Check TOML formatting with crane
+          taplo-fmt-check = craneLib.taploFmt (commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoExtraArgs = "";
+            });
+
+          # Check Rust formatting with crane
+          cargo-fmt-check = craneLib.cargoFmt (commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoExtraArgs = "";
+            });
+
+          # Build all demos
+          all-demos-check = allDemos;
+        };
+
+        apps.pre-commit = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "pre-commit" ''
+            set -e
+            echo "Running pre-commit formatting checks..."
+            echo ""
+            echo "→ Nix formatting: ${self.checks.${system}.alejandra-check}"
+            echo "→ TOML formatting: ${self.checks.${system}.taplo-fmt-check}"
+            echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
+            echo ""
+            echo "✓ All formatting checks passed!"
+          '');
+        };
       }
     );
 }
