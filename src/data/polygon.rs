@@ -61,7 +61,7 @@ impl PointId {
 }
 
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct IndexEdge {
   pub min: PointId,
   pub max: PointId,
