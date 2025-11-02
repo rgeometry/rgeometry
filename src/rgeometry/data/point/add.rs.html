@@ -19,7 +19,7 @@
   }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">rgeometry/data/point/</div>add.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span><span class="kw">super</span>::Point;
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">rgeometry/data/point/</div>add.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-2"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span><span class="kw">super</span>::Point;
 <a href=#2 id=2 data-nosnippet>2</a><span class="kw">use </span><span class="kw">super</span>::Vector;
 <a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span>array_init::array_init;
 <a href=#4 id=4 data-nosnippet>4</a><span class="kw">use </span>num_traits::NumOps;
@@ -85,38 +85,4 @@
 <a href=#64 id=64 data-nosnippet>64</a>  <span class="kw">fn </span>add_assign(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: Vector&lt;T, N&gt;) {
 <a href=#65 id=65 data-nosnippet>65</a>    <span class="self">self</span>.add_assign(<span class="kw-2">&amp;</span>other)
 <a href=#66 id=66 data-nosnippet>66</a>  }
-<a href=#67 id=67 data-nosnippet>67</a>}
-<a href=#68 id=68 data-nosnippet>68</a>
-<a href=#69 id=69 data-nosnippet>69</a><span class="comment">// // point + point = point
-<a href=#70 id=70 data-nosnippet>70</a>// impl&lt;T, const N: usize&gt; Add&lt;Point&lt;T, N&gt;&gt; for Point&lt;T, N&gt;
-<a href=#71 id=71 data-nosnippet>71</a>// where
-<a href=#72 id=72 data-nosnippet>72</a>//   T: Add&lt;T, Output = T&gt; + Clone,
-<a href=#73 id=73 data-nosnippet>73</a>// {
-<a href=#74 id=74 data-nosnippet>74</a>//   type Output = Point&lt;T, N&gt;;
-<a href=#75 id=75 data-nosnippet>75</a>
-<a href=#76 id=76 data-nosnippet>76</a>//   fn add(self: Point&lt;T, N&gt;, other: Point&lt;T, N&gt;) -&gt; Self::Output {
-<a href=#77 id=77 data-nosnippet>77</a>//     let arr: [T; N] = raw_arr_zipwith(&amp;self.0, &amp;other.0, |a, b| a.clone() + b.clone());
-<a href=#78 id=78 data-nosnippet>78</a>//     Point(arr)
-<a href=#79 id=79 data-nosnippet>79</a>//   }
-<a href=#80 id=80 data-nosnippet>80</a>// }
-<a href=#81 id=81 data-nosnippet>81</a>
-<a href=#82 id=82 data-nosnippet>82</a>// point + vector = point
-<a href=#83 id=83 data-nosnippet>83</a>// impl&lt;'a, 'b, T, const N: usize&gt; Add&lt;Vector&lt;&amp;'a T, N&gt;&gt; for &amp;'b Point&lt;T, N&gt;
-<a href=#84 id=84 data-nosnippet>84</a>// where
-<a href=#85 id=85 data-nosnippet>85</a>//   T: Add&lt;T, Output = T&gt; + Clone,
-<a href=#86 id=86 data-nosnippet>86</a>// {
-<a href=#87 id=87 data-nosnippet>87</a>//   type Output = Point&lt;T, N&gt;;
-<a href=#88 id=88 data-nosnippet>88</a>
-<a href=#89 id=89 data-nosnippet>89</a>//   fn add(self: &amp;'b Point&lt;T, N&gt;, other: Vector&lt;&amp;'a T, N&gt;) -&gt; Self::Output {
-<a href=#90 id=90 data-nosnippet>90</a>//     let arr: [T; N] = unsafe {
-<a href=#91 id=91 data-nosnippet>91</a>//       let mut arr = MaybeUninit::uninit();
-<a href=#92 id=92 data-nosnippet>92</a>//       for i in 0..N {
-<a href=#93 id=93 data-nosnippet>93</a>//         (arr.as_mut_ptr() as *mut T)
-<a href=#94 id=94 data-nosnippet>94</a>//           .add(i)
-<a href=#95 id=95 data-nosnippet>95</a>//           .write(self.0.index(i).clone() + (*other.0.index(i)).clone());
-<a href=#96 id=96 data-nosnippet>96</a>//       }
-<a href=#97 id=97 data-nosnippet>97</a>//       arr.assume_init()
-<a href=#98 id=98 data-nosnippet>98</a>//     };
-<a href=#99 id=99 data-nosnippet>99</a>//     Point(arr)
-<a href=#100 id=100 data-nosnippet>100</a>//   }
-<a href=#101 id=101 data-nosnippet>101</a>// }</span></code></pre></div></section></main></body></html>
+<a href=#67 id=67 data-nosnippet>67</a>}</code></pre></div></section></main></body></html>
