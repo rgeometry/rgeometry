@@ -25,29 +25,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
-    - uses: Swatinem/rust-cache@v2
     - uses: DeterminateSystems/nix-installer-action@main
     - uses: DeterminateSystems/magic-nix-cache-action@main
 
-    - uses: actions-rs/cargo@v1
-      with:
-        command: doc
-
-    - run: RUSTDOCFLAGS="--html-in-header doc-header.html" cargo doc --no-deps
-
-    - run: |
-        nix build .#all-demos
-        cp result/*.html target/doc/
+    - run: nix build .#documentation
     
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.7.3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages # The branch the action should deploy to.
-        folder: target/doc/ # The folder the action should deploy.
+        folder: result/ # The folder the action should deploy.
         dry-run: ${{ github.ref != 'refs/heads/main' }}
