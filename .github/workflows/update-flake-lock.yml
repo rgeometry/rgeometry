@@ -20,4 +20,4 @@ jobs:
         with:
           pr-title: "chore: update flake.lock"
           pr-body: "Automated flake.lock update"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
