@@ -200,13 +200,7 @@
           program = toString (pkgs.writeShellScript "serve-docs" ''
             set -e
             
-            # Build documentation if not already built
-            if [ ! -d "result" ]; then
-              echo "Building documentation..."
-              nix build .#documentation
-            fi
-            
-            DOC_PATH="$(cd result && pwd)"
+            DOC_PATH="${documentation}"
             PORT="''${1:-8000}"
             
             echo ""
