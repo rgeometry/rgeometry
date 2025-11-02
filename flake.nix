@@ -245,18 +245,37 @@
           type = "app";
           program = toString (pkgs.writeShellScript "serve-docs" ''
             set -e
-            
+
             DOC_PATH="${documentation}"
             PORT="''${1:-8000}"
-            
+
             echo ""
             echo "📚 Serving rgeometry documentation"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "URL:  http://localhost:$PORT"
             echo "Docs: $DOC_PATH"
             echo ""
-            
+
             ${pkgs.python3}/bin/python3 -m http.server --directory "$DOC_PATH" "$PORT"
+          '');
+        };
+
+        apps.serve-coverage = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "serve-coverage" ''
+            set -e
+
+            COVERAGE_PATH="${coverage}/html"
+            PORT="''${1:-8080}"
+
+            echo ""
+            echo "📊 Serving rgeometry code coverage report"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "URL:      http://localhost:$PORT"
+            echo "Coverage: $COVERAGE_PATH"
+            echo ""
+
+            ${pkgs.python3}/bin/python3 -m http.server --directory "$COVERAGE_PATH" "$PORT"
           '');
         };
       }
