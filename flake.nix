@@ -126,6 +126,18 @@
             doNotPostBuildInstallCargoBinaries = true;
             installPhaseCommand = "echo 'Coverage report generated'";
           });
+
+        # Build documentation with rustdoc and include demo HTML files
+        documentation = (craneLib.cargoDoc (commonArgs
+          // {
+            inherit cargoArtifacts;
+            RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
+          })).overrideAttrs (oldAttrs: {
+          # After building docs, include demo HTML files
+          postInstall = ''
+            ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
+          '';
+        });
       in {
         packages = let
           demoPkgs = builtins.listToAttrs (map (name: {
@@ -138,6 +150,7 @@
           // {
             all-demos = allDemos;
             coverage = coverage;
+            documentation = documentation;
             default = self.packages.${system}.all-demos;
           };
 
@@ -209,6 +222,9 @@
 
           # Build all demos
           all-demos-check = allDemos;
+
+          # Build documentation
+          documentation-check = documentation;
         };
 
         apps.pre-commit = {
@@ -222,6 +238,25 @@
             echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
             echo ""
             echo "✓ All formatting checks passed!"
+          '');
+        };
+
+        apps.serve-docs = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "serve-docs" ''
+            set -e
+            
+            DOC_PATH="${documentation}"
+            PORT="''${1:-8000}"
+            
+            echo ""
+            echo "📚 Serving rgeometry documentation"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "URL:  http://localhost:$PORT"
+            echo "Docs: $DOC_PATH"
+            echo ""
+            
+            ${pkgs.python3}/bin/python3 -m http.server --directory "$DOC_PATH" "$PORT"
           '');
         };
       }
