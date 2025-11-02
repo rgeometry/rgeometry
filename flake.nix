@@ -105,6 +105,18 @@
           name = "rgeometry-demos";
           paths = builtins.map (n: mkDemo n) demoNames;
         };
+
+        # Build documentation with rustdoc and include demo HTML files
+        documentation = (craneLib.cargoDoc (commonArgs
+          // {
+            inherit cargoArtifacts;
+            RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
+          })).overrideAttrs (oldAttrs: {
+          # After building docs, include demo HTML files
+          postInstall = ''
+            ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
+          '';
+        });
       in {
         packages = let
           demoPkgs = builtins.listToAttrs (map (name: {
@@ -116,6 +128,7 @@
           demoPkgs
           // {
             all-demos = allDemos;
+            documentation = documentation;
             default = self.packages.${system}.all-demos;
           };
 
