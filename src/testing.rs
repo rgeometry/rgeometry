@@ -90,18 +90,6 @@ where
   // Reduce the complexity and return 'true' if something changed.
   // Return 'false' if the complexity cannot be reduced.
   fn simplify(&mut self) -> bool {
-    // if self.done {
-    //   // eprintln!("Shrink done");
-    //   return false;
-    // }
-
-    // If we previously cut an ear and the tests are still failing, make the cut permanent.
-    // if let Some(cut) = self.cut {
-    //   // eprintln!("Shrink cut {:?}", cut);
-    //   self.points.remove(cut.usize());
-    //   self.cut = None;
-    //   self.uncut.clear();
-    // }
     if self.cut_prev.is_some() {
       self.uncut.clear();
       self.cut_prev = None;
@@ -112,46 +100,28 @@ where
     if poly.rings[0].len() > 3 {
       for pt in poly.iter_boundary() {
         if !self.uncut.contains(&pt.point_id()) && pt.is_ear() {
-          // eprintln!(
-          //   "Cut ear: {:?} {}/{}",
-          //   pt.point_id(),
-          //   self.cut.len(),
-          //   self.points.len()
-          // );
           self.cut.push(pt.point_id());
           self.cut_prev = Some(pt.point_id());
-          // if !self.uncut_prev.is_empty() {
-          //   eprintln!("Re-trying: {:?}", self.uncut_prev);
-          // }
-          // self.uncut_prev.clear();
-          // std::mem::swap(&mut self.uncut, &mut self.uncut_prev);
           return true;
         }
       }
     }
 
-    // eprintln!("Simplify done: {:?} {:?}", self.uncut, self.uncut_prev);
-
     // No more ears can be cut. Let's try simplifying points:
-    // eprintln!("Shrinking point: {}", self.next_shrink);
     let shrink_points = false;
     if shrink_points {
       while self.next_shrink < poly.rings[0].len()
         && !self.points[poly.rings[0][self.next_shrink].usize()].simplify()
       {
         self.next_shrink += 1;
-        // eprintln!("Shrink next point: {}", self.shrink);
       }
       if self.next_shrink < poly.rings[0].len() {
         while self.polygon().validate().is_err() {
-          // eprintln!("Bad point shrink. Undo: {}", self.next_shrink);
           if !self.points[poly.rings[0][self.next_shrink].usize()].complicate() {
-            // eprintln!("Cannot undo. Abort");
             self.next_shrink = usize::MAX;
             return true;
           }
         }
-        // eprintln!("Phew. Fixed: {}", self.next_shrink);
         self.prev_shrink = Some(self.next_shrink);
         true
       } else {
@@ -174,14 +144,6 @@ where
     if let Some(cut) = self.cut_prev {
       self.cut.pop();
       self.cut_prev = None;
-      // eprintln!(
-      //   "Undo cut: {:?} {}/{}",
-      //   cut,
-      //   self.cut.len(),
-      //   self.points.len()
-      // );
-      // self.done = true;
-      // std::mem::swap(&mut self.uncut, &mut self.uncut_prev);
       self.uncut.push(cut);
       return true;
     }
@@ -190,9 +152,7 @@ where
       let key = self.polygon().rings[0][idx].usize();
       self.points[key].complicate();
       while self.polygon().validate().is_err() {
-        // eprintln!("Bad point unshrink. Undo: {}", self.shrink);
         if !self.points[key].complicate() {
-          // eprintln!("Cannot undo. Abort");
           self.done = true;
           return true;
         }
@@ -200,24 +160,6 @@ where
       self.prev_shrink = None;
     }
 
-    // if self.shrink < self.points.len() {
-    //   // eprintln!("Undo shrink");
-    //   if !self.points[self.shrink].complicate() {
-    //     self.shrink += 1;
-    //   } else {
-    //     while self.polygon().validate().is_err() {
-    //       // eprintln!("Bad point unshrink. Undo: {}", self.shrink);
-    //       if !self.points[self.shrink].complicate() {
-    //         // eprintln!("Cannot undo. Abort");
-    //         self.done = true;
-    //         return true;
-    //       }
-    //     }
-    //   }
-    //   return true;
-    // } else {
-    //   return false;
-    // }
     false
   }
 }
@@ -554,15 +496,6 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Convenience functions
 
-// FIXME: Move this impl to 'ordered_float' crate.
-// impl Arbitrary for NotNan<f64> {
-//   type Strategy = num::f64::Any;
-//   type Parameters = ();
-//   fn arbitrary_with(_params: ()) -> Self::Strategy {
-//     POSITIVE | NEGATIVE | NORMAL | SUBNORMAL | ZERO;
-//   }
-// }
-
 // Arbitrary isn't defined for NotNan.
 pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> {
   any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.map(rem_float).try_into().ok())
@@ -583,14 +516,6 @@ fn rem_float(f: f64) -> f64 {
 pub fn any_r<const N: usize>() -> impl Strategy<Value = Point<BigInt, N>> {
   any::<Point<isize, N>>().prop_map(|pt| pt.cast())
 }
-
-// pub fn any_64<const N: usize>() -> impl Strategy<Value = Point<i64, N>> {
-//   any::<Point<i64, N>>()
-// }
-
-// pub fn any_8<const N: usize>() -> impl Strategy<Value = Point<i8, N>> {
-//   any::<Point<i8, N>>()
-// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary triangle
