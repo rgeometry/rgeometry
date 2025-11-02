@@ -4,6 +4,7 @@
 #![doc(test(no_crate_inject))]
 #![doc(html_playground_url = "https://rgeometry.org/playground.html")]
 #![doc(test(no_crate_inject))]
+use num_bigint::BigInt;
 use num_traits::*;
 use std::cmp::Ordering;
 use std::iter::Sum;
@@ -111,6 +112,7 @@ pub trait PolygonScalar:
   ) -> Option<[Self; 2]> {
     approx_intersection_point_basic(Self::from_constant(0), p1, p2, q1, q2)
   }
+  fn incircle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> Ordering;
 }
 
 fn approx_intersection_point_basic<T: Clone + NumOps<T, T> + PartialEq + std::fmt::Debug>(
@@ -135,6 +137,36 @@ fn approx_intersection_point_basic<T: Clone + NumOps<T, T> + PartialEq + std::fm
     part_a.clone() * (x3.clone() - x4.clone()) - (x1.clone() - x2.clone()) * part_b.clone();
   let y_num = part_a * (y3.clone() - y4.clone()) - (y1.clone() - y2.clone()) * part_b;
   Some([x_num / denom.clone(), y_num / denom])
+}
+
+fn incircle_exact<T>(a: &[T; 2], b: &[T; 2], c: &[T; 2], d: &[T; 2]) -> Ordering
+where
+  T: Clone + NumOps<T, T> + Zero + Ord,
+{
+  let ax = a[0].clone() - d[0].clone();
+  let ay = a[1].clone() - d[1].clone();
+  let bx = b[0].clone() - d[0].clone();
+  let by = b[1].clone() - d[1].clone();
+  let cx = c[0].clone() - d[0].clone();
+  let cy = c[1].clone() - d[1].clone();
+
+  let a_len = ax.clone() * ax.clone() + ay.clone() * ay.clone();
+  let b_len = bx.clone() * bx.clone() + by.clone() * by.clone();
+  let c_len = cx.clone() * cx.clone() + cy.clone() * cy.clone();
+
+  let det = det3_generic(&ax, &ay, &a_len, &bx, &by, &b_len, &cx, &cy, &c_len);
+  det.cmp(&T::zero())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn det3_generic<T>(a1: &T, a2: &T, a3: &T, b1: &T, b2: &T, b3: &T, c1: &T, c2: &T, c3: &T) -> T
+where
+  T: Clone + NumOps<T, T>,
+{
+  let m1 = b2.clone() * c3.clone() - b3.clone() * c2.clone();
+  let m2 = b1.clone() * c3.clone() - b3.clone() * c1.clone();
+  let m3 = b1.clone() * c2.clone() - b2.clone() * c1.clone();
+  a1.clone() * m1 - a2.clone() * m2 + a3.clone() * m3
 }
 
 macro_rules! fixed_precision {
@@ -275,6 +307,16 @@ macro_rules! fixed_precision {
         let long_result = approx_intersection_point_basic(0, long_p1, long_p2, long_q1, long_q2);
         long_result.and_then(|[x, y]| Some([Self::try_from(x).ok()?, Self::try_from(y).ok()?]))
       }
+      fn incircle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> Ordering {
+        fn to_rational(val: $ty) -> num_rational::BigRational {
+          num_rational::BigRational::from_integer(BigInt::from(val))
+        }
+        let a_r = [to_rational(a[0]), to_rational(a[1])];
+        let b_r = [to_rational(b[0]), to_rational(b[1])];
+        let c_r = [to_rational(c[0]), to_rational(c[1])];
+        let d_r = [to_rational(d[0]), to_rational(d[1])];
+        incircle_exact(&a_r, &b_r, &c_r, &d_r)
+      }
     }
   };
 }
@@ -320,6 +362,14 @@ macro_rules! arbitrary_precision {
           &[&p[0] - &vector[1], &p[1] + &vector[0]],
           q
         )
+      }
+      fn incircle(
+        a: &[Self; 2],
+        b: &[Self; 2],
+        c: &[Self; 2],
+        d: &[Self; 2],
+      ) -> Ordering {
+        incircle_exact(a, b, c, d)
       }
     })*
   };
@@ -382,6 +432,26 @@ macro_rules! wrapped_floating_precision {
           &[float_to_rational(p[0].into_inner()), float_to_rational(p[1].into_inner())],
           &[float_to_rational(q[0].into_inner()), float_to_rational(q[1].into_inner())],
         )
+      }
+      fn incircle(
+        a: &[Self; 2],
+        b: &[Self; 2],
+        c: &[Self; 2],
+        d: &[Self; 2],
+      ) -> Ordering {
+        let incircle = geometry_predicates::predicates::incircle(
+          [a[0].into_inner() as f64, a[1].into_inner() as f64],
+          [b[0].into_inner() as f64, b[1].into_inner() as f64],
+          [c[0].into_inner() as f64, c[1].into_inner() as f64],
+          [d[0].into_inner() as f64, d[1].into_inner() as f64],
+        );
+        if incircle > 0.0 {
+          Ordering::Greater
+        } else if incircle < 0.0 {
+          Ordering::Less
+        } else {
+          Ordering::Equal
+        }
       }
     })*
   };
@@ -453,6 +523,26 @@ macro_rules! floating_precision {
           &[float_to_rational(q[0]), float_to_rational(q[1])],
         )
       }
+      fn incircle(
+        a: &[Self; 2],
+        b: &[Self; 2],
+        c: &[Self; 2],
+        d: &[Self; 2],
+      ) -> Ordering {
+        let incircle = geometry_predicates::predicates::incircle(
+          [a[0] as f64, a[1] as f64],
+          [b[0] as f64, b[1] as f64],
+          [c[0] as f64, c[1] as f64],
+          [d[0] as f64, d[1] as f64],
+        );
+        if incircle > 0.0 {
+          Ordering::Greater
+        } else if incircle < 0.0 {
+          Ordering::Less
+        } else {
+          Ordering::Equal
+        }
+      }
     })*
   };
 }
@@ -517,6 +607,27 @@ impl PolygonScalar for rug::Integer {
     let new_x = rug::Integer::from(&p[0] + &vector[1]);
     let new_y = rug::Integer::from(&p[1] + &vector[0]);
     PolygonScalar::cmp_slope(p, &[new_x, new_y], q)
+  }
+  fn incircle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> Ordering {
+    let mut ax = a[0].clone();
+    ax -= &d[0];
+    let mut ay = a[1].clone();
+    ay -= &d[1];
+    let mut bx = b[0].clone();
+    bx -= &d[0];
+    let mut by = b[1].clone();
+    by -= &d[1];
+    let mut cx = c[0].clone();
+    cx -= &d[0];
+    let mut cy = c[1].clone();
+    cy -= &d[1];
+
+    let a_len = ax.clone() * ax.clone() + ay.clone() * ay.clone();
+    let b_len = bx.clone() * bx.clone() + by.clone() * by.clone();
+    let c_len = cx.clone() * cx.clone() + cy.clone() * cy.clone();
+
+    let det = det3_generic(&ax, &ay, &a_len, &bx, &by, &b_len, &cx, &cy, &c_len);
+    det.cmp(&rug::Integer::new())
   }
 }
 

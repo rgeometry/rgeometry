@@ -1,11 +1,9 @@
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use num::BigRational;
-
-use crate::Orientation;
 use crate::algorithms::triangulation::earclip;
 use crate::data::{IndexEdge, Point, PointId, Polygon};
+use crate::{Orientation, PolygonScalar};
 
 /// Computes a constrained Delaunay triangulation for a simple polygon.
 ///
@@ -18,7 +16,10 @@ use crate::data::{IndexEdge, Point, PointId, Polygon};
 ///
 /// Panics if the polygon contains holes. Support for polygons with holes is
 /// not yet implemented.
-pub fn constrained_delaunay(poly: &Polygon<BigRational>) -> Vec<(PointId, PointId, PointId)> {
+pub fn constrained_delaunay<T>(poly: &Polygon<T>) -> Vec<(PointId, PointId, PointId)>
+where
+  T: PolygonScalar,
+{
   assert!(
     poly.rings.len() == 1,
     "constrained Delaunay currently only supports simple polygons without holes"
@@ -85,7 +86,7 @@ pub fn constrained_delaunay(poly: &Polygon<BigRational>) -> Vec<(PointId, PointI
       continue;
     }
 
-    let incircle = incircle_sign(&poly.points, opp1, shared0, shared1, opp2);
+    let incircle = incircle_at(&poly.points, opp1, shared0, shared1, opp2);
     if incircle != Ordering::Greater {
       continue;
     }
@@ -122,7 +123,7 @@ pub fn constrained_delaunay(poly: &Polygon<BigRational>) -> Vec<(PointId, PointI
     .collect()
 }
 
-fn collect_constraint_edges(poly: &Polygon<BigRational>) -> HashSet<IndexEdge> {
+fn collect_constraint_edges<T>(poly: &Polygon<T>) -> HashSet<IndexEdge> {
   let mut set = HashSet::new();
   for ring in &poly.rings {
     for window in ring.windows(2) {
@@ -237,7 +238,10 @@ fn add_triangle_edges(
   }
 }
 
-fn ensure_ccw(tri: &mut [PointId; 3], points: &[Point<BigRational>]) {
+fn ensure_ccw<T>(tri: &mut [PointId; 3], points: &[Point<T>])
+where
+  T: PolygonScalar,
+{
   if Point::orient(
     &points[tri[0].usize()],
     &points[tri[1].usize()],
@@ -249,55 +253,29 @@ fn ensure_ccw(tri: &mut [PointId; 3], points: &[Point<BigRational>]) {
   }
 }
 
-fn incircle_sign(
-  points: &[Point<BigRational>],
-  a: PointId,
-  b: PointId,
-  c: PointId,
-  d: PointId,
-) -> Ordering {
-  let pa = &points[a.usize()];
-  let pb = &points[b.usize()];
-  let pc = &points[c.usize()];
-  let pd = &points[d.usize()];
-
-  let ax = pa.x_coord().clone() - pd.x_coord().clone();
-  let ay = pa.y_coord().clone() - pd.y_coord().clone();
-  let bx = pb.x_coord().clone() - pd.x_coord().clone();
-  let by = pb.y_coord().clone() - pd.y_coord().clone();
-  let cx = pc.x_coord().clone() - pd.x_coord().clone();
-  let cy = pc.y_coord().clone() - pd.y_coord().clone();
-
-  let a_len = ax.clone() * ax.clone() + ay.clone() * ay.clone();
-  let b_len = bx.clone() * bx.clone() + by.clone() * by.clone();
-  let c_len = cx.clone() * cx.clone() + cy.clone() * cy.clone();
-
-  let det = det3(&ax, &ay, &a_len, &bx, &by, &b_len, &cx, &cy, &c_len);
-  det.cmp(&BigRational::from_integer(0.into()))
+fn incircle_at<T>(points: &[Point<T>], a: PointId, b: PointId, c: PointId, d: PointId) -> Ordering
+where
+  T: PolygonScalar,
+{
+  let pa = point_coords(&points[a.usize()]);
+  let pb = point_coords(&points[b.usize()]);
+  let pc = point_coords(&points[c.usize()]);
+  let pd = point_coords(&points[d.usize()]);
+  T::incircle(&pa, &pb, &pc, &pd)
 }
 
-#[allow(clippy::too_many_arguments)]
-fn det3(
-  a1: &BigRational,
-  a2: &BigRational,
-  a3: &BigRational,
-  b1: &BigRational,
-  b2: &BigRational,
-  b3: &BigRational,
-  c1: &BigRational,
-  c2: &BigRational,
-  c3: &BigRational,
-) -> BigRational {
-  let m1 = b2.clone() * c3.clone() - b3.clone() * c2.clone();
-  let m2 = b1.clone() * c3.clone() - b3.clone() * c1.clone();
-  let m3 = b1.clone() * c2.clone() - b2.clone() * c1.clone();
-  a1.clone() * m1 - a2.clone() * m2 + a3.clone() * m3
+fn point_coords<T>(point: &Point<T>) -> [T; 2]
+where
+  T: PolygonScalar,
+{
+  [point.x_coord().clone(), point.y_coord().clone()]
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
   use num::BigInt;
+  use num_rational::BigRational;
   use proptest::collection::vec;
   use proptest::prelude::*;
   use std::collections::{BTreeSet, HashSet};
@@ -426,7 +404,7 @@ mod tests {
           .find(|pid| *pid != shared0 && *pid != shared1)
           .unwrap();
 
-        let sign = incircle_sign(&poly.points, opp1, shared0, shared1, opp2);
+        let sign = incircle_at(&poly.points, opp1, shared0, shared1, opp2);
         prop_assert_ne!(sign, Ordering::Greater);
       }
     }
