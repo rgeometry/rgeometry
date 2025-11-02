@@ -176,6 +176,9 @@
 
           # Build all demos
           all-demos-check = allDemos;
+
+          # Build documentation
+          documentation-check = documentation;
         };
 
         apps.pre-commit = {
