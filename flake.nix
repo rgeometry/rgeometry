@@ -191,6 +191,31 @@
             echo "✓ All formatting checks passed!"
           '');
         };
+
+        apps.serve-docs = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "serve-docs" ''
+            set -e
+            
+            # Build documentation if not already built
+            if [ ! -d "result" ]; then
+              echo "Building documentation..."
+              nix build .#documentation
+            fi
+            
+            DOC_PATH="$(cd result && pwd)"
+            PORT="''${1:-8000}"
+            
+            echo ""
+            echo "📚 Serving rgeometry documentation"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "URL:  http://localhost:$PORT"
+            echo "Docs: $DOC_PATH"
+            echo ""
+            
+            ${pkgs.python3}/bin/python3 -m http.server --directory "$DOC_PATH" "$PORT"
+          '');
+        };
       }
     );
 }
