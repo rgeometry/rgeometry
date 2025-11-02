@@ -1,2 +1,0 @@
-window.ALL_CRATES = ["array_init","claims","geometry_predicates","num","num_bigint","num_complex","num_integer","num_iter","num_rational","num_traits","ordered_float","rand","rand_core","rgeometry"];
-//{"start":21,"fragment_lengths":[12,9,22,6,13,14,14,11,15,13,16,7,12,12]}
