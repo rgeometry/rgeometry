@@ -321,17 +321,7 @@
             binaryen
           ];
           shellHook = ''
-            echo "🦀 Rust development environment"
-            echo "Rust version: $(rustc --version)"
-            echo "Cargo version: $(cargo --version)"
-            echo ""
-            echo "Available tools:"
-            echo "  cargo       - Build and test Rust code"
-            echo "  rustc       - Rust compiler"
-            echo "  rustfmt     - Format Rust code"
-            echo "  clippy      - Lint Rust code"
-            echo "  wasm-pack   - Build WebAssembly packages"
-            echo ""
+            echo "$(cargo --version)"
           '';
           GMP_MPFR_SYS_CACHE = "no-test";
         };
