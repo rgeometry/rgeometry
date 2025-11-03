@@ -37,7 +37,6 @@
             ./Cargo.lock
             ./src
             ./benches
-            ./examples
             ./tests
             # Configuration files
             ./rust-toolchain.toml
