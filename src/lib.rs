@@ -4,6 +4,50 @@
 #![doc(test(no_crate_inject))]
 #![doc(html_playground_url = "https://rgeometry.org/playground.html")]
 #![doc(test(no_crate_inject))]
+
+//! # Computational Geometry
+//!
+//! RGeometry provides data types (points, polygons, lines, segments) and algorithms for
+//! computational geometry. Computational geometry is the study of algorithms for solving
+//! geometric problems, such as computing convex hulls, triangulating polygons, finding
+//! intersections, and determining visibility.
+//!
+//! This crate includes algorithms for:
+//! - **Convex hulls**: Graham scan, gift wrapping, and Melkman's algorithm
+//! - **Triangulation**: Ear clipping for simple polygons
+//! - **Polygonization**: Converting point sets to polygons (monotone, star-shaped, two-opt)
+//! - **Line segment intersection**: Naive and Bentley-Ottmann sweep line algorithms
+//! - **Visibility**: Computing visibility polygons
+//! - **Spatial indexing**: Z-order curve hashing
+//!
+//! # Demos
+//!
+//! Interactive visualizations are available at [rgeometry.org](https://rgeometry.org/):
+//!
+//! - [Convex Hull](https://rgeometry.org/convex_hull.html) - Graham scan algorithm
+//! - [Melkman's Algorithm](https://rgeometry.org/melkman.html) - Online convex hull for simple polylines
+//! - [Ear Clipping](https://rgeometry.org/earclip.html) - Polygon triangulation
+//! - [Two-Opt](https://rgeometry.org/two_opt.html) - Polygonization heuristic
+//! - [Random Convex](https://rgeometry.org/random_convex.html) - Convex polygon generation
+//! - [Random Monotone](https://rgeometry.org/random_monotone.html) - Monotone polygon generation
+//!
+//! # Caveats
+//!
+//! RGeometry supports multiple numeric types, each with different trade-offs:
+//!
+//! - **Arbitrary precision** (e.g., `num::BigRational`): Always produces mathematically correct
+//!   results but can be significantly slower due to dynamic memory allocation and arbitrary
+//!   precision arithmetic.
+//!
+//! - **Fixed precision integers** (e.g., `i32`, `i64`): Produce correct results only when all
+//!   intermediate and final values fit within the type's range. Overflow or underflow will cause
+//!   incorrect results or panics.
+//!
+//! - **Floating point** (e.g., `f32`, `f64`): Use robust geometric predicates for orientation
+//!   and incircle tests, but are still vulnerable to overflow and underflow. Algorithmic results
+//!   must not exceed `f64::MAX` or fall below `f64::MIN`. Accumulated rounding errors may affect
+//!   accuracy in complex computations.
+
 use num_traits::*;
 use std::cmp::Ordering;
 use std::iter::Sum;
