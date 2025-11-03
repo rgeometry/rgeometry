@@ -127,6 +127,19 @@
             installPhaseCommand = "echo 'Coverage report generated'";
           });
 
+        # Extract uncovered code snippets from coverage report
+        uncoveredSnippets = pkgs.runCommand "rgeometry-uncovered-snippets" {
+          nativeBuildInputs = [pkgs.python3];
+          preferLocalBuild = true;
+        } ''
+          mkdir -p $out
+          ${pkgs.python3}/bin/python3 ${./nix/extract-uncovered-snippets.py} \
+            ${coverage}/lcov.info \
+            $out/uncovered-snippets.md \
+            ${src}
+          echo "✓ Uncovered snippets report generated"
+        '';
+
         # Build documentation with rustdoc and include demo HTML files
         documentation = (craneLib.cargoDoc (commonArgs
           // {
@@ -167,6 +180,7 @@
           // {
             all-demos = allDemos;
             coverage = coverage;
+            uncovered-snippets = uncoveredSnippets;
             documentation = documentation;
             default = self.packages.${system}.all-demos;
           };
