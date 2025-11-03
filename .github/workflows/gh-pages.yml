@@ -30,10 +30,42 @@ jobs:
 
     - run: nix build .#documentation
     
-    - name: Deploy 🚀
+    - name: Get current deployed checksum
+      id: current_checksum
+      if: github.event_name == 'pull_request'
+      run: |
+        # Fetch the current checksum from gh-pages branch if it exists
+        CURRENT=$(git show origin/gh-pages:rgeometry.checksum 2>/dev/null || echo "")
+        echo "value=$CURRENT" >> $GITHUB_OUTPUT
+        echo "Current deployed checksum: $CURRENT"
+    
+    - name: Check if documentation has changed
+      id: changed
+      if: github.event_name == 'pull_request'
+      run: |
+        NEW_CHECKSUM=$(cat result/rgeometry.checksum 2>/dev/null || echo "")
+        CURRENT_CHECKSUM="${{ steps.current_checksum.outputs.value }}"
+        if [ "$NEW_CHECKSUM" = "$CURRENT_CHECKSUM" ] && [ -n "$CURRENT_CHECKSUM" ]; then
+          echo "Documentation unchanged, skipping preview deployment"
+          echo "skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "Documentation changed or is new"
+          echo "skip=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Deploy to main 🚀
       uses: JamesIves/github-pages-deploy-action@v4.7.3
+      if: github.ref == 'refs/heads/main'
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        branch: gh-pages # The branch the action should deploy to.
-        folder: result/ # The folder the action should deploy.
-        dry-run: ${{ github.ref != 'refs/heads/main' }}
+        branch: gh-pages
+        folder: result/
+        clean-exclude: pr-preview/
+    
+    - name: Deploy PR preview
+      uses: rossjrw/pr-preview-action@v1
+      if: github.event_name == 'pull_request' && steps.changed.outputs.skip == 'false'
+      with:
+        source-dir: result/
+        preview-branch: gh-pages
+        action: auto
