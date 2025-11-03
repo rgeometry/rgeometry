@@ -39,14 +39,14 @@
 //!   results but can be significantly slower due to dynamic memory allocation and arbitrary
 //!   precision arithmetic.
 //!
-//! - **Fixed precision integers** (e.g., `i32`, `i64`): Produce correct results only when all
-//!   intermediate and final values fit within the type's range. Overflow or underflow will cause
-//!   incorrect results or panics.
+//! - **Fixed precision integers** (e.g., `i32`, `i64`): RGeometry guarantees that intermediate
+//!   calculations will not overflow or underflow, but final outputs may not be representable in
+//!   the chosen type. For example, testing if two line segments overlap is always safe, but
+//!   computing where they intersect may produce a point whose coordinates cannot be represented.
 //!
-//! - **Floating point** (e.g., `f32`, `f64`): Use robust geometric predicates for orientation
-//!   and incircle tests, but are still vulnerable to overflow and underflow. Algorithmic results
-//!   must not exceed `f64::MAX` or fall below `f64::MIN`. Accumulated rounding errors may affect
-//!   accuracy in complex computations.
+//! - **Floating point** (e.g., `f32`, `f64`): RGeometry uses robust geometric predicates to
+//!   ensure accumulated rounding errors do not affect algorithmic results. However, individual
+//!   coordinate values are still subject to floating-point precision limits.
 
 use num_traits::*;
 use std::cmp::Ordering;
