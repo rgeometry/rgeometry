@@ -132,6 +132,8 @@ The pre-commit hook ensures all commits automatically pass the same checks as CI
 
 3. **Implement changes**: Make your code changes
 
+   **IMPORTANT**: Keep `CHANGELOG.md` up-to-date as you work. The CHANGELOG refers to PR numbers, so it can only be updated after a PR has been opened. Add entries under the "Unreleased" section documenting any user-visible changes.
+
 4. **Commit changes**: Commit your work - the pre-commit hook automatically validates everything
    ```bash
    git add . && git commit -m "feat: your commit message"

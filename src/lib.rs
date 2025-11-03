@@ -4,6 +4,50 @@
 #![doc(test(no_crate_inject))]
 #![doc(html_playground_url = "https://rgeometry.org/playground.html")]
 #![doc(test(no_crate_inject))]
+//! # Computational Geometry
+//!
+//! RGeometry provides data types (points, polygons, lines, segments) and algorithms for
+//! computational geometry. Computational geometry is the study of algorithms for solving
+//! geometric problems, such as computing convex hulls, triangulating polygons, finding
+//! intersections, and determining visibility.
+//!
+//! This crate includes algorithms for:
+//! - **Convex hulls**: Graham scan, gift wrapping, and Melkman's algorithm
+//! - **Triangulation**: Ear clipping for simple polygons and constrained Delaunay triangulation
+//! - **Polygonization**: Converting point sets to polygons (monotone, star-shaped, two-opt)
+//! - **Line segment intersection**: Naive and Bentley-Ottmann sweep line algorithms
+//! - **Visibility**: Computing visibility polygons
+//! - **Spatial indexing**: Z-order curve hashing
+//!
+//! # Demos
+//!
+//! Interactive visualizations are available:
+//!
+//! - [Convex Hull](../../../convex_hull.html) - Graham scan algorithm
+//! - [Melkman's Algorithm](../../../melkman.html) - Online convex hull for simple polylines
+//! - [Ear Clipping](../../../earclip.html) - Polygon triangulation
+//! - [Constrained Delaunay](../../../delaunay.html) - Ear-clipping plus Lawson flips
+//! - [Two-Opt](../../../two_opt.html) - Polygonization heuristic
+//! - [Random Convex](../../../random_convex.html) - Convex polygon generation
+//! - [Random Monotone](../../../random_monotone.html) - Monotone polygon generation
+//!
+//! # Caveats
+//!
+//! RGeometry supports multiple numeric types, each with different trade-offs:
+//!
+//! - **Arbitrary precision** (e.g., `num::BigRational`): Always produces mathematically correct
+//!   results but can be significantly slower due to dynamic memory allocation and arbitrary
+//!   precision arithmetic.
+//!
+//! - **Fixed precision integers** (e.g., `i32`, `i64`): RGeometry guarantees that intermediate
+//!   calculations will not overflow or underflow, but final outputs may not be representable in
+//!   the chosen type. For example, testing if two line segments overlap is always safe, but
+//!   computing where they intersect may produce a point whose coordinates cannot be represented.
+//!
+//! - **Floating point** (e.g., `f32`, `f64`): RGeometry uses robust geometric predicates to
+//!   ensure accumulated rounding errors do not affect algorithmic results. However, individual
+//!   coordinate values are still subject to floating-point precision limits.
+
 use num_bigint::BigInt;
 use num_traits::*;
 use std::cmp::Ordering;
