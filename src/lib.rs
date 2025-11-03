@@ -22,14 +22,14 @@
 //!
 //! # Demos
 //!
-//! Interactive visualizations are available at [rgeometry.org](https://rgeometry.org/):
+//! Interactive visualizations are available:
 //!
-//! - [Convex Hull](https://rgeometry.org/convex_hull.html) - Graham scan algorithm
-//! - [Melkman's Algorithm](https://rgeometry.org/melkman.html) - Online convex hull for simple polylines
-//! - [Ear Clipping](https://rgeometry.org/earclip.html) - Polygon triangulation
-//! - [Two-Opt](https://rgeometry.org/two_opt.html) - Polygonization heuristic
-//! - [Random Convex](https://rgeometry.org/random_convex.html) - Convex polygon generation
-//! - [Random Monotone](https://rgeometry.org/random_monotone.html) - Monotone polygon generation
+//! - [Convex Hull](../../../convex_hull.html) - Graham scan algorithm
+//! - [Melkman's Algorithm](../../../melkman.html) - Online convex hull for simple polylines
+//! - [Ear Clipping](../../../earclip.html) - Polygon triangulation
+//! - [Two-Opt](../../../two_opt.html) - Polygonization heuristic
+//! - [Random Convex](../../../random_convex.html) - Convex polygon generation
+//! - [Random Monotone](../../../random_monotone.html) - Monotone polygon generation
 //!
 //! # Caveats
 //!
