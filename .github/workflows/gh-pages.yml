@@ -60,8 +60,13 @@ jobs:
           echo "skip=false" >> $GITHUB_OUTPUT
         fi
     
-    - name: Store checksum
-      run: echo "${{ steps.checksum.outputs.value }}" > result/rgeometry.checksum
+    - name: Prepare deployment folder
+      run: |
+        # Create a staging area for deployment
+        mkdir -p deploy_staging
+        cp -r result/* deploy_staging/
+        # Store checksum in the deployment folder
+        echo "${{ steps.checksum.outputs.value }}" > deploy_staging/rgeometry.checksum
     
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.7.3
@@ -69,5 +74,5 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages # The branch the action should deploy to.
-        folder: result/ # The folder the action should deploy.
+        folder: deploy_staging/ # The folder the action should deploy.
         dry-run: ${{ github.ref != 'refs/heads/main' }}
