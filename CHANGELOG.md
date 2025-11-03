@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.10.4] 2025-11-03
+
 ### Added
 - [#137](https://github.com/rgeometry/rgeometry/pull/137) Bentley-Ottmann sweep algorithm for line segment intersection
 
