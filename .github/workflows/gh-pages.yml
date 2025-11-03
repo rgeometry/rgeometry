@@ -15,6 +15,7 @@ on:
       - reopened
       - synchronize
       - ready_for_review
+      - closed
   push:
     branches:
       - main
@@ -64,7 +65,7 @@ jobs:
     
     - name: Deploy PR preview
       uses: rossjrw/pr-preview-action@v1
-      if: github.event_name == 'pull_request' && steps.changed.outputs.skip == 'false'
+      if: github.event_name == 'pull_request' && (github.event.action != 'closed' && steps.changed.outputs.skip == 'false' || github.event.action == 'closed')
       with:
         source-dir: result/
         preview-branch: gh-pages
