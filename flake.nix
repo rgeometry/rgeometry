@@ -41,7 +41,6 @@
             ./Cargo.lock
             ./src
             ./benches
-            ./examples
             ./tests
             # Configuration files
             ./rust-toolchain.toml
@@ -122,6 +121,7 @@
             LLVM_PROFILE_FILE = "rgeometry-%p-%m.profraw";
             buildPhaseCargoCommand = ''
               cargo test --all-features --workspace
+              cargo test --all-features --workspace --doc
               mkdir -p $out/html
               grcov . --binary-path ./target/debug/ -s . -t html --branch --ignore-not-existing -o $out/html
               grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing -o $out/lcov.info
@@ -130,6 +130,19 @@
             doNotPostBuildInstallCargoBinaries = true;
             installPhaseCommand = "echo 'Coverage report generated'";
           });
+
+        # Extract uncovered code snippets from coverage report
+        uncoveredSnippets = pkgs.runCommand "rgeometry-uncovered-snippets" {
+          nativeBuildInputs = [pkgs.python3];
+          preferLocalBuild = true;
+        } ''
+          mkdir -p $out
+          ${pkgs.python3}/bin/python3 ${./nix/extract-uncovered-snippets.py} \
+            ${coverage}/lcov.info \
+            $out/uncovered-snippets.md \
+            ${src}
+          echo "✓ Uncovered snippets report generated"
+        '';
 
         # Build documentation with rustdoc and include demo HTML files
         documentation = (craneLib.cargoDoc (commonArgs
@@ -171,6 +184,7 @@
           // {
             all-demos = allDemos;
             inherit coverage documentation;
+            uncovered-snippets = uncoveredSnippets;
             default = self.packages.${system}.all-demos;
           };
 
@@ -238,11 +252,12 @@
               CARGO_INCREMENTAL = "0";
               RUSTFLAGS = "-Cinstrument-coverage";
               LLVM_PROFILE_FILE = "rgeometry-%p-%m.profraw";
-              buildPhaseCargoCommand = ''
-                cargo test --all-features --workspace
-                grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing -o coverage.lcov
-                echo "Coverage report generated successfully"
-              '';
+               buildPhaseCargoCommand = ''
+                 cargo test --all-features --workspace
+                 cargo test --all-features --workspace --doc
+                 grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing -o coverage.lcov
+                 echo "Coverage report generated successfully"
+               '';
               doCheck = false;
               doNotPostBuildInstallCargoBinaries = true;
               installPhaseCommand = ''
