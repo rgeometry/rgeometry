@@ -53,11 +53,18 @@ jobs:
           echo "skip=false" >> $GITHUB_OUTPUT
         fi
     
-    - name: Deploy 🚀
+    - name: Deploy to main 🚀
       uses: JamesIves/github-pages-deploy-action@v4.7.3
-      if: github.ref == 'refs/heads/main' || steps.changed.outputs.skip == 'false' || github.event_name != 'pull_request'
+      if: github.ref == 'refs/heads/main'
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        branch: gh-pages # The branch the action should deploy to.
-        folder: result/ # The folder the action should deploy.
-        dry-run: ${{ github.ref != 'refs/heads/main' }}
+        branch: gh-pages
+        folder: result/
+    
+    - name: Deploy PR preview
+      uses: rossjrw/pr-preview-action@v1
+      if: github.event_name == 'pull_request' && steps.changed.outputs.skip == 'false'
+      with:
+        source-dir: result/share/doc/rgeometry/
+        preview-branch: gh-pages
+        action: auto
