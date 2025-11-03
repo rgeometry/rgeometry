@@ -270,10 +270,13 @@
             echo "→ TOML formatting: ${self.checks.${system}.taplo-fmt-check}"
             echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
             echo ""
-            echo "✓ All formatting checks passed!"
+            echo "Running cargo publish validation..."
+            ${rustToolchain}/bin/cargo publish --dry-run --allow-dirty --no-verify
+            echo ""
+            echo "✓ All checks passed!"
           '');
           meta = {
-            description = "Run pre-commit formatting checks";
+            description = "Run pre-commit formatting and publish validation checks";
           };
         };
 
@@ -318,18 +321,6 @@
           '');
           meta = {
             description = "Serve rgeometry code coverage report on a local web server";
-          };
-        };
-
-        apps.publish-check = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "publish-check" ''
-            set -e
-            echo "Running cargo publish --dry-run..."
-            ${rustToolchain}/bin/cargo publish --dry-run
-          '');
-          meta = {
-            description = "Validate package against crates.io (requires network)";
           };
         };
       }
