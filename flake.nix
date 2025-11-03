@@ -213,22 +213,6 @@
               cargoExtraArgs = "";
             });
 
-          # Verify package is ready for publishing to crates.io
-          cargo-publish-check = craneLib.buildPackage (commonArgs
-            // {
-              inherit cargoArtifacts;
-              pname = "rgeometry-publish-check";
-              buildPhaseCargoCommand = ''
-                cargo package
-              '';
-              doCheck = false;
-              doNotPostBuildInstallCargoBinaries = true;
-              installPhaseCommand = ''
-                mkdir -p $out
-                touch $out/publish-check-passed
-              '';
-            });
-
           # Verify code coverage can be generated
           rgeometry-coverage = craneLib.buildPackage (commonArgs
             // {
