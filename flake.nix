@@ -239,6 +239,9 @@
             echo ""
             echo "✓ All formatting checks passed!"
           '');
+          meta = {
+            description = "Run pre-commit formatting checks";
+          };
         };
 
         apps.serve-docs = {
@@ -258,6 +261,9 @@
 
             ${pkgs.python3}/bin/python3 -m http.server --directory "$DOC_PATH" "$PORT"
           '');
+          meta = {
+            description = "Serve rgeometry documentation on a local web server";
+          };
         };
 
         apps.serve-coverage = {
@@ -277,6 +283,9 @@
 
             ${pkgs.python3}/bin/python3 -m http.server --directory "$COVERAGE_PATH" "$PORT"
           '');
+          meta = {
+            description = "Serve rgeometry code coverage report on a local web server";
+          };
         };
       }
     );
