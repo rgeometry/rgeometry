@@ -55,6 +55,7 @@ Use a major release for:
   - Include only user-visible changes (omit CI, build system changes)
   - Format: `## [X.Y.Z] YYYY-MM-DD`
 - [ ] Update version in `Cargo.toml`
+- [ ] Update `Cargo.lock` to reflect version change: `nix develop -c cargo metadata --format-version=1 > /dev/null`
 - [ ] Commit changes: `git commit -m "release: X.Y.Z"`
 
 ### 2. Create Pull Request
