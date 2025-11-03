@@ -30,8 +30,42 @@ jobs:
 
     - run: nix build .#documentation
     
+    - name: Compute documentation checksum
+      id: checksum
+      run: |
+        CHECKSUM=$(find result/share/doc/rgeometry -type f -exec md5sum {} \; | sort | md5sum | cut -d' ' -f1)
+        echo "value=$CHECKSUM" >> $GITHUB_OUTPUT
+        echo "Documentation checksum: $CHECKSUM"
+    
+    - name: Get current deployed checksum
+      id: current_checksum
+      if: github.event_name == 'pull_request'
+      run: |
+        # Fetch the current checksum from gh-pages branch if it exists
+        CURRENT=$(git show origin/gh-pages:rgeometry.checksum 2>/dev/null || echo "")
+        echo "value=$CURRENT" >> $GITHUB_OUTPUT
+        echo "Current deployed checksum: $CURRENT"
+    
+    - name: Check if documentation has changed
+      id: changed
+      if: github.event_name == 'pull_request'
+      run: |
+        NEW_CHECKSUM="${{ steps.checksum.outputs.value }}"
+        CURRENT_CHECKSUM="${{ steps.current_checksum.outputs.value }}"
+        if [ "$NEW_CHECKSUM" = "$CURRENT_CHECKSUM" ] && [ -n "$CURRENT_CHECKSUM" ]; then
+          echo "Documentation unchanged, skipping preview deployment"
+          echo "skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "Documentation changed or is new"
+          echo "skip=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Store checksum
+      run: echo "${{ steps.checksum.outputs.value }}" > result/rgeometry.checksum
+    
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.7.3
+      if: github.ref == 'refs/heads/main' || steps.changed.outputs.skip == 'false' || github.event_name != 'pull_request'
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages # The branch the action should deploy to.
