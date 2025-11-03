@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","Orientation","SoS"],"mod":["algorithms","data"],"trait":["Intersects","PolygonScalar","TotalOrd"]};
