@@ -133,9 +133,12 @@
             inherit cargoArtifacts;
             RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
           })).overrideAttrs (oldAttrs: {
-          # After building docs, include demo HTML files
+          # After building docs, include demo HTML files and compute checksum
           postInstall = ''
             ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
+            # Compute checksum of all documentation files
+            CHECKSUM=$(find $out -type f -exec md5sum {} \; | sort | md5sum | cut -d' ' -f1)
+            echo "$CHECKSUM" > $out/rgeometry.checksum
           '';
         });
       in {
