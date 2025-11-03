@@ -304,6 +304,37 @@
             description = "Serve rgeometry code coverage report on a local web server";
           };
         };
+
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            (craneLib.buildPackage commonArgs)
+          ];
+          packages = with pkgs; [
+            rustToolchain
+            pkg-config
+            m4
+            gmp
+            mpfr
+            # Additional tools for development
+            wasm-pack
+            wasm-bindgen-cli
+            binaryen
+          ];
+          shellHook = ''
+            echo "🦀 Rust development environment"
+            echo "Rust version: $(rustc --version)"
+            echo "Cargo version: $(cargo --version)"
+            echo ""
+            echo "Available tools:"
+            echo "  cargo       - Build and test Rust code"
+            echo "  rustc       - Rust compiler"
+            echo "  rustfmt     - Format Rust code"
+            echo "  clippy      - Lint Rust code"
+            echo "  wasm-pack   - Build WebAssembly packages"
+            echo ""
+          '';
+          GMP_MPFR_SYS_CACHE = "no-test";
+        };
       }
     );
 }
