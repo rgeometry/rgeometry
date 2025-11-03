@@ -320,6 +320,18 @@
             description = "Serve rgeometry code coverage report on a local web server";
           };
         };
+
+        apps.publish-check = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "publish-check" ''
+            set -e
+            echo "Running cargo publish --dry-run..."
+            ${rustToolchain}/bin/cargo publish --dry-run
+          '');
+          meta = {
+            description = "Validate package against crates.io (requires network)";
+          };
+        };
       }
     );
 }
