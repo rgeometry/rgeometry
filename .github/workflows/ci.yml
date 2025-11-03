@@ -18,6 +18,15 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: nix flake check
 
+  pre-commit:
+    name: Pre-commit Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix run .#pre-commit
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
