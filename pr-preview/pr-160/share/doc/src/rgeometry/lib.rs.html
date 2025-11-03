@@ -43,14 +43,14 @@
 <a href=#22 id=22 data-nosnippet>22</a>//!
 <a href=#23 id=23 data-nosnippet>23</a>//! # Demos
 <a href=#24 id=24 data-nosnippet>24</a>//!
-<a href=#25 id=25 data-nosnippet>25</a>//! Interactive visualizations are available at [rgeometry.org](https://rgeometry.org/):
+<a href=#25 id=25 data-nosnippet>25</a>//! Interactive visualizations are available:
 <a href=#26 id=26 data-nosnippet>26</a>//!
-<a href=#27 id=27 data-nosnippet>27</a>//! - [Convex Hull](https://rgeometry.org/convex_hull.html) - Graham scan algorithm
-<a href=#28 id=28 data-nosnippet>28</a>//! - [Melkman's Algorithm](https://rgeometry.org/melkman.html) - Online convex hull for simple polylines
-<a href=#29 id=29 data-nosnippet>29</a>//! - [Ear Clipping](https://rgeometry.org/earclip.html) - Polygon triangulation
-<a href=#30 id=30 data-nosnippet>30</a>//! - [Two-Opt](https://rgeometry.org/two_opt.html) - Polygonization heuristic
-<a href=#31 id=31 data-nosnippet>31</a>//! - [Random Convex](https://rgeometry.org/random_convex.html) - Convex polygon generation
-<a href=#32 id=32 data-nosnippet>32</a>//! - [Random Monotone](https://rgeometry.org/random_monotone.html) - Monotone polygon generation
+<a href=#27 id=27 data-nosnippet>27</a>//! - [Convex Hull](../../../convex_hull.html) - Graham scan algorithm
+<a href=#28 id=28 data-nosnippet>28</a>//! - [Melkman's Algorithm](../../../melkman.html) - Online convex hull for simple polylines
+<a href=#29 id=29 data-nosnippet>29</a>//! - [Ear Clipping](../../../earclip.html) - Polygon triangulation
+<a href=#30 id=30 data-nosnippet>30</a>//! - [Two-Opt](../../../two_opt.html) - Polygonization heuristic
+<a href=#31 id=31 data-nosnippet>31</a>//! - [Random Convex](../../../random_convex.html) - Convex polygon generation
+<a href=#32 id=32 data-nosnippet>32</a>//! - [Random Monotone](../../../random_monotone.html) - Monotone polygon generation
 <a href=#33 id=33 data-nosnippet>33</a>//!
 <a href=#34 id=34 data-nosnippet>34</a>//! # Caveats
 <a href=#35 id=35 data-nosnippet>35</a>//!
@@ -60,14 +60,14 @@
 <a href=#39 id=39 data-nosnippet>39</a>//!   results but can be significantly slower due to dynamic memory allocation and arbitrary
 <a href=#40 id=40 data-nosnippet>40</a>//!   precision arithmetic.
 <a href=#41 id=41 data-nosnippet>41</a>//!
-<a href=#42 id=42 data-nosnippet>42</a>//! - **Fixed precision integers** (e.g., `i32`, `i64`): Produce correct results only when all
-<a href=#43 id=43 data-nosnippet>43</a>//!   intermediate and final values fit within the type's range. Overflow or underflow will cause
-<a href=#44 id=44 data-nosnippet>44</a>//!   incorrect results or panics.
-<a href=#45 id=45 data-nosnippet>45</a>//!
-<a href=#46 id=46 data-nosnippet>46</a>//! - **Floating point** (e.g., `f32`, `f64`): Use robust geometric predicates for orientation
-<a href=#47 id=47 data-nosnippet>47</a>//!   and incircle tests, but are still vulnerable to overflow and underflow. Algorithmic results
-<a href=#48 id=48 data-nosnippet>48</a>//!   must not exceed `f64::MAX` or fall below `f64::MIN`. Accumulated rounding errors may affect
-<a href=#49 id=49 data-nosnippet>49</a>//!   accuracy in complex computations.
+<a href=#42 id=42 data-nosnippet>42</a>//! - **Fixed precision integers** (e.g., `i32`, `i64`): RGeometry guarantees that intermediate
+<a href=#43 id=43 data-nosnippet>43</a>//!   calculations will not overflow or underflow, but final outputs may not be representable in
+<a href=#44 id=44 data-nosnippet>44</a>//!   the chosen type. For example, testing if two line segments overlap is always safe, but
+<a href=#45 id=45 data-nosnippet>45</a>//!   computing where they intersect may produce a point whose coordinates cannot be represented.
+<a href=#46 id=46 data-nosnippet>46</a>//!
+<a href=#47 id=47 data-nosnippet>47</a>//! - **Floating point** (e.g., `f32`, `f64`): RGeometry uses robust geometric predicates to
+<a href=#48 id=48 data-nosnippet>48</a>//!   ensure accumulated rounding errors do not affect algorithmic results. However, individual
+<a href=#49 id=49 data-nosnippet>49</a>//!   coordinate values are still subject to floating-point precision limits.
 <a href=#50 id=50 data-nosnippet>50</a>
 <a href=#51 id=51 data-nosnippet>51</a></span><span class="kw">use </span>num_traits::<span class="kw-2">*</span>;
 <a href=#52 id=52 data-nosnippet>52</a><span class="kw">use </span>std::cmp::Ordering;
