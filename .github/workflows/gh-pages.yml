@@ -65,6 +65,6 @@ jobs:
       uses: rossjrw/pr-preview-action@v1
       if: github.event_name == 'pull_request' && steps.changed.outputs.skip == 'false'
       with:
-        source-dir: result/share/doc/rgeometry/
+        source-dir: result/
         preview-branch: gh-pages
         action: auto
