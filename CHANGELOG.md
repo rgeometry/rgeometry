@@ -3,7 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- [#137](https://github.com/rgeometry/rgeometry/pull/137) Bentley-Ottmann sweep algorithm for line segment intersection
+
 ### Changed
+- [#139](https://github.com/rgeometry/rgeometry/pull/139) Rust edition updated to 2024
+- [#136](https://github.com/rgeometry/rgeometry/pull/136) Bumped rug from 1.16.0 to 1.28.0
 
 ## [0.10.3] 2025-08-16
 
