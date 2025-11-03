@@ -569,4 +569,21 @@
 <a href=#548 id=548 data-nosnippet>548</a>      triangulate_list_hashed(<span class="kw-2">&amp;</span>poly.points, <span class="kw-2">&amp;</span>poly.rings[<span class="number">0</span>], rng).collect();
 <a href=#549 id=549 data-nosnippet>549</a>    <span class="macro">prop_assert_eq!</span>(not_hashed, hashed);
 <a href=#550 id=550 data-nosnippet>550</a>  }
-<a href=#551 id=551 data-nosnippet>551</a>}</code></pre></div></section></main></body></html>
+<a href=#551 id=551 data-nosnippet>551</a>
+<a href=#552 id=552 data-nosnippet>552</a>  <span class="kw">fn </span>earclip_hashed_area_2x&lt;T: PolygonScalar + ZHashable + Into&lt;BigInt&gt;&gt;(p: <span class="kw-2">&amp;</span>Polygon&lt;T&gt;) -&gt; BigInt {
+<a href=#553 id=553 data-nosnippet>553</a>    <span class="kw">let </span><span class="kw-2">mut </span>trig_area_2x = BigInt::from(<span class="number">0</span>);
+<a href=#554 id=554 data-nosnippet>554</a>    <span class="kw">for </span>(a, b, c) <span class="kw">in </span>earclip_hashed(p) {
+<a href=#555 id=555 data-nosnippet>555</a>      <span class="kw">let </span>trig = TriangleView::new_unchecked([p.point(a), p.point(b), p.point(c)]);
+<a href=#556 id=556 data-nosnippet>556</a>      trig_area_2x += trig.signed_area_2x::&lt;BigInt&gt;();
+<a href=#557 id=557 data-nosnippet>557</a>    }
+<a href=#558 id=558 data-nosnippet>558</a>    trig_area_2x
+<a href=#559 id=559 data-nosnippet>559</a>  }
+<a href=#560 id=560 data-nosnippet>560</a>
+<a href=#561 id=561 data-nosnippet>561</a>  <span class="attr">#[proptest]
+<a href=#562 id=562 data-nosnippet>562</a>  </span><span class="kw">fn </span>earclip_hashed_equal_area_prop(poly: Polygon&lt;i64&gt;) {
+<a href=#563 id=563 data-nosnippet>563</a>    <span class="macro">prop_assert_eq!</span>(
+<a href=#564 id=564 data-nosnippet>564</a>      poly.signed_area_2x::&lt;BigInt&gt;(),
+<a href=#565 id=565 data-nosnippet>565</a>      earclip_hashed_area_2x(<span class="kw-2">&amp;</span>poly)
+<a href=#566 id=566 data-nosnippet>566</a>    );
+<a href=#567 id=567 data-nosnippet>567</a>  }
+<a href=#568 id=568 data-nosnippet>568</a>}</code></pre></div></section></main></body></html>
