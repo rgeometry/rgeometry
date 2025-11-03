@@ -304,6 +304,27 @@
             description = "Serve rgeometry code coverage report on a local web server";
           };
         };
+
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            (craneLib.buildPackage commonArgs)
+          ];
+          packages = with pkgs; [
+            rustToolchain
+            pkg-config
+            m4
+            gmp
+            mpfr
+            # Additional tools for development
+            wasm-pack
+            wasm-bindgen-cli
+            binaryen
+          ];
+          shellHook = ''
+            echo "$(cargo --version)"
+          '';
+          GMP_MPFR_SYS_CACHE = "no-test";
+        };
       }
     );
 }
