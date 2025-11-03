@@ -60,6 +60,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
         folder: result/
+        clean-exclude: pr-preview/
     
     - name: Deploy PR preview
       uses: rossjrw/pr-preview-action@v1
