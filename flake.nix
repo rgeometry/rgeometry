@@ -136,6 +136,20 @@
           # After building docs, include demo HTML files and compute checksum
           postInstall = ''
             ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
+            # Create redirect index.html at root
+            cat > $out/index.html <<'EOF'
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta http-equiv="refresh" content="0; url=./share/doc/rgeometry/">
+              <title>RGeometry Documentation</title>
+            </head>
+            <body>
+              <p>Redirecting to <a href="./share/doc/rgeometry/">RGeometry API documentation</a>...</p>
+            </body>
+            </html>
+            EOF
             # Compute checksum of all documentation files
             CHECKSUM=$(find $out -type f -exec md5sum {} \; | sort | md5sum | cut -d' ' -f1)
             echo "$CHECKSUM" > $out/rgeometry.checksum
