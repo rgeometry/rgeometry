@@ -25,6 +25,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+    - name: Fetch gh-pages branch
+      run: git fetch origin gh-pages:gh-pages || true
     - uses: DeterminateSystems/nix-installer-action@main
     - uses: DeterminateSystems/magic-nix-cache-action@main
 
