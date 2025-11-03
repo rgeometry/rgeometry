@@ -548,4 +548,21 @@ mod tests {
       triangulate_list_hashed(&poly.points, &poly.rings[0], rng).collect();
     prop_assert_eq!(not_hashed, hashed);
   }
+
+  fn earclip_hashed_area_2x<T: PolygonScalar + ZHashable + Into<BigInt>>(p: &Polygon<T>) -> BigInt {
+    let mut trig_area_2x = BigInt::from(0);
+    for (a, b, c) in earclip_hashed(p) {
+      let trig = TriangleView::new_unchecked([p.point(a), p.point(b), p.point(c)]);
+      trig_area_2x += trig.signed_area_2x::<BigInt>();
+    }
+    trig_area_2x
+  }
+
+  #[proptest]
+  fn earclip_hashed_equal_area_prop(poly: Polygon<i64>) {
+    prop_assert_eq!(
+      poly.signed_area_2x::<BigInt>(),
+      earclip_hashed_area_2x(&poly)
+    );
+  }
 }
