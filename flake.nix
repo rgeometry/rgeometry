@@ -269,10 +269,13 @@
             echo "→ TOML formatting: ${self.checks.${system}.taplo-fmt-check}"
             echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
             echo ""
-            echo "✓ All formatting checks passed!"
+            echo "Running cargo publish validation..."
+            ${rustToolchain}/bin/cargo publish --dry-run --allow-dirty --no-verify
+            echo ""
+            echo "✓ All checks passed!"
           '');
           meta = {
-            description = "Run pre-commit formatting checks";
+            description = "Run pre-commit formatting and publish validation checks";
           };
         };
 
