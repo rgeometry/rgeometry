@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Internal
+- [#167](https://github.com/rgeometry/rgeometry/pull/167) Added Nix linting with statix and deadnix to flake checks
+
 ## [0.10.4] 2025-11-03
 
 ### Added

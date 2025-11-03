@@ -7,6 +7,8 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
     alejandra.url = "github:kamadorueda/alejandra";
+    statix.url = "github:oppiliappan/statix";
+    deadnix.url = "github:astro/deadnix";
   };
 
   outputs = {
@@ -16,6 +18,8 @@
     rust-overlay,
     crane,
     alejandra,
+    statix,
+    deadnix,
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
@@ -98,12 +102,12 @@
               binaryen
             ];
           };
-        lib = pkgs.lib;
+        inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
         demoNames = lib.attrNames (lib.filterAttrs (name: kind: kind == "directory" && builtins.pathExists (./. + "/demos/${name}/Cargo.lock")) demosDir);
         allDemos = pkgs.symlinkJoin {
           name = "rgeometry-demos";
-          paths = builtins.map (n: mkDemo n) demoNames;
+          paths = builtins.map mkDemo demoNames;
         };
 
         # Generate code coverage report with grcov
@@ -132,7 +136,7 @@
           // {
             inherit cargoArtifacts;
             RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
-          })).overrideAttrs (oldAttrs: {
+          })).overrideAttrs (_: {
           # After building docs, include demo HTML files and compute checksum
           postInstall = ''
             ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
@@ -166,8 +170,7 @@
           demoPkgs
           // {
             all-demos = allDemos;
-            coverage = coverage;
-            documentation = documentation;
+            inherit coverage documentation;
             default = self.packages.${system}.all-demos;
           };
 
@@ -196,6 +199,18 @@
           # Check Nix formatting
           alejandra-check = pkgs.runCommand "alejandra-check" {} ''
             ${alejandra.defaultPackage.${system}}/bin/alejandra --check ${src}
+            touch $out
+          '';
+
+          # Check Nix code with statix
+          statix-check = pkgs.runCommand "statix-check" {} ''
+            ${statix.packages.${system}.default}/bin/statix check ${./.}
+            touch $out
+          '';
+
+          # Check for dead Nix code with deadnix
+          deadnix-check = pkgs.runCommand "deadnix-check" {} ''
+            ${deadnix.packages.${system}.default}/bin/deadnix --fail ${./.}
             touch $out
           '';
 
@@ -244,67 +259,69 @@
           documentation-check = documentation;
         };
 
-        apps.pre-commit = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "pre-commit" ''
-            set -e
-            echo "Running pre-commit formatting checks..."
-            echo ""
-            echo "→ Nix formatting: ${self.checks.${system}.alejandra-check}"
-            echo "→ TOML formatting: ${self.checks.${system}.taplo-fmt-check}"
-            echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
-            echo ""
-            echo "Running cargo publish validation..."
-            ${rustToolchain}/bin/cargo publish --dry-run --allow-dirty --no-verify
-            echo ""
-            echo "✓ All checks passed!"
-          '');
-          meta = {
-            description = "Run pre-commit formatting and publish validation checks";
+        apps = {
+          pre-commit = {
+            type = "app";
+            program = toString (pkgs.writeShellScript "pre-commit" ''
+              set -e
+              echo "Running pre-commit formatting checks..."
+              echo ""
+              echo "→ Nix formatting: ${self.checks.${system}.alejandra-check}"
+              echo "→ TOML formatting: ${self.checks.${system}.taplo-fmt-check}"
+              echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
+              echo ""
+              echo "Running cargo publish validation..."
+              ${rustToolchain}/bin/cargo publish --dry-run --allow-dirty --no-verify
+              echo ""
+              echo "✓ All checks passed!"
+            '');
+            meta = {
+              description = "Run pre-commit formatting and publish validation checks";
+            };
           };
-        };
 
-        apps.serve-docs = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "serve-docs" ''
-            set -e
+          serve-docs = {
+            type = "app";
+            program = toString (pkgs.writeShellScript "serve-docs" ''
+              set -e
 
-            DOC_PATH="${documentation}"
-            PORT="''${1:-8000}"
+              DOC_PATH="${documentation}"
+              PORT="''${1:-8000}"
 
-            echo ""
-            echo "📚 Serving rgeometry documentation"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "URL:  http://localhost:$PORT"
-            echo "Docs: $DOC_PATH"
-            echo ""
+              echo ""
+              echo "📚 Serving rgeometry documentation"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "URL:  http://localhost:$PORT"
+              echo "Docs: $DOC_PATH"
+              echo ""
 
-            ${pkgs.python3}/bin/python3 -m http.server --directory "$DOC_PATH" "$PORT"
-          '');
-          meta = {
-            description = "Serve rgeometry documentation on a local web server";
+              ${pkgs.python3}/bin/python3 -m http.server --directory "$DOC_PATH" "$PORT"
+            '');
+            meta = {
+              description = "Serve rgeometry documentation on a local web server";
+            };
           };
-        };
 
-        apps.serve-coverage = {
-          type = "app";
-          program = toString (pkgs.writeShellScript "serve-coverage" ''
-            set -e
+          serve-coverage = {
+            type = "app";
+            program = toString (pkgs.writeShellScript "serve-coverage" ''
+              set -e
 
-            COVERAGE_PATH="${coverage}/html"
-            PORT="''${1:-8080}"
+              COVERAGE_PATH="${coverage}/html"
+              PORT="''${1:-8080}"
 
-            echo ""
-            echo "📊 Serving rgeometry code coverage report"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "URL:      http://localhost:$PORT"
-            echo "Coverage: $COVERAGE_PATH"
-            echo ""
+              echo ""
+              echo "📊 Serving rgeometry code coverage report"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "URL:      http://localhost:$PORT"
+              echo "Coverage: $COVERAGE_PATH"
+              echo ""
 
-            ${pkgs.python3}/bin/python3 -m http.server --directory "$COVERAGE_PATH" "$PORT"
-          '');
-          meta = {
-            description = "Serve rgeometry code coverage report on a local web server";
+              ${pkgs.python3}/bin/python3 -m http.server --directory "$COVERAGE_PATH" "$PORT"
+            '');
+            meta = {
+              description = "Serve rgeometry code coverage report on a local web server";
+            };
           };
         };
 
