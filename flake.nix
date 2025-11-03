@@ -117,6 +117,7 @@
             LLVM_PROFILE_FILE = "rgeometry-%p-%m.profraw";
             buildPhaseCargoCommand = ''
               cargo test --all-features --workspace
+              cargo test --all-features --workspace --doc
               mkdir -p $out/html
               grcov . --binary-path ./target/debug/ -s . -t html --branch --ignore-not-existing -o $out/html
               grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing -o $out/lcov.info
@@ -236,11 +237,12 @@
               CARGO_INCREMENTAL = "0";
               RUSTFLAGS = "-Cinstrument-coverage";
               LLVM_PROFILE_FILE = "rgeometry-%p-%m.profraw";
-              buildPhaseCargoCommand = ''
-                cargo test --all-features --workspace
-                grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing -o coverage.lcov
-                echo "Coverage report generated successfully"
-              '';
+               buildPhaseCargoCommand = ''
+                 cargo test --all-features --workspace
+                 cargo test --all-features --workspace --doc
+                 grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing -o coverage.lcov
+                 echo "Coverage report generated successfully"
+               '';
               doCheck = false;
               doNotPostBuildInstallCargoBinaries = true;
               installPhaseCommand = ''
