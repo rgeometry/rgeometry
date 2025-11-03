@@ -9,44 +9,12 @@ on:
 name: Tests
 
 jobs:
-  check:
-    name: Check
+  nix-flake-check:
+    name: Nix Flake Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - run: cargo check
-
-  test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - run: cargo test
-
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - run: cargo fmt --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - run: cargo clippy -- -D warnings
-
-  wasm:
-    name: Wasm
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: cachix/install-nix-action@v27
         with:
-          target: wasm32-unknown-unknown
-      - run: cargo check --target wasm32-unknown-unknown
+          nix_path: nixpkgs=channel:nixos-unstable
+      - run: nix flake check
