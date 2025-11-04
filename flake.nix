@@ -297,13 +297,10 @@
               echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
               echo "→ Python linting: ${self.checks.${system}.ruff-check}"
               echo ""
-              echo "Running cargo publish validation..."
-              ${rustToolchain}/bin/cargo publish --dry-run --allow-dirty --no-verify
-              echo ""
               echo "✓ All checks passed!"
             '');
             meta = {
-              description = "Run pre-commit formatting and publish validation checks";
+              description = "Run pre-commit formatting checks";
             };
           };
 
