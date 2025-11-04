@@ -98,6 +98,51 @@ def get_snippet_context(lines: List[str], line_num: int, context: int = 3) -> Tu
     return start_line, snippet
 
 
+def format_line_ranges(line_numbers: List[int]) -> str:
+    """
+    Format a list of line numbers into a compact range notation.
+
+    Args:
+        line_numbers: Sorted list of line numbers
+
+    Returns:
+        Formatted string like "213-216, 222-225, 232"
+
+    Examples:
+        >>> format_line_ranges([213, 214, 215, 216, 222, 223, 224, 225, 232])
+        '213-216, 222-225, 232'
+        >>> format_line_ranges([1, 3, 5])
+        '1, 3, 5'
+    """
+    if not line_numbers:
+        return ""
+
+    ranges = []
+    start = line_numbers[0]
+    end = line_numbers[0]
+
+    for num in line_numbers[1:]:
+        if num == end + 1:
+            # Continue the current range
+            end = num
+        else:
+            # Close the current range and start a new one
+            if start == end:
+                ranges.append(str(start))
+            else:
+                ranges.append(f"{start}-{end}")
+            start = num
+            end = num
+
+    # Add the final range
+    if start == end:
+        ranges.append(str(start))
+    else:
+        ranges.append(f"{start}-{end}")
+
+    return ", ".join(ranges)
+
+
 def generate_report(
     uncovered_lines: Dict[str, List[int]],
     src_root: Path,
@@ -120,9 +165,10 @@ def generate_report(
         f"Context: {context} lines before/after each uncovered line.\n",
     ]
 
-    # Sort files for consistent output
-    sorted_files = sorted(uncovered_lines.keys())
-    total_uncovered = sum(len(nums) for nums in uncovered_lines.values())
+    # Filter out files with no uncovered lines and sort for consistent output
+    files_with_uncovered = {k: v for k, v in uncovered_lines.items() if v}
+    sorted_files = sorted(files_with_uncovered.keys())
+    total_uncovered = sum(len(nums) for nums in files_with_uncovered.values())
 
     report_lines.append(f"\n## Summary\n")
     report_lines.append(f"- **Total Files**: {len(sorted_files)}\n")
@@ -147,14 +193,14 @@ def generate_report(
         if source_lines is None:
             report_lines.append(f"\n## {file_path_str}\n")
             report_lines.append(f"⚠️ **Unable to read source file**\n")
-            uncovered_nums = uncovered_lines[file_path_str]
-            report_lines.append(f"Uncovered lines: {', '.join(map(str, sorted(uncovered_nums)))}\n")
+            uncovered_nums = sorted(uncovered_lines[file_path_str])
+            report_lines.append(f"Uncovered lines: {format_line_ranges(uncovered_nums)}\n")
             continue
 
         uncovered_nums = sorted(uncovered_lines[file_path_str])
 
         report_lines.append(f"\n## {file_path_str}\n")
-        report_lines.append(f"**Uncovered Lines**: {', '.join(map(str, uncovered_nums))}\n\n")
+        report_lines.append(f"**Uncovered Lines**: {format_line_ranges(uncovered_nums)}\n\n")
 
         # Group consecutive uncovered lines to avoid duplicate context
         groups: List[List[int]] = []
