@@ -36,7 +36,7 @@ use crate::{Orientation, PolygonScalar};
 ///
 /// let k = kernel(&square);
 /// // For a convex polygon, the kernel is the polygon itself
-/// assert_eq!(k.area(), square.area());
+/// assert_eq!(k.signed_area::<BigRational>(), square.signed_area::<BigRational>());
 /// ```
 ///
 /// # References
