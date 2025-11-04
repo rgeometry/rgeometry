@@ -27,6 +27,15 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: nix run .#pre-commit
 
+  cargo-publish:
+    name: Cargo Publish Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix develop -c cargo publish --dry-run
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
