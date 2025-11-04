@@ -17,7 +17,7 @@ fn demo() {
   let diagonals = delaunay_diagonals(&polygon);
   context().save();
   set_stroke_style("#3b82f6");
-  set_line_width(from_pixels(2));
+  context().set_line_width(from_pixels(2));
   for edge in diagonals {
     begin_path();
     move_to_point(polygon.point(edge.min));

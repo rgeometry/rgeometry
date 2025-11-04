@@ -59,7 +59,15 @@
           ];
         };
 
-        # Common arguments for building the library
+        wasmBindgenCli = let
+          version = pkgs.wasm-bindgen-cli.version;
+          _ = builtins.trace "Using wasm-bindgen-cli ${version}" null;
+        in
+          if version == "0.2.100"
+          then pkgs.wasm-bindgen-cli
+          else throw "Unexpected wasm-bindgen-cli version ${version}, expected 0.2.100";
+
+# Common arguments for building the library
         commonArgs = {
           inherit src;
           strictDeps = true;
@@ -92,11 +100,12 @@
                   "pkg/${demoName}_bg.wasm" "pkg/${demoName}.js"
             '';
             doCheck = false;
-            nativeBuildInputs = with pkgs; [
-              wasm-pack
-              wasm-bindgen-cli
-              binaryen
+            nativeBuildInputs = [
+              pkgs.wasm-pack
+              wasmBindgenCli
+              pkgs.binaryen
             ];
+            WASM_BINDGEN = "${wasmBindgenCli}/bin/wasm-bindgen";
           };
         lib = pkgs.lib;
         demosDir = builtins.readDir ./demos;

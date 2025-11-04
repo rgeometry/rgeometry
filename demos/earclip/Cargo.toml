@@ -8,7 +8,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 rgeometry-wasm = { path = "../../rgeometry-wasm" }
-wasm-bindgen = "0.2.100"
+wasm-bindgen = "=0.2.100"
 
 [dependencies.web-sys]
 features = [
