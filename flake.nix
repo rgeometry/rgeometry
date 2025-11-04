@@ -228,6 +228,17 @@
             touch $out
           '';
 
+          # Check Python code with Ruff
+          ruff-check = pkgs.runCommand "ruff-check"
+            {
+              # Disable cache to avoid permission issues in Nix store
+              RUFF_CACHE_DIR = "/tmp/ruff-cache";
+            } ''
+            ${pkgs.ruff}/bin/ruff check --no-cache ${./.}
+            ${pkgs.ruff}/bin/ruff format --no-cache --check ${./.}
+            touch $out
+          '';
+
           # Check TOML formatting with crane
           taplo-fmt-check = craneLib.taploFmt (commonArgs
             // {
@@ -284,6 +295,7 @@
               echo "→ Nix formatting: ${self.checks.${system}.alejandra-check}"
               echo "→ TOML formatting: ${self.checks.${system}.taplo-fmt-check}"
               echo "→ Rust formatting: ${self.checks.${system}.cargo-fmt-check}"
+              echo "→ Python linting: ${self.checks.${system}.ruff-check}"
               echo ""
               echo "Running cargo publish validation..."
               ${rustToolchain}/bin/cargo publish --dry-run --allow-dirty --no-verify

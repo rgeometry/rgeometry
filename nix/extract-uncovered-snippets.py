@@ -6,10 +6,10 @@ This script parses an LCOV file and generates a markdown document containing
 all uncovered code snippets with context.
 """
 
-import sys
-import re
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+import re
+import sys
+from typing import Dict, List, Optional, Tuple
 
 
 def parse_lcov(lcov_file: Path, src_root: Path) -> Dict[str, List[int]]:
@@ -26,36 +26,35 @@ def parse_lcov(lcov_file: Path, src_root: Path) -> Dict[str, List[int]]:
     is_project_file = False
 
     try:
-        with open(lcov_file, 'r') as f:
+        with open(lcov_file) as f:
             for line in f:
-                line = line.rstrip('\n')
+                line = line.rstrip("\n")
 
-                if line.startswith('SF:'):
+                if line.startswith("SF:"):
                     # Source file line
                     file_path = line[3:]
                     current_file = file_path
-                    
-                    # Check if this is a project file (relative path, not in /nix/store)
-                    is_project_file = '/nix/store' not in file_path
-                    
-                    if is_project_file:
-                        if current_file not in uncovered_lines:
-                            uncovered_lines[current_file] = []
 
-                elif line.startswith('DA:') and current_file and is_project_file:
+                    # Check if this is a project file (relative path, not in /nix/store)
+                    is_project_file = "/nix/store" not in file_path
+
+                    if is_project_file and current_file not in uncovered_lines:
+                        uncovered_lines[current_file] = []
+
+                elif line.startswith("DA:") and current_file and is_project_file:
                     # Data line: DA:line_number,hit_count
-                    match = re.match(r'DA:(\d+),(\d+)', line)
+                    match = re.match(r"DA:(\d+),(\d+)", line)
                     if match:
                         line_num = int(match.group(1))
                         hit_count = int(match.group(2))
                         if hit_count == 0:
                             uncovered_lines[current_file].append(line_num)
 
-                elif line == 'end_of_record':
+                elif line == "end_of_record":
                     current_file = None
                     is_project_file = False
 
-    except IOError as e:
+    except OSError as e:
         print(f"Error reading LCOV file: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -70,9 +69,9 @@ def read_source_file(file_path: Path) -> Optional[List[str]]:
         List of lines (with newlines stripped), or None if file not readable
     """
     try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            return [line.rstrip('\n') for line in f.readlines()]
-    except (IOError, OSError):
+        with open(file_path, encoding="utf-8", errors="ignore") as f:
+            return [line.rstrip("\n") for line in f.readlines()]
+    except OSError:
         return None
 
 
@@ -143,11 +142,7 @@ def format_line_ranges(line_numbers: List[int]) -> str:
     return ", ".join(ranges)
 
 
-def generate_report(
-    uncovered_lines: Dict[str, List[int]],
-    src_root: Path,
-    context: int = 3
-) -> str:
+def generate_report(uncovered_lines: Dict[str, List[int]], src_root: Path, context: int = 3) -> str:
     """
     Generate markdown report of uncovered code snippets.
 
@@ -170,7 +165,7 @@ def generate_report(
     sorted_files = sorted(files_with_uncovered.keys())
     total_uncovered = sum(len(nums) for nums in files_with_uncovered.values())
 
-    report_lines.append(f"\n## Summary\n")
+    report_lines.append("\n## Summary\n")
     report_lines.append(f"- **Total Files**: {len(sorted_files)}\n")
     report_lines.append(f"- **Total Uncovered Lines**: {total_uncovered}\n\n")
 
@@ -192,7 +187,7 @@ def generate_report(
         source_lines = read_source_file(actual_path)
         if source_lines is None:
             report_lines.append(f"\n## {file_path_str}\n")
-            report_lines.append(f"⚠️ **Unable to read source file**\n")
+            report_lines.append("⚠️ **Unable to read source file**\n")
             uncovered_nums = sorted(uncovered_lines[file_path_str])
             report_lines.append(f"Uncovered lines: {format_line_ranges(uncovered_nums)}\n")
             continue
@@ -224,7 +219,8 @@ def generate_report(
 
             snippet = source_lines[start_idx:end_idx]
 
-            report_lines.append(f"### Snippet {group_idx} (Lines {start_line}-{start_line + len(snippet) - 1})\n\n")
+            end_line = start_line + len(snippet) - 1
+            report_lines.append(f"### Snippet {group_idx} (Lines {start_line}-{end_line})\n\n")
             report_lines.append("```rust\n")
 
             for i, line in enumerate(snippet):
@@ -257,12 +253,12 @@ def main():
     uncovered_lines = parse_lcov(lcov_file, src_root)
 
     print(f"Found {len(uncovered_lines)} files with uncovered lines")
-    print(f"Generating report...")
+    print("Generating report...")
 
     report = generate_report(uncovered_lines, src_root, context=3)
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         f.write(report)
 
     print(f"Report written to: {output_file}")
