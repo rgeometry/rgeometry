@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Internal
+- [#169](https://github.com/rgeometry/rgeometry/pull/169) Improved coverage report formatting with range notation and filtering
 - [#168](https://github.com/rgeometry/rgeometry/pull/168) Added Python linting with Ruff to flake checks
 - [#167](https://github.com/rgeometry/rgeometry/pull/167) Added Nix linting with statix and deadnix to flake checks
 
