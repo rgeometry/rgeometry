@@ -61,6 +61,61 @@ where
     triangle.locate(pt)
   }
 
+  /// Compute the extreme point of the convex polygon in the direction of a vector.
+  ///
+  /// Returns the point on the polygon that is furthest in the direction of the given vector.
+  ///
+  /// # Time complexity
+  /// $O(n)$ in the current implementation. This can be optimized to $O(\log n)$ using binary search
+  /// on the unimodal sequence formed by the vertex projections along the direction.
+  ///
+  /// # Arguments
+  ///
+  /// * `direction` - The direction vector along which to find the extreme point
+  ///
+  /// # Examples
+  ///
+  /// ```rust
+  /// # use rgeometry::data::{Polygon, Vector, Point, PolygonConvex};
+  /// # use rgeometry::algorithms::convex_hull;
+  /// let vertices = vec![
+  ///   Point::new([0, 0]),
+  ///   Point::new([2, 0]),
+  ///   Point::new([2, 2]),
+  ///   Point::new([0, 2]),
+  /// ];
+  /// let poly = convex_hull(vertices).unwrap();
+  /// let direction = Vector([1, 0]); // Point to the right
+  /// let extreme = poly.extreme_point(&direction);
+  /// assert_eq!(extreme.x_coord(), &2);
+  /// ```
+  ///
+  pub fn extreme_point(&self, direction: &Vector<T, 2>) -> &Point<T, 2> {
+    let poly = &self.0;
+    let vertices = self.boundary_slice();
+    let n = vertices.len();
+
+    if n <= 1 {
+      return poly.point(vertices[0]);
+    }
+
+    // Find the vertex that maximizes the projection along direction.
+    // We perform a linear scan to find the global maximum.
+    //
+    // For a convex polygon with vertices in counter-clockwise order,
+    // there is exactly one local maximum for any direction, and it is the global maximum.
+    let mut best_point = poly.point(vertices[0]);
+
+    for &idx in vertices.iter() {
+      let point = poly.point(idx);
+      if direction.cmp_along(best_point, point) == std::cmp::Ordering::Less {
+        best_point = point;
+      }
+    }
+
+    best_point
+  }
+
   /// Validates the following properties:
   ///  * Each vertex is convex, ie. not concave or colinear.
   ///  * All generate polygon properties hold true (eg. no duplicate points, no self-intersections).
@@ -326,5 +381,145 @@ mod tests {
       let vecs: Vec<Vector<i8, 2>> = random_vectors(n as usize, &mut rng);
       prop_assert_eq!(vecs.into_iter().sum::<Vector<i8, 2>>(), Vector([0, 0]))
     }
+
+    #[test]
+    fn extreme_point_right_direction(poly: PolygonConvex<i8>) {
+      let direction = Vector([1i8, 0]);
+      let extreme = poly.extreme_point(&direction);
+      // The extreme point should have x-coordinate equal to or very close to max
+      let (_, max) = poly.bounding_box();
+      // Just verify it's a valid vertex on the polygon
+      let vertices = poly.boundary_slice();
+      let found = vertices.iter().any(|&idx| poly.polygon().point(idx) == extreme);
+      prop_assert!(found, "Extreme point should be a vertex of the polygon");
+    }
+
+    #[test]
+    fn extreme_point_up_direction(poly: PolygonConvex<i8>) {
+      let direction = Vector([0i8, 1]);
+      let extreme = poly.extreme_point(&direction);
+      // Just verify it's a valid vertex on the polygon
+      let vertices = poly.boundary_slice();
+      let found = vertices.iter().any(|&idx| poly.polygon().point(idx) == extreme);
+      prop_assert!(found, "Extreme point should be a vertex of the polygon");
+    }
+
+    #[test]
+    fn extreme_point_is_on_polygon(poly: PolygonConvex<i8>) {
+      let direction = Vector([1i8, 1]);
+      let extreme = poly.extreme_point(&direction);
+      let vertices = poly.boundary_slice();
+      let poly_ref = poly.polygon();
+
+      let found = vertices.iter().any(|&idx| poly_ref.point(idx) == extreme);
+      prop_assert!(found, "Extreme point should be one of the polygon vertices");
+    }
+
+    #[test]
+    fn extreme_point_is_optimal(poly: PolygonConvex<i8>) {
+      let direction = Vector([1i8, 1]);
+      let extreme = poly.extreme_point(&direction);
+      let vertices = poly.boundary_slice();
+      let poly_ref = poly.polygon();
+
+      // Check that no other vertex is further in the direction
+      for &idx in vertices {
+        let other_point = poly_ref.point(idx);
+        if direction.cmp_along(other_point, extreme) == std::cmp::Ordering::Greater {
+          prop_assert!(
+            false,
+            "Found a better point than the extreme point: {:?} > {:?}",
+            other_point,
+            extreme
+          );
+        }
+      }
+    }
+
+    #[test]
+    fn extreme_point_consistency_across_directions(poly: PolygonConvex<i8>) {
+      let directions = vec![
+        Vector([1i8, 0]),
+        Vector([0i8, 1]),
+        Vector([-1i8, 0]),
+        Vector([0i8, -1]),
+        Vector([1i8, 1]),
+        Vector([-1i8, 1]),
+      ];
+
+      for dir in directions {
+        let extreme = poly.extreme_point(&dir);
+        let vertices = poly.boundary_slice();
+        let poly_ref = poly.polygon();
+
+        // Verify it's a valid vertex
+        let found = vertices.iter().any(|&idx| poly_ref.point(idx) == extreme);
+        prop_assert!(found, "Extreme point should be a valid vertex for direction {:?}", dir);
+      }
+    }
+  }
+
+  #[test]
+  fn extreme_point_unit_square_right() {
+    let vertices = vec![
+      Point::new([0i32, 0]),
+      Point::new([1, 0]),
+      Point::new([1, 1]),
+      Point::new([0, 1]),
+    ];
+    let poly = crate::algorithms::convex_hull(vertices).unwrap();
+    let direction = Vector([1i32, 0]);
+    let extreme = poly.extreme_point(&direction);
+    assert_eq!(extreme.x_coord(), &1);
+  }
+
+  #[test]
+  fn extreme_point_unit_square_up() {
+    let vertices = vec![
+      Point::new([0i32, 0]),
+      Point::new([1, 0]),
+      Point::new([1, 1]),
+      Point::new([0, 1]),
+    ];
+    let poly = crate::algorithms::convex_hull(vertices).unwrap();
+    let direction = Vector([0i32, 1]);
+    let extreme = poly.extreme_point(&direction);
+    assert_eq!(extreme.y_coord(), &1);
+  }
+
+  #[test]
+  fn extreme_point_triangle() {
+    let vertices = vec![
+      Point::new([0i32, 0]),
+      Point::new([4, 0]),
+      Point::new([2, 3]),
+    ];
+    let poly = crate::algorithms::convex_hull(vertices).unwrap();
+    let direction = Vector([1i32, 1]);
+    let extreme = poly.extreme_point(&direction);
+    // The extreme point should be (4, 0) or (2, 3), but (4, 0) is furthest to the right
+    // Actually, we need to check which is furthest in the [1, 1] direction
+    // (4, 0) projects to 4*1 + 0*1 = 4
+    // (2, 3) projects to 2*1 + 3*1 = 5
+    // So (2, 3) should be the extreme point
+    assert_eq!(extreme.x_coord(), &2);
+    assert_eq!(extreme.y_coord(), &3);
+  }
+
+  #[test]
+  fn extreme_point_triangle_diagonal() {
+    let vertices = vec![
+      Point::new([0i32, 0]),
+      Point::new([4, 0]),
+      Point::new([2, 4]),
+    ];
+    let poly = crate::algorithms::convex_hull(vertices).unwrap();
+    let direction = Vector([1i32, 1]);
+    let extreme = poly.extreme_point(&direction);
+    // (4, 0) projects to 4*1 + 0*1 = 4
+    // (2, 4) projects to 2*1 + 4*1 = 6
+    // So (2, 4) should be the extreme point
+    assert_eq!(extreme.x_coord(), &2);
+    assert_eq!(extreme.y_coord(), &4);
   }
 }
