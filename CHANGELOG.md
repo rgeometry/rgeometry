@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- [#171](https://github.com/rgeometry/rgeometry/pull/171) Kernel computation for simple polygons
+
 ### Internal
 - [#169](https://github.com/rgeometry/rgeometry/pull/169) Improved coverage report formatting with range notation and filtering
 - [#168](https://github.com/rgeometry/rgeometry/pull/168) Added Python linting with Ruff to flake checks
