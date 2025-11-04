@@ -1,5 +1,6 @@
 pub mod convex_hull;
 pub mod intersection;
+pub mod kernel;
 pub mod polygonization;
 pub mod triangulation;
 pub mod visibility;
