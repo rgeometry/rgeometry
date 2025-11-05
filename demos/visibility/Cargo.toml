@@ -1,5 +1,5 @@
 [package]
-name = "earclip"
+name = "visibility"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,8 +7,10 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+gloo-events = "0.2.0"
+rgeometry = { path = "../../" }
 rgeometry-wasm = { path = "../../rgeometry-wasm" }
-wasm-bindgen = "=0.2.100"
+wasm-bindgen = "0.2.100"
 
 [dependencies.web-sys]
 features = [
@@ -17,8 +19,7 @@ features = [
   'Element',
   'Path2d',
   'HtmlCanvasElement',
-  'HtmlInputElement',
-  'InputEvent',
+  'MouseEvent',
   'TouchEvent',
   'Window',
 ]

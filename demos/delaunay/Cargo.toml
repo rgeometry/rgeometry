@@ -1,5 +1,5 @@
 [package]
-name = "earclip"
+name = "delaunay"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,6 +7,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+rgeometry = { path = "../../" }
 rgeometry-wasm = { path = "../../rgeometry-wasm" }
 wasm-bindgen = "=0.2.100"
 
