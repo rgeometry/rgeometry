@@ -1,0 +1,10 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc c2f3071be3fc96c72e5d4e26f290551f71227f137f104c21afb66a08436230c0 # shrinks to poly = Polygon { points: [Point { array: [-1812484150, -987435581] }, Point { array: [-1362550196, -75890456] }, Point { array: [-2067940239, 1870720461] }, Point { array: [-1965849834, -1678145394] }], ring_index: [RingId(0), RingId(0), RingId(0), RingId(0)], position_index: [PositionId(0), PositionId(1), PositionId(2), PositionId(3)], rings: [[0, 1, 2, 3]] }
+cc 6240bb04544ab57eeb0d9aa0b5f768fdc16d59595c580a5ae8ed0c2367c7eba8 # shrinks to poly = Polygon { points: [Point { array: [1111165129, 347271339] }, Point { array: [1626469445, 463910963] }, Point { array: [1209127496, -1545830719] }, Point { array: [1981084461, 2018639717] }], ring_index: [RingId(0), RingId(0), RingId(0), RingId(0)], position_index: [PositionId(0), PositionId(1), PositionId(2), PositionId(3)], rings: [[0, 1, 2, 3]] }
+cc 597f7141beed0baec1246dee46fcb8981bf9f1fb4c4b6295233a309b91f12f03 # shrinks to poly = Polygon { points: [Point { array: [121, 82] }, Point { array: [86, 64] }, Point { array: [94, 36] }, Point { array: [100, 0] }], ring_index: [RingId(0), RingId(0), RingId(0), RingId(0)], position_index: [PositionId(0), PositionId(1), PositionId(2), PositionId(3)], rings: [[0, 1, 2, 3]] }
+cc e179d78104973354872b60c4d8144d0716930044bf73bd178bc686026bf6554e # shrinks to poly = Polygon { points: [Point { array: [1482983149, 1229177646] }, Point { array: [1209820142, 1492653459] }, Point { array: [1715360011, 976307544] }], ring_index: [RingId(0), RingId(0), RingId(0)], position_index: [PositionId(0), PositionId(1), PositionId(2)], rings: [[0, 1, 2]] }, dx = -44412793, dy = -60615481

@@ -1,0 +1,27 @@
+[package]
+name = "kernel"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+gloo-events = "0.2.0"
+rgeometry = { path = "../../" }
+rgeometry-wasm = { path = "../../rgeometry-wasm" }
+wasm-bindgen = "0.2.100"
+
+[dependencies.web-sys]
+features = [
+  'CanvasRenderingContext2d',
+  'Document',
+  'Element',
+  'Path2d',
+  'HtmlCanvasElement',
+  'HtmlInputElement',
+  'InputEvent',
+  'TouchEvent',
+  'Window',
+]
+version = "0.3.77"
