@@ -103,7 +103,15 @@
           };
         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
-        demoNames = lib.attrNames (lib.filterAttrs (name: kind: kind == "directory" && builtins.pathExists (./. + "/demos/${name}/Cargo.lock")) demosDir);
+        # Get all demo directories
+        allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
+        # Check that all demos have Cargo.lock files and fail if any are missing
+        demoNames =
+          let
+            demosWithoutLock = builtins.filter (name: !builtins.pathExists (./. + "/demos/${name}/Cargo.lock")) allDemoDirs;
+          in
+            assert demosWithoutLock == [] || builtins.throw "The following demos are missing Cargo.lock files: ${builtins.toString demosWithoutLock}";
+            allDemoDirs;
         allDemos = pkgs.symlinkJoin {
           name = "rgeometry-demos";
           paths = builtins.map mkDemo demoNames;
