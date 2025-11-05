@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- [#171](https://github.com/rgeometry/rgeometry/pull/171) Kernel computation for simple polygons
+
 ### Internal
 - [#173](https://github.com/rgeometry/rgeometry/pull/173) Added visibility polygon demo with touch and mouse support
 - [#169](https://github.com/rgeometry/rgeometry/pull/169) Improved coverage report formatting with range notation and filtering

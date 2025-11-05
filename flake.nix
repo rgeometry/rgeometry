@@ -93,7 +93,13 @@
           craneLib.buildPackage {
             inherit src;
             preBuild = "cd demos/${demoName}";
-            buildPhaseCargoCommand = "HOME=$PWD/tmp wasm-pack build --release --target no-modules --out-dir pkg --mode no-install";
+            buildPhaseCargoCommand = ''
+              mkdir -p pkg
+              cargo build --release --target wasm32-unknown-unknown --lib
+              wasm-bindgen --target no-modules --out-dir pkg --out-name ${demoName} \
+                target/wasm32-unknown-unknown/release/${demoName}.wasm
+              wasm-opt -Oz -o pkg/${demoName}_bg.wasm pkg/${demoName}_bg.wasm
+            '';
             doNotPostBuildInstallCargoBinaries = true;
             cargoLock = ./. + "/demos/${demoName}/Cargo.lock";
             installPhaseCommand = ''
@@ -103,15 +109,21 @@
             '';
             doCheck = false;
             nativeBuildInputs = [
-              pkgs.wasm-pack
               wasmBindgenCli
               pkgs.binaryen
             ];
-            WASM_BINDGEN = "${wasmBindgenCli}/bin/wasm-bindgen";
           };
         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
-        demoNames = lib.attrNames (lib.filterAttrs (name: kind: kind == "directory" && builtins.pathExists (./. + "/demos/${name}/Cargo.lock")) demosDir);
+        # Get all demo directories
+        allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
+        # Check that all demos have Cargo.lock files and fail if any are missing
+        demoNames =
+          let
+            demosWithoutLock = builtins.filter (name: !builtins.pathExists (./. + "/demos/${name}/Cargo.lock")) allDemoDirs;
+          in
+            assert demosWithoutLock == [] || builtins.throw "The following demos are missing Cargo.lock files: ${builtins.toString demosWithoutLock}";
+            allDemoDirs;
         allDemos = pkgs.symlinkJoin {
           name = "rgeometry-demos";
           paths = builtins.map mkDemo demoNames;
