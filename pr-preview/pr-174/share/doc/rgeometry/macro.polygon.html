@@ -1,0 +1,76 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A macro for visually defining polygons using Unicode characters."><title>polygon in rgeometry - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-e56847b5.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="rgeometry" data-themes="" data-resource-suffix="" data-rustdoc-version="1.91.0 (f8297e351 2025-10-28)" data-channel="1.91.0" data-search-js="search-e256b49e.js" data-stringdex-js="stringdex-c3e638e9.js" data-settings-js="settings-c38705f0.js" ><script src="../static.files/storage-e2aeef58.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-6dc2a7f3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js"                  integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js"    integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "\\(", right: "\\)", display: false},
+                {left: "$", right: "$", display: false},
+                {left: "\\[", right: "\\]", display: true}
+            ]
+        });
+    });
+</script>
+<style type="text/css">
+  iframe {
+    border: 1px dashed black;
+  }
+</style>
+
+</head><body class="rustdoc macro"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">polygon</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../rgeometry/index.html">rgeometry</a><span class="version">0.10.4</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">polygon</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#syntax" title="Syntax">Syntax</a></li><li><a href="#coordinate-system" title="Coordinate System">Coordinate System</a></li><li><a href="#examples" title="Examples">Examples</a></li><li><a href="#vertex-ordering" title="Vertex Ordering">Vertex Ordering</a></li><li><a href="#panics" title="Panics">Panics</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate rgeometry</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">rgeometry</a></div><h1>Macro <span class="macro">polygon</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/rgeometry/data/polygon.rs.html#923-938">Source</a> </span></div><pre class="rust item-decl"><code>macro_rules! polygon {
+    ($ty:ty, $($line:literal),* $(,)?) =&gt; { ... };
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A macro for visually defining polygons using Unicode characters.</p>
+<p>This macro allows you to create polygons by marking vertices with the <code>●</code> (U+25CF BLACK CIRCLE)
+character on a 2D grid. Vertices are extracted in reading order (top to bottom, left to right).
+Each character position represents one unit in the coordinate system, with the origin (0, 0)
+at the top-left corner.</p>
+<p>The macro validates the polygon using <a href="data/struct.Polygon.html#method.new" title="associated function rgeometry::data::Polygon::new"><code>Polygon::new</code></a>, so invalid polygons will panic at runtime.</p>
+<h2 id="syntax"><a class="doc-anchor" href="#syntax">§</a>Syntax</h2>
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="macro">polygon!</span>(Type, <span class="string">"line1"</span>, <span class="string">"line2"</span>, ...)</code></pre><a class="test-arrow" target="_blank" title="Run code" href="https://rgeometry.org/playground.html?code=%23!%5Ballow(unused)%5D%0Afn+main()+%7B%0A++++polygon!(Type,+%22line1%22,+%22line2%22,+...)%0A%7D&amp;edition=2024"></a></div>
+<ul>
+<li><code>Type</code>: The numeric type for coordinates (e.g., <code>i32</code>, <code>i64</code>, <code>f64</code>)</li>
+<li>Each string literal represents one row of the grid</li>
+<li><code>●</code> marks vertex positions</li>
+<li>Other characters (including Unicode box-drawing characters) are ignored</li>
+</ul>
+<h2 id="coordinate-system"><a class="doc-anchor" href="#coordinate-system">§</a>Coordinate System</h2>
+<ul>
+<li>X-axis: increases from left to right (column index)</li>
+<li>Y-axis: increases from top to bottom (row index)</li>
+<li>Origin: (0, 0) at top-left</li>
+</ul>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Simple triangle
+</span><span class="kw">let </span>triangle = <span class="macro">rgeometry::polygon!</span>(i32,
+    <span class="string">"  ●  "</span>,
+    <span class="string">" ● ● "
+</span>);
+<span class="macro">assert_eq!</span>(triangle.iter().count(), <span class="number">3</span>);</code></pre><a class="test-arrow" target="_blank" title="Run code" href="https://rgeometry.org/playground.html?code=%23!%5Ballow(unused)%5D%0A%23%5Ballow(unused_extern_crates)%5D%0Aextern+crate+r%23rgeometry;%0Afn+main()+%7B%0A++++use+rgeometry::data::*;%0A++++//+Simple+triangle%0A++++let+triangle+=+rgeometry::polygon!(i32,%0A++++++++%22++%E2%97%8F++%22,%0A++++++++%22+%E2%97%8F+%E2%97%8F+%22%0A++++);%0A++++assert_eq!(triangle.iter().count(),+3);%0A%7D&amp;edition=2024"></a></div>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Pentagon with vertices in CCW order
+</span><span class="kw">let </span>pentagon = <span class="macro">rgeometry::polygon!</span>(i64,
+    <span class="string">"   ●   "</span>,
+    <span class="string">"      ●"</span>,
+    <span class="string">"     ● "</span>,
+    <span class="string">" ●     "</span>,
+    <span class="string">"●      "
+</span>);
+<span class="macro">assert_eq!</span>(pentagon.iter().count(), <span class="number">5</span>);</code></pre><a class="test-arrow" target="_blank" title="Run code" href="https://rgeometry.org/playground.html?code=%23!%5Ballow(unused)%5D%0A%23%5Ballow(unused_extern_crates)%5D%0Aextern+crate+r%23rgeometry;%0Afn+main()+%7B%0A++++use+rgeometry::data::*;%0A++++//+Pentagon+with+vertices+in+CCW+order%0A++++let+pentagon+=+rgeometry::polygon!(i64,%0A++++++++%22+++%E2%97%8F+++%22,%0A++++++++%22++++++%E2%97%8F%22,%0A++++++++%22+++++%E2%97%8F+%22,%0A++++++++%22+%E2%97%8F+++++%22,%0A++++++++%22%E2%97%8F++++++%22%0A++++);%0A++++assert_eq!(pentagon.iter().count(),+5);%0A%7D&amp;edition=2024"></a></div>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Triangle with decorative box-drawing characters
+</span><span class="kw">let </span>triangle = <span class="macro">rgeometry::polygon!</span>(i32,
+    <span class="string">"●─────┐"</span>,
+    <span class="string">"│  ●  │"</span>,
+    <span class="string">"└────●"
+</span>);
+<span class="macro">assert_eq!</span>(triangle.iter().count(), <span class="number">3</span>);</code></pre><a class="test-arrow" target="_blank" title="Run code" href="https://rgeometry.org/playground.html?code=%23!%5Ballow(unused)%5D%0A%23%5Ballow(unused_extern_crates)%5D%0Aextern+crate+r%23rgeometry;%0Afn+main()+%7B%0A++++use+rgeometry::data::*;%0A++++//+Triangle+with+decorative+box-drawing+characters%0A++++let+triangle+=+rgeometry::polygon!(i32,%0A++++++++%22%E2%97%8F%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%22,%0A++++++++%22%E2%94%82++%E2%97%8F++%E2%94%82%22,%0A++++++++%22%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%97%8F%22%0A++++);%0A++++assert_eq!(triangle.iter().count(),+3);%0A%7D&amp;edition=2024"></a></div><h2 id="vertex-ordering"><a class="doc-anchor" href="#vertex-ordering">§</a>Vertex Ordering</h2>
+<p>Vertices are extracted in reading order (top to bottom, left to right within each row).
+Place your <code>●</code> symbols in the order you want them to appear in the polygon boundary.</p>
+<h2 id="panics"><a class="doc-anchor" href="#panics">§</a>Panics</h2>
+<p>This macro will panic at runtime if:</p>
+<ul>
+<li>Fewer than 3 vertices are marked</li>
+<li>The vertices don’t form a simple polygon (self-intersections, etc.)</li>
+<li>The polygon is invalid for any reason <a href="data/struct.Polygon.html#method.new" title="associated function rgeometry::data::Polygon::new"><code>Polygon::new</code></a> would reject</li>
+</ul>
+</div></details></section></div></main></body></html>
