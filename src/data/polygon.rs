@@ -846,6 +846,100 @@ impl Position {
   }
 }
 
+/// A macro for visually defining polygons using Unicode characters.
+///
+/// This macro allows you to create polygons by marking vertices with the `●` (U+25CF BLACK CIRCLE)
+/// character on a 2D grid. Vertices are extracted in reading order (top to bottom, left to right).
+/// Each character position represents one unit in the coordinate system, with the origin (0, 0)
+/// at the top-left corner.
+///
+/// The macro validates the polygon using [`Polygon::new`], so invalid polygons will panic at runtime.
+///
+/// # Syntax
+///
+/// ```ignore
+/// polygon!(Type, "line1", "line2", ...)
+/// ```
+///
+/// - `Type`: The numeric type for coordinates (e.g., `i32`, `i64`, `f64`)
+/// - Each string literal represents one row of the grid
+/// - `●` marks vertex positions
+/// - Other characters (including Unicode box-drawing characters) are ignored
+///
+/// # Coordinate System
+///
+/// - X-axis: increases from left to right (column index)
+/// - Y-axis: increases from top to bottom (row index)
+/// - Origin: (0, 0) at top-left
+///
+/// # Examples
+///
+/// ```
+/// # use rgeometry::data::*;
+/// // Simple triangle
+/// let triangle = rgeometry::polygon!(i32,
+///     "  ●  ",
+///     " ● ● "
+/// );
+/// assert_eq!(triangle.iter().count(), 3);
+/// ```
+///
+/// ```
+/// # use rgeometry::data::*;
+/// // Pentagon with vertices in CCW order
+/// let pentagon = rgeometry::polygon!(i64,
+///     "   ●   ",
+///     "      ●",
+///     "     ● ",
+///     " ●     ",
+///     "●      "
+/// );
+/// assert_eq!(pentagon.iter().count(), 5);
+/// ```
+///
+/// ```
+/// # use rgeometry::data::*;
+/// // Triangle with decorative box-drawing characters
+/// let triangle = rgeometry::polygon!(i32,
+///     "●─────┐",
+///     "│  ●  │",
+///     "└────●"
+/// );
+/// assert_eq!(triangle.iter().count(), 3);
+/// ```
+///
+/// # Vertex Ordering
+///
+/// Vertices are extracted in reading order (top to bottom, left to right within each row).
+/// Place your `●` symbols in the order you want them to appear in the polygon boundary.
+///
+/// # Panics
+///
+/// This macro will panic at runtime if:
+/// - Fewer than 3 vertices are marked
+/// - The vertices don't form a simple polygon (self-intersections, etc.)
+/// - The polygon is invalid for any reason [`Polygon::new`] would reject
+#[macro_export]
+macro_rules! polygon {
+    ($ty:ty, $($line:literal),* $(,)?) => {{
+        #[allow(clippy::cast_precision_loss, unused_assignments)]
+        {
+            let mut vertices = Vec::new();
+            let mut y = 0;
+            $(
+                let line: &str = $line;
+                for (x, ch) in line.chars().enumerate() {
+                    if ch == '●' {
+                        vertices.push($crate::data::Point::new([x as $ty, y as $ty]));
+                    }
+                }
+                y += 1;
+            )*
+            $crate::data::Polygon::new(vertices).unwrap()
+        }
+    }};
+}
+
 #[cfg(test)]
 pub mod tests {
   use super::*;
@@ -1034,5 +1128,123 @@ pub mod tests {
       }
     }
     PointLocation::Outside
+  }
+
+  // Tests for the polygon! macro
+  mod polygon_macro_tests {
+    use super::*;
+
+    #[test]
+    fn macro_simple_triangle() {
+      // Vertices placed in CCW order: top, bottom-left, bottom-right
+      #[rustfmt::skip]
+      let triangle = polygon!(i32,
+          "  ●  ",
+          " ●  ●"
+      );
+      assert_eq!(triangle.iter().count(), 3);
+      assert!(triangle.validate().is_ok());
+    }
+
+    #[test]
+    fn macro_rectangle_with_decorative_borders() {
+      // Vertices in CCW order using decorative box-drawing characters
+      #[rustfmt::skip]
+      let rect = polygon!(i64,
+          "●─────┐",
+          "│      ",
+          "└─────●",
+          "      ●"
+      );
+      assert_eq!(rect.iter().count(), 3);
+    }
+
+    #[test]
+    fn macro_diamond_shape() {
+      // Vertices in CCW order: top, left, bottom, right
+      #[rustfmt::skip]
+      let diamond = polygon!(i32,
+          "   ●   ",
+          "●      ",
+          "   ●   ",
+          "      ●"
+      );
+      assert_eq!(diamond.iter().count(), 4);
+      assert!(diamond.validate().is_ok());
+    }
+
+    #[test]
+    fn macro_with_f64_type() {
+      // Triangle with vertices not on a diagonal
+      #[rustfmt::skip]
+      let poly = polygon!(f64,
+          "●     ",
+          "  ●   ",
+          "     ●"
+      );
+      assert_eq!(poly.iter().count(), 3);
+      assert!(poly.validate().is_ok());
+    }
+
+    #[test]
+    #[should_panic]
+    fn macro_single_line_collinear() {
+      // This will fail because all points are collinear
+      let _triangle = polygon!(i32, "●  ●  ●");
+    }
+
+    #[test]
+    fn macro_coordinates_verification() {
+      let poly = polygon!(i32, "●   ", "  ● ", "   ●");
+      // Verify coordinates are extracted correctly
+      let points: Vec<_> = poly.iter().cloned().collect();
+      assert_eq!(points[0], Point::new([0, 0]));
+      assert_eq!(points[1], Point::new([2, 1]));
+      assert_eq!(points[2], Point::new([3, 2]));
+    }
+
+    #[test]
+    fn macro_hexagon() {
+      // Hexagon with vertices in CCW order: top-left, bottom-left, bottom-center, bottom-right, top-right, top-center
+      let hex = polygon!(
+        i32,
+        "  ●    ",
+        "●      ",
+        " ●     ",
+        "  ●    ",
+        "     ● ",
+        "      ●"
+      );
+      assert_eq!(hex.iter().count(), 6);
+      assert!(hex.validate().is_ok());
+    }
+
+    #[test]
+    fn macro_trailing_comma() {
+      let triangle = polygon!(i32, "  ●  ", " ●  ●",);
+      assert_eq!(triangle.iter().count(), 3);
+      assert!(triangle.validate().is_ok());
+    }
+
+    #[test]
+    fn macro_i8_type() {
+      let poly = polygon!(i8, "●  ", "  ●", " ● ");
+      assert_eq!(poly.iter().count(), 3);
+      assert!(poly.validate().is_ok());
+    }
+
+    #[test]
+    #[should_panic(expected = "InsufficientVertices")]
+    fn macro_insufficient_vertices() {
+      let _poly = polygon!(i32, "● ●");
+    }
+
+    #[test]
+    fn macro_pentagon() {
+      // Pentagon with vertices in CCW order: top, top-right, bottom-right, bottom-left, top-left
+      let pentagon = polygon!(i32, "   ●   ", "      ●", "     ● ", " ●     ", "●      ");
+      assert_eq!(pentagon.iter().count(), 5);
+      assert!(pentagon.validate().is_ok());
+    }
   }
 }
