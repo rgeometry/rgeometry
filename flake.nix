@@ -86,7 +86,13 @@
           craneLib.buildPackage {
             inherit src;
             preBuild = "cd demos/${demoName}";
-            buildPhaseCargoCommand = "HOME=$PWD/tmp wasm-pack build --release --target no-modules --out-dir pkg --mode no-install";
+            buildPhaseCargoCommand = ''
+              mkdir -p pkg
+              cargo build --release --target wasm32-unknown-unknown --lib
+              wasm-bindgen --target no-modules --out-dir pkg --out-name ${demoName} \
+                target/wasm32-unknown-unknown/release/${demoName}.wasm
+              wasm-opt -Oz -o pkg/${demoName}_bg.wasm pkg/${demoName}_bg.wasm
+            '';
             doNotPostBuildInstallCargoBinaries = true;
             cargoLock = ./. + "/demos/${demoName}/Cargo.lock";
             installPhaseCommand = ''
@@ -96,7 +102,6 @@
             '';
             doCheck = false;
             nativeBuildInputs = with pkgs; [
-              wasm-pack
               wasm-bindgen-cli
               binaryen
             ];
