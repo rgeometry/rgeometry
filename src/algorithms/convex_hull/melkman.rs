@@ -176,6 +176,16 @@ mod tests {
     assert!(Polygon::equals(&convex_hull(&input), &output));
   }
 
+  #[test]
+  fn unit_test_visual_macro() {
+    // Input polygon: triangle with an internal point
+    // The convex hull should just be the outer triangle
+    let input = crate::polygon!(i32, "   ●   ", "  ●    ", " ●    ●");
+    // Expected convex hull: just the 3 outer vertices
+    let expected = crate::polygon!(i32, "   ●   ", "       ", " ●    ●");
+    assert!(Polygon::equals(&convex_hull(&input), &expected));
+  }
+
   #[proptest]
   fn does_not_panic_i8(poly: Polygon<i8>) {
     convex_hull(&poly);
