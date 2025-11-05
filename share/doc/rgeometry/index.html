@@ -19,7 +19,7 @@
   }
 </style>
 
-</head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate rgeometry</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../rgeometry/index.html">rgeometry</a><span class="version">0.10.4</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#computational-geometry" title="Computational Geometry">Computational Geometry</a></li><li><a href="#demos" title="Demos">Demos</a></li><li><a href="#caveats" title="Caveats">Caveats</a></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#traits" title="Traits">Traits</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>rgeometry</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/rgeometry/lib.rs.html#2-572">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="computational-geometry"><a class="doc-anchor" href="#computational-geometry">§</a>Computational Geometry</h2>
+</head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate rgeometry</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../rgeometry/index.html">rgeometry</a><span class="version">0.10.4</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#computational-geometry" title="Computational Geometry">Computational Geometry</a></li><li><a href="#demos" title="Demos">Demos</a></li><li><a href="#caveats" title="Caveats">Caveats</a></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#traits" title="Traits">Traits</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>rgeometry</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/rgeometry/lib.rs.html#2-683">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="computational-geometry"><a class="doc-anchor" href="#computational-geometry">§</a>Computational Geometry</h2>
 <p>RGeometry provides data types (points, polygons, lines, segments) and algorithms for
 computational geometry. Computational geometry is the study of algorithms for solving
 geometric problems, such as computing convex hulls, triangulating polygons, finding
@@ -27,7 +27,7 @@ intersections, and determining visibility.</p>
 <p>This crate includes algorithms for:</p>
 <ul>
 <li><strong>Convex hulls</strong>: Graham scan, gift wrapping, and Melkman’s algorithm</li>
-<li><strong>Triangulation</strong>: Ear clipping for simple polygons</li>
+<li><strong>Triangulation</strong>: Ear clipping for simple polygons and constrained Delaunay triangulation</li>
 <li><strong>Polygonization</strong>: Converting point sets to polygons (monotone, star-shaped, two-opt)</li>
 <li><strong>Line segment intersection</strong>: Naive and Bentley-Ottmann sweep line algorithms</li>
 <li><strong>Visibility</strong>: Computing visibility polygons</li>
@@ -39,6 +39,7 @@ intersections, and determining visibility.</p>
 <li><a href="../../../convex_hull.html">Convex Hull</a> - Graham scan algorithm</li>
 <li><a href="../../../melkman.html">Melkman’s Algorithm</a> - Online convex hull for simple polylines</li>
 <li><a href="../../../earclip.html">Ear Clipping</a> - Polygon triangulation</li>
+<li><a href="../../../delaunay.html">Constrained Delaunay</a> - Ear-clipping plus Lawson flips</li>
 <li><a href="../../../two_opt.html">Two-Opt</a> - Polygonization heuristic</li>
 <li><a href="../../../random_convex.html">Random Convex</a> - Convex polygon generation</li>
 <li><a href="../../../random_monotone.html">Random Monotone</a> - Monotone polygon generation</li>
