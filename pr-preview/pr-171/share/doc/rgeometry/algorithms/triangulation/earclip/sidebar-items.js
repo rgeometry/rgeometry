@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["earclip","earclip_hashed","triangulate_list","triangulate_list_hashed"]};
