@@ -237,7 +237,7 @@ mod tests {
         let kernel_area = k.signed_area::<f64>().abs();
         if poly_area > 0.1 {
           let area_ratio = (kernel_area / poly_area).abs();
-          prop_assert!(area_ratio >= 0.90 && area_ratio <= 1.10,
+          prop_assert!((0.90..=1.10).contains(&area_ratio),
             "Convex polygon kernel area differs significantly: {} vs {}", kernel_area, poly_area);
         }
       }
