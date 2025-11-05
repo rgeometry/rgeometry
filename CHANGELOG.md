@@ -2,14 +2,12 @@
 
 ## [Unreleased]
 
+## [0.11.0] 2025-11-05
+
 ### Added
 - [#171](https://github.com/rgeometry/rgeometry/pull/171) Kernel computation for simple polygons
-
-### Internal
-- [#173](https://github.com/rgeometry/rgeometry/pull/173) Added visibility polygon demo with touch and mouse support
-- [#169](https://github.com/rgeometry/rgeometry/pull/169) Improved coverage report formatting with range notation and filtering
-- [#168](https://github.com/rgeometry/rgeometry/pull/168) Added Python linting with Ruff to flake checks
-- [#167](https://github.com/rgeometry/rgeometry/pull/167) Added Nix linting with statix and deadnix to flake checks
+- [#145](https://github.com/rgeometry/rgeometry/pull/145) Constrained Delaunay triangulation
+- [#174](https://github.com/rgeometry/rgeometry/pull/174) Visual polygon macro for test readability
 
 ## [0.10.4] 2025-11-03
 
