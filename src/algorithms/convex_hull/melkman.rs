@@ -180,9 +180,19 @@ mod tests {
   fn unit_test_visual_macro() {
     // Input polygon: triangle with an internal point
     // The convex hull should just be the outer triangle
-    let input = crate::polygon!(i32, "   ●   ", "  ●    ", " ●    ●");
+    #[rustfmt::skip]
+    let input = crate::polygon!(i32,
+        "   ●   ",
+        "  ●    ",
+        " ●    ●"
+    );
     // Expected convex hull: just the 3 outer vertices
-    let expected = crate::polygon!(i32, "   ●   ", "       ", " ●    ●");
+    #[rustfmt::skip]
+    let expected = crate::polygon!(i32,
+        "   ●   ",
+        "       ",
+        " ●    ●"
+    );
     assert!(Polygon::equals(&convex_hull(&input), &expected));
   }
 

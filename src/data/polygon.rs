@@ -922,18 +922,21 @@ impl Position {
 #[macro_export]
 macro_rules! polygon {
     ($ty:ty, $($line:literal),* $(,)?) => {{
-        let mut vertices = Vec::new();
-        let mut y = 0;
-        $(
-            let line: &str = $line;
-            for (x, ch) in line.chars().enumerate() {
-                if ch == '●' {
-                    vertices.push($crate::data::Point::new([x as $ty, y as $ty]));
+        #[allow(clippy::cast_precision_loss, unused_assignments)]
+        {
+            let mut vertices = Vec::new();
+            let mut y = 0;
+            $(
+                let line: &str = $line;
+                for (x, ch) in line.chars().enumerate() {
+                    if ch == '●' {
+                        vertices.push($crate::data::Point::new([x as $ty, y as $ty]));
+                    }
                 }
-            }
-            y += 1;
-        )*
-        $crate::data::Polygon::new(vertices).unwrap()
+                y += 1;
+            )*
+            $crate::data::Polygon::new(vertices).unwrap()
+        }
     }};
 }
 
@@ -1134,7 +1137,11 @@ pub mod tests {
     #[test]
     fn macro_simple_triangle() {
       // Vertices placed in CCW order: top, bottom-left, bottom-right
-      let triangle = polygon!(i32, "  ●  ", " ●  ●");
+      #[rustfmt::skip]
+      let triangle = polygon!(i32,
+          "  ●  ",
+          " ●  ●"
+      );
       assert_eq!(triangle.iter().count(), 3);
       assert!(triangle.validate().is_ok());
     }
@@ -1142,14 +1149,26 @@ pub mod tests {
     #[test]
     fn macro_rectangle_with_decorative_borders() {
       // Vertices in CCW order using decorative box-drawing characters
-      let rect = polygon!(i64, "●─────┐", "│      ", "└─────●", "      ●");
+      #[rustfmt::skip]
+      let rect = polygon!(i64,
+          "●─────┐",
+          "│      ",
+          "└─────●",
+          "      ●"
+      );
       assert_eq!(rect.iter().count(), 3);
     }
 
     #[test]
     fn macro_diamond_shape() {
       // Vertices in CCW order: top, left, bottom, right
-      let diamond = polygon!(i32, "   ●   ", "●      ", "   ●   ", "      ●");
+      #[rustfmt::skip]
+      let diamond = polygon!(i32,
+          "   ●   ",
+          "●      ",
+          "   ●   ",
+          "      ●"
+      );
       assert_eq!(diamond.iter().count(), 4);
       assert!(diamond.validate().is_ok());
     }
@@ -1157,7 +1176,12 @@ pub mod tests {
     #[test]
     fn macro_with_f64_type() {
       // Triangle with vertices not on a diagonal
-      let poly = polygon!(f64, "●     ", "  ●   ", "     ●");
+      #[rustfmt::skip]
+      let poly = polygon!(f64,
+          "●     ",
+          "  ●   ",
+          "     ●"
+      );
       assert_eq!(poly.iter().count(), 3);
       assert!(poly.validate().is_ok());
     }
