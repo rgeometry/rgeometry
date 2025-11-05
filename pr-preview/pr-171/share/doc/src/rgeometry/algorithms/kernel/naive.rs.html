@@ -258,7 +258,7 @@
 <a href=#237 id=237 data-nosnippet>237</a>        <span class="kw">let </span>kernel_area = k.signed_area::&lt;f64&gt;().abs();
 <a href=#238 id=238 data-nosnippet>238</a>        <span class="kw">if </span>poly_area &gt; <span class="number">0.1 </span>{
 <a href=#239 id=239 data-nosnippet>239</a>          <span class="kw">let </span>area_ratio = (kernel_area / poly_area).abs();
-<a href=#240 id=240 data-nosnippet>240</a>          <span class="macro">prop_assert!</span>(area_ratio &gt;= <span class="number">0.90 </span>&amp;&amp; area_ratio &lt;= <span class="number">1.10</span>,
+<a href=#240 id=240 data-nosnippet>240</a>          <span class="macro">prop_assert!</span>((<span class="number">0.90</span>..=<span class="number">1.10</span>).contains(<span class="kw-2">&amp;</span>area_ratio),
 <a href=#241 id=241 data-nosnippet>241</a>            <span class="string">"Convex polygon kernel area differs significantly: {} vs {}"</span>, kernel_area, poly_area);
 <a href=#242 id=242 data-nosnippet>242</a>        }
 <a href=#243 id=243 data-nosnippet>243</a>      }
