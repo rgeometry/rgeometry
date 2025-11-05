@@ -89,15 +89,16 @@
         # Build dependencies only (for caching) - native target for tests/clippy
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
-        # Common arguments for wasm32 builds (demos use this)
-        commonArgsWasm = commonArgs // {
-          cargoExtraArgs = "--target wasm32-unknown-unknown";
-          CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
-        };
-
         mkDemo = demoName:
-          craneLib.buildPackage (commonArgsWasm // {
+          craneLib.buildPackage {
+            inherit src;
+            pname = "rgeometry-demo-${demoName}";
+            version = "0.1.0";
             preBuild = "cd demos/${demoName}";
+            cargoExtraArgs = "--target wasm32-unknown-unknown";
+            CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
+            # Don't use vendored dependencies as they don't include wasm32-compatible rug
+            carVendorDir = null;
             buildPhaseCargoCommand = ''
               mkdir -p pkg
               cargo build --release --target wasm32-unknown-unknown --lib
@@ -106,18 +107,24 @@
               wasm-opt -Oz -o pkg/${demoName}_bg.wasm pkg/${demoName}_bg.wasm
             '';
             doNotPostBuildInstallCargoBinaries = true;
-            cargoLock = ./. + "/demos/${demoName}/Cargo.lock";
             installPhaseCommand = ''
               mkdir -p $out
-              ${pkgs.bash}/bin/bash "$src/utils/merge.sh" -o "$out/${demoName}.html" \
+              bash "${src}/utils/merge.sh" -o "$out/${demoName}.html" \
                   "pkg/${demoName}_bg.wasm" "pkg/${demoName}.js"
             '';
             doCheck = false;
-            nativeBuildInputs = commonArgs.nativeBuildInputs ++ [
+            nativeBuildInputs = with pkgs; [
+              pkg-config
+              m4
               wasmBindgenCli
-              pkgs.binaryen
+              binaryen
             ];
-          });
+            buildInputs = with pkgs; [
+              gmp
+              mpfr
+            ];
+            GMP_MPFR_SYS_CACHE = "no-test";
+          };
         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
         # Get all demo directories
