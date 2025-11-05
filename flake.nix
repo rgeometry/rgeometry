@@ -86,12 +86,17 @@
           GMP_MPFR_SYS_CACHE = "no-test";
         };
 
-        # Build dependencies only (for caching)
+        # Build dependencies only (for caching) - native target for tests/clippy
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
+        # Common arguments for wasm32 builds (demos use this)
+        commonArgsWasm = commonArgs // {
+          cargoExtraArgs = "--target wasm32-unknown-unknown";
+          CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
+        };
+
         mkDemo = demoName:
-          craneLib.buildPackage {
-            inherit src;
+          craneLib.buildPackage (commonArgsWasm // {
             preBuild = "cd demos/${demoName}";
             buildPhaseCargoCommand = ''
               mkdir -p pkg
@@ -108,11 +113,11 @@
                   "pkg/${demoName}_bg.wasm" "pkg/${demoName}.js"
             '';
             doCheck = false;
-            nativeBuildInputs = [
+            nativeBuildInputs = commonArgs.nativeBuildInputs ++ [
               wasmBindgenCli
               pkgs.binaryen
             ];
-          };
+          });
         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
         # Get all demo directories
