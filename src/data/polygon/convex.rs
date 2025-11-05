@@ -386,8 +386,6 @@ mod tests {
     fn extreme_point_right_direction(poly: PolygonConvex<i8>) {
       let direction = Vector([1i8, 0]);
       let extreme = poly.extreme_point(&direction);
-      // The extreme point should have x-coordinate equal to or very close to max
-      let (_, max) = poly.bounding_box();
       // Just verify it's a valid vertex on the polygon
       let vertices = poly.boundary_slice();
       let found = vertices.iter().any(|&idx| poly.polygon().point(idx) == extreme);
