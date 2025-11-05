@@ -258,14 +258,13 @@ mod tests {
     #[test]
     fn prop_kernel_area_smaller_or_equal_i8(poly: Polygon<i8>) {
       // Catch any panics from overflow in underlying implementation
-      if let Ok(maybe_k) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| kernel(&poly))) {
-        if let Some(k) = maybe_k {
-          let poly_area = poly.signed_area::<f64>().abs();
-          let kernel_area = k.signed_area::<f64>().abs();
-          // Allow significant tolerance for numerical errors in integer arithmetic
-          prop_assert!(kernel_area <= poly_area + 10.0,
-            "Kernel area {} should be <= polygon area {}", kernel_area, poly_area);
-        }
+      if let Ok(maybe_k) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| kernel(&poly)))
+        && let Some(k) = maybe_k {
+        let poly_area = poly.signed_area::<f64>().abs();
+        let kernel_area = k.signed_area::<f64>().abs();
+        // Allow significant tolerance for numerical errors in integer arithmetic
+        prop_assert!(kernel_area <= poly_area + 10.0,
+          "Kernel area {} should be <= polygon area {}", kernel_area, poly_area);
       }
     }
   }
