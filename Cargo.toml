@@ -1,9 +1,24 @@
+[workspace]
+members = [
+  ".",
+  "rgeometry-wasm",
+  "demos/convex_hull",
+  "demos/delaunay",
+  "demos/earclip",
+  "demos/kernel",
+  "demos/melkman",
+  "demos/random_convex",
+  "demos/random_monotone",
+  "demos/two_opt",
+  "demos/visibility",
+]
+resolver = "2"
+
 [package]
 authors = ["David Himmelstrup <lemmih@gmail.com>"]
 categories = ["algorithms", "data-structures", "mathematics", "graphics"]
 description = "High-Level Computational Geometry"
 edition = "2024"
-resolver = "2"
 exclude = [".dockerignore", ".github", ".gitignore", "playground", "Dockerfile.server"]
 homepage = "https://rgeometry.org/"
 license = "Unlicense"
@@ -29,8 +44,6 @@ rug = { version = "1.28", optional = true }
 criterion = "0.7.0"
 proptest = "1.7.0"
 test-strategy = "0.4.0"
-# Used for doctest examples.
-# rgeometry-wasm = { git = "https://github.com/rgeometry/rgeometry-wasm", branch = "main" }
 
 [[bench]]
 harness = false

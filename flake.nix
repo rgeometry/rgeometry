@@ -36,7 +36,7 @@
         src = lib.fileset.toSource {
           root = ./.;
           fileset = lib.fileset.unions [
-            # Root level Rust files
+            # Root level Rust files and workspace
             ./Cargo.toml
             ./Cargo.lock
             ./src
@@ -49,11 +49,11 @@
             # Metadata
             ./README.md
             ./LICENSE
-            # rgeometry-wasm crate
+            # rgeometry-wasm workspace member
             ./rgeometry-wasm/Cargo.toml
             ./rgeometry-wasm/src
             ./rgeometry-wasm/rustfmt.toml
-            # Demo crates
+            # Demo workspace members
             (lib.fileset.fileFilter
               (file: file.hasExt "toml" || file.hasExt "lock" || file.hasExt "rs")
               ./demos)

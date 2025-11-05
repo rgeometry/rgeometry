@@ -2,6 +2,9 @@
 name = "melkman"
 version = "0.1.0"
 edition = "2021"
+authors = ["David Himmelstrup <lemmih@gmail.com>"]
+license = "Unlicense"
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]

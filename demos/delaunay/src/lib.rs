@@ -42,7 +42,10 @@ where
     edges.insert(IndexEdge::new(c, a));
   }
 
-  let boundary: Vec<PointId> = polygon.iter_boundary().map(|cursor| cursor.point_id()).collect();
+  let boundary: Vec<PointId> = polygon
+    .iter_boundary()
+    .map(|cursor| cursor.point_id())
+    .collect();
   if boundary.len() > 1 {
     for window in boundary.windows(2) {
       edges.remove(&IndexEdge::new(window[0], window[1]));
