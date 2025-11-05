@@ -64,7 +64,6 @@
 
         wasmBindgenCli = let
           version = pkgs.wasm-bindgen-cli.version;
-          _ = builtins.trace "Using wasm-bindgen-cli ${version}" null;
         in
           if version == "0.2.100"
           then pkgs.wasm-bindgen-cli
