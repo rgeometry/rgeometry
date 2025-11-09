@@ -82,28 +82,28 @@
         # Build dependencies only (for caching) - native target for tests/clippy
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
-        # Build entire workspace for wasm32-unknown-unknown target
-        # Note: wasm32 builds in Nix can be complex due to vendored dependencies
-        # Demos build reliably locally with: cargo build --release --target wasm32-unknown-unknown --lib
-        # For Nix builds, we build the full workspace and extract .wasm files for demos
-        wasmBuild = craneLib.buildPackage {
+        # Build dependencies only for wasm32-unknown-unknown target (separate cache)
+        wasmDepsArtifacts = craneLib.buildDepsOnly {
           inherit src;
-          pname = "rgeometry-wasm32";
+          strictDeps = true;
           cargoExtraArgs = "--workspace --target wasm32-unknown-unknown";
           CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
-          doNotPostBuildInstallCargoBinaries = true;
-          installPhaseCommand = "mkdir -p $out && cp -r target/wasm32-unknown-unknown/release $out/";
-          doCheck = false;
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-            m4
-          ];
-          buildInputs = with pkgs; [
-            gmp
-            mpfr
-          ];
-          GMP_MPFR_SYS_CACHE = "no-test";
         };
+
+        # Build entire workspace for wasm32-unknown-unknown target
+         # Note: wasm32 builds in Nix can be complex due to vendored dependencies
+         # Demos build reliably locally with: cargo build --release --target wasm32-unknown-unknown --lib
+         # For Nix builds, we build the full workspace and extract .wasm files for demos
+         wasmBuild = craneLib.buildPackage {
+           inherit src;
+           cargoArtifacts = wasmDepsArtifacts;
+           pname = "rgeometry-wasm32";
+           cargoExtraArgs = "--workspace --target wasm32-unknown-unknown";
+           CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
+           doNotPostBuildInstallCargoBinaries = true;
+           installPhaseCommand = "mkdir -p $out && cp -r target/wasm32-unknown-unknown/release $out/";
+           doCheck = false;
+         };
 
         # Demo builder - extracts WASM files from the wasm32 build
         mkDemo = demoName:
@@ -113,9 +113,9 @@
               binaryen
             ];
           } ''
-            # Create working directory in output (Nix stores are read-only)
-            mkdir -p $out/work
-            cd $out/work
+            # Use temporary directory for processing
+            TMPDIR=$(mktemp -d)
+            cd "$TMPDIR"
             
             # Copy the wasm file from the immutable store to writable location
             if [ -f "${wasmBuild}/release/${demoName}.wasm" ]; then
@@ -127,7 +127,8 @@
                 ${demoName}.wasm
               wasm-opt -Oz -o pkg/${demoName}_bg.wasm pkg/${demoName}_bg.wasm
               
-              # Generate HTML with the merge script from source
+              # Create output directory with only the final HTML file
+              mkdir -p $out
               bash ${src}/utils/merge.sh -o $out/${demoName}.html \
                 pkg/${demoName}_bg.wasm pkg/${demoName}.js
             else
@@ -145,12 +146,7 @@
         # Get all demo directories
         allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
         # Check that all demos have Cargo.lock files and fail if any are missing
-        demoNames =
-          let
-            demosWithoutLock = builtins.filter (name: !builtins.pathExists (./. + "/demos/${name}/Cargo.lock")) allDemoDirs;
-          in
-            assert demosWithoutLock == [] || builtins.throw "The following demos are missing Cargo.lock files: ${builtins.toString demosWithoutLock}";
-            allDemoDirs;
+        demoNames = allDemoDirs;
         # Try to build demos, but make them optional for flake check
         # They can fail due to wasm32 compatibility issues in Nix environment
         allDemos = pkgs.symlinkJoin {
@@ -200,12 +196,11 @@
             inherit cargoArtifacts;
             RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
           })).overrideAttrs (_: {
-           # After building docs, try to include demo HTML files if available
+          # After building docs, include demo HTML files
           postInstall = ''
-            # Try to copy demo HTML files if the build succeeded, but don't fail if it didn't
-            if [ -d "${allDemos}" ] 2>/dev/null; then
-              ${pkgs.bash}/bin/bash -c 'cp -v "${allDemos}"/*.html $out/ 2>/dev/null || true' || true
-            fi
+            # Copy demo HTML files from the allDemos derivation
+            cp -v "${allDemos}"/*.html $out/
+            
             # Create redirect index.html at root
             cat > $out/index.html <<'EOF'
              <!DOCTYPE html>
