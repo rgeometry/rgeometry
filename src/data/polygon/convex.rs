@@ -407,8 +407,7 @@ mod tests {
     }
 
     #[test]
-    fn extreme_direction_matches_naive(poly: PolygonConvex<i16>, dx: i16, dy: i16) {
-      let direction = Vector([dx, dy]);
+    fn extreme_direction_matches_naive(poly: PolygonConvex<i16>, direction: Vector<i16, 2>) {
       let cursor = poly.extreme_in_direction(&direction);
       let expected = poly
         .iter_boundary()
@@ -416,6 +415,32 @@ mod tests {
         .unwrap();
       prop_assert_eq!(cursor.point(), expected.point());
     }
+
+    #[test]
+    fn extreme_direction_matches_naive_after_rotation(
+      poly: PolygonConvex<i16>,
+      direction: Vector<i16, 2>,
+      rotate_by: usize,
+    ) {
+      let rotated = rotate_polygon(poly, rotate_by);
+      let cursor = rotated.extreme_in_direction(&direction);
+      let expected = rotated
+        .iter_boundary()
+        .max_by(|a, b| direction.cmp_along(a.point(), b.point()))
+        .unwrap();
+      prop_assert_eq!(cursor.point(), expected.point());
+    }
+  }
+
+  fn rotate_polygon(poly: PolygonConvex<i16>, rotate_by: usize) -> PolygonConvex<i16> {
+    let n = poly.boundary_slice().len();
+    let shift = rotate_by % n;
+    if shift == 0 {
+      return poly;
+    }
+    let points: Vec<Point<i16, 2>> = poly.iter_boundary().map(|c| *c.point()).collect();
+    let rotated: Vec<Point<i16, 2>> = points.iter().cycle().skip(shift).take(n).cloned().collect();
+    PolygonConvex::new_unchecked(Polygon::new_unchecked(rotated))
   }
 
   #[test]
