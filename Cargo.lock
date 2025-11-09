@@ -147,7 +147,7 @@ dependencies = [
 
 [[package]]
 name = "convex_hull"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "gloo-events",
  "rgeometry",
@@ -237,7 +237,7 @@ checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
 
 [[package]]
 name = "delaunay"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "rgeometry",
  "rgeometry-wasm",
@@ -259,7 +259,7 @@ dependencies = [
 
 [[package]]
 name = "earclip"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "rgeometry-wasm",
  "wasm-bindgen",
@@ -403,7 +403,7 @@ dependencies = [
 
 [[package]]
 name = "kernel"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "gloo-events",
  "rgeometry",
@@ -441,7 +441,7 @@ dependencies = [
 
 [[package]]
 name = "melkman"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "rgeometry",
  "rgeometry-wasm",
@@ -723,7 +723,7 @@ dependencies = [
 
 [[package]]
 name = "random_convex"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "gloo-events",
  "num-rational",
@@ -737,7 +737,7 @@ dependencies = [
 
 [[package]]
 name = "random_monotone"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "gloo-events",
  "num-rational",
@@ -1005,7 +1005,7 @@ dependencies = [
 
 [[package]]
 name = "two_opt"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "once_cell",
  "rand 0.8.5",
@@ -1029,7 +1029,7 @@ checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
 
 [[package]]
 name = "visibility"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "gloo-events",
  "rgeometry",
