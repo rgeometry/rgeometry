@@ -82,14 +82,62 @@
         # Build dependencies only (for caching) - native target for tests/clippy
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
-        # Demo builder - disabled in Nix builds due to wasm32 complexity
-        # Demos are built locally with: cargo build --release --target wasm32-unknown-unknown --lib
-        # Then wasm-bindgen and wasm-opt are applied manually
+        # Build entire workspace for wasm32-unknown-unknown target
+        # Create a separate build without --all-features which is incompatible with wasm32
+        wasmBuild = craneLib.buildPackage {
+          inherit src;
+          pname = "rgeometry-wasm32";
+          # Don't use cargoArtifacts since wasm32 has different feature requirements
+          # cargoArtifacts = null; # This would skip the deps build
+          cargoExtraArgs = "--workspace --target wasm32-unknown-unknown";
+          CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
+          # Try to be lenient with dependencies for wasm32
+          strictDeps = true;
+          # Preserve dependencies but don't install binaries
+          doNotPostBuildInstallCargoBinaries = true;
+          installPhaseCommand = "mkdir -p $out && cp -r target/wasm32-unknown-unknown/release $out/";
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            m4
+          ];
+          buildInputs = with pkgs; [
+            gmp
+            mpfr
+          ];
+          GMP_MPFR_SYS_CACHE = "no-test";
+        };
+
+        # Demo builder - extracts WASM files from the wasm32 build
         mkDemo = demoName:
-          pkgs.writeTextFile {
-            name = "rgeometry-demo-${demoName}-placeholder";
-            text = "# Demos should be built locally, not in Nix\n# Run: cd demos/${demoName} && cargo build --release --target wasm32-unknown-unknown --lib\n";
-          };
+          pkgs.runCommand "rgeometry-demo-${demoName}" {
+            nativeBuildInputs = with pkgs; [
+              pkgs.wasm-bindgen-cli
+              binaryen
+            ];
+          } ''
+            mkdir -p $out
+            cd ${wasmBuild}/release
+            
+            # Find and process the wasm binary for this demo
+            if [ -f "${demoName}.wasm" ]; then
+              mkdir -p pkg
+              wasm-bindgen --target no-modules --out-dir pkg --out-name ${demoName} \
+                ${demoName}.wasm
+              wasm-opt -Oz -o pkg/${demoName}_bg.wasm pkg/${demoName}_bg.wasm
+              
+              # Generate HTML with the merge script from source
+              bash ${src}/utils/merge.sh -o $out/${demoName}.html \
+                pkg/${demoName}_bg.wasm pkg/${demoName}.js
+            else
+              echo "Error: ${demoName}.wasm not found in wasm build"
+              echo "Available WASM files:"
+              ls -la *.wasm 2>/dev/null || echo "No WASM files found"
+              exit 1
+            fi
+          '';
+
+        # Reference for wasm-bindgen-cli version check (kept for documentation)
+        # wasmBindgenCliVersion = "0.2.100";
         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
         # Get all demo directories
@@ -147,11 +195,13 @@
             inherit cargoArtifacts;
             RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
           })).overrideAttrs (_: {
-          # After building docs, compute checksum
+          # After building docs, include demo HTML files and compute checksum
           postInstall = ''
+            # Copy demo HTML files if available
+            ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
             # Create redirect index.html at root
             cat > $out/index.html <<'EOF'
-            <!DOCTYPE html>
+             <!DOCTYPE html>
             <html>
             <head>
               <meta charset="utf-8">
