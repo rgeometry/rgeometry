@@ -148,10 +148,9 @@
          allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
          demoNames = allDemoDirs;
          allDemos = pkgs.symlinkJoin {
-          name = "rgeometry-demos";
-          paths = builtins.map mkDemo demoNames;
-          ignoreCollisions = true;
-        };
+           name = "rgeometry-demos";
+           paths = builtins.map mkDemo demoNames;
+         };
 
         # Generate code coverage report with grcov
         coverage = craneLib.buildPackage (commonArgs
