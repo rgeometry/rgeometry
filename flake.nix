@@ -91,7 +91,7 @@
           doCheck = false;
         };
 
-        # Build entire workspace for wasm32-unknown-unknown target
+         # Build entire workspace for wasm32-unknown-unknown target
          # Note: wasm32 builds in Nix can be complex due to vendored dependencies
          # Demos build reliably locally with: cargo build --release --target wasm32-unknown-unknown --lib
          # For Nix builds, we build the full workspace and extract .wasm files for demos
@@ -145,8 +145,7 @@
         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
         # Get all demo directories
-        allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
-        # Check that all demos have Cargo.lock files and fail if any are missing
+         allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
          demoNames = allDemoDirs;
          allDemos = pkgs.symlinkJoin {
           name = "rgeometry-demos";
@@ -197,13 +196,13 @@
           })).overrideAttrs (_: {
           # After building docs, include demo HTML files
           postInstall = ''
-            # Copy demo HTML files from the allDemos derivation
-            cp -v "${allDemos}"/*.html $out/
-            
-            # Create redirect index.html at root
-            cat > $out/index.html <<'EOF'
+             # Copy demo HTML files from the allDemos derivation
+             cp -v "${allDemos}"/*.html $out/
+             
+             # Create redirect index.html at root
+             cat > $out/index.html <<'EOF'
              <!DOCTYPE html>
-            <html>
+             <html>
             <head>
               <meta charset="utf-8">
               <meta http-equiv="refresh" content="0; url=./share/doc/rgeometry/">
