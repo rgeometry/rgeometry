@@ -147,10 +147,8 @@
         # Get all demo directories
         allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
         # Check that all demos have Cargo.lock files and fail if any are missing
-        demoNames = allDemoDirs;
-        # Try to build demos, but make them optional for flake check
-        # They can fail due to wasm32 compatibility issues in Nix environment
-        allDemos = pkgs.symlinkJoin {
+         demoNames = allDemoDirs;
+         allDemos = pkgs.symlinkJoin {
           name = "rgeometry-demos";
           paths = builtins.map mkDemo demoNames;
           ignoreCollisions = true;
