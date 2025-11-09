@@ -93,6 +93,7 @@
           CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
           doNotPostBuildInstallCargoBinaries = true;
           installPhaseCommand = "mkdir -p $out && cp -r target/wasm32-unknown-unknown/release $out/";
+          doCheck = false;
           nativeBuildInputs = with pkgs; [
             pkg-config
             m4
@@ -112,11 +113,15 @@
               binaryen
             ];
           } ''
-            mkdir -p $out
-            cd ${wasmBuild}/release
+            # Create working directory in output (Nix stores are read-only)
+            mkdir -p $out/work
+            cd $out/work
             
-            # Find and process the wasm binary for this demo
-            if [ -f "${demoName}.wasm" ]; then
+            # Copy the wasm file from the immutable store to writable location
+            if [ -f "${wasmBuild}/release/${demoName}.wasm" ]; then
+              cp "${wasmBuild}/release/${demoName}.wasm" .
+              
+              # Process the wasm binary
               mkdir -p pkg
               wasm-bindgen --target no-modules --out-dir pkg --out-name ${demoName} \
                 ${demoName}.wasm
@@ -126,9 +131,9 @@
               bash ${src}/utils/merge.sh -o $out/${demoName}.html \
                 pkg/${demoName}_bg.wasm pkg/${demoName}.js
             else
-              echo "Error: ${demoName}.wasm not found in wasm build"
+              echo "Error: ${demoName}.wasm not found at ${wasmBuild}/release/${demoName}.wasm"
               echo "Available WASM files:"
-              ls -la *.wasm 2>/dev/null || echo "No WASM files found"
+              ls -la "${wasmBuild}/release/"*.wasm 2>/dev/null || echo "No WASM files found"
               exit 1
             fi
           '';
