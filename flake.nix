@@ -36,7 +36,7 @@
         src = lib.fileset.toSource {
           root = ./.;
           fileset = lib.fileset.unions [
-            # Root level Rust files
+            # Root level Rust files and workspace
             ./Cargo.toml
             ./Cargo.lock
             ./src
@@ -49,11 +49,11 @@
             # Metadata
             ./README.md
             ./LICENSE
-            # rgeometry-wasm crate
+            # rgeometry-wasm workspace member
             ./rgeometry-wasm/Cargo.toml
             ./rgeometry-wasm/src
             ./rgeometry-wasm/rustfmt.toml
-            # Demo crates
+            # Demo workspace members
             (lib.fileset.fileFilter
               (file: file.hasExt "toml" || file.hasExt "lock" || file.hasExt "rs")
               ./demos)
@@ -61,13 +61,6 @@
             ./utils
           ];
         };
-
-        wasmBindgenCli = let
-          version = pkgs.wasm-bindgen-cli.version;
-        in
-          if version == "0.2.100"
-          then pkgs.wasm-bindgen-cli
-          else throw "Unexpected wasm-bindgen-cli version ${version}, expected 0.2.100";
 
 # Common arguments for building the library
         commonArgs = {
@@ -86,48 +79,83 @@
           GMP_MPFR_SYS_CACHE = "no-test";
         };
 
-        # Build dependencies only (for caching)
+        # Build dependencies only (for caching) - native target for tests/clippy
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
-        mkDemo = demoName:
-          craneLib.buildPackage {
-            inherit src;
-            preBuild = "cd demos/${demoName}";
-            buildPhaseCargoCommand = ''
+        # Build dependencies only for wasm32-unknown-unknown target (separate cache)
+        wasmDepsArtifacts = craneLib.buildDepsOnly {
+          inherit src;
+          strictDeps = true;
+          cargoExtraArgs = "--workspace --target wasm32-unknown-unknown";
+          CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
+          doCheck = false;
+        };
+
+         # Build entire workspace for wasm32-unknown-unknown target
+         # Note: wasm32 builds in Nix can be complex due to vendored dependencies
+         # Demos build reliably locally with: cargo build --release --target wasm32-unknown-unknown --lib
+         # For Nix builds, we build the full workspace and extract .wasm files for demos
+         wasmBuild = craneLib.buildPackage {
+           inherit src;
+           cargoArtifacts = wasmDepsArtifacts;
+           pname = "rgeometry-wasm32";
+           cargoExtraArgs = "--workspace --target wasm32-unknown-unknown";
+           CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
+           doNotPostBuildInstallCargoBinaries = true;
+           installPhaseCommand = "mkdir -p $out && cp -r target/wasm32-unknown-unknown/release $out/";
+           doCheck = false;
+         };
+
+        # Demo builder - extracts WASM files from the wasm32 build
+         mkDemo = demoName:
+           pkgs.runCommand "rgeometry-demo-${demoName}" {
+             nativeBuildInputs = with pkgs; [
+               wasmBindgenCli
+               binaryen
+             ];
+           } ''
+            # Use temporary directory for processing
+            TMPDIR=$(mktemp -d)
+            cd "$TMPDIR"
+            
+            # Copy the wasm file from the immutable store to writable location
+            if [ -f "${wasmBuild}/release/${demoName}.wasm" ]; then
+              cp "${wasmBuild}/release/${demoName}.wasm" .
+              
+              # Process the wasm binary
               mkdir -p pkg
-              cargo build --release --target wasm32-unknown-unknown --lib
               wasm-bindgen --target no-modules --out-dir pkg --out-name ${demoName} \
-                target/wasm32-unknown-unknown/release/${demoName}.wasm
+                ${demoName}.wasm
               wasm-opt -Oz -o pkg/${demoName}_bg.wasm pkg/${demoName}_bg.wasm
-            '';
-            doNotPostBuildInstallCargoBinaries = true;
-            cargoLock = ./. + "/demos/${demoName}/Cargo.lock";
-            installPhaseCommand = ''
+              
+              # Create output directory with only the final HTML file
               mkdir -p $out
-              ${pkgs.bash}/bin/bash "$src/utils/merge.sh" -o "$out/${demoName}.html" \
-                  "pkg/${demoName}_bg.wasm" "pkg/${demoName}.js"
-            '';
-            doCheck = false;
-            nativeBuildInputs = [
-              wasmBindgenCli
-              pkgs.binaryen
-            ];
-          };
-        inherit (pkgs) lib;
+              bash ${src}/utils/merge.sh -o $out/${demoName}.html \
+                pkg/${demoName}_bg.wasm pkg/${demoName}.js
+            else
+              echo "Error: ${demoName}.wasm not found at ${wasmBuild}/release/${demoName}.wasm"
+              echo "Available WASM files:"
+              ls -la "${wasmBuild}/release/"*.wasm 2>/dev/null || echo "No WASM files found"
+              exit 1
+            fi
+           '';
+
+         wasmBindgenCli = let
+           version = pkgs.wasm-bindgen-cli.version;
+         in
+           if version == "0.2.100"
+           then pkgs.wasm-bindgen-cli
+           else throw "Unexpected wasm-bindgen-cli version ${version}, expected 0.2.100";
+
+         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
         # Get all demo directories
-        allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
-        # Check that all demos have Cargo.lock files and fail if any are missing
-        demoNames =
-          let
-            demosWithoutLock = builtins.filter (name: !builtins.pathExists (./. + "/demos/${name}/Cargo.lock")) allDemoDirs;
-          in
-            assert demosWithoutLock == [] || builtins.throw "The following demos are missing Cargo.lock files: ${builtins.toString demosWithoutLock}";
-            allDemoDirs;
-        allDemos = pkgs.symlinkJoin {
-          name = "rgeometry-demos";
-          paths = builtins.map mkDemo demoNames;
-        };
+         allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
+         demoNames = allDemoDirs;
+         allDemos = pkgs.symlinkJoin {
+           name = "rgeometry-demos";
+           paths = builtins.map mkDemo demoNames;
+         };
 
         # Generate code coverage report with grcov
         coverage = craneLib.buildPackage (commonArgs
@@ -164,19 +192,21 @@
           echo "✓ Uncovered snippets report generated"
         '';
 
-        # Build documentation with rustdoc and include demo HTML files
+        # Build documentation with rustdoc
         documentation = (craneLib.cargoDoc (commonArgs
           // {
             inherit cargoArtifacts;
             RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
           })).overrideAttrs (_: {
-          # After building docs, include demo HTML files and compute checksum
+          # After building docs, include demo HTML files
           postInstall = ''
-            ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
-            # Create redirect index.html at root
-            cat > $out/index.html <<'EOF'
-            <!DOCTYPE html>
-            <html>
+             # Copy demo HTML files from the allDemos derivation
+             cp -v "${allDemos}"/*.html $out/
+             
+             # Create redirect index.html at root
+             cat > $out/index.html <<'EOF'
+             <!DOCTYPE html>
+             <html>
             <head>
               <meta charset="utf-8">
               <meta http-equiv="refresh" content="0; url=./share/doc/rgeometry/">
@@ -297,9 +327,6 @@
                 touch $out/coverage-check-passed
               '';
             });
-
-          # Build all demos
-          all-demos-check = allDemos;
 
           # Build documentation
           documentation-check = documentation;
