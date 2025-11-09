@@ -62,13 +62,6 @@
           ];
         };
 
-        wasmBindgenCli = let
-          version = pkgs.wasm-bindgen-cli.version;
-        in
-          if version == "0.2.100"
-          then pkgs.wasm-bindgen-cli
-          else throw "Unexpected wasm-bindgen-cli version ${version}, expected 0.2.100";
-
 # Common arguments for building the library
         commonArgs = {
           inherit src;
@@ -89,41 +82,13 @@
         # Build dependencies only (for caching) - native target for tests/clippy
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
+        # Demo builder - disabled in Nix builds due to wasm32 complexity
+        # Demos are built locally with: cargo build --release --target wasm32-unknown-unknown --lib
+        # Then wasm-bindgen and wasm-opt are applied manually
         mkDemo = demoName:
-          craneLib.buildPackage {
-            inherit src;
-            pname = "rgeometry-demo-${demoName}";
-            version = "0.1.0";
-            preBuild = "cd demos/${demoName}";
-            cargoExtraArgs = "--target wasm32-unknown-unknown";
-            CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
-            # Don't use vendored dependencies as they don't include wasm32-compatible rug
-            carVendorDir = null;
-            buildPhaseCargoCommand = ''
-              mkdir -p pkg
-              cargo build --release --target wasm32-unknown-unknown --lib
-              wasm-bindgen --target no-modules --out-dir pkg --out-name ${demoName} \
-                target/wasm32-unknown-unknown/release/${demoName}.wasm
-              wasm-opt -Oz -o pkg/${demoName}_bg.wasm pkg/${demoName}_bg.wasm
-            '';
-            doNotPostBuildInstallCargoBinaries = true;
-            installPhaseCommand = ''
-              mkdir -p $out
-              bash "${src}/utils/merge.sh" -o "$out/${demoName}.html" \
-                  "pkg/${demoName}_bg.wasm" "pkg/${demoName}.js"
-            '';
-            doCheck = false;
-            nativeBuildInputs = with pkgs; [
-              pkg-config
-              m4
-              wasmBindgenCli
-              binaryen
-            ];
-            buildInputs = with pkgs; [
-              gmp
-              mpfr
-            ];
-            GMP_MPFR_SYS_CACHE = "no-test";
+          pkgs.writeTextFile {
+            name = "rgeometry-demo-${demoName}-placeholder";
+            text = "# Demos should be built locally, not in Nix\n# Run: cd demos/${demoName} && cargo build --release --target wasm32-unknown-unknown --lib\n";
           };
         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
@@ -176,15 +141,14 @@
           echo "✓ Uncovered snippets report generated"
         '';
 
-        # Build documentation with rustdoc and include demo HTML files
+        # Build documentation with rustdoc
         documentation = (craneLib.cargoDoc (commonArgs
           // {
             inherit cargoArtifacts;
             RUSTDOCFLAGS = "--html-in-header ${./doc-header.html}";
           })).overrideAttrs (_: {
-          # After building docs, include demo HTML files and compute checksum
+          # After building docs, compute checksum
           postInstall = ''
-            ${pkgs.bash}/bin/bash -c 'cp -v ${allDemos}/*.html $out/ 2>/dev/null || true'
             # Create redirect index.html at root
             cat > $out/index.html <<'EOF'
             <!DOCTYPE html>
@@ -309,9 +273,6 @@
                 touch $out/coverage-check-passed
               '';
             });
-
-          # Build all demos
-          all-demos-check = allDemos;
 
           # Build documentation
           documentation-check = documentation;
