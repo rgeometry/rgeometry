@@ -107,13 +107,13 @@
          };
 
         # Demo builder - extracts WASM files from the wasm32 build
-        mkDemo = demoName:
-          pkgs.runCommand "rgeometry-demo-${demoName}" {
-            nativeBuildInputs = with pkgs; [
-              pkgs.wasm-bindgen-cli
-              binaryen
-            ];
-          } ''
+         mkDemo = demoName:
+           pkgs.runCommand "rgeometry-demo-${demoName}" {
+             nativeBuildInputs = with pkgs; [
+               wasmBindgenCli
+               binaryen
+             ];
+           } ''
             # Use temporary directory for processing
             TMPDIR=$(mktemp -d)
             cd "$TMPDIR"
@@ -138,11 +138,16 @@
               ls -la "${wasmBuild}/release/"*.wasm 2>/dev/null || echo "No WASM files found"
               exit 1
             fi
-          '';
+           '';
 
-        # Reference for wasm-bindgen-cli version check (kept for documentation)
-        # wasmBindgenCliVersion = "0.2.100";
-        inherit (pkgs) lib;
+         wasmBindgenCli = let
+           version = pkgs.wasm-bindgen-cli.version;
+         in
+           if version == "0.2.100"
+           then pkgs.wasm-bindgen-cli
+           else throw "Unexpected wasm-bindgen-cli version ${version}, expected 0.2.100";
+
+         inherit (pkgs) lib;
         demosDir = builtins.readDir ./demos;
         # Get all demo directories
          allDemoDirs = lib.attrNames (lib.filterAttrs (_name: kind: kind == "directory") demosDir);
