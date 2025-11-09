@@ -219,39 +219,67 @@ mod tests {
     prop_assert_eq!(v.cmp_along(&p1, &p2), p1.y_coord().cmp(p2.y_coord()));
   }
 
-  #[proptest]
-  fn cmp_along_dot_product_equivalence_bigrational(
-    direction: Vector<i64, 2>,
-    p1: Point<i64, 2>,
-    p2: Point<i64, 2>,
-  ) {
+  fn check_cmp_along_dot_product_equivalence<T>(
+    direction: Vector<T, 2>,
+    p1: Point<T, 2>,
+    p2: Point<T, 2>,
+  ) where
+    T: Clone + Into<num_bigint::BigInt>,
+  {
     use num_bigint::BigInt;
 
     // Convert to BigRational
     let direction_br = Vector([
-      BigRational::from_integer(BigInt::from(direction.0[0])),
-      BigRational::from_integer(BigInt::from(direction.0[1])),
+      BigRational::from_integer(direction.0[0].clone().into()),
+      BigRational::from_integer(direction.0[1].clone().into()),
     ]);
     let p1_br = Point {
       array: [
-        BigRational::from_integer(BigInt::from(p1.array[0])),
-        BigRational::from_integer(BigInt::from(p1.array[1])),
+        BigRational::from_integer(p1.array[0].clone().into()),
+        BigRational::from_integer(p1.array[1].clone().into()),
       ],
     };
     let p2_br = Point {
       array: [
-        BigRational::from_integer(BigInt::from(p2.array[0])),
-        BigRational::from_integer(BigInt::from(p2.array[1])),
+        BigRational::from_integer(p2.array[0].clone().into()),
+        BigRational::from_integer(p2.array[1].clone().into()),
       ],
     };
 
     // Compute dot products using BigInt to avoid overflow
-    let dot1 = BigInt::from(p1.array[0]) * BigInt::from(direction.0[0])
-      + BigInt::from(p1.array[1]) * BigInt::from(direction.0[1]);
-    let dot2 = BigInt::from(p2.array[0]) * BigInt::from(direction.0[0])
-      + BigInt::from(p2.array[1]) * BigInt::from(direction.0[1]);
+    let dot1: BigInt = p1.array[0].clone().into() * direction.0[0].clone().into()
+      + p1.array[1].clone().into() * direction.0[1].clone().into();
+    let dot2: BigInt = p2.array[0].clone().into() * direction.0[0].clone().into()
+      + p2.array[1].clone().into() * direction.0[1].clone().into();
 
     // Verify equivalence
-    prop_assert_eq!(direction_br.cmp_along(&p1_br, &p2_br), dot1.cmp(&dot2));
+    assert_eq!(direction_br.cmp_along(&p1_br, &p2_br), dot1.cmp(&dot2));
+  }
+
+  #[proptest]
+  fn cmp_along_dot_product_equivalence_i8(
+    direction: Vector<i8, 2>,
+    p1: Point<i8, 2>,
+    p2: Point<i8, 2>,
+  ) {
+    check_cmp_along_dot_product_equivalence(direction, p1, p2);
+  }
+
+  #[proptest]
+  fn cmp_along_dot_product_equivalence_i32(
+    direction: Vector<i32, 2>,
+    p1: Point<i32, 2>,
+    p2: Point<i32, 2>,
+  ) {
+    check_cmp_along_dot_product_equivalence(direction, p1, p2);
+  }
+
+  #[proptest]
+  fn cmp_along_dot_product_equivalence_i64(
+    direction: Vector<i64, 2>,
+    p1: Point<i64, 2>,
+    p2: Point<i64, 2>,
+  ) {
+    check_cmp_along_dot_product_equivalence(direction, p1, p2);
   }
 }
