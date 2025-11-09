@@ -410,22 +410,12 @@ mod tests {
     fn extreme_direction_matches_naive(poly: PolygonConvex<i16>, dx: i16, dy: i16) {
       let direction = Vector([dx, dy]);
       let cursor = poly.extreme_in_direction(&direction);
-      let dot = dot_i64(cursor.point(), &direction);
-      let max_dot = poly
+      let expected = poly
         .iter_boundary()
-        .map(|c| dot_i64(c.point(), &direction))
-        .max()
+        .max_by(|a, b| direction.cmp_along(a.point(), b.point()))
         .unwrap();
-      prop_assert_eq!(dot, max_dot);
+      prop_assert_eq!(cursor.point(), expected.point());
     }
-  }
-
-  fn dot_i64(point: &Point<i16, 2>, direction: &Vector<i16, 2>) -> i64 {
-    let px = point.array[0] as i64;
-    let py = point.array[1] as i64;
-    let dx = direction.0[0] as i64;
-    let dy = direction.0[1] as i64;
-    px * dx + py * dy
   }
 
   #[test]
