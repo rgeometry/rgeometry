@@ -88,6 +88,7 @@
           strictDeps = true;
           cargoExtraArgs = "--workspace --target wasm32-unknown-unknown";
           CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
+          doCheck = false;
         };
 
         # Build entire workspace for wasm32-unknown-unknown target
