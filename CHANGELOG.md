@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- [#178](https://github.com/rgeometry/rgeometry/pull/178) Property test verifying cmp_along equivalence with dot product
+
 ## [0.11.0] 2025-11-05
 
 ### Added
