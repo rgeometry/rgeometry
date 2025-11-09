@@ -221,41 +221,37 @@ mod tests {
 
   #[proptest]
   fn cmp_along_dot_product_equivalence_bigrational(
-    #[strategy(-1000i32..1000i32)] dir_x: i32,
-    #[strategy(-1000i32..1000i32)] dir_y: i32,
-    #[strategy(-1000i32..1000i32)] p1_x: i32,
-    #[strategy(-1000i32..1000i32)] p1_y: i32,
-    #[strategy(-1000i32..1000i32)] p2_x: i32,
-    #[strategy(-1000i32..1000i32)] p2_y: i32,
+    direction: Vector<i64, 2>,
+    p1: Point<i64, 2>,
+    p2: Point<i64, 2>,
   ) {
-    use num_rational::BigRational;
-    use num_traits::FromPrimitive;
+    use num_bigint::BigInt;
 
-    // Create direction vector and points as BigRational
-    let direction = Vector([
-      BigRational::from_i32(dir_x).unwrap(),
-      BigRational::from_i32(dir_y).unwrap(),
+    // Convert to BigRational
+    let direction_br = Vector([
+      BigRational::from_integer(BigInt::from(direction.0[0])),
+      BigRational::from_integer(BigInt::from(direction.0[1])),
     ]);
-    let p1 = Point {
+    let p1_br = Point {
       array: [
-        BigRational::from_i32(p1_x).unwrap(),
-        BigRational::from_i32(p1_y).unwrap(),
+        BigRational::from_integer(BigInt::from(p1.array[0])),
+        BigRational::from_integer(BigInt::from(p1.array[1])),
       ],
     };
-    let p2 = Point {
+    let p2_br = Point {
       array: [
-        BigRational::from_i32(p2_x).unwrap(),
-        BigRational::from_i32(p2_y).unwrap(),
+        BigRational::from_integer(BigInt::from(p2.array[0])),
+        BigRational::from_integer(BigInt::from(p2.array[1])),
       ],
     };
 
-    // Compute dot products
-    let dot1 =
-      p1.array[0].clone() * direction.0[0].clone() + p1.array[1].clone() * direction.0[1].clone();
-    let dot2 =
-      p2.array[0].clone() * direction.0[0].clone() + p2.array[1].clone() * direction.0[1].clone();
+    // Compute dot products using BigInt to avoid overflow
+    let dot1 = BigInt::from(p1.array[0]) * BigInt::from(direction.0[0])
+      + BigInt::from(p1.array[1]) * BigInt::from(direction.0[1]);
+    let dot2 = BigInt::from(p2.array[0]) * BigInt::from(direction.0[0])
+      + BigInt::from(p2.array[1]) * BigInt::from(direction.0[1]);
 
     // Verify equivalence
-    prop_assert_eq!(direction.cmp_along(&p1, &p2), dot1.cmp(&dot2));
+    prop_assert_eq!(direction_br.cmp_along(&p1_br, &p2_br), dot1.cmp(&dot2));
   }
 }
