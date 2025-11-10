@@ -332,7 +332,6 @@ pub mod tests {
   use super::*;
 
   use crate::testing::any_nn;
-  use ordered_float::NotNan;
   use proptest::collection::vec;
   use proptest::prelude::*;
   use rand::SeedableRng;
@@ -547,7 +546,7 @@ pub mod tests {
   }
 
   #[proptest]
-  fn f64_to_polygon(#[strategy(vec(any_nn(), 3..100))] mut pts: Vec<Point<NotNan<f64>>>) {
+  fn f64_to_polygon(#[strategy(vec(any_nn(), 3..100))] mut pts: Vec<Point<f64>>) {
     let mut set = BTreeSet::new();
     pts.retain(|pt| set.insert(*pt));
     if pts.len() >= 3 && !Point::all_colinear(&pts) {
@@ -558,7 +557,7 @@ pub mod tests {
   }
 
   #[proptest]
-  fn fuzz_f64(#[strategy(vec(any_nn(), 0..100))] pts: Vec<Point<NotNan<f64>>>) {
+  fn fuzz_f64(#[strategy(vec(any_nn(), 0..100))] pts: Vec<Point<f64>>) {
     let mut rng = StepRng::new(0, 0);
     two_opt_moves(pts, &mut rng).ok();
   }

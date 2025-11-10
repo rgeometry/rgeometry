@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- [#180](https://github.com/rgeometry/rgeometry/pull/180) Removed unused ordered-float dependency
+
 ## [0.11.0] 2025-11-05
 
 ### Added

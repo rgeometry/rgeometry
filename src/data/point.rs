@@ -1,14 +1,11 @@
-use array_init::{array_init, try_array_init};
+use array_init::array_init;
 use float::FloatCore;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
-use ordered_float::OrderedFloat;
-use ordered_float::{FloatIsNan, NotNan};
 use rand::Rng;
 use rand::distributions::{Distribution, Standard};
 use std::cmp::Ordering;
-use std::convert::TryFrom;
 use std::fmt::Debug;
 use std::iter::Sum;
 use std::ops::Deref;
@@ -108,11 +105,15 @@ impl<T, const N: usize> Point<T, N> {
   /// # Panics
   ///
   /// Panics if any of the inputs are NaN.
-  pub fn new_nn(array: [T; N]) -> Point<NotNan<T>, N>
+  pub fn new_nn(array: [T; N]) -> Point<T, N>
   where
     T: FloatCore,
   {
-    Point::new(array_init(|i| NotNan::new(array[i]).unwrap()))
+    // Assert that no values are NaN
+    for val in array.iter().take(N) {
+      assert!(!val.is_nan(), "NaN values are not allowed");
+    }
+    Point::new(array)
   }
 
   pub fn as_vec(&self) -> &Vector<T, N> {
@@ -166,11 +167,11 @@ impl<T, const N: usize> Point<T, N> {
     }
   }
 
-  pub fn to_float(&self) -> Point<OrderedFloat<f64>, N>
+  pub fn to_float(&self) -> Point<f64, N>
   where
     T: Clone + Into<f64>,
   {
-    self.map(|v| OrderedFloat(v.into()))
+    self.map(|v| v.into())
   }
 }
 
@@ -178,15 +179,6 @@ impl<T, const N: usize> Index<usize> for Point<T, N> {
   type Output = T;
   fn index(&self, key: usize) -> &T {
     self.array.index(key)
-  }
-}
-
-impl<const N: usize> TryFrom<Point<f64, N>> for Point<NotNan<f64>, N> {
-  type Error = FloatIsNan;
-  fn try_from(point: Point<f64, N>) -> Result<Point<NotNan<f64>, N>, FloatIsNan> {
-    Ok(Point {
-      array: try_array_init(|i| NotNan::try_from(point.array[i]))?,
-    })
   }
 }
 
@@ -385,8 +377,8 @@ pub mod tests {
 
   #[proptest]
   fn squared_euclidean_distance_fuzz(
-    #[strategy(any_nn::<2>())] pt1: Point<NotNan<f64>, 2>,
-    #[strategy(any_nn::<2>())] pt2: Point<NotNan<f64>, 2>,
+    #[strategy(any_nn::<2>())] pt1: Point<f64, 2>,
+    #[strategy(any_nn::<2>())] pt2: Point<f64, 2>,
   ) {
     let _out: f64 = pt1.squared_euclidean_distance(&pt2);
   }
@@ -398,9 +390,9 @@ pub mod tests {
 
   #[proptest]
   fn cmp_around_fuzz_nn(
-    #[strategy(any_nn::<2>())] pt1: Point<NotNan<f64>, 2>,
-    #[strategy(any_nn::<2>())] pt2: Point<NotNan<f64>, 2>,
-    #[strategy(any_nn::<2>())] pt3: Point<NotNan<f64>, 2>,
+    #[strategy(any_nn::<2>())] pt1: Point<f64, 2>,
+    #[strategy(any_nn::<2>())] pt2: Point<f64, 2>,
+    #[strategy(any_nn::<2>())] pt3: Point<f64, 2>,
   ) {
     let _ = pt1.ccw_cmp_around(&pt2, &pt3);
   }
@@ -448,9 +440,9 @@ pub mod tests {
   // should be identical.
   #[proptest]
   fn orient_f64_i8_prop(pt1: Point<i8, 2>, pt2: Point<i8, 2>, pt3: Point<i8, 2>) {
-    let pt1_big: Point<OrderedFloat<f64>, 2> = pt1.to_float();
-    let pt2_big: Point<OrderedFloat<f64>, 2> = pt2.to_float();
-    let pt3_big: Point<OrderedFloat<f64>, 2> = pt3.to_float();
+    let pt1_big: Point<f64, 2> = pt1.to_float();
+    let pt2_big: Point<f64, 2> = pt2.to_float();
+    let pt3_big: Point<f64, 2> = pt3.to_float();
 
     prop_assert_eq!(
       Point::orient(&pt1, &pt2, &pt3),

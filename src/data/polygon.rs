@@ -1,6 +1,5 @@
 // use claim::debug_assert_ok;
 use num_traits::*;
-use ordered_float::OrderedFloat;
 use std::cmp::Ordering;
 use std::iter::Sum;
 use std::ops::Bound::*;
@@ -536,11 +535,11 @@ impl<T> Polygon<T> {
     }
   }
 
-  pub fn float(self) -> Polygon<OrderedFloat<f64>>
+  pub fn float(self) -> Polygon<f64>
   where
     T: Clone + Into<f64>,
   {
-    self.map(|v| OrderedFloat(v.into()))
+    self.map(|v| v.into())
   }
 
   // Reverse all points between p1 and p2, inclusive of p1 and p2.
@@ -627,23 +626,6 @@ impl<T> Polygon<T> {
     T: PolygonScalar,
   {
     crate::algorithms::polygonization::monotone::is_monotone(self, direction)
-  }
-}
-
-impl Polygon<OrderedFloat<f64>> {
-  #[must_use]
-  // Center on <0,0>. Scale size such that max(width,height) = 1.
-  pub fn normalize(&self) -> Polygon<OrderedFloat<f64>> {
-    let (min, max) = self.bounding_box();
-    let [min_x, min_y] = min.array;
-    let [max_x, max_y] = max.array;
-    let width = max_x - min_x;
-    let height = max_y - min_y;
-    let ratio = std::cmp::max(width, height);
-    let centroid = self.centroid();
-    let t = Transform::translate(-Vector::from(centroid));
-    let s = Transform::uniform_scale(ratio.recip());
-    s * t * self
   }
 }
 
@@ -945,7 +927,6 @@ pub mod tests {
   use super::*;
 
   use crate::testing::*;
-  use ordered_float::NotNan;
   use proptest::collection::vec;
   use proptest::prelude::*;
   use proptest::proptest as proptest_block;
@@ -1018,7 +999,7 @@ pub mod tests {
 
     #[test]
     fn signed_area_non_negative_prop(poly in polygon_nn()) {
-      prop_assert!( poly.signed_area::<NotNan<f64>>() >= NotNan::zero())
+      prop_assert!( poly.signed_area::<f64>() >= 0.0)
     }
 
     #[test]
