@@ -14,7 +14,6 @@ use core::ops::Range;
 use num::BigRational;
 use num_bigint::BigInt;
 use num_traits::*;
-use ordered_float::{NotNan, OrderedFloat};
 use proptest::arbitrary::*;
 use proptest::collection::*;
 use proptest::prelude::*;
@@ -237,19 +236,13 @@ where
   }
 }
 
-// Arbitrary isn't defined for NotNan.
-pub fn polygon_nn() -> impl Strategy<Value = Polygon<NotNan<f64>>> {
-  PolygonStrat(
-    any::<f64>().prop_filter_map("Check for NaN", |pt| rem_float(pt).try_into().ok()),
-    3..50,
-  )
+// Strategy for generating f64 polygons with filtered floats
+pub fn polygon_nn() -> impl Strategy<Value = Polygon<f64>> {
+  PolygonStrat(any::<f64>().prop_map(rem_float), 3..50)
 }
 
-pub fn polygon_ordered() -> impl Strategy<Value = Polygon<OrderedFloat<f64>>> {
-  PolygonStrat(
-    any::<f64>().prop_map(|pt| OrderedFloat(rem_float(pt))),
-    3..50,
-  )
+pub fn polygon_ordered() -> impl Strategy<Value = Polygon<f64>> {
+  PolygonStrat(any::<f64>().prop_map(rem_float), 3..50)
 }
 
 // Returns a strategy for generating polygons with f64 coordinates.
@@ -496,9 +489,9 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Convenience functions
 
-// Arbitrary isn't defined for NotNan.
-pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<NotNan<f64>, N>> {
-  any::<Point<f64, N>>().prop_filter_map("Check for NaN", |pt| pt.map(rem_float).try_into().ok())
+// Strategy for generating f64 points with filtered floats
+pub fn any_nn<const N: usize>() -> impl Strategy<Value = Point<f64, N>> {
+  any::<Point<f64, N>>().prop_map(|pt| pt.map(rem_float))
 }
 
 #[allow(clippy::cast_precision_loss)]

@@ -1,5 +1,4 @@
 use num_traits::*;
-use ordered_float::OrderedFloat;
 use rand::Rng;
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::{Distribution, Standard};
@@ -84,7 +83,7 @@ where
     PolygonConvex::new_unchecked(self.0.cast())
   }
 
-  pub fn float(self) -> PolygonConvex<OrderedFloat<f64>>
+  pub fn float(self) -> PolygonConvex<f64>
   where
     T: Clone + Into<f64>,
   {
@@ -145,13 +144,6 @@ where
         return p;
       }
     }
-  }
-}
-
-impl PolygonConvex<OrderedFloat<f64>> {
-  #[must_use]
-  pub fn normalize(&self) -> PolygonConvex<OrderedFloat<f64>> {
-    PolygonConvex::new_unchecked(self.0.normalize())
   }
 }
 
