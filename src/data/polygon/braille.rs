@@ -43,6 +43,26 @@ impl<'a> BraillePrinter<'a> {
   }
 
   /// Render the polygon to a string using Braille characters.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use rgeometry::data::{Point, Polygon};
+  /// use rgeometry::data::polygon::BraillePrinter;
+  ///
+  /// // Create a small triangle
+  /// let triangle = Polygon::new(vec![
+  ///   Point::new([0i8, 0]),
+  ///   Point::new([4, 0]),
+  ///   Point::new([2, 3]),
+  /// ]).unwrap();
+  ///
+  /// let printer = BraillePrinter::new(&triangle);
+  /// let output = format!("{}", printer);
+  ///
+  /// // The output should match this Braille pattern
+  /// assert_eq!(output, "⠐⡖⡖⠀\n⠀⠈⠀⠀\n");
+  /// ```
   fn render(&self) -> String {
     // Get bounding box
     let (min, max) = self.polygon.bounding_box();
