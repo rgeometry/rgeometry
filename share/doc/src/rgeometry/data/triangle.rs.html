@@ -24,7 +24,7 @@
 <a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span>claims::debug_assert_ok;
 <a href=#4 id=4 data-nosnippet>4</a><span class="kw">use </span>num_traits::<span class="kw-2">*</span>;
 <a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>rand::Rng;
-<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span>rand::distributions::uniform::SampleUniform;
+<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span>rand::distr::uniform::SampleUniform;
 <a href=#7 id=7 data-nosnippet>7</a>
 <a href=#8 id=8 data-nosnippet>8</a><span class="comment">// FIXME: Support n-dimensional triangles?
 <a href=#9 id=9 data-nosnippet>9</a></span><span class="attr">#[derive(Debug, Clone)]
@@ -181,8 +181,8 @@
 <a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">loop </span>{
 <a href=#161 id=161 data-nosnippet>161</a>      <span class="kw">let </span>[min_x, min_y] = min.array.clone();
 <a href=#162 id=162 data-nosnippet>162</a>      <span class="kw">let </span>[max_x, max_y] = max.array.clone();
-<a href=#163 id=163 data-nosnippet>163</a>      <span class="kw">let </span>x = rng.gen_range(min_x..=max_x);
-<a href=#164 id=164 data-nosnippet>164</a>      <span class="kw">let </span>y = rng.gen_range(min_y..=max_y);
+<a href=#163 id=163 data-nosnippet>163</a>      <span class="kw">let </span>x = rng.random_range(min_x..=max_x);
+<a href=#164 id=164 data-nosnippet>164</a>      <span class="kw">let </span>y = rng.random_range(min_y..=max_y);
 <a href=#165 id=165 data-nosnippet>165</a>      <span class="kw">let </span>pt = Point::new([x, y]);
 <a href=#166 id=166 data-nosnippet>166</a>      <span class="kw">if </span><span class="self">self</span>.locate(<span class="kw-2">&amp;</span>pt) != PointLocation::Outside {
 <a href=#167 id=167 data-nosnippet>167</a>        <span class="kw">return </span>pt;
