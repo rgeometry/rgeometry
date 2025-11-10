@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["BraillePrinter","Cursor","CursorIter","DirectedIndexEdge","EdgeIter","IndexEdge","Iter","IterMut","PointId","Polygon","PolygonConvex","Position","PositionId","RingId"]};
