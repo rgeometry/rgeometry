@@ -68,7 +68,7 @@ jobs:
     
     - name: Deploy PR preview
       uses: rossjrw/pr-preview-action@v1
-      if: github.event_name == 'pull_request' && (github.event.action != 'closed' && steps.changed.outputs.skip == 'false' || github.event.action == 'closed')
+      if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && (github.event.action != 'closed' && steps.changed.outputs.skip == 'false' || github.event.action == 'closed')
       with:
         source-dir: result/
         preview-branch: gh-pages
