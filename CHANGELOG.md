@@ -4,6 +4,7 @@
 
 ### Changed
 - [#180](https://github.com/rgeometry/rgeometry/pull/180) Removed unused ordered-float dependency
+- [#181](https://github.com/rgeometry/rgeometry/pull/181) Use cargo-nextest for faster test execution in Nix flake (~13% faster)
 
 ## [0.11.0] 2025-11-05
 
