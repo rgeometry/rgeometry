@@ -50,11 +50,11 @@ impl<'a> BraillePrinter<'a> {
   /// use rgeometry::data::{Point, Polygon};
   /// use rgeometry::data::polygon::BraillePrinter;
   ///
-  /// // Create a small triangle
+  /// // Create a triangle - the shape is clearly visible in the Braille output
   /// let triangle = Polygon::new(vec![
   ///   Point::new([0i8, 0]),
-  ///   Point::new([4, 0]),
-  ///   Point::new([2, 3]),
+  ///   Point::new([16, 0]),
+  ///   Point::new([8, 12]),
   /// ]).unwrap();
   ///
   /// let printer = BraillePrinter::new(&triangle);
@@ -62,8 +62,10 @@ impl<'a> BraillePrinter<'a> {
   ///
   /// // The output should match this Braille pattern
   /// let expected = "\
-  /// ⠐⡖⡖⠀
-  /// ⠀⠈⠀⠀
+  /// ⠐⡖⠒⠒⠒⠒⠒⠒⡖⠀
+  /// ⠀⠈⢆⠀⠀⠀⢀⠎⠀⠀
+  /// ⠀⠀⠀⠣⡀⡠⠃⠀⠀⠀
+  /// ⠀⠀⠀⠀⠑⠁⠀⠀⠀⠀
   /// ";
   /// assert_eq!(output, expected);
   /// ```
@@ -287,6 +289,24 @@ mod tests {
     let output = printer.render();
 
     assert!(!output.is_empty());
+  }
+
+  #[test]
+  fn test_braille_larger_triangle() {
+    let triangle = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([16, 0]),
+      Point::new([8, 12]),
+    ])
+    .unwrap();
+
+    let printer = BraillePrinter::new(&triangle);
+    let output = printer.render();
+
+    assert!(!output.is_empty());
+    // Verify the triangle shape is recognizable
+    assert!(output.contains('⢆')); // Contains slanted lines
+    assert!(output.contains('⠣')); // Contains slanted lines
   }
 
   #[test]
