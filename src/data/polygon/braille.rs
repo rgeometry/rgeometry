@@ -61,7 +61,11 @@ impl<'a> BraillePrinter<'a> {
   /// let output = format!("{}", printer);
   ///
   /// // The output should match this Braille pattern
-  /// assert_eq!(output, "⠐⡖⡖⠀\n⠀⠈⠀⠀\n");
+  /// let expected = "\
+  /// ⠐⡖⡖⠀
+  /// ⠀⠈⠀⠀
+  /// ";
+  /// assert_eq!(output, expected);
   /// ```
   fn render(&self) -> String {
     // Get bounding box
