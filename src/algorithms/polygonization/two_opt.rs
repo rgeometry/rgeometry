@@ -328,7 +328,6 @@ fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
 
 #[cfg(test)]
 #[cfg(not(tarpaulin_include))]
-#[allow(deprecated)]
 pub mod tests {
   use super::*;
 
@@ -337,7 +336,6 @@ pub mod tests {
   use proptest::prelude::*;
   use rand::SeedableRng;
   use rand::prelude::SliceRandom;
-  use rand::rngs::mock::StepRng;
   use test_strategy::proptest;
 
   #[test]
@@ -512,7 +510,7 @@ pub mod tests {
       Point { array: [-69, -44] },
       Point { array: [97, 42] },
     ];
-    let mut rng = StepRng::new(0, 0);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
     // let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
     let ret = two_opt_moves(pts, &mut rng);
 
@@ -529,7 +527,7 @@ pub mod tests {
       Point { array: [3, 1] },
       Point { array: [0, 1] },
     ];
-    let mut rng = StepRng::new(0, 0);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
     let ret = two_opt_moves(pts, &mut rng);
 
     assert_eq!(ret.and_then(|val| val.validate()).err(), None);
@@ -540,7 +538,7 @@ pub mod tests {
     let mut set = BTreeSet::new();
     pts.retain(|pt| set.insert(*pt));
     if pts.len() >= 3 && !Point::all_colinear(&pts) {
-      let mut rng = StepRng::new(0, 0);
+      let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
       let ret = two_opt_moves(pts, &mut rng);
       prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
     }
@@ -551,7 +549,7 @@ pub mod tests {
     let mut set = BTreeSet::new();
     pts.retain(|pt| set.insert(*pt));
     if pts.len() >= 3 && !Point::all_colinear(&pts) {
-      let mut rng = StepRng::new(0, 0);
+      let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
       let ret = two_opt_moves(pts, &mut rng);
       prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
     }
@@ -559,13 +557,13 @@ pub mod tests {
 
   #[proptest]
   fn fuzz_f64(#[strategy(vec(any_nn(), 0..100))] pts: Vec<Point<f64>>) {
-    let mut rng = StepRng::new(0, 0);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
     two_opt_moves(pts, &mut rng).ok();
   }
 
   #[proptest]
   fn fuzz_i8(#[strategy(vec(any::<Point<i8>>(), 0..100))] pts: Vec<Point<i8>>) {
-    let mut rng = StepRng::new(0, 0);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
     two_opt_moves(pts, &mut rng).ok();
   }
 
@@ -577,7 +575,7 @@ pub mod tests {
     let mut pts: Vec<Point<i8>> = linear.iter().map(|&n| Point::new([n, 0])).collect();
     pts.push(Point::new([0, 1]));
 
-    let mut rng = StepRng::new(0, 0);
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
     // dbg!(&linear);
     let ret = two_opt_moves(pts, &mut rng);
     prop_assert_eq!(ret.and_then(|val| val.validate()).err(), None);
