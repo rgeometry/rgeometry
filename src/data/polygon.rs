@@ -17,6 +17,9 @@ pub use iter::*;
 mod convex;
 pub use convex::*;
 
+mod braille;
+pub use braille::*;
+
 use super::Transform;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -660,6 +663,12 @@ impl Polygon<f32> {
     let t = Transform::translate(-Vector::from(centroid));
     let s = Transform::uniform_scale(ratio.recip());
     s * t * self
+  }
+}
+
+impl std::fmt::Display for Polygon<i8> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}", BraillePrinter::new(self))
   }
 }
 
