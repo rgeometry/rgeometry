@@ -416,7 +416,7 @@ impl EarStore {
   where
     R: Rng + ?Sized,
   {
-    let n = rng.gen_range(0..self.possible_ears_vec.len());
+    let n = rng.random_range(0..self.possible_ears_vec.len());
     let next = self.possible_ears_vec.swap_remove(n);
     self.possible_ears_set.delete(next);
     Some(next)

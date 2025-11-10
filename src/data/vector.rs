@@ -2,7 +2,7 @@ use array_init::{array_init, try_array_init};
 use num_rational::BigRational;
 use num_traits::NumOps;
 use rand::Rng;
-use rand::distributions::{Distribution, Standard};
+use rand::distr::{Distribution, StandardUniform};
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::iter::Sum;
@@ -22,12 +22,12 @@ pub struct Vector<T, const N: usize>(pub [T; N]);
 #[derive(Debug, Clone, Copy)]
 pub struct VectorView<'a, T, const N: usize>(pub &'a [T; N]);
 
-impl<T, const N: usize> Distribution<Vector<T, N>> for Standard
+impl<T, const N: usize> Distribution<Vector<T, N>> for StandardUniform
 where
-  Standard: Distribution<T>,
+  StandardUniform: Distribution<T>,
 {
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vector<T, N> {
-    Vector(array_init(|_| rng.r#gen()))
+    Vector(array_init(|_| rng.random()))
   }
 }
 

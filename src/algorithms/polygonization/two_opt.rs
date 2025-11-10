@@ -328,6 +328,7 @@ fn edges<T>(poly: &Polygon<T>) -> impl Iterator<Item = IndexEdge> + '_ {
 
 #[cfg(test)]
 #[cfg(not(tarpaulin_include))]
+#[allow(deprecated)]
 pub mod tests {
   use super::*;
 

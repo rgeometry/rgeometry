@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, Once};
 use wasm_bindgen::{prelude::*, JsCast};
 
+use rand::SeedableRng;
 use rgeometry::data::*;
 
 fn ui_range(min: usize, max: usize) {
@@ -43,7 +44,7 @@ static POLYGON: Lazy<Mutex<PolygonConvex<Num>>> = Lazy::new(|| Mutex::new(gen_co
 
 fn gen_convex() -> PolygonConvex<Num> {
   let n = N_CORNERS.load(Ordering::Relaxed);
-  PolygonConvex::<i16>::random(n, &mut rand::thread_rng())
+  PolygonConvex::<i16>::random(n, &mut rand::rngs::SmallRng::seed_from_u64(0))
     .cast::<Num>()
     .normalize()
 }

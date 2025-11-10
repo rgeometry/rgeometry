@@ -4,7 +4,7 @@ use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::*;
 use rand::Rng;
-use rand::distributions::{Distribution, Standard};
+use rand::distr::{Distribution, StandardUniform};
 use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::iter::Sum;
@@ -84,14 +84,14 @@ impl<T: TotalOrd, const N: usize> Ord for PointSoS<'_, T, N> {
 }
 
 // Random sampling.
-impl<T, const N: usize> Distribution<Point<T, N>> for Standard
+impl<T, const N: usize> Distribution<Point<T, N>> for StandardUniform
 where
-  Standard: Distribution<T>,
+  StandardUniform: Distribution<T>,
 {
   // FIXME: Unify with code for Vector.
   fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Point<T, N> {
     Point {
-      array: array_init(|_| rng.r#gen()),
+      array: array_init(|_| rng.random()),
     }
   }
 }

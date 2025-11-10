@@ -4,11 +4,12 @@ use rgeometry_wasm::playground::*;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use once_cell::sync::Lazy;
+use rand::SeedableRng;
 use std::sync::Mutex;
 
 static POLYGON: Lazy<Mutex<Polygon<Num>>> = Lazy::new(|| {
   let pts = get_points(N_VERTICES);
-  let p = two_opt_moves(pts, &mut rand::thread_rng()).unwrap();
+  let p = two_opt_moves(pts, &mut rand::rngs::SmallRng::seed_from_u64(0)).unwrap();
   Mutex::new(p)
 });
 
@@ -23,7 +24,7 @@ fn demo() {
   for (idx, pt) in p.iter_mut().enumerate() {
     *pt = pts[idx].clone();
   }
-  resolve_self_intersections(&mut p, &mut rand::thread_rng()).unwrap();
+  resolve_self_intersections(&mut p, &mut rand::rngs::SmallRng::seed_from_u64(0)).unwrap();
   render_polygon(&p);
 
   context().set_fill_style_str("grey");
