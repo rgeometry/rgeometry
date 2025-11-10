@@ -163,12 +163,12 @@
             inherit cargoArtifacts;
             pname = "rgeometry-coverage";
             cargoExtraArgs = "--all-features --workspace";
-            nativeBuildInputs = commonArgs.nativeBuildInputs ++ [pkgs.grcov];
+            nativeBuildInputs = commonArgs.nativeBuildInputs ++ [pkgs.grcov pkgs.cargo-nextest];
             CARGO_INCREMENTAL = "0";
             RUSTFLAGS = "-Cinstrument-coverage";
             LLVM_PROFILE_FILE = "rgeometry-%p-%m.profraw";
             buildPhaseCargoCommand = ''
-              cargo test --all-features --workspace
+              cargo nextest run --all-features --workspace --no-fail-fast
               cargo test --all-features --workspace --doc
               mkdir -p $out/html
               grcov . --binary-path ./target/debug/ -s . -t html --branch --ignore-not-existing -o $out/html
@@ -242,9 +242,11 @@
 
         checks = {
           # Run the library tests
-          rgeometry-test = craneLib.cargoTest (commonArgs
+          rgeometry-test = craneLib.cargoNextest (commonArgs
             // {
               inherit cargoArtifacts;
+              partitions = 1;
+              partitionType = "count";
             });
 
           # Run the doc tests
@@ -309,12 +311,12 @@
               inherit cargoArtifacts;
               pname = "rgeometry-coverage-check";
               cargoExtraArgs = "--all-features --workspace";
-              nativeBuildInputs = commonArgs.nativeBuildInputs ++ [pkgs.grcov];
+              nativeBuildInputs = commonArgs.nativeBuildInputs ++ [pkgs.grcov pkgs.cargo-nextest];
               CARGO_INCREMENTAL = "0";
               RUSTFLAGS = "-Cinstrument-coverage";
               LLVM_PROFILE_FILE = "rgeometry-%p-%m.profraw";
                buildPhaseCargoCommand = ''
-                 cargo test --all-features --workspace
+                 cargo nextest run --all-features --workspace --no-fail-fast
                  cargo test --all-features --workspace --doc
                  grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing -o coverage.lcov
                  echo "Coverage report generated successfully"
