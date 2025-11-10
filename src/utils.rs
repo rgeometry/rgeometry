@@ -104,7 +104,7 @@ impl DenseCollection {
     if self.dense.is_empty() {
       return None;
     }
-    let idx = rng.gen_range(0..self.dense.len());
+    let idx = rng.random_range(0..self.dense.len());
     Some(self.dense[idx])
   }
 

@@ -36,7 +36,7 @@ num = "0.4.3"
 num-bigint = "0.4.6"
 num-rational = "0.4.2"
 num-traits = "0.2.*"
-rand = { version = "0.8", default-features = false, features = ["small_rng"] }
+rand = { version = "0.9", default-features = false, features = ["small_rng"] }
 rug = { version = "1.28", optional = true }
 
 [dev-dependencies]

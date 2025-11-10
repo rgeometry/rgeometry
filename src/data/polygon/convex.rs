@@ -1,7 +1,7 @@
 use num_traits::*;
 use rand::Rng;
-use rand::distributions::uniform::SampleUniform;
-use rand::distributions::{Distribution, Standard};
+use rand::distr::uniform::SampleUniform;
+use rand::distr::{Distribution, StandardUniform};
 use rand::seq::SliceRandom;
 use std::ops::*;
 
@@ -183,8 +183,8 @@ impl<'a, T> From<&'a PolygonConvex<T>> for &'a Polygon<T> {
   }
 }
 
-impl Distribution<PolygonConvex<isize>> for Standard {
-  fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PolygonConvex<isize> {
+impl Distribution<PolygonConvex<i64>> for StandardUniform {
+  fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PolygonConvex<i64> {
     PolygonConvex::random(100, rng)
   }
 }
@@ -203,7 +203,7 @@ where
   assert!(n > 0);
   let mut pts = Vec::with_capacity(n);
   while pts.len() < n - 1 {
-    pts.push(rng.gen_range(zero.clone()..max.clone()));
+    pts.push(rng.random_range(zero.clone()..max.clone()));
   }
   pts.sort_unstable_by(TotalOrd::total_cmp);
   pts.push(max);
@@ -221,7 +221,7 @@ where
   R: Rng + ?Sized,
 {
   assert!(n >= 2);
-  let n_positive = rng.gen_range(1..n); // [1;n[
+  let n_positive = rng.random_range(1..n); // [1;n[
   let n_negative = n - n_positive;
   assert!(n_positive + n_negative == n);
   let positive = random_between_iter(n_positive, rng);

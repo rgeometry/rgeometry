@@ -20,7 +20,7 @@ use proptest::prelude::*;
 use proptest::strategy::*;
 use proptest::test_runner::*;
 use rand::SeedableRng;
-use rand::distributions::uniform::SampleUniform;
+use rand::distr::uniform::SampleUniform;
 use std::collections::BTreeSet;
 use std::convert::TryInto;
 use std::fmt::Debug;

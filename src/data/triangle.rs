@@ -3,7 +3,7 @@ use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 use claims::debug_assert_ok;
 use num_traits::*;
 use rand::Rng;
-use rand::distributions::uniform::SampleUniform;
+use rand::distr::uniform::SampleUniform;
 
 // FIXME: Support n-dimensional triangles?
 #[derive(Debug, Clone)]
@@ -160,8 +160,8 @@ where
     loop {
       let [min_x, min_y] = min.array.clone();
       let [max_x, max_y] = max.array.clone();
-      let x = rng.gen_range(min_x..=max_x);
-      let y = rng.gen_range(min_y..=max_y);
+      let x = rng.random_range(min_x..=max_x);
+      let y = rng.random_range(min_y..=max_y);
       let pt = Point::new([x, y]);
       if self.locate(&pt) != PointLocation::Outside {
         return pt;

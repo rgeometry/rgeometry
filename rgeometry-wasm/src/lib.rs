@@ -18,8 +18,9 @@ pub mod playground {
   use rgeometry::data::*;
 
   use gloo_events::{EventListener, EventListenerOptions};
-  use rand::distributions::Standard;
+  use rand::distr::StandardUniform;
   use rand::Rng;
+  use rand::SeedableRng;
   use std::ops::Deref;
   use std::ops::Index;
   use std::sync::Once;
@@ -244,13 +245,13 @@ pub mod playground {
     START.call_once(|| {
       {
         let mut pts = POINTS.lock().unwrap();
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
         let (width, height) = get_viewport();
         let t = Transform::scale(Vector([(width as Num * 0.8), (height as Num * 0.8)]))
           * Transform::translate(Vector([(-0.5), (-0.5)]));
         while pts.len() < n {
-          let pt: Point<Num, 2> = rng.sample(Standard);
-          let pt = &t * pt;
+          let pt: Point<Num, 2> = rng.sample(StandardUniform);
+          let pt = &t * &pt;
           pts.push(pt)
         }
       }
@@ -328,7 +329,7 @@ pub mod playground {
     let mut p = POLYGON
       .get_or_init(|| {
         let pts = with_points(n);
-        let p = two_opt_moves(pts, &mut rand::thread_rng()).unwrap();
+        let p = two_opt_moves(pts, &mut rand::rngs::SmallRng::seed_from_u64(0)).unwrap();
         Mutex::new(p)
       })
       .lock()
@@ -339,7 +340,7 @@ pub mod playground {
     for (idx, pt) in p.iter_mut().enumerate() {
       *pt = pts[idx];
     }
-    resolve_self_intersections(&mut p, &mut rand::thread_rng()).unwrap();
+    resolve_self_intersections(&mut p, &mut rand::rngs::SmallRng::seed_from_u64(0)).unwrap();
     p.clone()
   }
 
