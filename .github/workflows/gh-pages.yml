@@ -58,7 +58,7 @@ jobs:
         fi
     
     - name: Deploy to main 🚀
-      uses: JamesIves/github-pages-deploy-action@v4.7.4
+      uses: JamesIves/github-pages-deploy-action@v4.7.6
       if: github.ref == 'refs/heads/main'
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
