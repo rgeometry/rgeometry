@@ -152,7 +152,7 @@ The library uses a trait-based approach to support multiple numeric types:
 - WASM compatibility: `cargo check --target wasm32-unknown-unknown` must pass
 
 ### MSRV
-Minimum Supported Rust Version: 1.59
+Minimum Supported Rust Version: 1.90
 
 ## Development Workflow
 

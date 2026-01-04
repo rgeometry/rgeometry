@@ -22,7 +22,7 @@ Check out the API documentation for more details. Under each function, there is 
 
 ## MSRV
 
-rust-1.59
+rust-1.90
 
 ## Contribute
 
