@@ -10,16 +10,14 @@ fn demo() {
   let p = get_polygon(N_VERTICES);
 
   let convex = convex_hull(&p);
-  render_polygon(&convex);
   context().set_fill_style_str("lightgrey");
-  context().fill();
+  render_polygon(&convex);
 
-  render_polygon(&p);
   context().set_fill_style_str("grey");
-  context().fill();
+  render_polygon(&p);
 
   for pt in p.iter_boundary() {
-    render_point(&pt.point());
+    render_point(pt.point());
   }
 }
 #[wasm_bindgen(start)]

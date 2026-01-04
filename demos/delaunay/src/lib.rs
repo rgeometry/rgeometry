@@ -10,9 +10,8 @@ const N_VERTICES: usize = 9;
 
 fn demo() {
   let polygon = get_polygon(N_VERTICES);
-  render_polygon(&polygon);
   set_fill_style("grey");
-  fill();
+  render_polygon(&polygon);
 
   let diagonals = delaunay_diagonals(&polygon);
   context().save();
@@ -27,7 +26,7 @@ fn demo() {
   context().restore();
 
   for cursor in polygon.iter_boundary() {
-    render_point(&cursor);
+    render_point(cursor.point());
   }
 }
 

@@ -65,9 +65,8 @@ fn demo() {
   });
 
   let p = POLYGON.lock().unwrap();
-  render_polygon(&p);
   set_fill_style("grey");
-  fill();
+  render_polygon(&p);
 
   for pt in p.iter_boundary() {
     render_fixed_point(pt.point());

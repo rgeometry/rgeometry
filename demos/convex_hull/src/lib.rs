@@ -8,12 +8,11 @@ fn demo() {
 
   let pts = with_points(7);
   if let Ok(convex) = convex_hull(pts.clone()) {
-    render_polygon(&convex);
     context().set_fill_style_str("grey");
-    context().fill();
+    render_polygon(&convex);
   }
   for pt in &pts {
-    render_point(&pt);
+    render_point(pt);
   }
 }
 

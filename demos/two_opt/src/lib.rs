@@ -25,13 +25,12 @@ fn demo() {
     *pt = pts[idx].clone();
   }
   resolve_self_intersections(&mut p, &mut rand::rngs::SmallRng::seed_from_u64(0)).unwrap();
-  render_polygon(&p);
 
   context().set_fill_style_str("grey");
-  context().fill();
+  render_polygon(&p);
 
   for pt in &pts {
-    render_point(&pt);
+    render_point(pt);
   }
 }
 #[wasm_bindgen(start)]
