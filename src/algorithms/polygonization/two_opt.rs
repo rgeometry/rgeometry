@@ -22,9 +22,9 @@ where
 {
   assert_eq!(poly.rings.len(), 1);
   if poly.iter_boundary().all(|pt| pt.is_colinear()) {
-    return Err(Error::InsufficientVertices);
+    return Err(Error::CoLinearViolation);
   }
-  // if all points are colinear, return error.
+  // if all points are collinear, return error.
   // dbg!(&pts);
   let mut isects = IndexIntersectionSet::new(poly.iter_boundary().len());
   // dbg!(&poly.rings[0]);
