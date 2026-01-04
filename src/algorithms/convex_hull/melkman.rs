@@ -17,11 +17,11 @@ where
   let mut last_idx = 0;
   for cursor in polygon.iter_boundary() {
     let p = cursor.point();
-    // Creat a deque with the first 3 points
+    // Create a deque with the first 3 points
     if convex_hull.len() < 2 {
       convex_hull.push_back(p);
 
-    // Check for colinear of the first 3 points and remove last verdix if so
+    // Check for collinear first 3 points and remove last vertex if so
     } else if convex_hull.len() == 2 {
       if Point::orient(convex_hull[0], convex_hull[1], p).is_colinear() {
         convex_hull.pop_back();
@@ -31,7 +31,7 @@ where
       convex_hull.push_front(p);
       convex_hull.push_back(p);
 
-      // Check and correct(if needed) the orientation if the first 3 verdices
+      // Check and correct (if needed) the orientation of the first 3 vertices
       if Point::orient(convex_hull[1], convex_hull[2], convex_hull[3]).is_cw() {
         convex_hull.make_contiguous().reverse();
       }
@@ -42,7 +42,7 @@ where
       && Point::orient(p, convex_hull[1], convex_hull[0]).is_cw()
     {
       continue;
-    // Check for wrong rotations/colinear (fron and back) and remove verdices until correct
+    // Check for wrong rotations/collinear (front and back) and remove vertices until correct
     } else {
       convex_hull.push_front(p);
       convex_hull.push_back(p);
@@ -77,7 +77,7 @@ where
       }
     }
   }
-  // Pop last duplicated verdix
+  // Pop last duplicated vertex
   convex_hull.pop_back();
 
   let polygon = Polygon::new_unchecked(convert_deque_to_vec(convex_hull));
