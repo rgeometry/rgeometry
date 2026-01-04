@@ -450,40 +450,48 @@ macro_rules! floating_precision {
         )
       }
 
-      // This function uses the arbitrary precision machinery of `geometry_predicates` to
-      // quickly compute the orientation of three 2D points. This is about 10x-50x slower
-      // than the inexact version.
+      // This function uses the arbitrary precision machinery of `apfp` to
+      // quickly compute the orientation of three 2D points.
       fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
-        let orient = geometry_predicates::predicates::orient2d(
-          [p[0] as f64, p[1] as f64],
-          [q[0] as f64, q[1] as f64],
-          [r[0] as f64, r[1] as f64],
+        use apfp::geometry::{Orientation, f64::Coord};
+        let orient = apfp::geometry::f64::orient2d(
+          &Coord::new(p[0] as f64, p[1] as f64),
+          &Coord::new(q[0] as f64, q[1] as f64),
+          &Coord::new(r[0] as f64, r[1] as f64),
         );
-        if orient > 0.0 {
-          Ordering::Greater
-        } else if orient < 0.0 {
-          Ordering::Less
-        } else {
-          Ordering::Equal
+        match orient {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
         }
       }
-      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
-      // roughly 100x slower than necessary.
+      // Uses apfp's orient2d_vec for fast arbitrary precision calculation.
       fn cmp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
-        PolygonScalar::cmp_vector_slope(
-          &[float_to_rational(vector[0]), float_to_rational(vector[1])],
-          &[float_to_rational(p[0]), float_to_rational(p[1])],
-          &[float_to_rational(q[0]), float_to_rational(q[1])],
-        )
+        use apfp::geometry::{Orientation, f64::Coord};
+        let orient = apfp::geometry::f64::orient2d_vec(
+          &Coord::new(p[0] as f64, p[1] as f64),
+          &Coord::new(vector[0] as f64, vector[1] as f64),
+          &Coord::new(q[0] as f64, q[1] as f64),
+        );
+        match orient {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
+        }
       }
-      // FIXME: Use `geometry_predicates` to speed up calculation. Right now we're
-      // roughly 100x slower than necessary.
+      // Uses apfp's orient2d_normal for fast arbitrary precision calculation.
       fn cmp_perp_vector_slope(vector: &[Self;2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
-        PolygonScalar::cmp_perp_vector_slope(
-          &[float_to_rational(vector[0]), float_to_rational(vector[1])],
-          &[float_to_rational(p[0]), float_to_rational(p[1])],
-          &[float_to_rational(q[0]), float_to_rational(q[1])],
-        )
+        use apfp::geometry::{Orientation, f64::Coord};
+        let orient = apfp::geometry::f64::orient2d_normal(
+          &Coord::new(p[0] as f64, p[1] as f64),
+          &Coord::new(vector[0] as f64, vector[1] as f64),
+          &Coord::new(q[0] as f64, q[1] as f64),
+        );
+        match orient {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
+        }
       }
       fn incircle(
         a: &[Self; 2],
@@ -491,18 +499,17 @@ macro_rules! floating_precision {
         c: &[Self; 2],
         d: &[Self; 2],
       ) -> Ordering {
-        let incircle = geometry_predicates::predicates::incircle(
-          [a[0] as f64, a[1] as f64],
-          [b[0] as f64, b[1] as f64],
-          [c[0] as f64, c[1] as f64],
-          [d[0] as f64, d[1] as f64],
+        use apfp::geometry::{Orientation, f64::Coord};
+        let result = apfp::geometry::f64::incircle(
+          &Coord::new(a[0] as f64, a[1] as f64),
+          &Coord::new(b[0] as f64, b[1] as f64),
+          &Coord::new(c[0] as f64, c[1] as f64),
+          &Coord::new(d[0] as f64, d[1] as f64),
         );
-        if incircle > 0.0 {
-          Ordering::Greater
-        } else if incircle < 0.0 {
-          Ordering::Less
-        } else {
-          Ordering::Equal
+        match result {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
         }
       }
     })*
