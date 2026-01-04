@@ -151,13 +151,23 @@ where
     (Point::new([min_x, min_y]), Point::new([max_x, max_y]))
   }
 
+  /// Sample a random point inside this triangle using rejection sampling.
+  ///
+  /// This method generates random points within the triangle's bounding box
+  /// and returns the first one that falls inside the triangle.
+  ///
+  /// # Panics
+  ///
+  /// Panics if no valid point is found after 10,000 attempts. This can happen
+  /// if the triangle is degenerate (has zero or near-zero area).
   pub fn rejection_sampling<R>(&self, rng: &mut R) -> Point<T, 2>
   where
     R: Rng + ?Sized,
     T: SampleUniform,
   {
+    const MAX_ITERATIONS: u32 = 10_000;
     let (min, max) = self.bounding_box();
-    loop {
+    for _ in 0..MAX_ITERATIONS {
       let [min_x, min_y] = min.array.clone();
       let [max_x, max_y] = max.array.clone();
       let x = rng.random_range(min_x..=max_x);
@@ -167,6 +177,10 @@ where
         return pt;
       }
     }
+    panic!(
+      "rejection_sampling failed after {} iterations - triangle may be degenerate",
+      MAX_ITERATIONS
+    );
   }
 
   // sampleTriangle :: (RandomGen g, Random r, Fractional r, Ord r) => Triangle 2 p r -> Rand g (Point 2 r)
