@@ -12,27 +12,23 @@ fn demo() {
   // Create a polygon from the points
   if let Ok(poly) = Polygon::new(pts.clone()) {
     // Draw the original polygon in light gray
-    render_polygon(&poly);
     context().set_fill_style_str("lightgray");
     context().set_stroke_style_str("gray");
     context().set_line_width(0.01);
-    context().fill();
-    context().stroke();
+    render_polygon(&poly);
 
     // Compute and draw the kernel
     if let Some(kernel_poly) = kernel(&poly) {
-      render_polygon(&kernel_poly);
       context().set_fill_style_str("rgba(100, 150, 255, 0.7)");
       context().set_stroke_style_str("blue");
       context().set_line_width(0.02);
-      context().fill();
-      context().stroke();
+      render_polygon(&kernel_poly);
     }
   }
 
   // Draw the points on top
   for pt in &pts {
-    render_point(&pt);
+    render_point(pt);
   }
 }
 

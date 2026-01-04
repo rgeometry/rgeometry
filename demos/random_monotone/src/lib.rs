@@ -10,9 +10,8 @@ fn demo() {
 
   let vector: Vector<Num, 2> = center - direction;
   if let Ok(p) = new_monotone_polygon(pts.clone(), &vector) {
-    render_polygon(&p);
     set_fill_style("grey");
-    fill();
+    render_polygon(&p);
   }
 
   for pt in pts {

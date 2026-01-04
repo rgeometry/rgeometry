@@ -6,9 +6,8 @@ const N_VERTICES: usize = 7;
 fn demo() {
   let p = get_polygon(N_VERTICES);
 
-  render_polygon(&p);
   set_fill_style("grey");
-  fill();
+  render_polygon(&p);
 
   context().save();
   set_line_dash(&[from_pixels(5)]);
@@ -22,7 +21,7 @@ fn demo() {
   context().restore();
 
   for pt in p.iter_boundary() {
-    render_point(&pt);
+    render_point(pt.point());
   }
 }
 

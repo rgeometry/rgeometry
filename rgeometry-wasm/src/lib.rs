@@ -38,9 +38,9 @@ pub mod playground {
   }
 
   pub fn upd_touch(event: &web_sys::TouchEvent) {
-    let x = event.touches().get(0).unwrap().client_x();
-    let y = event.touches().get(0).unwrap().client_y();
-    super::set_mouse(x, y)
+    if let Some(touch) = event.touches().get(0) {
+      super::set_mouse(touch.client_x(), touch.client_y())
+    }
   }
 
   pub fn get_device_pixel_ratio() -> f64 {
