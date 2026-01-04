@@ -35,10 +35,6 @@ impl<T, const N: usize> Vector<T, N>
 where
   T: Clone,
 {
-  pub fn qda(&self) -> T {
-    unimplemented!();
-  }
-
   pub fn squared_magnitude(&self) -> T
   where
     T: Sum + AddAssign,
