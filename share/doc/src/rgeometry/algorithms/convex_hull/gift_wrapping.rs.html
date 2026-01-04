@@ -43,7 +43,7 @@
 <a href=#22 id=22 data-nosnippet>22</a>/// * All vertices in the convex polygon are from the input set.
 <a href=#23 id=23 data-nosnippet>23</a>///
 <a href=#24 id=24 data-nosnippet>24</a>/// # Time complexity
-<a href=#25 id=25 data-nosnippet>25</a>/// $O(n \log h)$ as h is the size of the points on convex hull
+<a href=#25 id=25 data-nosnippet>25</a>/// $O(nh)$ where h is the number of points on the convex hull
 <a href=#26 id=26 data-nosnippet>26</a>///
 <a href=#27 id=27 data-nosnippet>27</a>/// # Examples
 <a href=#28 id=28 data-nosnippet>28</a>///
@@ -117,7 +117,7 @@
 <a href=#96 id=96 data-nosnippet>96</a>
 <a href=#97 id=97 data-nosnippet>97</a>    <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..n {
 <a href=#98 id=98 data-nosnippet>98</a>      <span class="kw">let </span>orientation = Point::orient(<span class="kw-2">&amp;</span>pts[p], <span class="kw-2">&amp;</span>pts[i], <span class="kw-2">&amp;</span>pts[q]);
-<a href=#99 id=99 data-nosnippet>99</a>      <span class="comment">// check if 3 points are coliner, as we want to add the minimal number of points on convex hull
+<a href=#99 id=99 data-nosnippet>99</a>      <span class="comment">// check if 3 points are collinear, as we want to add the minimal number of points on convex hull
 <a href=#100 id=100 data-nosnippet>100</a>      </span><span class="kw">if </span>orientation == Orientation::CounterClockWise
 <a href=#101 id=101 data-nosnippet>101</a>        || (orientation == Orientation::CoLinear
 <a href=#102 id=102 data-nosnippet>102</a>          &amp;&amp; pts[p].cmp_distance_to(<span class="kw-2">&amp;</span>pts[i], <span class="kw-2">&amp;</span>pts[q]) == Ordering::Greater)
