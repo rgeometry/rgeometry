@@ -48,7 +48,6 @@
 //!   ensure accumulated rounding errors do not affect algorithmic results. However, individual
 //!   coordinate values are still subject to floating-point precision limits.
 
-use num_bigint::BigInt;
 use num_traits::*;
 use std::cmp::Ordering;
 use std::iter::Sum;
@@ -214,7 +213,7 @@ where
 }
 
 macro_rules! fixed_precision {
-  ( $ty:ty, $uty:ty, $long:ty, $ulong: ty ) => {
+  ( $ty:ty, $uty:ty, $long:ty, $ulong: ty, $apfp_mod:path ) => {
     impl TotalOrd for $ty {
       fn total_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
@@ -226,81 +225,41 @@ macro_rules! fixed_precision {
         val as $ty
       }
       fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
-        fn diff(a: $ty, b: $ty) -> $ulong {
-          if b > a {
-            b.wrapping_sub(a) as $uty as $ulong
-          } else {
-            a.wrapping_sub(b) as $uty as $ulong
-          }
-        }
-        let pq_x = diff(p[0], q[0]);
-        let pq_y = diff(p[1], q[1]);
-        let (pq_dist_squared, pq_overflow) = (pq_x * pq_x).overflowing_add(pq_y * pq_y);
-        let pr_x = diff(p[0], r[0]);
-        let pr_y = diff(p[1], r[1]);
-        let (pr_dist_squared, pr_overflow) = (pr_x * pr_x).overflowing_add(pr_y * pr_y);
-        match (pq_overflow, pr_overflow) {
-          (true, false) => Ordering::Greater,
-          (false, true) => Ordering::Less,
-          _ => pq_dist_squared.cmp(&pr_dist_squared),
-        }
+        use $apfp_mod as apfp_mod;
+        apfp_mod::cmp_dist(
+          &apfp_mod::Coord::new(p[0], p[1]),
+          &apfp_mod::Coord::new(q[0], q[1]),
+          &apfp_mod::Coord::new(r[0], r[1]),
+        )
       }
 
       fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
-        // Return the absolute difference along with its sign.
-        // diff(0, 10) => (10, true)
-        // diff(10, 0) => (10, false)
-        // diff(i8::MIN,i8:MAX) => (255_u16, true)
-        // diff(a,b) = (c, sign) where a = if sign { b-c } else { b+c }
-        fn diff(a: $ty, b: $ty) -> ($ulong, bool) {
-          if b > a {
-            (b.wrapping_sub(a) as $uty as $ulong, true)
-          } else {
-            (a.wrapping_sub(b) as $uty as $ulong, false)
-          }
-        }
-        let (ux, ux_neg) = diff(q[0], p[0]);
-        let (vy, vy_neg) = diff(r[1], p[1]);
-        let ux_vy_neg = ux_neg.bitxor(vy_neg) && ux != 0 && vy != 0;
-        let (uy, uy_neg) = diff(q[1], p[1]);
-        let (vx, vx_neg) = diff(r[0], p[0]);
-        let uy_vx_neg = uy_neg.bitxor(vx_neg) && uy != 0 && vx != 0;
-        match (ux_vy_neg, uy_vx_neg) {
-          (true, false) => Ordering::Less,
-          (false, true) => Ordering::Greater,
-          (true, true) => (uy * vx).cmp(&(ux * vy)),
-          (false, false) => (ux * vy).cmp(&(uy * vx)),
+        use apfp::geometry::Orientation;
+        use $apfp_mod as apfp_mod;
+        let orient = apfp_mod::orient2d(
+          &apfp_mod::Coord::new(p[0], p[1]),
+          &apfp_mod::Coord::new(q[0], q[1]),
+          &apfp_mod::Coord::new(r[0], r[1]),
+        );
+        match orient {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
         }
       }
 
       fn cmp_vector_slope(vector: &[Self; 2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
-        // Return the absolute difference along with its sign.
-        // diff(0, 10) => (10, true)
-        // diff(10, 0) => (10, false)
-        // diff(i8::MIN,i8:MAX) => (255_u16, true)
-        // diff(a,b) = (c, sign) where a = if sign { b-c } else { b+c }
-        fn diff(a: $ty, b: $ty) -> ($ulong, bool) {
-          if b > a {
-            (b.wrapping_sub(a) as $uty as $ulong, true)
-          } else {
-            (a.wrapping_sub(b) as $uty as $ulong, false)
-          }
-        }
-        let (ux, ux_neg) = (vector[0].unsigned_abs() as $ulong, vector[0] < 0);
-        let (vy, vy_neg) = diff(q[1], p[1]);
-        // neg xor neg = pos = 0
-        // neg xor pos = neg = 1
-        // pos xor neg = neg = 1
-        // pos xor pos = pos = 0
-        let ux_vy_neg = ux_neg.bitxor(vy_neg) && ux != 0 && vy != 0;
-        let (uy, uy_neg) = (vector[1].unsigned_abs() as $ulong, vector[1] < 0);
-        let (vx, vx_neg) = diff(q[0], p[0]);
-        let uy_vx_neg = uy_neg.bitxor(vx_neg) && uy != 0 && vx != 0;
-        match (ux_vy_neg, uy_vx_neg) {
-          (true, false) => Ordering::Less,
-          (false, true) => Ordering::Greater,
-          (true, true) => (uy * vx).cmp(&(ux * vy)),
-          (false, false) => (ux * vy).cmp(&(uy * vx)),
+        use apfp::geometry::Orientation;
+        use $apfp_mod as apfp_mod;
+        let orient = apfp_mod::orient2d_vec(
+          &apfp_mod::Coord::new(p[0], p[1]),
+          &apfp_mod::Coord::new(vector[0], vector[1]),
+          &apfp_mod::Coord::new(q[0], q[1]),
+        );
+        match orient {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
         }
       }
 
@@ -309,33 +268,17 @@ macro_rules! fixed_precision {
         p: &[Self; 2],
         q: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // Return the absolute difference along with its sign.
-        // diff(0, 10) => (10, true)
-        // diff(10, 0) => (10, false)
-        // diff(i8::MIN,i8:MAX) => (255_u16, true)
-        // diff(a,b) = (c, sign) where a = if sign { b-c } else { b+c }
-        fn diff(a: $ty, b: $ty) -> ($ulong, bool) {
-          if b > a {
-            (b.wrapping_sub(a) as $uty as $ulong, true)
-          } else {
-            (a.wrapping_sub(b) as $uty as $ulong, false)
-          }
-        }
-        let (ux, ux_neg) = (vector[1].unsigned_abs() as $ulong, vector[1] > 0);
-        let (vy, vy_neg) = diff(q[1], p[1]);
-        // neg xor neg = pos = 0
-        // neg xor pos = neg = 1
-        // pos xor neg = neg = 1
-        // pos xor pos = pos = 0
-        let ux_vy_neg = ux_neg.bitxor(vy_neg) && ux != 0 && vy != 0;
-        let (uy, uy_neg) = (vector[0].unsigned_abs() as $ulong, vector[0] < 0);
-        let (vx, vx_neg) = diff(q[0], p[0]);
-        let uy_vx_neg = uy_neg.bitxor(vx_neg) && uy != 0 && vx != 0;
-        match (ux_vy_neg, uy_vx_neg) {
-          (true, false) => Ordering::Less,
-          (false, true) => Ordering::Greater,
-          (true, true) => (uy * vx).cmp(&(ux * vy)),
-          (false, false) => (ux * vy).cmp(&(uy * vx)),
+        use apfp::geometry::Orientation;
+        use $apfp_mod as apfp_mod;
+        let orient = apfp_mod::orient2d_normal(
+          &apfp_mod::Coord::new(p[0], p[1]),
+          &apfp_mod::Coord::new(vector[0], vector[1]),
+          &apfp_mod::Coord::new(q[0], q[1]),
+        );
+        match orient {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
         }
       }
       fn approx_intersection_point(
@@ -352,14 +295,19 @@ macro_rules! fixed_precision {
         long_result.and_then(|[x, y]| Some([Self::try_from(x).ok()?, Self::try_from(y).ok()?]))
       }
       fn incircle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> Ordering {
-        fn to_rational(val: $ty) -> num_rational::BigRational {
-          num_rational::BigRational::from_integer(BigInt::from(val))
+        use apfp::geometry::Orientation;
+        use $apfp_mod as apfp_mod;
+        let result = apfp_mod::incircle(
+          &apfp_mod::Coord::new(a[0], a[1]),
+          &apfp_mod::Coord::new(b[0], b[1]),
+          &apfp_mod::Coord::new(c[0], c[1]),
+          &apfp_mod::Coord::new(d[0], d[1]),
+        );
+        match result {
+          Orientation::CounterClockwise => Ordering::Greater,
+          Orientation::Clockwise => Ordering::Less,
+          Orientation::CoLinear => Ordering::Equal,
         }
-        let a_r = [to_rational(a[0]), to_rational(a[1])];
-        let b_r = [to_rational(b[0]), to_rational(b[1])];
-        let c_r = [to_rational(c[0]), to_rational(c[1])];
-        let d_r = [to_rational(d[0]), to_rational(d[1])];
-        incircle_exact(&a_r, &b_r, &c_r, &d_r)
       }
     }
   };
@@ -516,11 +464,105 @@ macro_rules! floating_precision {
   };
 }
 
-fixed_precision!(i8, u8, i16, u16);
-fixed_precision!(i16, u16, i32, u32);
-fixed_precision!(i32, u32, i64, u64);
-fixed_precision!(i64, u64, i128, u128);
-fixed_precision!(isize, usize, i128, u128);
+fixed_precision!(i8, u8, i16, u16, apfp::geometry::i8);
+fixed_precision!(i16, u16, i32, u32, apfp::geometry::i16);
+fixed_precision!(i32, u32, i64, u64, apfp::geometry::i32);
+fixed_precision!(i64, u64, i128, u128, apfp::geometry::i64);
+
+// isize needs special handling since apfp doesn't have an isize module
+// We cast to i64 which works on all platforms (isize is at most 64-bit)
+impl TotalOrd for isize {
+  fn total_cmp(&self, other: &Self) -> Ordering {
+    self.cmp(other)
+  }
+}
+
+impl PolygonScalar for isize {
+  fn from_constant(val: i8) -> Self {
+    val as isize
+  }
+  fn cmp_dist(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+    use apfp::geometry::i64 as apfp_mod;
+    apfp_mod::cmp_dist(
+      &apfp_mod::Coord::new(p[0] as i64, p[1] as i64),
+      &apfp_mod::Coord::new(q[0] as i64, q[1] as i64),
+      &apfp_mod::Coord::new(r[0] as i64, r[1] as i64),
+    )
+  }
+
+  fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering {
+    use apfp::geometry::{Orientation, i64 as apfp_mod};
+    let orient = apfp_mod::orient2d(
+      &apfp_mod::Coord::new(p[0] as i64, p[1] as i64),
+      &apfp_mod::Coord::new(q[0] as i64, q[1] as i64),
+      &apfp_mod::Coord::new(r[0] as i64, r[1] as i64),
+    );
+    match orient {
+      Orientation::CounterClockwise => Ordering::Greater,
+      Orientation::Clockwise => Ordering::Less,
+      Orientation::CoLinear => Ordering::Equal,
+    }
+  }
+
+  fn cmp_vector_slope(vector: &[Self; 2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
+    use apfp::geometry::{Orientation, i64 as apfp_mod};
+    let orient = apfp_mod::orient2d_vec(
+      &apfp_mod::Coord::new(p[0] as i64, p[1] as i64),
+      &apfp_mod::Coord::new(vector[0] as i64, vector[1] as i64),
+      &apfp_mod::Coord::new(q[0] as i64, q[1] as i64),
+    );
+    match orient {
+      Orientation::CounterClockwise => Ordering::Greater,
+      Orientation::Clockwise => Ordering::Less,
+      Orientation::CoLinear => Ordering::Equal,
+    }
+  }
+
+  fn cmp_perp_vector_slope(
+    vector: &[Self; 2],
+    p: &[Self; 2],
+    q: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    use apfp::geometry::{Orientation, i64 as apfp_mod};
+    let orient = apfp_mod::orient2d_normal(
+      &apfp_mod::Coord::new(p[0] as i64, p[1] as i64),
+      &apfp_mod::Coord::new(vector[0] as i64, vector[1] as i64),
+      &apfp_mod::Coord::new(q[0] as i64, q[1] as i64),
+    );
+    match orient {
+      Orientation::CounterClockwise => Ordering::Greater,
+      Orientation::Clockwise => Ordering::Less,
+      Orientation::CoLinear => Ordering::Equal,
+    }
+  }
+  fn approx_intersection_point(
+    p1: [Self; 2],
+    p2: [Self; 2],
+    q1: [Self; 2],
+    q2: [Self; 2],
+  ) -> Option<[Self; 2]> {
+    let long_p1: [i128; 2] = [p1[0] as i128, p1[1] as i128];
+    let long_p2: [i128; 2] = [p2[0] as i128, p2[1] as i128];
+    let long_q1: [i128; 2] = [q1[0] as i128, q1[1] as i128];
+    let long_q2: [i128; 2] = [q2[0] as i128, q2[1] as i128];
+    let long_result = approx_intersection_point_basic(0, long_p1, long_p2, long_q1, long_q2);
+    long_result.and_then(|[x, y]| Some([Self::try_from(x).ok()?, Self::try_from(y).ok()?]))
+  }
+  fn incircle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> Ordering {
+    use apfp::geometry::{Orientation, i64 as apfp_mod};
+    let result = apfp_mod::incircle(
+      &apfp_mod::Coord::new(a[0] as i64, a[1] as i64),
+      &apfp_mod::Coord::new(b[0] as i64, b[1] as i64),
+      &apfp_mod::Coord::new(c[0] as i64, c[1] as i64),
+      &apfp_mod::Coord::new(d[0] as i64, d[1] as i64),
+    );
+    match result {
+      Orientation::CounterClockwise => Ordering::Greater,
+      Orientation::Clockwise => Ordering::Less,
+      Orientation::CoLinear => Ordering::Equal,
+    }
+  }
+}
 arbitrary_precision!(num_bigint::BigInt);
 arbitrary_precision!(num_rational::BigRational);
 floating_precision!(f32);
