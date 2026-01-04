@@ -1,7 +1,4 @@
-use std::cmp::Eq;
-use std::cmp::Ord;
 use std::cmp::Ordering;
-use std::cmp::PartialEq;
 use std::ops::Range;
 use std::ops::RangeInclusive;
 
@@ -15,7 +12,7 @@ use Orientation::*;
 ///////////////////////////////////////////////////////////////////////////////
 // EndPoint
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub enum EndPoint<T> {
   Exclusive(T),
   Inclusive(T),
@@ -57,11 +54,18 @@ impl<T> EndPoint<T> {
   }
 }
 
-impl<T: Ord> EndPoint<T> {
+impl<T: PartialEq> PartialEq for EndPoint<T> {
+  fn eq(&self, other: &Self) -> bool {
+    self.is_exclusive() == other.is_exclusive() && self.inner() == other.inner()
+  }
+}
+
+impl<T: Eq> Eq for EndPoint<T> {}
+
+impl<T: TotalOrd> EndPoint<T> {
   #[must_use]
-  pub fn leftmost(self, other: EndPoint<T>) -> EndPoint<T>
-  {
-    match self.inner().cmp(other.inner()) {
+  pub fn leftmost(self, other: EndPoint<T>) -> EndPoint<T> {
+    match self.inner().total_cmp(other.inner()) {
       Ordering::Equal => {
         if self.is_exclusive() {
           self
@@ -75,9 +79,8 @@ impl<T: Ord> EndPoint<T> {
   }
 
   #[must_use]
-  pub fn rightmost(self, other: EndPoint<T>) -> EndPoint<T>
-  {
-    match self.inner().cmp(other.inner()) {
+  pub fn rightmost(self, other: EndPoint<T>) -> EndPoint<T> {
+    match self.inner().total_cmp(other.inner()) {
       Ordering::Equal => {
         if self.is_exclusive() || other.is_exclusive() {
           Exclusive(self.take())
@@ -116,23 +119,22 @@ fn inner_between<T: TotalOrd>(inner: &T, a: EndPoint<&T>, b: EndPoint<&T>) -> bo
 // LineSegment
 
 #[derive(Debug, Clone, Copy)]
-pub struct LineSegment<T: TotalOrd, const N: usize = 2> {
+pub struct LineSegment<T, const N: usize = 2> {
   pub min: EndPoint<Point<T, N>>,
   pub max: EndPoint<Point<T, N>>,
 }
 
 impl<T: TotalOrd, const N: usize> LineSegment<T, N> {
-  pub fn new(a: EndPoint<Point<T, N>>, b: EndPoint<Point<T, N>>) -> LineSegment<T, N>
-  where
-    T: TotalOrd,
-  {
+  pub fn new(a: EndPoint<Point<T, N>>, b: EndPoint<Point<T, N>>) -> LineSegment<T, N> {
     if a.inner() < b.inner() {
       LineSegment { min: a, max: b }
     } else {
       LineSegment { min: b, max: a }
     }
   }
+}
 
+impl<T, const N: usize> LineSegment<T, N> {
   pub fn as_ref(&self) -> LineSegmentView<'_, T, N> {
     LineSegmentView {
       min: self.min.as_ref(),
@@ -140,7 +142,7 @@ impl<T: TotalOrd, const N: usize> LineSegment<T, N> {
     }
   }
 }
-impl<T: TotalOrd> LineSegment<T> {
+impl<T> LineSegment<T> {
   pub fn contains(&self, pt: &Point<T>) -> bool
   where
     T: PolygonScalar,
@@ -177,24 +179,40 @@ impl<T: TotalOrd, const N: usize> From<RangeInclusive<Point<T, N>>> for LineSegm
 ///////////////////////////////////////////////////////////////////////////////
 // LineSegmentView
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct LineSegmentView<'a, T: TotalOrd, const N: usize = 2> {
+#[derive(Debug)]
+pub struct LineSegmentView<'a, T, const N: usize = 2> {
   pub min: EndPoint<&'a Point<T, N>>,
   pub max: EndPoint<&'a Point<T, N>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct LineSegmentSoS<'a, T: TotalOrd, const N: usize> {
+#[derive(Debug)]
+pub struct LineSegmentSoS<'a, T, const N: usize> {
   pub min: EndPoint<PointSoS<'a, T, N>>,
   pub max: EndPoint<PointSoS<'a, T, N>>,
 }
 
-impl<T: TotalOrd, const N: usize> Clone for LineSegmentView<'_, T, N> {
+impl<T, const N: usize> Clone for LineSegmentView<'_, T, N> {
   fn clone(&self) -> Self {
     *self
   }
 }
-impl<T: TotalOrd, const N: usize> Copy for LineSegmentView<'_, T, N> {}
+impl<T, const N: usize> Copy for LineSegmentView<'_, T, N> {}
+
+impl<T: TotalOrd, const N: usize> PartialEq for LineSegmentView<'_, T, N> {
+  fn eq(&self, other: &Self) -> bool {
+    self.min == other.min && self.max == other.max
+  }
+}
+
+impl<T: TotalOrd, const N: usize> Eq for LineSegmentView<'_, T, N> {}
+
+impl<T: TotalOrd, const N: usize> PartialEq for LineSegmentSoS<'_, T, N> {
+  fn eq(&self, other: &Self) -> bool {
+    self.min == other.min && self.max == other.max
+  }
+}
+
+impl<T: TotalOrd, const N: usize> Eq for LineSegmentSoS<'_, T, N> {}
 
 impl<'a, T: TotalOrd, const N: usize> LineSegmentView<'a, T, N> {
   pub fn new(
@@ -251,7 +269,7 @@ impl<'a, T: TotalOrd, const N: usize> From<&'a RangeInclusive<Point<T, N>>>
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> From<&'a LineSegment<T, N>> for LineSegmentView<'a, T, N> {
+impl<'a, T, const N: usize> From<&'a LineSegment<T, N>> for LineSegmentView<'a, T, N> {
   fn from(line: &'a LineSegment<T, N>) -> LineSegmentView<'a, T, N> {
     line.as_ref()
   }
@@ -260,11 +278,23 @@ impl<'a, T: TotalOrd, const N: usize> From<&'a LineSegment<T, N>> for LineSegmen
 ///////////////////////////////////////////////////////////////////////////////
 // ILineSegment
 
-#[derive(Debug, Eq, PartialEq)]
-pub enum ILineSegment<'a, T: TotalOrd> {
+#[derive(Debug)]
+pub enum ILineSegment<'a, T> {
   Crossing,                        // Lines touch but are not parallel.
   Overlap(LineSegmentView<'a, T>), // Lines touch and are parallel.
 }
+
+impl<T: TotalOrd> PartialEq for ILineSegment<'_, T> {
+  fn eq(&self, other: &Self) -> bool {
+    match (self, other) {
+      (ILineSegment::Crossing, ILineSegment::Crossing) => true,
+      (ILineSegment::Overlap(a), ILineSegment::Overlap(b)) => a == b,
+      _ => false,
+    }
+  }
+}
+
+impl<T: TotalOrd> Eq for ILineSegment<'_, T> {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Intersects

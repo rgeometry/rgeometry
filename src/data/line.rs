@@ -3,7 +3,6 @@ use super::LineSegmentView;
 use super::Point;
 use super::Vector;
 use crate::Intersects;
-use crate::TotalOrd;
 use crate::data::LineSegment;
 use crate::{Orientation, PolygonScalar};
 
@@ -23,7 +22,7 @@ impl<T, const N: usize> Clone for LineView<'_, T, N> {
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> From<&'a LineSegment<T, N>> for LineView<'a, T, N> {
+impl<'a, T, const N: usize> From<&'a LineSegment<T, N>> for LineView<'a, T, N> {
   fn from(segment: &'a LineSegment<T, N>) -> Self {
     LineView::new_through(segment.min.inner(), segment.max.inner())
   }
