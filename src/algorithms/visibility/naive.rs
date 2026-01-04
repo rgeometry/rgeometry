@@ -88,12 +88,34 @@ use crate::{Intersects, Orientation, PolygonScalar};
 //  |   \-/   |     |   \ /   |
 //  |    x    |     |    x    |
 //  \---------/     \---------/
-/// Naive alogrithn for calculating visibility polygon
+/// Naive algorithm for calculating visibility polygon.
+///
+/// Given a point inside a simple polygon (without holes), computes the visibility
+/// polygon - the region visible from that point.
+///
+/// # Arguments
+///
+/// * `point` - The viewpoint from which visibility is computed
+/// * `polygon` - A simple polygon (must not contain holes)
+///
+/// # Returns
+///
+/// Returns `Some(visibility_polygon)` if the point is inside the polygon,
+/// or `None` if the point is outside.
+///
+/// # Panics
+///
+/// Panics if the polygon contains holes. This algorithm currently only supports
+/// simple polygons without holes.
 pub fn get_visibility_polygon<T>(point: &Point<T>, polygon: &Polygon<T>) -> Option<Polygon<T>>
 where
   T: PolygonScalar,
 {
-  // FIXME: We want to iterate over all vertices, not just boundary vertices.
+  assert!(
+    polygon.rings.len() == 1,
+    "visibility polygon algorithm does not support polygons with holes"
+  );
+
   let mut vertices: Vec<Cursor<'_, T>> = polygon.iter_boundary().collect();
   vertices.sort_by(|a, b| point.ccw_cmp_around(a, b));
 
@@ -103,17 +125,16 @@ where
     let mut right_intersection = NearestIntersection::new(point);
     let mut left_intersection = NearestIntersection::new(point);
 
-    // FIXME: We want to iterate over all edges, not just boundary edges.
     for edge in polygon.iter_boundary_edges() {
       use IHalfLineLineSegmentSoS::*;
       use Orientation::*;
       match ray_sos.intersect(edge) {
         None => (),
-        // CoLinear crosing blocks the ray both to the left and to the right
+        // CoLinear crossing blocks the ray both to the left and to the right
         Some(Crossing(CoLinear)) => {
-          let isect = get_intersection(ray_sos, edge);
-          left_intersection.push(isect.clone());
-          right_intersection.push(isect);
+          let intersection = get_intersection(ray_sos, edge);
+          left_intersection.push(intersection.clone());
+          right_intersection.push(intersection);
         }
         // Ray blocked on the left side.
         Some(Crossing(CounterClockWise)) => {
@@ -127,12 +148,12 @@ where
     }
 
     match right_intersection.take() {
-      Some(interesection) => {
-        if point.cmp_distance_to(&interesection, &vertex) != Ordering::Less {
-          polygon_points.push(interesection);
+      Some(intersection) => {
+        if point.cmp_distance_to(&intersection, &vertex) != Ordering::Less {
+          polygon_points.push(intersection);
         }
       }
-      None => return Option::None,
+      None => return None,
     };
     match left_intersection.take() {
       Some(intersection) => {
@@ -140,12 +161,12 @@ where
           polygon_points.push(intersection);
         }
       }
-      None => return Option::None,
+      None => return None,
     };
   }
   polygon_points.dedup();
 
-  Some(Polygon::new(polygon_points).expect("Polygon Creation failed"))
+  Polygon::new(polygon_points).ok()
 }
 
 fn get_intersection_colinear<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdge<'_, T>) -> Point<T>
