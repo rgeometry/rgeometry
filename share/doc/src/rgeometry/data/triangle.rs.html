@@ -172,31 +172,45 @@
 <a href=#151 id=151 data-nosnippet>151</a>    (Point::new([min_x, min_y]), Point::new([max_x, max_y]))
 <a href=#152 id=152 data-nosnippet>152</a>  }
 <a href=#153 id=153 data-nosnippet>153</a>
-<a href=#154 id=154 data-nosnippet>154</a>  <span class="kw">pub fn </span>rejection_sampling&lt;R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, rng: <span class="kw-2">&amp;mut </span>R) -&gt; Point&lt;T, <span class="number">2</span>&gt;
-<a href=#155 id=155 data-nosnippet>155</a>  <span class="kw">where
-<a href=#156 id=156 data-nosnippet>156</a>    </span>R: Rng + <span class="question-mark">?</span>Sized,
-<a href=#157 id=157 data-nosnippet>157</a>    T: SampleUniform,
-<a href=#158 id=158 data-nosnippet>158</a>  {
-<a href=#159 id=159 data-nosnippet>159</a>    <span class="kw">let </span>(min, max) = <span class="self">self</span>.bounding_box();
-<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">loop </span>{
-<a href=#161 id=161 data-nosnippet>161</a>      <span class="kw">let </span>[min_x, min_y] = min.array.clone();
-<a href=#162 id=162 data-nosnippet>162</a>      <span class="kw">let </span>[max_x, max_y] = max.array.clone();
-<a href=#163 id=163 data-nosnippet>163</a>      <span class="kw">let </span>x = rng.random_range(min_x..=max_x);
-<a href=#164 id=164 data-nosnippet>164</a>      <span class="kw">let </span>y = rng.random_range(min_y..=max_y);
-<a href=#165 id=165 data-nosnippet>165</a>      <span class="kw">let </span>pt = Point::new([x, y]);
-<a href=#166 id=166 data-nosnippet>166</a>      <span class="kw">if </span><span class="self">self</span>.locate(<span class="kw-2">&amp;</span>pt) != PointLocation::Outside {
-<a href=#167 id=167 data-nosnippet>167</a>        <span class="kw">return </span>pt;
-<a href=#168 id=168 data-nosnippet>168</a>      }
-<a href=#169 id=169 data-nosnippet>169</a>    }
-<a href=#170 id=170 data-nosnippet>170</a>  }
-<a href=#171 id=171 data-nosnippet>171</a>
-<a href=#172 id=172 data-nosnippet>172</a>  <span class="comment">// sampleTriangle :: (RandomGen g, Random r, Fractional r, Ord r) =&gt; Triangle 2 p r -&gt; Rand g (Point 2 r)
-<a href=#173 id=173 data-nosnippet>173</a>  // sampleTriangle (Triangle v1 v2 v3) = do
-<a href=#174 id=174 data-nosnippet>174</a>  //   a' &lt;- getRandomR (0, 1)
-<a href=#175 id=175 data-nosnippet>175</a>  //   b' &lt;- getRandomR (0, 1)
-<a href=#176 id=176 data-nosnippet>176</a>  //   let (a, b) = if a' + b' &gt; 1 then (1 - a', 1 - b') else (a', b')
-<a href=#177 id=177 data-nosnippet>177</a>  //   return $ v1^.core .+^ a*^u .+^ b*^v
-<a href=#178 id=178 data-nosnippet>178</a>  //   where
-<a href=#179 id=179 data-nosnippet>179</a>  //     u = v2^.core .-. v1^.core
-<a href=#180 id=180 data-nosnippet>180</a>  //     v = v3^.core .-. v1^.core
-<a href=#181 id=181 data-nosnippet>181</a></span>}</code></pre></div></section></main></body></html>
+<a href=#154 id=154 data-nosnippet>154</a>  <span class="doccomment">/// Sample a random point inside this triangle using rejection sampling.
+<a href=#155 id=155 data-nosnippet>155</a>  ///
+<a href=#156 id=156 data-nosnippet>156</a>  /// This method generates random points within the triangle's bounding box
+<a href=#157 id=157 data-nosnippet>157</a>  /// and returns the first one that falls inside the triangle.
+<a href=#158 id=158 data-nosnippet>158</a>  ///
+<a href=#159 id=159 data-nosnippet>159</a>  /// # Panics
+<a href=#160 id=160 data-nosnippet>160</a>  ///
+<a href=#161 id=161 data-nosnippet>161</a>  /// Panics if no valid point is found after 10,000 attempts. This can happen
+<a href=#162 id=162 data-nosnippet>162</a>  /// if the triangle is degenerate (has zero or near-zero area).
+<a href=#163 id=163 data-nosnippet>163</a>  </span><span class="kw">pub fn </span>rejection_sampling&lt;R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, rng: <span class="kw-2">&amp;mut </span>R) -&gt; Point&lt;T, <span class="number">2</span>&gt;
+<a href=#164 id=164 data-nosnippet>164</a>  <span class="kw">where
+<a href=#165 id=165 data-nosnippet>165</a>    </span>R: Rng + <span class="question-mark">?</span>Sized,
+<a href=#166 id=166 data-nosnippet>166</a>    T: SampleUniform,
+<a href=#167 id=167 data-nosnippet>167</a>  {
+<a href=#168 id=168 data-nosnippet>168</a>    <span class="kw">const </span>MAX_ITERATIONS: u32 = <span class="number">10_000</span>;
+<a href=#169 id=169 data-nosnippet>169</a>    <span class="kw">let </span>(min, max) = <span class="self">self</span>.bounding_box();
+<a href=#170 id=170 data-nosnippet>170</a>    <span class="kw">for _ in </span><span class="number">0</span>..MAX_ITERATIONS {
+<a href=#171 id=171 data-nosnippet>171</a>      <span class="kw">let </span>[min_x, min_y] = min.array.clone();
+<a href=#172 id=172 data-nosnippet>172</a>      <span class="kw">let </span>[max_x, max_y] = max.array.clone();
+<a href=#173 id=173 data-nosnippet>173</a>      <span class="kw">let </span>x = rng.random_range(min_x..=max_x);
+<a href=#174 id=174 data-nosnippet>174</a>      <span class="kw">let </span>y = rng.random_range(min_y..=max_y);
+<a href=#175 id=175 data-nosnippet>175</a>      <span class="kw">let </span>pt = Point::new([x, y]);
+<a href=#176 id=176 data-nosnippet>176</a>      <span class="kw">if </span><span class="self">self</span>.locate(<span class="kw-2">&amp;</span>pt) != PointLocation::Outside {
+<a href=#177 id=177 data-nosnippet>177</a>        <span class="kw">return </span>pt;
+<a href=#178 id=178 data-nosnippet>178</a>      }
+<a href=#179 id=179 data-nosnippet>179</a>    }
+<a href=#180 id=180 data-nosnippet>180</a>    <span class="macro">panic!</span>(
+<a href=#181 id=181 data-nosnippet>181</a>      <span class="string">"rejection_sampling failed after {} iterations - triangle may be degenerate"</span>,
+<a href=#182 id=182 data-nosnippet>182</a>      MAX_ITERATIONS
+<a href=#183 id=183 data-nosnippet>183</a>    );
+<a href=#184 id=184 data-nosnippet>184</a>  }
+<a href=#185 id=185 data-nosnippet>185</a>
+<a href=#186 id=186 data-nosnippet>186</a>  <span class="comment">// sampleTriangle :: (RandomGen g, Random r, Fractional r, Ord r) =&gt; Triangle 2 p r -&gt; Rand g (Point 2 r)
+<a href=#187 id=187 data-nosnippet>187</a>  // sampleTriangle (Triangle v1 v2 v3) = do
+<a href=#188 id=188 data-nosnippet>188</a>  //   a' &lt;- getRandomR (0, 1)
+<a href=#189 id=189 data-nosnippet>189</a>  //   b' &lt;- getRandomR (0, 1)
+<a href=#190 id=190 data-nosnippet>190</a>  //   let (a, b) = if a' + b' &gt; 1 then (1 - a', 1 - b') else (a', b')
+<a href=#191 id=191 data-nosnippet>191</a>  //   return $ v1^.core .+^ a*^u .+^ b*^v
+<a href=#192 id=192 data-nosnippet>192</a>  //   where
+<a href=#193 id=193 data-nosnippet>193</a>  //     u = v2^.core .-. v1^.core
+<a href=#194 id=194 data-nosnippet>194</a>  //     v = v3^.core .-. v1^.core
+<a href=#195 id=195 data-nosnippet>195</a></span>}</code></pre></div></section></main></body></html>

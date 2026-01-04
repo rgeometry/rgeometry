@@ -43,9 +43,9 @@
 <a href=#22 id=22 data-nosnippet>22</a>{
 <a href=#23 id=23 data-nosnippet>23</a>  <span class="macro">assert_eq!</span>(poly.rings.len(), <span class="number">1</span>);
 <a href=#24 id=24 data-nosnippet>24</a>  <span class="kw">if </span>poly.iter_boundary().all(|pt| pt.is_colinear()) {
-<a href=#25 id=25 data-nosnippet>25</a>    <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InsufficientVertices);
+<a href=#25 id=25 data-nosnippet>25</a>    <span class="kw">return </span><span class="prelude-val">Err</span>(Error::CoLinearViolation);
 <a href=#26 id=26 data-nosnippet>26</a>  }
-<a href=#27 id=27 data-nosnippet>27</a>  <span class="comment">// if all points are colinear, return error.
+<a href=#27 id=27 data-nosnippet>27</a>  <span class="comment">// if all points are collinear, return error.
 <a href=#28 id=28 data-nosnippet>28</a>  // dbg!(&amp;pts);
 <a href=#29 id=29 data-nosnippet>29</a>  </span><span class="kw">let </span><span class="kw-2">mut </span>isects = IndexIntersectionSet::new(poly.iter_boundary().len());
 <a href=#30 id=30 data-nosnippet>30</a>  <span class="comment">// dbg!(&amp;poly.rings[0]);

@@ -118,28 +118,31 @@
 <a href=#97 id=97 data-nosnippet>97</a>
 <a href=#98 id=98 data-nosnippet>98</a><span class="kw">impl</span>&lt;T&gt; ExactSizeIterator <span class="kw">for </span>CursorIter&lt;<span class="lifetime">'_</span>, T&gt; {
 <a href=#99 id=99 data-nosnippet>99</a>  <span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
-<a href=#100 id=100 data-nosnippet>100</a>    <span class="kw">let </span>pos_head = <span class="self">self</span>.cursor_head.position;
-<a href=#101 id=101 data-nosnippet>101</a>    <span class="kw">let </span>pos_tail = <span class="self">self</span>.cursor_tail.position;
-<a href=#102 id=102 data-nosnippet>102</a>    <span class="kw">if </span>pos_head.position_id.<span class="number">0 </span>&lt;= pos_tail.position_id.<span class="number">0 </span>{
-<a href=#103 id=103 data-nosnippet>103</a>      pos_tail.position_id.<span class="number">0 </span>- pos_head.position_id.<span class="number">0 </span>+ <span class="number">1
-<a href=#104 id=104 data-nosnippet>104</a>    </span>} <span class="kw">else </span>{
-<a href=#105 id=105 data-nosnippet>105</a>      pos_head.size - pos_head.position_id.<span class="number">0 </span>+ pos_tail.position_id.<span class="number">0 </span>+ <span class="number">1
-<a href=#106 id=106 data-nosnippet>106</a>    </span>}
-<a href=#107 id=107 data-nosnippet>107</a>  }
-<a href=#108 id=108 data-nosnippet>108</a>}
-<a href=#109 id=109 data-nosnippet>109</a>
-<a href=#110 id=110 data-nosnippet>110</a><span class="kw">impl</span>&lt;T&gt; DoubleEndedIterator <span class="kw">for </span>CursorIter&lt;<span class="lifetime">'_</span>, T&gt; {
-<a href=#111 id=111 data-nosnippet>111</a>  <span class="kw">fn </span>next_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
-<a href=#112 id=112 data-nosnippet>112</a>    <span class="kw">if </span><span class="self">self</span>.exhausted {
-<a href=#113 id=113 data-nosnippet>113</a>      <span class="prelude-val">None
-<a href=#114 id=114 data-nosnippet>114</a>    </span>} <span class="kw">else </span>{
-<a href=#115 id=115 data-nosnippet>115</a>      <span class="kw">let </span>out = <span class="self">self</span>.cursor_tail;
-<a href=#116 id=116 data-nosnippet>116</a>      <span class="kw">if </span>out == <span class="self">self</span>.cursor_head {
-<a href=#117 id=117 data-nosnippet>117</a>        <span class="self">self</span>.exhausted = <span class="bool-val">true</span>;
-<a href=#118 id=118 data-nosnippet>118</a>      } <span class="kw">else </span>{
-<a href=#119 id=119 data-nosnippet>119</a>        <span class="self">self</span>.cursor_tail.move_next();
-<a href=#120 id=120 data-nosnippet>120</a>      }
-<a href=#121 id=121 data-nosnippet>121</a>      <span class="prelude-val">Some</span>(out)
-<a href=#122 id=122 data-nosnippet>122</a>    }
-<a href=#123 id=123 data-nosnippet>123</a>  }
-<a href=#124 id=124 data-nosnippet>124</a>}</code></pre></div></section></main></body></html>
+<a href=#100 id=100 data-nosnippet>100</a>    <span class="kw">if </span><span class="self">self</span>.exhausted {
+<a href=#101 id=101 data-nosnippet>101</a>      <span class="kw">return </span><span class="number">0</span>;
+<a href=#102 id=102 data-nosnippet>102</a>    }
+<a href=#103 id=103 data-nosnippet>103</a>    <span class="kw">let </span>pos_head = <span class="self">self</span>.cursor_head.position;
+<a href=#104 id=104 data-nosnippet>104</a>    <span class="kw">let </span>pos_tail = <span class="self">self</span>.cursor_tail.position;
+<a href=#105 id=105 data-nosnippet>105</a>    <span class="kw">if </span>pos_head.position_id.<span class="number">0 </span>&lt;= pos_tail.position_id.<span class="number">0 </span>{
+<a href=#106 id=106 data-nosnippet>106</a>      pos_tail.position_id.<span class="number">0 </span>- pos_head.position_id.<span class="number">0 </span>+ <span class="number">1
+<a href=#107 id=107 data-nosnippet>107</a>    </span>} <span class="kw">else </span>{
+<a href=#108 id=108 data-nosnippet>108</a>      pos_head.size - pos_head.position_id.<span class="number">0 </span>+ pos_tail.position_id.<span class="number">0 </span>+ <span class="number">1
+<a href=#109 id=109 data-nosnippet>109</a>    </span>}
+<a href=#110 id=110 data-nosnippet>110</a>  }
+<a href=#111 id=111 data-nosnippet>111</a>}
+<a href=#112 id=112 data-nosnippet>112</a>
+<a href=#113 id=113 data-nosnippet>113</a><span class="kw">impl</span>&lt;T&gt; DoubleEndedIterator <span class="kw">for </span>CursorIter&lt;<span class="lifetime">'_</span>, T&gt; {
+<a href=#114 id=114 data-nosnippet>114</a>  <span class="kw">fn </span>next_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+<a href=#115 id=115 data-nosnippet>115</a>    <span class="kw">if </span><span class="self">self</span>.exhausted {
+<a href=#116 id=116 data-nosnippet>116</a>      <span class="prelude-val">None
+<a href=#117 id=117 data-nosnippet>117</a>    </span>} <span class="kw">else </span>{
+<a href=#118 id=118 data-nosnippet>118</a>      <span class="kw">let </span>out = <span class="self">self</span>.cursor_tail;
+<a href=#119 id=119 data-nosnippet>119</a>      <span class="kw">if </span>out == <span class="self">self</span>.cursor_head {
+<a href=#120 id=120 data-nosnippet>120</a>        <span class="self">self</span>.exhausted = <span class="bool-val">true</span>;
+<a href=#121 id=121 data-nosnippet>121</a>      } <span class="kw">else </span>{
+<a href=#122 id=122 data-nosnippet>122</a>        <span class="self">self</span>.cursor_tail.move_prev();
+<a href=#123 id=123 data-nosnippet>123</a>      }
+<a href=#124 id=124 data-nosnippet>124</a>      <span class="prelude-val">Some</span>(out)
+<a href=#125 id=125 data-nosnippet>125</a>    }
+<a href=#126 id=126 data-nosnippet>126</a>  }
+<a href=#127 id=127 data-nosnippet>127</a>}</code></pre></div></section></main></body></html>
