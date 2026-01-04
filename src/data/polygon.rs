@@ -691,8 +691,7 @@ impl<T> Deref for Cursor<'_, T> {
 
 impl<'a, T> PartialEq for Cursor<'a, T> {
   fn eq(&self, other: &Cursor<'a, T>) -> bool {
-    // FIXME: Make sure the two polygons are the same.
-    self.position == other.position
+    std::ptr::eq(self.polygon, other.polygon) && self.position == other.position
   }
 }
 
