@@ -607,7 +607,9 @@ impl PolygonScalar for rug::Integer {
     PolygonScalar::cmp_slope(p, &[new_x, new_y], q)
   }
   fn cmp_perp_vector_slope(vector: &[Self; 2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
-    let new_x = rug::Integer::from(&p[0] + &vector[1]);
+    // The perpendicular (normal) of vector (vx, vy) rotated 90° counterclockwise is (-vy, vx)
+    // So the new point is: (p[0] - vector[1], p[1] + vector[0])
+    let new_x = rug::Integer::from(&p[0] - &vector[1]);
     let new_y = rug::Integer::from(&p[1] + &vector[0]);
     PolygonScalar::cmp_slope(p, &[new_x, new_y], q)
   }
