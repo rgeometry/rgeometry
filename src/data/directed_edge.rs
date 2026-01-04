@@ -6,25 +6,25 @@ use super::Point;
 use crate::{Intersects, PolygonScalar, TotalOrd};
 
 ///////////////////////////////////////////////////////////////////////////////
-// DirectedEdge_
+// DirectedEdge
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 // Directed edge from A to B, including A and excluding B.
-pub struct DirectedEdge_<T: TotalOrd, const N: usize> {
+pub struct DirectedEdge<T: TotalOrd, const N: usize> {
   pub src: Point<T, N>,
   pub dst: Point<T, N>,
 }
 
-// DirectedEdge_ -> LineSegment
-impl<T: TotalOrd, const N: usize> From<DirectedEdge_<T, N>> for LineSegment<T, N> {
-  fn from(edge: DirectedEdge_<T, N>) -> LineSegment<T, N> {
+// DirectedEdge -> LineSegment
+impl<T: TotalOrd, const N: usize> From<DirectedEdge<T, N>> for LineSegment<T, N> {
+  fn from(edge: DirectedEdge<T, N>) -> LineSegment<T, N> {
     LineSegment::new(EndPoint::Inclusive(edge.src), EndPoint::Exclusive(edge.dst))
   }
 }
 
-// DirectedEdge_ -> LineSegmentView
-impl<'a, T: TotalOrd, const N: usize> From<&'a DirectedEdge_<T, N>> for LineSegmentView<'a, T, N> {
-  fn from(edge: &'a DirectedEdge_<T, N>) -> LineSegmentView<'a, T, N> {
+// DirectedEdge -> LineSegmentView
+impl<'a, T: TotalOrd, const N: usize> From<&'a DirectedEdge<T, N>> for LineSegmentView<'a, T, N> {
+  fn from(edge: &'a DirectedEdge<T, N>) -> LineSegmentView<'a, T, N> {
     LineSegmentView::new(
       EndPoint::Inclusive(&edge.src),
       EndPoint::Exclusive(&edge.dst),
@@ -32,34 +32,34 @@ impl<'a, T: TotalOrd, const N: usize> From<&'a DirectedEdge_<T, N>> for LineSegm
   }
 }
 
-impl<'a, T> Intersects for &'a DirectedEdge_<T, 2>
+impl<'a, T> Intersects for &'a DirectedEdge<T, 2>
 where
   T: PolygonScalar,
 {
   type Result = ILineSegment<'a, T>;
-  fn intersect(self, other: &'a DirectedEdge_<T, 2>) -> Option<Self::Result> {
+  fn intersect(self, other: &'a DirectedEdge<T, 2>) -> Option<Self::Result> {
     LineSegmentView::from(self).intersect(LineSegmentView::from(other))
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DirectedEdge
+// DirectedEdgeView
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 // Directed edge from A to B, including A and excluding B.
-pub struct DirectedEdge<'a, T: TotalOrd, const N: usize = 2> {
+pub struct DirectedEdgeView<'a, T: TotalOrd, const N: usize = 2> {
   pub src: &'a Point<T, N>,
   pub dst: &'a Point<T, N>,
 }
 
-impl<T: TotalOrd, const N: usize> Copy for DirectedEdge<'_, T, N> {}
-impl<T: TotalOrd, const N: usize> Clone for DirectedEdge<'_, T, N> {
+impl<T: TotalOrd, const N: usize> Copy for DirectedEdgeView<'_, T, N> {}
+impl<T: TotalOrd, const N: usize> Clone for DirectedEdgeView<'_, T, N> {
   fn clone(&self) -> Self {
     *self
   }
 }
 
-impl<T: TotalOrd> DirectedEdge<'_, T, 2> {
+impl<T: TotalOrd> DirectedEdgeView<'_, T, 2> {
   pub fn contains(self, pt: &Point<T, 2>) -> bool
   where
     T: PolygonScalar,
@@ -68,24 +68,24 @@ impl<T: TotalOrd> DirectedEdge<'_, T, 2> {
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> From<DirectedEdge<'a, T, N>> for LineSegmentView<'a, T, N> {
-  fn from(edge: DirectedEdge<'a, T, N>) -> LineSegmentView<'a, T, N> {
+impl<'a, T: TotalOrd, const N: usize> From<DirectedEdgeView<'a, T, N>> for LineSegmentView<'a, T, N> {
+  fn from(edge: DirectedEdgeView<'a, T, N>) -> LineSegmentView<'a, T, N> {
     LineSegmentView::new(EndPoint::Inclusive(edge.src), EndPoint::Exclusive(edge.dst))
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> From<&DirectedEdge<'a, T, N>> for LineSegmentView<'a, T, N> {
-  fn from(edge: &DirectedEdge<'a, T, N>) -> LineSegmentView<'a, T, N> {
+impl<'a, T: TotalOrd, const N: usize> From<&DirectedEdgeView<'a, T, N>> for LineSegmentView<'a, T, N> {
+  fn from(edge: &DirectedEdgeView<'a, T, N>) -> LineSegmentView<'a, T, N> {
     LineSegmentView::new(EndPoint::Inclusive(edge.src), EndPoint::Exclusive(edge.dst))
   }
 }
 
-impl<'a, T> Intersects for DirectedEdge<'a, T, 2>
+impl<'a, T> Intersects for DirectedEdgeView<'a, T, 2>
 where
   T: PolygonScalar,
 {
   type Result = ILineSegment<'a, T>;
-  fn intersect(self, other: DirectedEdge<'a, T, 2>) -> Option<Self::Result> {
+  fn intersect(self, other: DirectedEdgeView<'a, T, 2>) -> Option<Self::Result> {
     LineSegmentView::from(self).intersect(LineSegmentView::from(other))
   }
 }

@@ -2,7 +2,7 @@
 
 use crate::TotalOrd;
 use crate::data::Cursor;
-use crate::data::DirectedEdge;
+use crate::data::DirectedEdgeView;
 use crate::data::Point;
 
 pub struct Iter<'a, T: 'a> {
@@ -31,12 +31,12 @@ pub struct EdgeIter<'a, T: 'a> {
 }
 
 impl<'a, T: TotalOrd + Clone> Iterator for EdgeIter<'a, T> {
-  type Item = DirectedEdge<'a, T, 2>;
+  type Item = DirectedEdgeView<'a, T, 2>;
   fn next(&mut self) -> Option<Self::Item> {
     let cursor = self.iter.next()?;
     let this_point = cursor.point();
     let next_point = cursor.next().point();
-    Some(DirectedEdge {
+    Some(DirectedEdgeView {
       src: this_point,
       dst: next_point,
     })

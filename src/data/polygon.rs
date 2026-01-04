@@ -6,7 +6,8 @@ use std::ops::Bound::*;
 use std::ops::*;
 
 use crate::data::{
-  DirectedEdge, HalfLineSoS, IHalfLineLineSegmentSoS::*, Point, PointLocation, TriangleView, Vector,
+  DirectedEdgeView, HalfLineSoS, IHalfLineLineSegmentSoS::*, Point, PointLocation, TriangleView,
+  Vector,
 };
 use crate::intersection::*;
 use crate::{Error, Orientation, PolygonScalar, TotalOrd};
@@ -190,7 +191,7 @@ impl<T> Polygon<T> {
     }
     // Has no self intersections.
     // XXX: Hm, allow overlapping (but not crossing) edges in the weakly check?
-    let edges: Vec<DirectedEdge<'_, T, 2>> = self.iter_boundary_edges().collect();
+    let edges: Vec<DirectedEdgeView<'_, T, 2>> = self.iter_boundary_edges().collect();
     let mut isects = crate::algorithms::segment_intersections(&edges);
     if isects.next().is_some() {
       return Err(Error::SelfIntersections);

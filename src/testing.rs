@@ -4,7 +4,7 @@
 //  * polygons
 // A Strategy is a way to generate a shrinkable value.
 use crate::data::{
-  Direction_, EndPoint, Line_, LineSegment, LineSoS_, Point, PointId, Polygon, PolygonConvex,
+  Direction, EndPoint, Line, LineSegment, LineSoS, Point, PointId, Polygon, PolygonConvex,
   Triangle, Vector,
 };
 use crate::{PolygonScalar, TotalOrd};
@@ -386,20 +386,20 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary Direction
 
-impl<T: Arbitrary, const N: usize> Arbitrary for Direction_<T, N>
+impl<T: Arbitrary, const N: usize> Arbitrary for Direction<T, N>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Mapped<(bool, Point<T, N>), Direction_<T, N>>;
+  type Strategy = Mapped<(bool, Point<T, N>), Direction<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
     (any::<bool>(), Point::<T, N>::arbitrary_with(params)).prop_map(|(is_pt, pt)| {
       if is_pt {
-        Direction_::Through(pt)
+        Direction::Through(pt)
       } else {
-        Direction_::Vector(pt.into())
+        Direction::Vector(pt.into())
       }
     })
   }
@@ -408,33 +408,33 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary Line
 
-impl<T: Arbitrary, const N: usize> Arbitrary for Line_<T, N>
+impl<T: Arbitrary, const N: usize> Arbitrary for Line<T, N>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Mapped<(Point<T, N>, Direction_<T, N>), Line_<T, N>>;
+  type Strategy = Mapped<(Point<T, N>, Direction<T, N>), Line<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-    any_with::<(Point<T, N>, Direction_<T, N>)>((params.clone(), params))
-      .prop_map(|(origin, direction)| Line_ { origin, direction })
+    any_with::<(Point<T, N>, Direction<T, N>)>((params.clone(), params))
+      .prop_map(|(origin, direction)| Line { origin, direction })
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary LineSoS
 
-impl<T: Arbitrary, const N: usize> Arbitrary for LineSoS_<T, N>
+impl<T: Arbitrary, const N: usize> Arbitrary for LineSoS<T, N>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,
   T: Clone,
 {
-  type Strategy = Mapped<Line_<T, N>, LineSoS_<T, N>>;
+  type Strategy = Mapped<Line<T, N>, LineSoS<T, N>>;
   type Parameters = T::Parameters;
   fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
-    any_with::<Line_<T, N>>(params).prop_map(|line| line.into())
+    any_with::<Line<T, N>>(params).prop_map(|line| line.into())
   }
 }
 
