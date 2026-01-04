@@ -97,6 +97,9 @@ impl<'a, T> Iterator for CursorIter<'a, T> {
 
 impl<T> ExactSizeIterator for CursorIter<'_, T> {
   fn len(&self) -> usize {
+    if self.exhausted {
+      return 0;
+    }
     let pos_head = self.cursor_head.position;
     let pos_tail = self.cursor_tail.position;
     if pos_head.position_id.0 <= pos_tail.position_id.0 {
@@ -116,7 +119,7 @@ impl<T> DoubleEndedIterator for CursorIter<'_, T> {
       if out == self.cursor_head {
         self.exhausted = true;
       } else {
-        self.cursor_tail.move_next();
+        self.cursor_tail.move_prev();
       }
       Some(out)
     }
