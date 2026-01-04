@@ -6,7 +6,7 @@ use std::cmp::Ordering;
 use std::collections::VecDeque;
 use std::ops::Bound::*;
 
-///Check if the given polyon is monotone with resprect to given direction
+/// Check if the given polygon is monotone with respect to given direction
 pub fn is_monotone<T>(poly: &Polygon<T>, direction: &Vector<T, 2>) -> bool
 where
   T: PolygonScalar,
@@ -99,7 +99,7 @@ mod monotone_testing {
   use test_strategy::proptest;
 
   #[proptest]
-  fn convex_polygon_is_montone(convex_polygon: PolygonConvex<i8>, direction: Vector<i8, 2>) {
+  fn convex_polygon_is_monotone(convex_polygon: PolygonConvex<i8>, direction: Vector<i8, 2>) {
     prop_assert!(is_monotone(convex_polygon.polygon(), &direction));
   }
 

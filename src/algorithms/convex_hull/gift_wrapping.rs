@@ -22,7 +22,7 @@ use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 /// * All vertices in the convex polygon are from the input set.
 ///
 /// # Time complexity
-/// $O(n \log h)$ as h is the size of the points on convex hull
+/// $O(nh)$ where h is the number of points on the convex hull
 ///
 /// # Examples
 ///
@@ -96,7 +96,7 @@ where
 
     for i in 0..n {
       let orientation = Point::orient(&pts[p], &pts[i], &pts[q]);
-      // check if 3 points are coliner, as we want to add the minimal number of points on convex hull
+      // check if 3 points are collinear, as we want to add the minimal number of points on convex hull
       if orientation == Orientation::CounterClockWise
         || (orientation == Orientation::CoLinear
           && pts[p].cmp_distance_to(&pts[i], &pts[q]) == Ordering::Greater)
