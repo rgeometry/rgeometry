@@ -518,11 +518,7 @@ impl PolygonScalar for isize {
     }
   }
 
-  fn cmp_perp_vector_slope(
-    vector: &[Self; 2],
-    p: &[Self; 2],
-    q: &[Self; 2],
-  ) -> std::cmp::Ordering {
+  fn cmp_perp_vector_slope(vector: &[Self; 2], p: &[Self; 2], q: &[Self; 2]) -> std::cmp::Ordering {
     use apfp::geometry::{Orientation, i64 as apfp_mod};
     let orient = apfp_mod::orient2d_normal(
       &apfp_mod::Coord::new(p[0] as i64, p[1] as i64),
