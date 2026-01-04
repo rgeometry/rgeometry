@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error","Orientation","SoS"],"macro":["polygon"],"mod":["algorithms","data"],"trait":["Intersects","PolygonScalar","TotalOrd"]};
