@@ -441,7 +441,7 @@ where
 ///////////////////////////////////////////////////////////////////////////////
 // Arbitrary EndPoint
 
-impl<T: Arbitrary + TotalOrd> Arbitrary for EndPoint<T>
+impl<T: Arbitrary> Arbitrary for EndPoint<T>
 where
   T::Strategy: Clone,
   T::Parameters: Clone,

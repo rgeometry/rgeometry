@@ -16,14 +16,14 @@ use Orientation::*;
 // EndPoint
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum EndPoint<T: TotalOrd> {
+pub enum EndPoint<T> {
   Exclusive(T),
   Inclusive(T),
 }
 
 use EndPoint::*;
 
-impl<T: TotalOrd> EndPoint<T> {
+impl<T> EndPoint<T> {
   pub fn inner(&self) -> &T {
     match self {
       Exclusive(t) => t,
@@ -55,11 +55,11 @@ impl<T: TotalOrd> EndPoint<T> {
   pub fn is_inclusive(&self) -> bool {
     !self.is_exclusive()
   }
+}
 
+impl<T: Ord> EndPoint<T> {
   #[must_use]
   pub fn leftmost(self, other: EndPoint<T>) -> EndPoint<T>
-  where
-    T: Ord,
   {
     match self.inner().cmp(other.inner()) {
       Ordering::Equal => {
@@ -76,8 +76,6 @@ impl<T: TotalOrd> EndPoint<T> {
 
   #[must_use]
   pub fn rightmost(self, other: EndPoint<T>) -> EndPoint<T>
-  where
-    T: Ord,
   {
     match self.inner().cmp(other.inner()) {
       Ordering::Equal => {

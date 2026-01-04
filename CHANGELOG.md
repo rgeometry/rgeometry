@@ -6,6 +6,7 @@
 - [#180](https://github.com/rgeometry/rgeometry/pull/180) Removed unused ordered-float dependency
 - [#181](https://github.com/rgeometry/rgeometry/pull/181) Use cargo-nextest for faster test execution in Nix flake (~13% faster)
 - [#212](https://github.com/rgeometry/rgeometry/pull/212) Rename view types to LineView, DirectionView, and DirectedEdgeView
+- [#212](https://github.com/rgeometry/rgeometry/pull/212) Loosen EndPoint bounds to reduce unnecessary TotalOrd constraints
 
 ## [0.11.0] 2025-11-05
 
