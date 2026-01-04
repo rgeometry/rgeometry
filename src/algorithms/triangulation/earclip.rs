@@ -64,7 +64,11 @@ where
   std::iter::from_fn(move || match len {
     0..=2 => None,
     _ => loop {
-      let focus = vertices.cursor(possible_ears.pop(&mut rng).unwrap());
+      let focus = vertices.cursor(
+        possible_ears
+          .pop(&mut rng)
+          .expect("no valid ears found - polygon may be degenerate"),
+      );
       let prev = focus.prev();
       let next = focus.next();
       if is_ear(prev, focus, next) {
@@ -126,7 +130,9 @@ where
   std::iter::from_fn(move || match len {
     0..=2 => None,
     _ => loop {
-      let focus = possible_ears.pop(&mut rng).unwrap();
+      let focus = possible_ears
+        .pop(&mut rng)
+        .expect("no valid ears found - polygon may be degenerate");
       let prev = vertices.prev(focus);
       let next = vertices.next(focus);
       if is_ear_hashed(
@@ -416,6 +422,9 @@ impl EarStore {
   where
     R: Rng + ?Sized,
   {
+    if self.possible_ears_vec.is_empty() {
+      return None;
+    }
     let n = rng.random_range(0..self.possible_ears_vec.len());
     let next = self.possible_ears_vec.swap_remove(n);
     self.possible_ears_set.delete(next);
