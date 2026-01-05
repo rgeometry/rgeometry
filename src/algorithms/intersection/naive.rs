@@ -49,11 +49,7 @@ mod tests {
   type PairKey = (usize, usize);
 
   fn pair_key(a: usize, b: usize) -> PairKey {
-    if a < b {
-      (a, b)
-    } else {
-      (b, a)
-    }
+    if a < b { (a, b) } else { (b, a) }
   }
 
   fn collect_pairs<'a>(
@@ -178,7 +174,9 @@ mod tests {
       segment((2, 0), (4, 0)),
     ];
     let pairs = collect_pairs(&segments, segment_intersections::<_, Scalar>(&segments));
-    let expected = [(0, 1), (0, 2), (1, 2)].into_iter().collect::<BTreeSet<_>>();
+    let expected = [(0, 1), (0, 2), (1, 2)]
+      .into_iter()
+      .collect::<BTreeSet<_>>();
     assert_eq!(pairs, expected);
   }
 

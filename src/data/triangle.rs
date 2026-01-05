@@ -233,8 +233,11 @@ mod tests {
     match &result {
       Ok(_) => panic!("Expected error, got Ok"),
       Err(e) => {
-        assert!(matches!(e, Error::ClockWiseViolation | Error::CoLinearViolation),
-          "Expected CoLinearViolation or ClockWiseViolation, got: {:?}", e);
+        assert!(
+          matches!(e, Error::ClockWiseViolation | Error::CoLinearViolation),
+          "Expected CoLinearViolation or ClockWiseViolation, got: {:?}",
+          e
+        );
       }
     }
   }
@@ -287,8 +290,11 @@ mod tests {
     match &result {
       Ok(_) => panic!("Expected error, got Ok"),
       Err(e) => {
-        assert!(matches!(e, Error::ClockWiseViolation | Error::CoLinearViolation),
-          "Expected CoLinearViolation or ClockWiseViolation, got: {:?}", e);
+        assert!(
+          matches!(e, Error::ClockWiseViolation | Error::CoLinearViolation),
+          "Expected CoLinearViolation or ClockWiseViolation, got: {:?}",
+          e
+        );
       }
     }
   }
@@ -393,7 +399,10 @@ mod tests {
     let pts = [point(0i32, 0), point(2, 0), point(1, 2)];
     let tri = Triangle::new(pts).unwrap();
     let centroid = point(1, 2i32 / 3);
-    assert!(matches!(tri.locate(&centroid), PointLocation::Inside | PointLocation::OnBoundary));
+    assert!(matches!(
+      tri.locate(&centroid),
+      PointLocation::Inside | PointLocation::OnBoundary
+    ));
   }
 
   #[test]
@@ -402,9 +411,11 @@ mod tests {
     let tri = Triangle::new(pts).unwrap();
     let mut rng = rand::rngs::SmallRng::seed_from_u64(42);
     let sampled = tri.view().rejection_sampling(&mut rng);
-    assert!(matches!(tri.locate(&sampled), PointLocation::Inside | PointLocation::OnBoundary));
+    assert!(matches!(
+      tri.locate(&sampled),
+      PointLocation::Inside | PointLocation::OnBoundary
+    ));
   }
-
 
   #[test]
   fn triangle_signed_area_with_f64() {

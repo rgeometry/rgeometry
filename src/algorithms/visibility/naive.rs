@@ -350,7 +350,7 @@ mod naive_testing {
       let out_polygon = get_visibility_polygon(&point, &polygon).expect("get_visibility_polygon");
       assert_eq!(points, out_polygon.points);
     }
-   }
+  }
 
   #[test]
   fn point_on_vertex_returns_none() {
@@ -415,5 +415,3 @@ mod naive_testing {
     assert!(out_polygon.is_some());
   }
 }
-
-
