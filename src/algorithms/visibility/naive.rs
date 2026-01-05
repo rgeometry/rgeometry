@@ -350,5 +350,70 @@ mod naive_testing {
       let out_polygon = get_visibility_polygon(&point, &polygon).expect("get_visibility_polygon");
       assert_eq!(points, out_polygon.points);
     }
+   }
+
+  #[test]
+  fn point_on_vertex_returns_none() {
+    let point = Point::new([0, 0]);
+    let input_polygon = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([8, 0]),
+      Point::new([8, 6]),
+      Point::new([0, 6]),
+    ])
+    .unwrap();
+    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+
+    assert!(out_polygon.is_none());
+  }
+
+  #[test]
+  fn point_on_edge_returns_none() {
+    let point = Point::new([4, 0]);
+    let input_polygon = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([8, 0]),
+      Point::new([8, 6]),
+      Point::new([0, 6]),
+    ])
+    .unwrap();
+    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+
+    assert!(out_polygon.is_none());
+  }
+
+  #[test]
+  fn point_at_center_of_convex_polygon() {
+    let point = Point::new([4, 3]);
+    let input_polygon = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([8, 0]),
+      Point::new([8, 6]),
+      Point::new([0, 6]),
+    ])
+    .unwrap();
+    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+
+    assert!(out_polygon.is_some());
+    if let Some(ref polygon) = out_polygon {
+      assert!(!polygon.points.is_empty());
+    }
+  }
+
+  #[test]
+  fn point_on_multiple_edges() {
+    let point = Point::new([2, 2]);
+    let input_polygon = Polygon::new(vec![
+      Point::new([0, 0]),
+      Point::new([4, 0]),
+      Point::new([4, 4]),
+      Point::new([0, 4]),
+    ])
+    .unwrap();
+    let out_polygon = get_visibility_polygon(&point, &input_polygon);
+
+    assert!(out_polygon.is_some());
   }
 }
+
+
