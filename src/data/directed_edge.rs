@@ -68,13 +68,17 @@ impl<T: TotalOrd> DirectedEdgeView<'_, T, 2> {
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> From<DirectedEdgeView<'a, T, N>> for LineSegmentView<'a, T, N> {
+impl<'a, T: TotalOrd, const N: usize> From<DirectedEdgeView<'a, T, N>>
+  for LineSegmentView<'a, T, N>
+{
   fn from(edge: DirectedEdgeView<'a, T, N>) -> LineSegmentView<'a, T, N> {
     LineSegmentView::new(EndPoint::Inclusive(edge.src), EndPoint::Exclusive(edge.dst))
   }
 }
 
-impl<'a, T: TotalOrd, const N: usize> From<&DirectedEdgeView<'a, T, N>> for LineSegmentView<'a, T, N> {
+impl<'a, T: TotalOrd, const N: usize> From<&DirectedEdgeView<'a, T, N>>
+  for LineSegmentView<'a, T, N>
+{
   fn from(edge: &DirectedEdgeView<'a, T, N>) -> LineSegmentView<'a, T, N> {
     LineSegmentView::new(EndPoint::Inclusive(edge.src), EndPoint::Exclusive(edge.dst))
   }

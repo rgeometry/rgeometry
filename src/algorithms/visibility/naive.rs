@@ -170,10 +170,7 @@ where
   Polygon::new(polygon_points).ok()
 }
 
-fn get_intersection_colinear<T>(
-  sos_line: HalfLineSoS<T>,
-  edge: DirectedEdgeView<'_, T>,
-) -> Point<T>
+fn get_intersection_colinear<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdgeView<'_, T>) -> Point<T>
 where
   T: PolygonScalar,
 {
