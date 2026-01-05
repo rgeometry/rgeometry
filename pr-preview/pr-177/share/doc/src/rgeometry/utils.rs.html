@@ -125,7 +125,7 @@
 <a href=#104 id=104 data-nosnippet>104</a>    <span class="kw">if </span><span class="self">self</span>.dense.is_empty() {
 <a href=#105 id=105 data-nosnippet>105</a>      <span class="kw">return </span><span class="prelude-val">None</span>;
 <a href=#106 id=106 data-nosnippet>106</a>    }
-<a href=#107 id=107 data-nosnippet>107</a>    <span class="kw">let </span>idx = rng.gen_range(<span class="number">0</span>..<span class="self">self</span>.dense.len());
+<a href=#107 id=107 data-nosnippet>107</a>    <span class="kw">let </span>idx = rng.random_range(<span class="number">0</span>..<span class="self">self</span>.dense.len());
 <a href=#108 id=108 data-nosnippet>108</a>    <span class="prelude-val">Some</span>(<span class="self">self</span>.dense[idx])
 <a href=#109 id=109 data-nosnippet>109</a>  }
 <a href=#110 id=110 data-nosnippet>110</a>

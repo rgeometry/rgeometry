@@ -38,11 +38,11 @@
 <a href=#17 id=17 data-nosnippet>17</a>  <span class="kw">let </span><span class="kw-2">mut </span>last_idx = <span class="number">0</span>;
 <a href=#18 id=18 data-nosnippet>18</a>  <span class="kw">for </span>cursor <span class="kw">in </span>polygon.iter_boundary() {
 <a href=#19 id=19 data-nosnippet>19</a>    <span class="kw">let </span>p = cursor.point();
-<a href=#20 id=20 data-nosnippet>20</a>    <span class="comment">// Creat a deque with the first 3 points
+<a href=#20 id=20 data-nosnippet>20</a>    <span class="comment">// Create a deque with the first 3 points
 <a href=#21 id=21 data-nosnippet>21</a>    </span><span class="kw">if </span>convex_hull.len() &lt; <span class="number">2 </span>{
 <a href=#22 id=22 data-nosnippet>22</a>      convex_hull.push_back(p);
 <a href=#23 id=23 data-nosnippet>23</a>
-<a href=#24 id=24 data-nosnippet>24</a>    <span class="comment">// Check for colinear of the first 3 points and remove last verdix if so
+<a href=#24 id=24 data-nosnippet>24</a>    <span class="comment">// Check for collinear first 3 points and remove last vertex if so
 <a href=#25 id=25 data-nosnippet>25</a>    </span>} <span class="kw">else if </span>convex_hull.len() == <span class="number">2 </span>{
 <a href=#26 id=26 data-nosnippet>26</a>      <span class="kw">if </span>Point::orient(convex_hull[<span class="number">0</span>], convex_hull[<span class="number">1</span>], p).is_colinear() {
 <a href=#27 id=27 data-nosnippet>27</a>        convex_hull.pop_back();
@@ -52,7 +52,7 @@
 <a href=#31 id=31 data-nosnippet>31</a>      convex_hull.push_front(p);
 <a href=#32 id=32 data-nosnippet>32</a>      convex_hull.push_back(p);
 <a href=#33 id=33 data-nosnippet>33</a>
-<a href=#34 id=34 data-nosnippet>34</a>      <span class="comment">// Check and correct(if needed) the orientation if the first 3 verdices
+<a href=#34 id=34 data-nosnippet>34</a>      <span class="comment">// Check and correct (if needed) the orientation of the first 3 vertices
 <a href=#35 id=35 data-nosnippet>35</a>      </span><span class="kw">if </span>Point::orient(convex_hull[<span class="number">1</span>], convex_hull[<span class="number">2</span>], convex_hull[<span class="number">3</span>]).is_cw() {
 <a href=#36 id=36 data-nosnippet>36</a>        convex_hull.make_contiguous().reverse();
 <a href=#37 id=37 data-nosnippet>37</a>      }
@@ -63,7 +63,7 @@
 <a href=#42 id=42 data-nosnippet>42</a>      &amp;&amp; Point::orient(p, convex_hull[<span class="number">1</span>], convex_hull[<span class="number">0</span>]).is_cw()
 <a href=#43 id=43 data-nosnippet>43</a>    {
 <a href=#44 id=44 data-nosnippet>44</a>      <span class="kw">continue</span>;
-<a href=#45 id=45 data-nosnippet>45</a>    <span class="comment">// Check for wrong rotations/colinear (fron and back) and remove verdices until correct
+<a href=#45 id=45 data-nosnippet>45</a>    <span class="comment">// Check for wrong rotations/collinear (front and back) and remove vertices until correct
 <a href=#46 id=46 data-nosnippet>46</a>    </span>} <span class="kw">else </span>{
 <a href=#47 id=47 data-nosnippet>47</a>      convex_hull.push_front(p);
 <a href=#48 id=48 data-nosnippet>48</a>      convex_hull.push_back(p);
@@ -98,7 +98,7 @@
 <a href=#77 id=77 data-nosnippet>77</a>      }
 <a href=#78 id=78 data-nosnippet>78</a>    }
 <a href=#79 id=79 data-nosnippet>79</a>  }
-<a href=#80 id=80 data-nosnippet>80</a>  <span class="comment">// Pop last duplicated verdix
+<a href=#80 id=80 data-nosnippet>80</a>  <span class="comment">// Pop last duplicated vertex
 <a href=#81 id=81 data-nosnippet>81</a>  </span>convex_hull.pop_back();
 <a href=#82 id=82 data-nosnippet>82</a>
 <a href=#83 id=83 data-nosnippet>83</a>  <span class="kw">let </span>polygon = Polygon::new_unchecked(convert_deque_to_vec(convex_hull));

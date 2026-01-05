@@ -31,7 +31,7 @@ contains all the given points.</p>
 <li>All vertices in the convex polygon are from the input set.</li>
 </ul>
 <h2 id="time-complexity"><a class="doc-anchor" href="#time-complexity">§</a>Time complexity</h2>
-<p>$O(n \log h)$ as h is the size of the points on convex hull</p>
+<p>$O(nh)$ where h is the number of points on the convex hull</p>
 <h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>empty_set: Vec&lt;Point&lt;i32,<span class="number">2</span>&gt;&gt; = <span class="macro">vec!</span>[];
 <span class="macro">assert_eq!</span>(
