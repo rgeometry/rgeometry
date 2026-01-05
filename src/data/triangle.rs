@@ -193,3 +193,243 @@ where
   //     u = v2^.core .-. v1^.core
   //     v = v3^.core .-. v1^.core
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::Error;
+  use proptest::prelude::*;
+  use rand::SeedableRng;
+
+  fn point<T: PolygonScalar>(x: T, y: T) -> Point<T, 2> {
+    Point::new([x, y])
+  }
+
+  #[test]
+  fn triangle_new_valid_ccw() {
+    let pts = [point(0i32, 0), point(2, 0), point(1, 2)];
+    let result = Triangle::new(pts);
+    assert!(result.is_ok());
+  }
+
+  #[test]
+  fn triangle_new_valid_ccw_f64() {
+    let pts = [point(0.0f64, 0.0), point(2.0, 0.0), point(1.0, 2.0)];
+    let result = Triangle::new(pts);
+    assert!(result.is_ok());
+  }
+
+  #[test]
+  fn triangle_new_clockwise_rejects() {
+    let pts = [point(0i32, 0), point(1, 2), point(2, 0)];
+    let result = Triangle::new(pts);
+    assert!(matches!(result, Err(Error::ClockWiseViolation)));
+  }
+
+  #[test]
+  fn triangle_new_colinear_rejects() {
+    let pts = [point(0i32, 0), point(1, 1), point(2, 2)];
+    let result = Triangle::new(pts);
+    match &result {
+      Ok(_) => panic!("Expected error, got Ok"),
+      Err(e) => {
+        assert!(
+          matches!(e, Error::ClockWiseViolation | Error::CoLinearViolation),
+          "Expected CoLinearViolation or ClockWiseViolation, got: {:?}",
+          e
+        );
+      }
+    }
+  }
+
+  #[test]
+  fn triangle_new_ccw_orientation() {
+    let pts = [point(0i32, 0), point(2, 0), point(1, 2)];
+    let tri = Triangle::new_ccw(pts);
+    assert_eq!(tri.view().orientation(), Orientation::CounterClockWise);
+  }
+
+  #[test]
+  fn triangle_new_ccw_flips_clockwise() {
+    let pts = [point(0i32, 0), point(1, 2), point(2, 0)];
+    let tri = Triangle::new_ccw(pts);
+    assert_eq!(tri.view().orientation(), Orientation::CounterClockWise);
+  }
+
+  #[test]
+  #[should_panic(expected = "Cannot orient colinear points")]
+  fn triangle_new_ccw_panics_on_colinear() {
+    let pts = [point(0i32, 0), point(1, 1), point(2, 2)];
+    let _tri = Triangle::new_ccw(pts);
+  }
+
+  #[test]
+  fn triangle_view_new_valid() {
+    let p0 = point(0i32, 0);
+    let p1 = point(2, 0);
+    let p2 = point(1, 2);
+    let result = TriangleView::new([&p0, &p1, &p2]);
+    assert!(result.is_ok());
+  }
+
+  #[test]
+  fn triangle_view_new_clockwise_rejects() {
+    let p0 = point(0i32, 0);
+    let p1 = point(1, 2);
+    let p2 = point(2, 0);
+    let result = TriangleView::new([&p0, &p1, &p2]);
+    assert!(matches!(result, Err(Error::ClockWiseViolation)));
+  }
+
+  #[test]
+  fn triangle_view_new_colinear_rejects() {
+    let p0 = point(0i32, 0);
+    let p1 = point(1, 1);
+    let p2 = point(2, 2);
+    let result = TriangleView::new([&p0, &p1, &p2]);
+    match &result {
+      Ok(_) => panic!("Expected error, got Ok"),
+      Err(e) => {
+        assert!(
+          matches!(e, Error::ClockWiseViolation | Error::CoLinearViolation),
+          "Expected CoLinearViolation or ClockWiseViolation, got: {:?}",
+          e
+        );
+      }
+    }
+  }
+
+  #[test]
+  fn triangle_view_new_ccw_orientation() {
+    let p0 = point(0i32, 0);
+    let p1 = point(2, 0);
+    let p2 = point(1, 2);
+    let view = TriangleView::new_ccw([&p0, &p1, &p2]);
+    assert_eq!(view.orientation(), Orientation::CounterClockWise);
+  }
+
+  #[test]
+  fn triangle_view_new_ccw_flips_clockwise() {
+    let p0 = point(0i32, 0);
+    let p1 = point(1, 2);
+    let p2 = point(2, 0);
+    let view = TriangleView::new_ccw([&p0, &p1, &p2]);
+    assert_eq!(view.orientation(), Orientation::CounterClockWise);
+  }
+
+  #[test]
+  fn triangle_view_locate_consistency() {
+    let pts = [point(0i32, 0), point(2, 0), point(1, 2)];
+    let tri = Triangle::new(pts).unwrap();
+    let view = tri.view();
+
+    let test_pt = point(1, 1);
+    assert_eq!(tri.locate(&test_pt), view.locate(&test_pt));
+  }
+
+  #[test]
+  fn triangle_view_validate() {
+    let pts = [point(0i32, 0), point(2, 0), point(1, 2)];
+    let tri = Triangle::new(pts).unwrap();
+    assert!(tri.validate().is_ok());
+  }
+
+  #[test]
+  fn triangle_view_validate_clockwise() {
+    let pts = [point(0i32, 0), point(1, 2), point(2, 0)];
+    let tri = Triangle::new_ccw(pts);
+    let result = tri.validate();
+    assert!(result.is_ok());
+  }
+
+  fn arb_point_i32() -> impl Strategy<Value = Point<i32, 2>> {
+    (-100..=100i32, -100..=100i32).prop_map(|(x, y)| point(x, y))
+  }
+
+  fn arb_triangle_i32() -> impl Strategy<Value = [Point<i32, 2>; 3]> {
+    prop::array::uniform3(arb_point_i32())
+  }
+
+  proptest! {
+    #[test]
+    fn triangle_signed_area_positive_for_ccw(tri in arb_triangle_i32()) {
+      if let Ok(tri) = Triangle::new(tri) {
+        let area: i32 = tri.view().signed_area_2x();
+        prop_assert!(area > 0, "CCW triangles should have positive area");
+      }
+    }
+
+    #[test]
+    fn triangle_bounding_box_contains_vertices(tri in arb_triangle_i32()) {
+      if let Ok(tri) = Triangle::new(tri) {
+        let (min, max) = tri.view().bounding_box();
+        for pt in &tri.0 {
+          prop_assert!(
+            pt.x_coord() >= min.x_coord() && pt.x_coord() <= max.x_coord() &&
+            pt.y_coord() >= min.y_coord() && pt.y_coord() <= max.y_coord(),
+            "bounding box should contain all vertices"
+          );
+        }
+      }
+    }
+
+    #[test]
+    fn triangle_view_new_unchecked_no_validation(tri in arb_triangle_i32()) {
+      let view = TriangleView::new_unchecked([&tri[0], &tri[1], &tri[2]]);
+      prop_assert_eq!(view.0, [&tri[0], &tri[1], &tri[2]]);
+    }
+  }
+
+  #[test]
+  fn triangle_new_with_duplicate_points() {
+    let pts = [point(0i32, 0), point(0, 0), point(1, 1)];
+    let result = Triangle::new(pts);
+    assert!(result.is_err());
+  }
+
+  #[test]
+  fn triangle_new_with_same_point_repeated() {
+    let pts = [point(0i32, 0), point(1, 1), point(0, 0)];
+    let result = Triangle::new(pts);
+    assert!(result.is_err());
+  }
+
+  #[test]
+  fn triangle_locate_center_of_mass() {
+    let pts = [point(0i32, 0), point(2, 0), point(1, 2)];
+    let tri = Triangle::new(pts).unwrap();
+    let centroid = point(1, 2i32 / 3);
+    assert!(matches!(
+      tri.locate(&centroid),
+      PointLocation::Inside | PointLocation::OnBoundary
+    ));
+  }
+
+  #[test]
+  fn triangle_rejection_sampling() {
+    let pts = [point(0i32, 0), point(2, 0), point(1, 2)];
+    let tri = Triangle::new(pts).unwrap();
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(42);
+    let sampled = tri.view().rejection_sampling(&mut rng);
+    assert!(matches!(
+      tri.locate(&sampled),
+      PointLocation::Inside | PointLocation::OnBoundary
+    ));
+  }
+
+  #[test]
+  fn triangle_signed_area_with_f64() {
+    let pts = [point(0.0f64, 0.0), point(2.0, 0.0), point(1.0, 2.0)];
+    let tri = Triangle::new(pts).unwrap();
+    let area: f64 = tri.view().signed_area();
+    assert_eq!(area, 2.0);
+  }
+
+  #[test]
+  fn triangle_signed_area_with_i64() {
+    let pts = [point(0i64, 0), point(4, 0), point(2, 3)];
+    let tri = Triangle::new(pts).unwrap();
+    let area: i64 = tri.view().signed_area_2x();
+    assert_eq!(area, 12);
+  }
+}
