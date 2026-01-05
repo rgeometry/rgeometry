@@ -19,7 +19,7 @@
   }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">rgeometry/algorithms/kernel/</div>naive.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span><span class="kw">crate</span>::data::{Line, Point, Polygon};
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">rgeometry/algorithms/kernel/</div>naive.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span><span class="kw">crate</span>::data::{LineView, Point, Polygon};
 <a href=#2 id=2 data-nosnippet>2</a><span class="kw">use crate</span>::{Orientation, PolygonScalar};
 <a href=#3 id=3 data-nosnippet>3</a>
 <a href=#4 id=4 data-nosnippet>4</a><span class="doccomment">/// Compute the kernel of a simple polygon.
@@ -144,9 +144,9 @@
 <a href=#123 id=123 data-nosnippet>123</a>
 <a href=#124 id=124 data-nosnippet>124</a>    <span class="comment">// If edge crosses the clipping line, add intersection point
 <a href=#125 id=125 data-nosnippet>125</a>    </span><span class="kw">if </span>current_inside != next_inside {
-<a href=#126 id=126 data-nosnippet>126</a>      <span class="comment">// Use Line::intersection_point for approximate intersection
-<a href=#127 id=127 data-nosnippet>127</a>      </span><span class="kw">let </span>line1 = Line::new_through(current, next);
-<a href=#128 id=128 data-nosnippet>128</a>      <span class="kw">let </span>line2 = Line::new_through(p1, p2);
+<a href=#126 id=126 data-nosnippet>126</a>      <span class="comment">// Use LineView::intersection_point for approximate intersection
+<a href=#127 id=127 data-nosnippet>127</a>      </span><span class="kw">let </span>line1 = LineView::new_through(current, next);
+<a href=#128 id=128 data-nosnippet>128</a>      <span class="kw">let </span>line2 = LineView::new_through(p1, p2);
 <a href=#129 id=129 data-nosnippet>129</a>      <span class="kw">if let </span><span class="prelude-val">Some</span>(intersection) = line1.intersection_point(<span class="kw-2">&amp;</span>line2) {
 <a href=#130 id=130 data-nosnippet>130</a>        result.push(intersection);
 <a href=#131 id=131 data-nosnippet>131</a>      }
