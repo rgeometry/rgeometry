@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["constrained_delaunay"]};
