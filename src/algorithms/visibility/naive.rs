@@ -1,7 +1,8 @@
 use std::cmp::Ordering;
 
 use crate::data::{
-  Cursor, DirectedEdge, Direction, HalfLineSoS, IHalfLineLineSegmentSoS, Line, Point, Polygon,
+  Cursor, DirectedEdgeView, DirectionView, HalfLineSoS, IHalfLineLineSegmentSoS, LineView, Point,
+  Polygon,
 };
 use crate::{Intersects, Orientation, PolygonScalar};
 
@@ -169,11 +170,11 @@ where
   Polygon::new(polygon_points).ok()
 }
 
-fn get_intersection_colinear<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdge<'_, T>) -> Point<T>
+fn get_intersection_colinear<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdgeView<'_, T>) -> Point<T>
 where
   T: PolygonScalar,
 {
-  let line: Line<T> = sos_line.into();
+  let line: LineView<T> = sos_line.into();
   match Point::orient_along_direction(line.origin, line.direction, edge.src) {
     Orientation::CoLinear => edge.src.clone(),
     // edge.dst should be colinear with the ray
@@ -181,15 +182,15 @@ where
   }
 }
 
-fn get_intersection<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdge<'_, T>) -> Point<T>
+fn get_intersection<T>(sos_line: HalfLineSoS<T>, edge: DirectedEdgeView<'_, T>) -> Point<T>
 where
   T: PolygonScalar,
 {
-  let segment_line = Line {
+  let segment_line = LineView {
     origin: edge.src,
-    direction: Direction::Through(edge.dst),
+    direction: DirectionView::Through(edge.dst),
   };
-  Line::from(sos_line)
+  LineView::from(sos_line)
     .intersection_point(&segment_line)
     .expect("LinesMustIntersect")
 }

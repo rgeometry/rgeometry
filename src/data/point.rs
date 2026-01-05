@@ -11,7 +11,7 @@ use std::iter::Sum;
 use std::ops::Deref;
 use std::ops::Index;
 
-use super::{Direction, Vector};
+use super::{DirectionView, Vector};
 use crate::{Orientation, PolygonScalar, TotalOrd};
 
 #[allow(clippy::derived_hash_with_manual_eq)]
@@ -269,12 +269,12 @@ impl<T: PolygonScalar> Point<T> {
 
   pub fn orient_along_direction(
     p1: &Point<T, 2>,
-    direction: Direction<'_, T, 2>,
+    direction: DirectionView<'_, T, 2>,
     p2: &Point<T, 2>,
   ) -> Orientation {
     match direction {
-      Direction::Vector(v) => Orientation::along_vector(p1, v, p2),
-      Direction::Through(p) => Orientation::new(p1, p, p2),
+      DirectionView::Vector(v) => Orientation::along_vector(p1, v, p2),
+      DirectionView::Through(p) => Orientation::new(p1, p, p2),
     }
   }
 

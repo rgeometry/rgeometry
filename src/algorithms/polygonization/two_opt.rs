@@ -7,7 +7,7 @@ use crate::data::Point;
 use crate::data::PointId;
 use crate::data::Polygon;
 use crate::data::{IndexIntersection, IndexIntersectionSet};
-use crate::{Error, PolygonScalar, TotalOrd};
+use crate::{Error, PolygonScalar};
 
 use rand::Rng;
 use std::collections::BTreeSet;
@@ -77,7 +77,7 @@ where
   Ok(poly)
 }
 
-fn endpoint<T: TotalOrd>(a: PointId, b: PointId, c: PointId, t: T) -> EndPoint<T> {
+fn endpoint<T>(a: PointId, b: PointId, c: PointId, t: T) -> EndPoint<T> {
   if a == b || a == c {
     EndPoint::Exclusive(t)
   } else {

@@ -1,4 +1,4 @@
-use crate::data::{Line, Point, Polygon};
+use crate::data::{LineView, Point, Polygon};
 use crate::{Orientation, PolygonScalar};
 
 /// Compute the kernel of a simple polygon.
@@ -123,9 +123,9 @@ fn clip_polygon_by_edge<T: PolygonScalar>(
 
     // If edge crosses the clipping line, add intersection point
     if current_inside != next_inside {
-      // Use Line::intersection_point for approximate intersection
-      let line1 = Line::new_through(current, next);
-      let line2 = Line::new_through(p1, p2);
+      // Use LineView::intersection_point for approximate intersection
+      let line1 = LineView::new_through(current, next);
+      let line2 = LineView::new_through(p1, p2);
       if let Some(intersection) = line1.intersection_point(&line2) {
         result.push(intersection);
       }
