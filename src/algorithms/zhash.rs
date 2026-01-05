@@ -135,7 +135,6 @@ mod tests {
   use crate::data::Triangle;
 
   use proptest::prelude::*;
-  use rand::SeedableRng;
   use test_strategy::proptest;
 
   #[proptest]
@@ -146,6 +145,10 @@ mod tests {
   #[proptest]
   fn cmp_prop_i8(trig: Triangle<i8>) {
     let (min, max) = trig.view().bounding_box();
+    let middle = Point::new([
+      ((i16::from(*min.x_coord()) + i16::from(*max.x_coord())) / 2) as i8,
+      ((i16::from(*min.y_coord()) + i16::from(*max.y_coord())) / 2) as i8,
+    ]);
     let zbox = ZHashBox {
       min_x: min.x_coord(),
       max_x: max.x_coord(),
@@ -153,8 +156,6 @@ mod tests {
       max_y: max.y_coord(),
     };
     let key = ZHashable::zhash_key(zbox);
-    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
-    let middle = trig.view().rejection_sampling(&mut rng);
     let min_hash = ZHashable::zhash_fn(key, &min);
     let max_hash = ZHashable::zhash_fn(key, &max);
     let mid_hash = ZHashable::zhash_fn(key, &middle);
@@ -165,6 +166,10 @@ mod tests {
   #[proptest]
   fn cmp_prop_i64(trig: Triangle<i64>) {
     let (min, max) = trig.view().bounding_box();
+    let middle = Point::new([
+      ((i128::from(*min.x_coord()) + i128::from(*max.x_coord())) / 2) as i64,
+      ((i128::from(*min.y_coord()) + i128::from(*max.y_coord())) / 2) as i64,
+    ]);
     let zbox = ZHashBox {
       min_x: min.x_coord(),
       max_x: max.x_coord(),
@@ -172,8 +177,6 @@ mod tests {
       max_y: max.y_coord(),
     };
     let key = ZHashable::zhash_key(zbox);
-    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
-    let middle = trig.view().rejection_sampling(&mut rng);
     let min_hash = ZHashable::zhash_fn(key, &min);
     let max_hash = ZHashable::zhash_fn(key, &max);
     let mid_hash = ZHashable::zhash_fn(key, &middle);
