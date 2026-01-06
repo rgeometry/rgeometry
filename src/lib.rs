@@ -1268,55 +1268,14 @@ mod floating_robustness_tests {
   //     + (ref_end[1] - ref_start[1]) * (edge_end[1] - edge_start[1])
   //
   // For edges from origin:
-  // dot = ref_end[0] * edge_end[0] + ref_end[1] * edge_end[1]
-  //
-  // At 1e15 scale, products are at 1e30 scale where precision is limited.
   #[test]
   fn cmp_edge_normals_dot_f64_robustness() {
-    // Edges designed so dot product is small but nonzero:
-    // ref: (0,0) -> (1e15, 1e15+1)
-    // edge: (0,0) -> (-(1e15+1), 1e15)
-    //
-    // dot = ref[0]*edge[0] + ref[1]*edge[1]
-    //     = 1e15 * (-(1e15+1)) + (1e15+1) * 1e15
-    //     = -1e30 - 1e15 + 1e30 + 1e15
-    //     = 0  (exactly zero mathematically)
-    //
-    // To get a nonzero but small result, offset slightly:
-    // ref: (0,0) -> (1e15, 1e15+1)
-    // edge: (0,0) -> (-(1e15+1), 1e15+2)
-    //
-    // dot = 1e15 * (-(1e15+1)) + (1e15+1) * (1e15+2)
-    //     = -1e30 - 1e15 + 1e30 + 2e15 + 1e15 + 2
-    //     = 2e15 + 2
-    //
-    // This is still large (2e15), not near zero. Let me construct a smaller case.
-    //
-    // Actually, for dot product to be near zero, we need nearly-perpendicular vectors.
-    // At 1e15 scale with integer offsets, this is hard to achieve.
-    //
-    // Alternative approach: use the same pattern as cross product.
-    // dot = a*c + b*d where a,b,c,d ~ 1e15
-    // For this to be small: a*c ≈ -b*d
-    //
-    // ref = (1e15, 1e15+1), edge = (-(1e15+2), 1e15+3)
-    // dot = 1e15 * (-(1e15+2)) + (1e15+1) * (1e15+3)
-    //     = -1e30 - 2e15 + 1e30 + 3e15 + 1e15 + 3
-    //     = 2e15 + 3
-    //
-    // Still large. The dot product case is harder to construct because
-    // we need cancellation between two terms of opposite sign.
-    //
-    // For now, test with a case that at least exercises the code path:
     let big = 1e15f64;
 
     let ref_start = [0.0f64, 0.0];
     let ref_end = [big, 1.0];
     let edge_start = [0.0f64, 0.0];
     let edge_end = [-1.0, big + 0.5];
-
-    // dot = big * (-1) + 1 * (big + 0.5) = -big + big + 0.5 = 0.5
-    // This should be exact because the cancellation happens at scale big, not big^2
 
     let ref_start_big = [to_big(ref_start[0]), to_big(ref_start[1])];
     let ref_end_big = [to_big(ref_end[0]), to_big(ref_end[1])];
@@ -1329,18 +1288,10 @@ mod floating_robustness_tests {
       &edge_end_big,
     );
 
-    assert_eq!(
-      expected,
-      Ordering::Greater,
-      "BigRational should give Greater (dot = 0.5)"
-    );
+    assert_eq!(expected, Ordering::Greater);
 
     let result = f64::cmp_edge_normals_dot(&ref_start, &ref_end, &edge_start, &edge_end);
-    assert_eq!(
-      result, expected,
-      "f64 cmp_edge_normals_dot gave {:?} but BigRational gave {:?}",
-      result, expected
-    );
+    assert_eq!(result, expected);
   }
 
   // Test that cmp_edge_normal_cross_direction is robust.

@@ -540,7 +540,6 @@ impl Orientation {
   }
 
   /// Compare an edge normal against a direction vector.
-  /// Returns the cross product sign: sign(edge_normal × direction).
   fn cmp_edge_normal_vs_direction<T>(
     edge_start: &[T; 2],
     edge_end: &[T; 2],
@@ -549,21 +548,6 @@ impl Orientation {
   where
     T: PolygonScalar,
   {
-    // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
-    // edge_normal × direction = edge_normal.x * direction.y - edge_normal.y * direction.x
-    // = (edge_end[1] - edge_start[1]) * direction[1] - (edge_start[0] - edge_end[0]) * direction[0]
-    // = (edge_end[1] - edge_start[1]) * direction[1] + (edge_end[0] - edge_start[0]) * direction[0]
-    // This is the dot product of (edge_end - edge_start) and direction!
-
-    // Actually wait, let me redo this:
-    // edge_normal × direction = n.x * d.y - n.y * d.x
-    // n = (e_end.y - e_start.y, e_start.x - e_end.x)
-    // = (e_end.y - e_start.y) * d.y - (e_start.x - e_end.x) * d.x
-    // = (e_end.y - e_start.y) * d.y + (e_end.x - e_start.x) * d.x
-
-    // This IS the dot product of edge_vector and direction!
-    // (edge_end - edge_start) · direction
-
     T::cmp_edge_normal_cross_direction(edge_start, edge_end, direction)
   }
 }
