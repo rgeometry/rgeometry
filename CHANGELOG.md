@@ -2,14 +2,26 @@
 
 ## [Unreleased]
 
+## [0.12.0] 2026-01-06
+
 ### Added
 - [#177](https://github.com/rgeometry/rgeometry/pull/177) Add convex extreme vertex query for `PolygonConvex`
 
 ### Changed
 - [#180](https://github.com/rgeometry/rgeometry/pull/180) Removed unused ordered-float dependency
-- [#181](https://github.com/rgeometry/rgeometry/pull/181) Use cargo-nextest for faster test execution in Nix flake (~13% faster)
+- [#186](https://github.com/rgeometry/rgeometry/pull/186) Upgrade rand from 0.8 to 0.9
+- [#199](https://github.com/rgeometry/rgeometry/pull/199) Replace geometry-predicates with apfp for floating-point predicates
+- [#209](https://github.com/rgeometry/rgeometry/pull/209) MSRV bumped to 1.90
 - [#212](https://github.com/rgeometry/rgeometry/pull/212) Rename view types to LineView, DirectionView, and DirectedEdgeView
 - [#212](https://github.com/rgeometry/rgeometry/pull/212) Loosen EndPoint bounds to reduce unnecessary TotalOrd constraints
+
+### Fixed
+- [#200](https://github.com/rgeometry/rgeometry/pull/200) Correct CursorIter DoubleEndedIterator and ExactSizeIterator implementations
+- [#201](https://github.com/rgeometry/rgeometry/pull/201) Correct perpendicular calculation in rug::Integer cmp_perp_vector_slope
+- [#204](https://github.com/rgeometry/rgeometry/pull/204) Add iteration limit to triangle rejection_sampling
+- [#206](https://github.com/rgeometry/rgeometry/pull/206) Add validation for star polygon center point
+- [#207](https://github.com/rgeometry/rgeometry/pull/207) Cursor PartialEq now verifies same polygon
+- [#211](https://github.com/rgeometry/rgeometry/pull/211) Return CoLinearViolation error for collinear points in two_opt
 
 ## [0.11.0] 2025-11-05
 
