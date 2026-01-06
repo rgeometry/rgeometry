@@ -740,15 +740,19 @@ macro_rules! floating_precision {
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // Delegate to BigRational for exact computation.
-        // Naive f64 arithmetic loses precision when coordinates are large (e.g., 1e15)
-        // because products are at 1e30 scale where ULP is ~1e14.
-        PolygonScalar::cmp_edge_normals_cross(
-          &[float_to_rational(ref_edge_start[0]), float_to_rational(ref_edge_start[1])],
-          &[float_to_rational(ref_edge_end[0]), float_to_rational(ref_edge_end[1])],
-          &[float_to_rational(edge_start[0]), float_to_rational(edge_start[1])],
-          &[float_to_rational(edge_end[0]), float_to_rational(edge_end[1])],
-        )
+        // Use apfp's adaptive precision for robust computation.
+        // cross = ref_nx * edge_ny - ref_ny * edge_nx
+        // where ref_n = (ref_end[1] - ref_start[1], ref_start[0] - ref_end[0])
+        //       edge_n = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        let ref_nx = (ref_edge_end[1] - ref_edge_start[1]) as f64;
+        let ref_ny = (ref_edge_start[0] - ref_edge_end[0]) as f64;
+        let edge_nx = (edge_end[1] - edge_start[1]) as f64;
+        let edge_ny = (edge_start[0] - edge_end[0]) as f64;
+        match apfp::apfp_signum!(ref_nx * edge_ny - ref_ny * edge_nx) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
       }
       fn cmp_edge_normals_dot(
         ref_edge_start: &[Self; 2],
@@ -756,25 +760,34 @@ macro_rules! floating_precision {
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // Delegate to BigRational for exact computation.
-        PolygonScalar::cmp_edge_normals_dot(
-          &[float_to_rational(ref_edge_start[0]), float_to_rational(ref_edge_start[1])],
-          &[float_to_rational(ref_edge_end[0]), float_to_rational(ref_edge_end[1])],
-          &[float_to_rational(edge_start[0]), float_to_rational(edge_start[1])],
-          &[float_to_rational(edge_end[0]), float_to_rational(edge_end[1])],
-        )
+        // Use apfp's adaptive precision for robust computation.
+        // dot = ref_vec · edge_vec
+        let ref_dx = (ref_edge_end[0] - ref_edge_start[0]) as f64;
+        let ref_dy = (ref_edge_end[1] - ref_edge_start[1]) as f64;
+        let edge_dx = (edge_end[0] - edge_start[0]) as f64;
+        let edge_dy = (edge_end[1] - edge_start[1]) as f64;
+        match apfp::apfp_signum!(ref_dx * edge_dx + ref_dy * edge_dy) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
       }
       fn cmp_edge_normal_cross_direction(
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
         direction: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // Delegate to BigRational for exact computation.
-        PolygonScalar::cmp_edge_normal_cross_direction(
-          &[float_to_rational(edge_start[0]), float_to_rational(edge_start[1])],
-          &[float_to_rational(edge_end[0]), float_to_rational(edge_end[1])],
-          &[float_to_rational(direction[0]), float_to_rational(direction[1])],
-        )
+        // Use apfp's adaptive precision for robust computation.
+        // edge_normal × direction = edge_vec · direction
+        let edge_dx = (edge_end[0] - edge_start[0]) as f64;
+        let edge_dy = (edge_end[1] - edge_start[1]) as f64;
+        let dir_x = direction[0] as f64;
+        let dir_y = direction[1] as f64;
+        match apfp::apfp_signum!(edge_dx * dir_x + edge_dy * dir_y) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
       }
       fn incircle(
         a: &[Self; 2],
