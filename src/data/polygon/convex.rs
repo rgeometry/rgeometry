@@ -107,19 +107,37 @@ where
       polygon.cursor(vertices[vertex_idx])
     };
 
-    let outward_normal = |edge_idx: usize| -> [T; 2] {
-      let a = polygon.point(vertices[edge_idx]);
-      let b = polygon.point(vertices[(edge_idx + 1) % n]);
-      let edge = b - a;
-      [edge.0[1].clone(), -edge.0[0].clone()]
+    // Get the endpoints of an edge (for computing the outward normal without overflow)
+    let edge_endpoints = |edge_idx: usize| -> (&[T; 2], &[T; 2]) {
+      let a = &polygon.point(vertices[edge_idx]).array;
+      let b = &polygon.point(vertices[(edge_idx + 1) % n]).array;
+      (a, b)
     };
 
-    let first_normal = outward_normal(0);
-    let reference_vector = Vector([first_normal[0].clone(), first_normal[1].clone()]);
+    // Reference edge (edge 0)
+    let (ref_start, ref_end) = edge_endpoints(0);
 
+    // Compare the angle of edge `edge_idx`'s normal against the direction,
+    // using edge 0's normal as the reference angle.
+    // This uses overflow-safe primitives that don't compute normals explicitly.
     let compare_normal = |edge_idx: usize| -> Ordering {
-      let normal = outward_normal(edge_idx);
-      Orientation::ccw_cmp_around_with(&reference_vector, &origin, &normal, direction_coords)
+      let (edge_start, edge_end) = edge_endpoints(edge_idx);
+      // We need to compare:
+      // - angle of edge_normal (normal of edge `edge_idx`) around origin
+      // - angle of direction_coords around origin
+      // using ref_normal (normal of edge 0) as the reference
+      //
+      // This is: ccw_cmp_around_with(ref_normal, origin, edge_normal, direction)
+      //
+      // We use the overflow-safe version that takes edge endpoints.
+      Orientation::ccw_cmp_around_with_edge_normal_vs_direction(
+        ref_start,
+        ref_end,
+        &origin,
+        edge_start,
+        edge_end,
+        direction_coords,
+      )
     };
 
     match compare_normal(0) {
@@ -466,5 +484,52 @@ mod tests {
       Point::new([2, 2]),
       Point::new([0, 2]),
     ]))
+  }
+
+  #[test]
+  fn extreme_direction_diagonal_on_square() {
+    // This is the doctest case - direction [1, 1] on a square
+    let polygon = sample_square();
+    let direction = Vector([1, 1]);
+    let cursor = polygon.extreme_in_direction(&direction);
+    // The point that maximizes dot product with [1,1] is [2,2]
+    // because 2*1 + 2*1 = 4 is the maximum dot product
+    assert_eq!(cursor.point(), &Point::new([2, 2]));
+  }
+
+  // Test case demonstrating potential overflow in extreme_in_direction for i8.
+  // The issue: when computing edge vectors like (127 - (-127)) = 254, this overflows i8.
+  // Similarly, computing the normal [-edge_y, edge_x] can overflow.
+  #[test]
+  fn extreme_direction_i8_overflow_case() {
+    // A wide triangle that spans nearly the full i8 range.
+    // Edge from (-100, 0) to (100, 0) has vector (200, 0) which overflows i8.
+    let polygon: PolygonConvex<i8> = PolygonConvex::new_unchecked(Polygon::new_unchecked(vec![
+      Point::new([-100i8, 0]),
+      Point::new([100i8, 0]),
+      Point::new([0i8, 100]),
+    ]));
+    let direction = Vector([1i8, 0]);
+    let cursor = polygon.extreme_in_direction(&direction);
+    // The rightmost point should be (100, 0)
+    assert_eq!(cursor.point(), &Point::new([100i8, 0]));
+  }
+
+  #[test]
+  fn extreme_direction_i8_matches_naive() {
+    // Test that extreme_in_direction gives the same result as the naive O(n) approach
+    // for a polygon that might cause overflow.
+    let polygon: PolygonConvex<i8> = PolygonConvex::new_unchecked(Polygon::new_unchecked(vec![
+      Point::new([-100i8, 0]),
+      Point::new([100i8, 0]),
+      Point::new([0i8, 100]),
+    ]));
+    let direction = Vector([1i8, 1]);
+    let cursor = polygon.extreme_in_direction(&direction);
+    let expected = polygon
+      .iter_boundary()
+      .max_by(|a, b| direction.cmp_along(a.point(), b.point()))
+      .unwrap();
+    assert_eq!(cursor.point(), expected.point());
   }
 }
