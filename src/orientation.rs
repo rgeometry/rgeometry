@@ -389,12 +389,8 @@ impl Orientation {
     // p3 = direction (explicit)
 
     // aq = orientation of edge_normal relative to reference_normal line through p1
-    let aq = Orientation::along_ref_edge_normal_edge(
-      ref_edge_start,
-      ref_edge_end,
-      edge_start,
-      edge_end,
-    );
+    let aq =
+      Orientation::along_ref_edge_normal_edge(ref_edge_start, ref_edge_end, edge_start, edge_end);
     // ar = orientation of direction relative to reference_normal line through p1
     let ar = Orientation::along_edge_normal_point(p1, ref_edge_start, ref_edge_end, direction);
 
