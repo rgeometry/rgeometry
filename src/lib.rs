@@ -714,12 +714,30 @@ macro_rules! floating_precision {
         q: &[Self; 2],
       ) -> std::cmp::Ordering {
         // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
-        // For floats, we can safely compute the normal and use apfp
-        let edge_normal = [
-          edge_end[1] - edge_start[1],
-          edge_start[0] - edge_end[0],
-        ];
-        PolygonScalar::cmp_vector_slope(&edge_normal, p, q)
+        // We need to compute orient2d_vec(p, edge_normal, q), which is:
+        //   (p.x - q.x) * normal.y - (p.y - q.y) * normal.x
+        // = (p.x - q.x) * (edge_start[0] - edge_end[0]) - (p.y - q.y) * (edge_end[1] - edge_start[1])
+        //
+        // Use apfp_signum! with all original coordinates to avoid precision loss
+        // from pre-computing the normal.
+        let px = p[0] as f64;
+        let py = p[1] as f64;
+        let qx = q[0] as f64;
+        let qy = q[1] as f64;
+        let es0 = edge_start[0] as f64;
+        let es1 = edge_start[1] as f64;
+        let ee0 = edge_end[0] as f64;
+        let ee1 = edge_end[1] as f64;
+        // (p.x - q.x) * (es0 - ee0) - (p.y - q.y) * (ee1 - es1)
+        // = (px - qx) * (es0 - ee0) - (py - qy) * (ee1 - es1)
+        // = px*es0 - px*ee0 - qx*es0 + qx*ee0 - py*ee1 + py*es1 + qy*ee1 - qy*es1
+        match apfp::apfp_signum!(
+          (px - qx) * (es0 - ee0) - (py - qy) * (ee1 - es1)
+        ) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
       }
       fn cmp_perp_edge_normal_slope(
         edge_start: &[Self; 2],
@@ -728,11 +746,27 @@ macro_rules! floating_precision {
         q: &[Self; 2],
       ) -> std::cmp::Ordering {
         // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
-        let edge_normal = [
-          edge_end[1] - edge_start[1],
-          edge_start[0] - edge_end[0],
-        ];
-        PolygonScalar::cmp_perp_vector_slope(&edge_normal, p, q)
+        // We need to compute orient2d_normal(p, edge_normal, q), which is:
+        //   (p.x - q.x) * normal.x + (p.y - q.y) * normal.y
+        // = (p.x - q.x) * (edge_end[1] - edge_start[1]) + (p.y - q.y) * (edge_start[0] - edge_end[0])
+        //
+        // Use apfp_signum! with all original coordinates to avoid precision loss.
+        let px = p[0] as f64;
+        let py = p[1] as f64;
+        let qx = q[0] as f64;
+        let qy = q[1] as f64;
+        let es0 = edge_start[0] as f64;
+        let es1 = edge_start[1] as f64;
+        let ee0 = edge_end[0] as f64;
+        let ee1 = edge_end[1] as f64;
+        // (px - qx) * (ee1 - es1) + (py - qy) * (es0 - ee0)
+        match apfp::apfp_signum!(
+          (px - qx) * (ee1 - es1) + (py - qy) * (es0 - ee0)
+        ) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
       }
       fn cmp_edge_normals_cross(
         ref_edge_start: &[Self; 2],
@@ -1343,6 +1377,77 @@ mod floating_robustness_tests {
     assert_eq!(
       result, expected,
       "f64 cmp_edge_normal_cross_direction gave {:?} but BigRational gave {:?}",
+      result, expected
+    );
+  }
+
+  // Demonstrate that cmp_edge_normal_slope can disagree with BigRational when the
+  // edge normal is computed via lossy f64 subtraction.
+  #[test]
+  fn cmp_edge_normal_slope_f64_mismatch() {
+    // edge_start/end use decimal literals that are not exactly representable.
+    // The edge normal is computed via subtraction in f64, which rounds.
+    // With large p/q deltas, the rounding error changes the sign.
+    let edge_start = [0.1f64, 0.2];
+    let edge_end = [0.5f64, 0.1];
+    let p = [1125899906842624.0f64, 4503599627370496.0];
+    let q = [0.0f64, 0.0];
+
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let p_big = [to_big(p[0]), to_big(p[1])];
+    let q_big = [to_big(q[0]), to_big(q[1])];
+
+    let expected = num_rational::BigRational::cmp_edge_normal_slope(
+      &edge_start_big,
+      &edge_end_big,
+      &p_big,
+      &q_big,
+    );
+    assert_eq!(
+      expected,
+      Ordering::Greater,
+      "BigRational should give Greater for this configuration"
+    );
+
+    let result = f64::cmp_edge_normal_slope(&edge_start, &edge_end, &p, &q);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_edge_normal_slope gave {:?} but BigRational gave {:?}",
+      result, expected
+    );
+  }
+
+  // Demonstrate that cmp_perp_edge_normal_slope can disagree with BigRational when
+  // the edge normal is computed via lossy f64 subtraction.
+  #[test]
+  fn cmp_perp_edge_normal_slope_f64_mismatch() {
+    let edge_start = [0.1f64, 0.1];
+    let edge_end = [0.2f64, 0.5];
+    let p = [1125899906842624.0f64, 4503599627370496.0];
+    let q = [0.0f64, 0.0];
+
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let p_big = [to_big(p[0]), to_big(p[1])];
+    let q_big = [to_big(q[0]), to_big(q[1])];
+
+    let expected = num_rational::BigRational::cmp_perp_edge_normal_slope(
+      &edge_start_big,
+      &edge_end_big,
+      &p_big,
+      &q_big,
+    );
+    assert_eq!(
+      expected,
+      Ordering::Less,
+      "BigRational should give Less for this configuration"
+    );
+
+    let result = f64::cmp_perp_edge_normal_slope(&edge_start, &edge_end, &p, &q);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_perp_edge_normal_slope gave {:?} but BigRational gave {:?}",
       result, expected
     );
   }
