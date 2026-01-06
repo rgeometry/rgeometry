@@ -740,13 +740,15 @@ macro_rules! floating_precision {
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // For floats, compute explicitly
-        let ref_nx = ref_edge_end[1] - ref_edge_start[1];
-        let ref_ny = ref_edge_start[0] - ref_edge_end[0];
-        let edge_nx = edge_end[1] - edge_start[1];
-        let edge_ny = edge_start[0] - edge_end[0];
-        let cross = ref_nx * edge_ny - ref_ny * edge_nx;
-        cross.total_cmp(&0.0)
+        // Delegate to BigRational for exact computation.
+        // Naive f64 arithmetic loses precision when coordinates are large (e.g., 1e15)
+        // because products are at 1e30 scale where ULP is ~1e14.
+        PolygonScalar::cmp_edge_normals_cross(
+          &[float_to_rational(ref_edge_start[0]), float_to_rational(ref_edge_start[1])],
+          &[float_to_rational(ref_edge_end[0]), float_to_rational(ref_edge_end[1])],
+          &[float_to_rational(edge_start[0]), float_to_rational(edge_start[1])],
+          &[float_to_rational(edge_end[0]), float_to_rational(edge_end[1])],
+        )
       }
       fn cmp_edge_normals_dot(
         ref_edge_start: &[Self; 2],
@@ -754,20 +756,25 @@ macro_rules! floating_precision {
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // ref_normal · edge_normal = ref_edge_vector · edge_vector
-        let dot = (ref_edge_end[0] - ref_edge_start[0]) * (edge_end[0] - edge_start[0])
-          + (ref_edge_end[1] - ref_edge_start[1]) * (edge_end[1] - edge_start[1]);
-        dot.total_cmp(&0.0)
+        // Delegate to BigRational for exact computation.
+        PolygonScalar::cmp_edge_normals_dot(
+          &[float_to_rational(ref_edge_start[0]), float_to_rational(ref_edge_start[1])],
+          &[float_to_rational(ref_edge_end[0]), float_to_rational(ref_edge_end[1])],
+          &[float_to_rational(edge_start[0]), float_to_rational(edge_start[1])],
+          &[float_to_rational(edge_end[0]), float_to_rational(edge_end[1])],
+        )
       }
       fn cmp_edge_normal_cross_direction(
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
         direction: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // edge_normal × direction = (edge_end - edge_start) · direction
-        let dot = (edge_end[0] - edge_start[0]) * direction[0]
-          + (edge_end[1] - edge_start[1]) * direction[1];
-        dot.total_cmp(&0.0)
+        // Delegate to BigRational for exact computation.
+        PolygonScalar::cmp_edge_normal_cross_direction(
+          &[float_to_rational(edge_start[0]), float_to_rational(edge_start[1])],
+          &[float_to_rational(edge_end[0]), float_to_rational(edge_end[1])],
+          &[float_to_rational(direction[0]), float_to_rational(direction[1])],
+        )
       }
       fn incircle(
         a: &[Self; 2],
@@ -1128,3 +1135,202 @@ fn float_to_rational(f: impl num::traits::float::FloatCore) -> num::BigRational 
 
 #[cfg(test)]
 pub mod testing;
+
+#[cfg(test)]
+mod floating_robustness_tests {
+  use super::*;
+
+  // Helper to convert f64 to BigRational for ground truth comparison.
+  fn to_big(f: f64) -> num_rational::BigRational {
+    num_rational::BigRational::from_float(f).unwrap()
+  }
+
+  // Test that cmp_edge_normals_cross is robust for nearly-parallel edges.
+  //
+  // The naive floating-point implementation computes:
+  //   cross = ref_nx * edge_ny - ref_ny * edge_nx
+  //
+  // For edges from origin, this simplifies to:
+  //   cross = ref_end[0] * edge_end[1] - ref_end[1] * edge_end[0]
+  //
+  // At 1e15 scale, the products are at 1e30 scale where the ULP is ~1.4e14.
+  // This means differences smaller than 1.4e14 get rounded away!
+  //
+  // This test uses coordinates where:
+  // - All inputs are exactly representable f64 values
+  // - The true cross product is -2 (mathematically exact, computable by BigRational)
+  // - The naive f64 computation gives 0 due to precision loss in the products
+  #[test]
+  fn cmp_edge_normals_cross_f64_robustness() {
+    // Edges from origin for simplicity:
+    // ref_edge: (0,0) -> (1e15, 1e15+1)
+    // edge: (0,0) -> (1e15+2, 1e15+3)
+    //
+    // cross = ref[0]*edge[1] - ref[1]*edge[0]
+    //       = 1e15 * (1e15+3) - (1e15+1) * (1e15+2)
+    //       = 1e30 + 3e15 - (1e30 + 2e15 + 1e15 + 2)
+    //       = 1e30 + 3e15 - 1e30 - 3e15 - 2
+    //       = -2
+    //
+    // But in f64:
+    // - 1e15 * (1e15+3) = 1e30 + 3e15, rounded to nearest at 1e30 scale
+    // - (1e15+1) * (1e15+2) = 1e30 + 3e15 + 2, rounded to same value
+    // - Both products round to the same f64 value, so cross = 0
+    //
+    // ULP at 1e30 scale is ~1.4e14, so the difference of 2 is completely lost.
+    let big = 1e15f64;
+
+    let ref_start = [0.0f64, 0.0];
+    let ref_end = [big, big + 1.0];
+    let edge_start = [0.0f64, 0.0];
+    let edge_end = [big + 2.0, big + 3.0];
+
+    // Ground truth using BigRational
+    let ref_start_big = [to_big(ref_start[0]), to_big(ref_start[1])];
+    let ref_end_big = [to_big(ref_end[0]), to_big(ref_end[1])];
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let expected = num_rational::BigRational::cmp_edge_normals_cross(
+      &ref_start_big,
+      &ref_end_big,
+      &edge_start_big,
+      &edge_end_big,
+    );
+
+    // The mathematically correct answer is Less (cross = -2)
+    assert_eq!(
+      expected,
+      Ordering::Less,
+      "BigRational should give Less (cross = -2)"
+    );
+
+    // The f64 implementation should match BigRational
+    let result = f64::cmp_edge_normals_cross(&ref_start, &ref_end, &edge_start, &edge_end);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_edge_normals_cross gave {:?} but BigRational gave {:?}. \
+       This demonstrates precision loss: true cross is -2, but naive f64 gives 0.",
+      result, expected
+    );
+  }
+
+  // Test that cmp_edge_normals_dot is robust for nearly-perpendicular edges.
+  //
+  // The dot product of edge vectors suffers similar precision loss.
+  // dot = (ref_end[0] - ref_start[0]) * (edge_end[0] - edge_start[0])
+  //     + (ref_end[1] - ref_start[1]) * (edge_end[1] - edge_start[1])
+  //
+  // For edges from origin:
+  // dot = ref_end[0] * edge_end[0] + ref_end[1] * edge_end[1]
+  //
+  // At 1e15 scale, products are at 1e30 scale where precision is limited.
+  #[test]
+  fn cmp_edge_normals_dot_f64_robustness() {
+    // Edges designed so dot product is small but nonzero:
+    // ref: (0,0) -> (1e15, 1e15+1)
+    // edge: (0,0) -> (-(1e15+1), 1e15)
+    //
+    // dot = ref[0]*edge[0] + ref[1]*edge[1]
+    //     = 1e15 * (-(1e15+1)) + (1e15+1) * 1e15
+    //     = -1e30 - 1e15 + 1e30 + 1e15
+    //     = 0  (exactly zero mathematically)
+    //
+    // To get a nonzero but small result, offset slightly:
+    // ref: (0,0) -> (1e15, 1e15+1)
+    // edge: (0,0) -> (-(1e15+1), 1e15+2)
+    //
+    // dot = 1e15 * (-(1e15+1)) + (1e15+1) * (1e15+2)
+    //     = -1e30 - 1e15 + 1e30 + 2e15 + 1e15 + 2
+    //     = 2e15 + 2
+    //
+    // This is still large (2e15), not near zero. Let me construct a smaller case.
+    //
+    // Actually, for dot product to be near zero, we need nearly-perpendicular vectors.
+    // At 1e15 scale with integer offsets, this is hard to achieve.
+    //
+    // Alternative approach: use the same pattern as cross product.
+    // dot = a*c + b*d where a,b,c,d ~ 1e15
+    // For this to be small: a*c ≈ -b*d
+    //
+    // ref = (1e15, 1e15+1), edge = (-(1e15+2), 1e15+3)
+    // dot = 1e15 * (-(1e15+2)) + (1e15+1) * (1e15+3)
+    //     = -1e30 - 2e15 + 1e30 + 3e15 + 1e15 + 3
+    //     = 2e15 + 3
+    //
+    // Still large. The dot product case is harder to construct because
+    // we need cancellation between two terms of opposite sign.
+    //
+    // For now, test with a case that at least exercises the code path:
+    let big = 1e15f64;
+
+    let ref_start = [0.0f64, 0.0];
+    let ref_end = [big, 1.0];
+    let edge_start = [0.0f64, 0.0];
+    let edge_end = [-1.0, big + 0.5];
+
+    // dot = big * (-1) + 1 * (big + 0.5) = -big + big + 0.5 = 0.5
+    // This should be exact because the cancellation happens at scale big, not big^2
+
+    let ref_start_big = [to_big(ref_start[0]), to_big(ref_start[1])];
+    let ref_end_big = [to_big(ref_end[0]), to_big(ref_end[1])];
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let expected = num_rational::BigRational::cmp_edge_normals_dot(
+      &ref_start_big,
+      &ref_end_big,
+      &edge_start_big,
+      &edge_end_big,
+    );
+
+    assert_eq!(
+      expected,
+      Ordering::Greater,
+      "BigRational should give Greater (dot = 0.5)"
+    );
+
+    let result = f64::cmp_edge_normals_dot(&ref_start, &ref_end, &edge_start, &edge_end);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_edge_normals_dot gave {:?} but BigRational gave {:?}",
+      result, expected
+    );
+  }
+
+  // Test that cmp_edge_normal_cross_direction is robust.
+  //
+  // This computes edge_vec · direction, which has the same structure as dot product.
+  #[test]
+  fn cmp_edge_normal_cross_direction_f64_robustness() {
+    // edge: (0, 0) -> (1e15, 1)
+    // direction: (-1, 1e15 + 0.5)
+    //
+    // edge_vec · direction = 1e15 * (-1) + 1 * (1e15 + 0.5) = 0.5
+    let big = 1e15f64;
+
+    let edge_start = [0.0f64, 0.0];
+    let edge_end = [big, 1.0];
+    let direction = [-1.0f64, big + 0.5];
+
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let direction_big = [to_big(direction[0]), to_big(direction[1])];
+    let expected = num_rational::BigRational::cmp_edge_normal_cross_direction(
+      &edge_start_big,
+      &edge_end_big,
+      &direction_big,
+    );
+
+    assert_eq!(
+      expected,
+      Ordering::Greater,
+      "BigRational should give Greater (result = 0.5)"
+    );
+
+    let result = f64::cmp_edge_normal_cross_direction(&edge_start, &edge_end, &direction);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_edge_normal_cross_direction gave {:?} but BigRational gave {:?}",
+      result, expected
+    );
+  }
+}
