@@ -3,9 +3,10 @@ use rand::Rng;
 use rand::distr::uniform::SampleUniform;
 use rand::distr::{Distribution, StandardUniform};
 use rand::seq::SliceRandom;
+use std::cmp::Ordering;
 use std::ops::*;
 
-use crate::data::{Point, PointLocation, TriangleView, Vector};
+use crate::data::{Cursor, Point, PointLocation, TriangleView, Vector};
 use crate::{Error, Orientation, PolygonScalar, TotalOrd};
 
 use super::Polygon;
@@ -58,6 +59,110 @@ where
     let p2 = poly.point(vertices[upper]);
     let triangle = TriangleView::new_unchecked([p0, p1, p2]);
     triangle.locate(pt)
+  }
+
+  /// Return the vertex that maximizes the dot product with `direction`.
+  ///
+  /// The search relies on the monotone sequence of outward-facing edge normals
+  /// on a strictly convex polygon to cut the search interval in half until the
+  /// supporting edge aligned with `direction` is found.
+  ///
+  /// If `direction` is the zero vector, the first boundary vertex is returned.
+  ///
+  /// # Time complexity
+  /// $O(\log n)$
+  ///
+  /// # Examples
+  /// ```rust
+  /// # use rgeometry::data::{Point, Polygon, PolygonConvex, Vector};
+  /// let polygon = PolygonConvex::new_unchecked(Polygon::new_unchecked(vec![
+  ///   Point::new([0i32, 0]),
+  ///   Point::new([2, 0]),
+  ///   Point::new([2, 2]),
+  ///   Point::new([0, 2]),
+  /// ]));
+  /// let cursor = polygon.extreme_in_direction(&Vector([1, 1]));
+  /// assert_eq!(cursor.point(), &Point::new([2, 2]));
+  /// ```
+  #[must_use]
+  pub fn extreme_in_direction(&self, direction: &Vector<T, 2>) -> Cursor<'_, T> {
+    let polygon: &Polygon<T> = self.into();
+    let vertices = polygon.boundary_slice();
+    let n = vertices.len();
+    assert!(
+      n >= 3,
+      "PolygonConvex::extreme_in_direction requires at least 3 vertices."
+    );
+
+    let direction_coords = &direction.0;
+    let zero = T::from_constant(0);
+    if direction_coords.iter().all(|coord| coord == &zero) {
+      return polygon.cursor(vertices[0]);
+    }
+
+    let origin = [T::from_constant(0), T::from_constant(0)];
+
+    let cursor_for_edge = |edge_idx: usize| -> Cursor<'_, T> {
+      let vertex_idx = (edge_idx + 1) % n;
+      polygon.cursor(vertices[vertex_idx])
+    };
+
+    // Get the endpoints of an edge (for computing the outward normal without overflow)
+    let edge_endpoints = |edge_idx: usize| -> (&[T; 2], &[T; 2]) {
+      let a = &polygon.point(vertices[edge_idx]).array;
+      let b = &polygon.point(vertices[(edge_idx + 1) % n]).array;
+      (a, b)
+    };
+
+    // Reference edge (edge 0)
+    let (ref_start, ref_end) = edge_endpoints(0);
+
+    // Compare the angle of edge `edge_idx`'s normal against the direction,
+    // using edge 0's normal as the reference angle.
+    // This uses overflow-safe primitives that don't compute normals explicitly.
+    let compare_normal = |edge_idx: usize| -> Ordering {
+      let (edge_start, edge_end) = edge_endpoints(edge_idx);
+      // We need to compare:
+      // - angle of edge_normal (normal of edge `edge_idx`) around origin
+      // - angle of direction_coords around origin
+      // using ref_normal (normal of edge 0) as the reference
+      //
+      // This is: ccw_cmp_around_with(ref_normal, origin, edge_normal, direction)
+      //
+      // We use the overflow-safe version that takes edge endpoints.
+      Orientation::ccw_cmp_around_with_edge_normal_vs_direction(
+        ref_start,
+        ref_end,
+        &origin,
+        edge_start,
+        edge_end,
+        direction_coords,
+      )
+    };
+
+    match compare_normal(0) {
+      Ordering::Equal => return cursor_for_edge(0),
+      Ordering::Greater => return cursor_for_edge(n - 1),
+      Ordering::Less => {}
+    }
+
+    let cmp_last = compare_normal(n - 1);
+    if cmp_last != Ordering::Greater {
+      return cursor_for_edge(n - 1);
+    }
+
+    let mut lo = 0usize;
+    let mut hi = n - 1;
+    while lo + 1 < hi {
+      let mid = (lo + hi) / 2;
+      match compare_normal(mid) {
+        Ordering::Greater => hi = mid,
+        Ordering::Equal => return cursor_for_edge(mid),
+        Ordering::Less => lo = mid,
+      }
+    }
+
+    cursor_for_edge(lo)
   }
 
   /// Validates the following properties:
@@ -318,5 +423,113 @@ mod tests {
       let vecs: Vec<Vector<i8, 2>> = random_vectors(n as usize, &mut rng);
       prop_assert_eq!(vecs.into_iter().sum::<Vector<i8, 2>>(), Vector([0, 0]))
     }
+
+    #[test]
+    fn extreme_direction_matches_naive(poly: PolygonConvex<i16>, direction: Vector<i16, 2>) {
+      let cursor = poly.extreme_in_direction(&direction);
+      let expected = poly
+        .iter_boundary()
+        .max_by(|a, b| direction.cmp_along(a.point(), b.point()))
+        .unwrap();
+      prop_assert_eq!(cursor.point(), expected.point());
+    }
+
+    #[test]
+    fn extreme_direction_matches_naive_after_rotation(
+      poly: PolygonConvex<i16>,
+      direction: Vector<i16, 2>,
+      rotate_by: usize,
+    ) {
+      let rotated = rotate_polygon(poly, rotate_by);
+      let cursor = rotated.extreme_in_direction(&direction);
+      let expected = rotated
+        .iter_boundary()
+        .max_by(|a, b| direction.cmp_along(a.point(), b.point()))
+        .unwrap();
+      prop_assert_eq!(cursor.point(), expected.point());
+    }
+  }
+
+  fn rotate_polygon(poly: PolygonConvex<i16>, rotate_by: usize) -> PolygonConvex<i16> {
+    let n = poly.boundary_slice().len();
+    let shift = rotate_by % n;
+    if shift == 0 {
+      return poly;
+    }
+    let points: Vec<Point<i16, 2>> = poly.iter_boundary().map(|c| *c.point()).collect();
+    let rotated: Vec<Point<i16, 2>> = points.iter().cycle().skip(shift).take(n).cloned().collect();
+    PolygonConvex::new_unchecked(Polygon::new_unchecked(rotated))
+  }
+
+  #[test]
+  fn extreme_direction_zero_vector_returns_first_vertex() {
+    let polygon = sample_square();
+    let cursor = polygon.extreme_in_direction(&Vector([0, 0]));
+    let first = polygon.boundary_slice()[0];
+    assert_eq!(cursor.point(), polygon.point(first));
+  }
+
+  #[test]
+  fn extreme_direction_prefers_vertex_after_supporting_edge() {
+    let polygon = sample_square();
+    let cursor = polygon.extreme_in_direction(&Vector([1, 0]));
+    let expected = polygon.boundary_slice()[2];
+    assert_eq!(cursor.point(), polygon.point(expected));
+  }
+
+  fn sample_square() -> PolygonConvex<i32> {
+    PolygonConvex::new_unchecked(Polygon::new_unchecked(vec![
+      Point::new([0, 0]),
+      Point::new([2, 0]),
+      Point::new([2, 2]),
+      Point::new([0, 2]),
+    ]))
+  }
+
+  #[test]
+  fn extreme_direction_diagonal_on_square() {
+    // This is the doctest case - direction [1, 1] on a square
+    let polygon = sample_square();
+    let direction = Vector([1, 1]);
+    let cursor = polygon.extreme_in_direction(&direction);
+    // The point that maximizes dot product with [1,1] is [2,2]
+    // because 2*1 + 2*1 = 4 is the maximum dot product
+    assert_eq!(cursor.point(), &Point::new([2, 2]));
+  }
+
+  // Test case demonstrating potential overflow in extreme_in_direction for i8.
+  // The issue: when computing edge vectors like (127 - (-127)) = 254, this overflows i8.
+  // Similarly, computing the normal [-edge_y, edge_x] can overflow.
+  #[test]
+  fn extreme_direction_i8_overflow_case() {
+    // A wide triangle that spans nearly the full i8 range.
+    // Edge from (-100, 0) to (100, 0) has vector (200, 0) which overflows i8.
+    let polygon: PolygonConvex<i8> = PolygonConvex::new_unchecked(Polygon::new_unchecked(vec![
+      Point::new([-100i8, 0]),
+      Point::new([100i8, 0]),
+      Point::new([0i8, 100]),
+    ]));
+    let direction = Vector([1i8, 0]);
+    let cursor = polygon.extreme_in_direction(&direction);
+    // The rightmost point should be (100, 0)
+    assert_eq!(cursor.point(), &Point::new([100i8, 0]));
+  }
+
+  #[test]
+  fn extreme_direction_i8_matches_naive() {
+    // Test that extreme_in_direction gives the same result as the naive O(n) approach
+    // for a polygon that might cause overflow.
+    let polygon: PolygonConvex<i8> = PolygonConvex::new_unchecked(Polygon::new_unchecked(vec![
+      Point::new([-100i8, 0]),
+      Point::new([100i8, 0]),
+      Point::new([0i8, 100]),
+    ]));
+    let direction = Vector([1i8, 1]);
+    let cursor = polygon.extreme_in_direction(&direction);
+    let expected = polygon
+      .iter_boundary()
+      .max_by(|a, b| direction.cmp_along(a.point(), b.point()))
+      .unwrap();
+    assert_eq!(cursor.point(), expected.point());
   }
 }

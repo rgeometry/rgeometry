@@ -147,6 +147,72 @@ pub trait PolygonScalar:
   fn cmp_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
   fn cmp_perp_vector_slope(p: &[Self; 2], q: &[Self; 2], r: &[Self; 2]) -> std::cmp::Ordering;
+
+  /// Compute orientation using an edge's outward normal as the direction vector.
+  ///
+  /// This is equivalent to `cmp_vector_slope(&[edge_end[1] - edge_start[1], edge_start[0] - edge_end[0]], p, q)`
+  /// but avoids overflow that would occur from computing the normal explicitly.
+  ///
+  /// The outward normal of edge (edge_start → edge_end) for a CCW polygon is the edge vector
+  /// rotated 90° clockwise: (dy, -dx) where (dx, dy) = edge_end - edge_start.
+  fn cmp_edge_normal_slope(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    p: &[Self; 2],
+    q: &[Self; 2],
+  ) -> std::cmp::Ordering;
+
+  /// Compute orientation using the perpendicular of an edge's outward normal.
+  ///
+  /// This is equivalent to `cmp_perp_vector_slope(&[edge_end[1] - edge_start[1], edge_start[0] - edge_end[0]], p, q)`
+  /// but avoids overflow.
+  fn cmp_perp_edge_normal_slope(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    p: &[Self; 2],
+    q: &[Self; 2],
+  ) -> std::cmp::Ordering;
+
+  /// Compare the cross product of two edge normals.
+  ///
+  /// Returns the sign of: normal1 × normal2
+  /// where normal1 = outward normal of (ref_edge_start → ref_edge_end)
+  /// and normal2 = outward normal of (edge_start → edge_end)
+  ///
+  /// This is mathematically equivalent to the cross product of the edge vectors,
+  /// avoiding the need to compute the normals explicitly.
+  fn cmp_edge_normals_cross(
+    ref_edge_start: &[Self; 2],
+    ref_edge_end: &[Self; 2],
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+  ) -> std::cmp::Ordering;
+
+  /// Compare the dot product of two edge normals against zero.
+  ///
+  /// Returns the sign of: normal1 · normal2
+  /// where normal1 = outward normal of (ref_edge_start → ref_edge_end)
+  /// and normal2 = outward normal of (edge_start → edge_end)
+  ///
+  /// This is mathematically equivalent to the dot product of the edge vectors,
+  /// avoiding the need to compute the normals explicitly.
+  fn cmp_edge_normals_dot(
+    ref_edge_start: &[Self; 2],
+    ref_edge_end: &[Self; 2],
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+  ) -> std::cmp::Ordering;
+
+  /// Compare the cross product of an edge's outward normal with a direction vector.
+  ///
+  /// Returns the sign of: edge_normal × direction
+  /// This equals the dot product of (edge_end - edge_start) · direction.
+  fn cmp_edge_normal_cross_direction(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    direction: &[Self; 2],
+  ) -> std::cmp::Ordering;
+
   fn approx_intersection_point(
     p1: [Self; 2],
     p2: [Self; 2],
@@ -281,6 +347,142 @@ macro_rules! fixed_precision {
           Orientation::CoLinear => Ordering::Equal,
         }
       }
+
+      fn cmp_edge_normal_slope(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        p: &[Self; 2],
+        q: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        // We want: cmp_vector_slope(edge_normal, p, q)
+        // Which computes orient2d_vec(p, edge_normal, q):
+        //   sign((p[0] - q[0]) * edge_normal[1] - (p[1] - q[1]) * edge_normal[0])
+        //   = sign((p[0] - q[0]) * (edge_start[0] - edge_end[0]) - (p[1] - q[1]) * (edge_end[1] - edge_start[1]))
+        let e0 = edge_start[0];
+        let e1 = edge_start[1];
+        let f0 = edge_end[0];
+        let f1 = edge_end[1];
+        let p0 = p[0];
+        let p1 = p[1];
+        let q0 = q[0];
+        let q1 = q[1];
+        let sign = apfp::int_signum!((p0 - q0) * (e0 - f0) - (p1 - q1) * (f1 - e1));
+        match sign {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          0 => Ordering::Equal,
+          _ => unreachable!(),
+        }
+      }
+
+      fn cmp_perp_edge_normal_slope(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        p: &[Self; 2],
+        q: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        // We want: cmp_perp_vector_slope(edge_normal, p, q)
+        // Which computes orient2d_normal(p, edge_normal, q):
+        //   sign((p[0] - q[0]) * edge_normal[0] + (p[1] - q[1]) * edge_normal[1])
+        //   = sign((p[0] - q[0]) * (edge_end[1] - edge_start[1]) + (p[1] - q[1]) * (edge_start[0] - edge_end[0]))
+        let e0 = edge_start[0];
+        let e1 = edge_start[1];
+        let f0 = edge_end[0];
+        let f1 = edge_end[1];
+        let p0 = p[0];
+        let p1 = p[1];
+        let q0 = q[0];
+        let q1 = q[1];
+        let sign = apfp::int_signum!((p0 - q0) * (f1 - e1) + (p1 - q1) * (e0 - f0));
+        match sign {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          0 => Ordering::Equal,
+          _ => unreachable!(),
+        }
+      }
+
+      fn cmp_edge_normals_cross(
+        ref_edge_start: &[Self; 2],
+        ref_edge_end: &[Self; 2],
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // ref_normal = (ref_edge_end[1] - ref_edge_start[1], ref_edge_start[0] - ref_edge_end[0])
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        // ref_normal × edge_normal = ref_normal.x * edge_normal.y - ref_normal.y * edge_normal.x
+        // = (ref_edge_end[1] - ref_edge_start[1]) * (edge_start[0] - edge_end[0])
+        //   - (ref_edge_start[0] - ref_edge_end[0]) * (edge_end[1] - edge_start[1])
+        let re0 = ref_edge_start[0];
+        let re1 = ref_edge_start[1];
+        let rf0 = ref_edge_end[0];
+        let rf1 = ref_edge_end[1];
+        let e0 = edge_start[0];
+        let e1 = edge_start[1];
+        let f0 = edge_end[0];
+        let f1 = edge_end[1];
+        let sign = apfp::int_signum!((rf1 - re1) * (e0 - f0) - (re0 - rf0) * (f1 - e1));
+        match sign {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          0 => Ordering::Equal,
+          _ => unreachable!(),
+        }
+      }
+
+      fn cmp_edge_normals_dot(
+        ref_edge_start: &[Self; 2],
+        ref_edge_end: &[Self; 2],
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // ref_normal = (ref_edge_end[1] - ref_edge_start[1], ref_edge_start[0] - ref_edge_end[0])
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        // ref_normal · edge_normal = ref_normal.x * edge_normal.x + ref_normal.y * edge_normal.y
+        // = (rf1 - re1) * (f1 - e1) + (re0 - rf0) * (e0 - f0)
+        // This equals the dot product of the edge vectors: (rf0 - re0) * (f0 - e0) + (rf1 - re1) * (f1 - e1)
+        let re0 = ref_edge_start[0];
+        let re1 = ref_edge_start[1];
+        let rf0 = ref_edge_end[0];
+        let rf1 = ref_edge_end[1];
+        let e0 = edge_start[0];
+        let e1 = edge_start[1];
+        let f0 = edge_end[0];
+        let f1 = edge_end[1];
+        let sign = apfp::int_signum!((rf0 - re0) * (f0 - e0) + (rf1 - re1) * (f1 - e1));
+        match sign {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          0 => Ordering::Equal,
+          _ => unreachable!(),
+        }
+      }
+
+      fn cmp_edge_normal_cross_direction(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        direction: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        // edge_normal × direction = edge_normal.x * direction[1] - edge_normal.y * direction[0]
+        // = (edge_end[1] - edge_start[1]) * direction[1] - (edge_start[0] - edge_end[0]) * direction[0]
+        // = (edge_end[1] - edge_start[1]) * direction[1] + (edge_end[0] - edge_start[0]) * direction[0]
+        let e0 = edge_start[0];
+        let e1 = edge_start[1];
+        let f0 = edge_end[0];
+        let f1 = edge_end[1];
+        let d0 = direction[0];
+        let d1 = direction[1];
+        let sign = apfp::int_signum!((f1 - e1) * d1 + (f0 - e0) * d0);
+        match sign {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          0 => Ordering::Equal,
+          _ => unreachable!(),
+        }
+      }
       fn approx_intersection_point(
         p1: [Self; 2],
         p2: [Self; 2],
@@ -354,6 +556,70 @@ macro_rules! arbitrary_precision {
           &[&p[0] - &vector[1], &p[1] + &vector[0]],
           q
         )
+      }
+      fn cmp_edge_normal_slope(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        p: &[Self; 2],
+        q: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        let edge_normal = [
+          &edge_end[1] - &edge_start[1],
+          &edge_start[0] - &edge_end[0],
+        ];
+        PolygonScalar::cmp_vector_slope(&edge_normal, p, q)
+      }
+      fn cmp_perp_edge_normal_slope(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        p: &[Self; 2],
+        q: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        let edge_normal = [
+          &edge_end[1] - &edge_start[1],
+          &edge_start[0] - &edge_end[0],
+        ];
+        PolygonScalar::cmp_perp_vector_slope(&edge_normal, p, q)
+      }
+      fn cmp_edge_normals_cross(
+        ref_edge_start: &[Self; 2],
+        ref_edge_end: &[Self; 2],
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // ref_normal × edge_normal
+        let ref_nx = &ref_edge_end[1] - &ref_edge_start[1];
+        let ref_ny = &ref_edge_start[0] - &ref_edge_end[0];
+        let edge_nx = &edge_end[1] - &edge_start[1];
+        let edge_ny = &edge_start[0] - &edge_end[0];
+        let cross = &ref_nx * &edge_ny - &ref_ny * &edge_nx;
+        let zero = Self::from_constant(0);
+        cross.cmp(&zero)
+      }
+      fn cmp_edge_normals_dot(
+        ref_edge_start: &[Self; 2],
+        ref_edge_end: &[Self; 2],
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // ref_normal · edge_normal = ref_edge_vector · edge_vector
+        let dot = (&ref_edge_end[0] - &ref_edge_start[0]) * (&edge_end[0] - &edge_start[0])
+          + (&ref_edge_end[1] - &ref_edge_start[1]) * (&edge_end[1] - &edge_start[1]);
+        let zero = Self::from_constant(0);
+        dot.cmp(&zero)
+      }
+      fn cmp_edge_normal_cross_direction(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        direction: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal × direction = (edge_end - edge_start) · direction
+        let dot = (&edge_end[0] - &edge_start[0]) * &direction[0]
+          + (&edge_end[1] - &edge_start[1]) * &direction[1];
+        let zero = Self::from_constant(0);
+        dot.cmp(&zero)
       }
       fn incircle(
         a: &[Self; 2],
@@ -439,6 +705,136 @@ macro_rules! floating_precision {
           Orientation::CounterClockwise => Ordering::Greater,
           Orientation::Clockwise => Ordering::Less,
           Orientation::CoLinear => Ordering::Equal,
+        }
+      }
+      fn cmp_edge_normal_slope(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        p: &[Self; 2],
+        q: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        // We need to compute orient2d_vec(p, edge_normal, q), which is:
+        //   (p.x - q.x) * normal.y - (p.y - q.y) * normal.x
+        // = (p.x - q.x) * (edge_start[0] - edge_end[0]) - (p.y - q.y) * (edge_end[1] - edge_start[1])
+        //
+        // Use apfp_signum! with all original coordinates to avoid precision loss
+        // from pre-computing the normal.
+        let px = p[0] as f64;
+        let py = p[1] as f64;
+        let qx = q[0] as f64;
+        let qy = q[1] as f64;
+        let es0 = edge_start[0] as f64;
+        let es1 = edge_start[1] as f64;
+        let ee0 = edge_end[0] as f64;
+        let ee1 = edge_end[1] as f64;
+        // (p.x - q.x) * (es0 - ee0) - (p.y - q.y) * (ee1 - es1)
+        // = (px - qx) * (es0 - ee0) - (py - qy) * (ee1 - es1)
+        // = px*es0 - px*ee0 - qx*es0 + qx*ee0 - py*ee1 + py*es1 + qy*ee1 - qy*es1
+        match apfp::apfp_signum!(
+          (px - qx) * (es0 - ee0) - (py - qy) * (ee1 - es1)
+        ) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
+      }
+      fn cmp_perp_edge_normal_slope(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        p: &[Self; 2],
+        q: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+        // We need to compute orient2d_normal(p, edge_normal, q), which is:
+        //   (p.x - q.x) * normal.x + (p.y - q.y) * normal.y
+        // = (p.x - q.x) * (edge_end[1] - edge_start[1]) + (p.y - q.y) * (edge_start[0] - edge_end[0])
+        //
+        // Use apfp_signum! with all original coordinates to avoid precision loss.
+        let px = p[0] as f64;
+        let py = p[1] as f64;
+        let qx = q[0] as f64;
+        let qy = q[1] as f64;
+        let es0 = edge_start[0] as f64;
+        let es1 = edge_start[1] as f64;
+        let ee0 = edge_end[0] as f64;
+        let ee1 = edge_end[1] as f64;
+        // (px - qx) * (ee1 - es1) + (py - qy) * (es0 - ee0)
+        match apfp::apfp_signum!(
+          (px - qx) * (ee1 - es1) + (py - qy) * (es0 - ee0)
+        ) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
+      }
+      fn cmp_edge_normals_cross(
+        ref_edge_start: &[Self; 2],
+        ref_edge_end: &[Self; 2],
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // Use apfp's adaptive precision for robust computation and keep the
+        // subtraction inside the expression to avoid rounding the edge normals.
+        let ref_sx = ref_edge_start[0] as f64;
+        let ref_sy = ref_edge_start[1] as f64;
+        let ref_ex = ref_edge_end[0] as f64;
+        let ref_ey = ref_edge_end[1] as f64;
+        let edge_sx = edge_start[0] as f64;
+        let edge_sy = edge_start[1] as f64;
+        let edge_ex = edge_end[0] as f64;
+        let edge_ey = edge_end[1] as f64;
+        match apfp::apfp_signum!(
+          (ref_ey - ref_sy) * (edge_sx - edge_ex) - (ref_sx - ref_ex) * (edge_ey - edge_sy)
+        ) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
+      }
+      fn cmp_edge_normals_dot(
+        ref_edge_start: &[Self; 2],
+        ref_edge_end: &[Self; 2],
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // Use apfp's adaptive precision for robust computation and avoid
+        // rounding the edge vectors before evaluation.
+        let ref_sx = ref_edge_start[0] as f64;
+        let ref_sy = ref_edge_start[1] as f64;
+        let ref_ex = ref_edge_end[0] as f64;
+        let ref_ey = ref_edge_end[1] as f64;
+        let edge_sx = edge_start[0] as f64;
+        let edge_sy = edge_start[1] as f64;
+        let edge_ex = edge_end[0] as f64;
+        let edge_ey = edge_end[1] as f64;
+        match apfp::apfp_signum!(
+          (ref_ex - ref_sx) * (edge_ex - edge_sx) + (ref_ey - ref_sy) * (edge_ey - edge_sy)
+        ) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
+        }
+      }
+      fn cmp_edge_normal_cross_direction(
+        edge_start: &[Self; 2],
+        edge_end: &[Self; 2],
+        direction: &[Self; 2],
+      ) -> std::cmp::Ordering {
+        // Use apfp's adaptive precision for robust computation and avoid
+        // rounding the edge vector before evaluation.
+        let edge_sx = edge_start[0] as f64;
+        let edge_sy = edge_start[1] as f64;
+        let edge_ex = edge_end[0] as f64;
+        let edge_ey = edge_end[1] as f64;
+        let dir_x = direction[0] as f64;
+        let dir_y = direction[1] as f64;
+        match apfp::apfp_signum!(
+          (edge_ex - edge_sx) * dir_x + (edge_ey - edge_sy) * dir_y
+        ) {
+          1 => Ordering::Greater,
+          -1 => Ordering::Less,
+          _ => Ordering::Equal,
         }
       }
       fn incircle(
@@ -531,6 +927,101 @@ impl PolygonScalar for isize {
       Orientation::CoLinear => Ordering::Equal,
     }
   }
+
+  fn cmp_edge_normal_slope(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    p: &[Self; 2],
+    q: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    // Cast to i64 and use int_signum for overflow-safe computation
+    let (e0, e1) = (edge_start[0] as i64, edge_start[1] as i64);
+    let (f0, f1) = (edge_end[0] as i64, edge_end[1] as i64);
+    let (p0, p1) = (p[0] as i64, p[1] as i64);
+    let (q0, q1) = (q[0] as i64, q[1] as i64);
+    let sign = apfp::int_signum!((p0 - q0) * (e0 - f0) - (p1 - q1) * (f1 - e1));
+    match sign {
+      1 => Ordering::Greater,
+      -1 => Ordering::Less,
+      0 => Ordering::Equal,
+      _ => unreachable!(),
+    }
+  }
+
+  fn cmp_perp_edge_normal_slope(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    p: &[Self; 2],
+    q: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    // Cast to i64 and use int_signum for overflow-safe computation
+    let (e0, e1) = (edge_start[0] as i64, edge_start[1] as i64);
+    let (f0, f1) = (edge_end[0] as i64, edge_end[1] as i64);
+    let (p0, p1) = (p[0] as i64, p[1] as i64);
+    let (q0, q1) = (q[0] as i64, q[1] as i64);
+    let sign = apfp::int_signum!((p0 - q0) * (f1 - e1) + (p1 - q1) * (e0 - f0));
+    match sign {
+      1 => Ordering::Greater,
+      -1 => Ordering::Less,
+      0 => Ordering::Equal,
+      _ => unreachable!(),
+    }
+  }
+
+  fn cmp_edge_normals_cross(
+    ref_edge_start: &[Self; 2],
+    ref_edge_end: &[Self; 2],
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    let (re0, re1) = (ref_edge_start[0] as i64, ref_edge_start[1] as i64);
+    let (rf0, rf1) = (ref_edge_end[0] as i64, ref_edge_end[1] as i64);
+    let (e0, e1) = (edge_start[0] as i64, edge_start[1] as i64);
+    let (f0, f1) = (edge_end[0] as i64, edge_end[1] as i64);
+    let sign = apfp::int_signum!((rf1 - re1) * (e0 - f0) - (re0 - rf0) * (f1 - e1));
+    match sign {
+      1 => Ordering::Greater,
+      -1 => Ordering::Less,
+      0 => Ordering::Equal,
+      _ => unreachable!(),
+    }
+  }
+
+  fn cmp_edge_normals_dot(
+    ref_edge_start: &[Self; 2],
+    ref_edge_end: &[Self; 2],
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    let (re0, re1) = (ref_edge_start[0] as i64, ref_edge_start[1] as i64);
+    let (rf0, rf1) = (ref_edge_end[0] as i64, ref_edge_end[1] as i64);
+    let (e0, e1) = (edge_start[0] as i64, edge_start[1] as i64);
+    let (f0, f1) = (edge_end[0] as i64, edge_end[1] as i64);
+    let sign = apfp::int_signum!((rf0 - re0) * (f0 - e0) + (rf1 - re1) * (f1 - e1));
+    match sign {
+      1 => Ordering::Greater,
+      -1 => Ordering::Less,
+      0 => Ordering::Equal,
+      _ => unreachable!(),
+    }
+  }
+
+  fn cmp_edge_normal_cross_direction(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    direction: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    let (e0, e1) = (edge_start[0] as i64, edge_start[1] as i64);
+    let (f0, f1) = (edge_end[0] as i64, edge_end[1] as i64);
+    let (d0, d1) = (direction[0] as i64, direction[1] as i64);
+    let sign = apfp::int_signum!((f1 - e1) * d1 + (f0 - e0) * d0);
+    match sign {
+      1 => Ordering::Greater,
+      -1 => Ordering::Less,
+      0 => Ordering::Equal,
+      _ => unreachable!(),
+    }
+  }
   fn approx_intersection_point(
     p1: [Self; 2],
     p2: [Self; 2],
@@ -613,6 +1104,69 @@ impl PolygonScalar for rug::Integer {
     let new_y = rug::Integer::from(&p[1] + &vector[0]);
     PolygonScalar::cmp_slope(p, &[new_x, new_y], q)
   }
+  fn cmp_edge_normal_slope(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    p: &[Self; 2],
+    q: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+    let edge_normal = [
+      rug::Integer::from(&edge_end[1] - &edge_start[1]),
+      rug::Integer::from(&edge_start[0] - &edge_end[0]),
+    ];
+    PolygonScalar::cmp_vector_slope(&edge_normal, p, q)
+  }
+  fn cmp_perp_edge_normal_slope(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    p: &[Self; 2],
+    q: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
+    let edge_normal = [
+      rug::Integer::from(&edge_end[1] - &edge_start[1]),
+      rug::Integer::from(&edge_start[0] - &edge_end[0]),
+    ];
+    PolygonScalar::cmp_perp_vector_slope(&edge_normal, p, q)
+  }
+  fn cmp_edge_normals_cross(
+    ref_edge_start: &[Self; 2],
+    ref_edge_end: &[Self; 2],
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    // ref_normal × edge_normal
+    let ref_nx = rug::Integer::from(&ref_edge_end[1] - &ref_edge_start[1]);
+    let ref_ny = rug::Integer::from(&ref_edge_start[0] - &ref_edge_end[0]);
+    let edge_nx = rug::Integer::from(&edge_end[1] - &edge_start[1]);
+    let edge_ny = rug::Integer::from(&edge_start[0] - &edge_end[0]);
+    let cross = ref_nx * edge_ny - ref_ny * edge_nx;
+    cross.cmp(&rug::Integer::new())
+  }
+  fn cmp_edge_normals_dot(
+    ref_edge_start: &[Self; 2],
+    ref_edge_end: &[Self; 2],
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    // ref_normal · edge_normal = ref_edge_vector · edge_vector
+    let dot = rug::Integer::from(&ref_edge_end[0] - &ref_edge_start[0])
+      * rug::Integer::from(&edge_end[0] - &edge_start[0])
+      + rug::Integer::from(&ref_edge_end[1] - &ref_edge_start[1])
+        * rug::Integer::from(&edge_end[1] - &edge_start[1]);
+    dot.cmp(&rug::Integer::new())
+  }
+  fn cmp_edge_normal_cross_direction(
+    edge_start: &[Self; 2],
+    edge_end: &[Self; 2],
+    direction: &[Self; 2],
+  ) -> std::cmp::Ordering {
+    // edge_normal × direction = (edge_end - edge_start) · direction
+    let dot = rug::Integer::from(&edge_end[0] - &edge_start[0]) * &direction[0]
+      + rug::Integer::from(&edge_end[1] - &edge_start[1]) * &direction[1];
+    dot.cmp(&rug::Integer::new())
+  }
   fn incircle(a: &[Self; 2], b: &[Self; 2], c: &[Self; 2], d: &[Self; 2]) -> Ordering {
     let mut ax = a[0].clone();
     ax -= &d[0];
@@ -642,3 +1196,226 @@ fn float_to_rational(f: impl num::traits::float::FloatCore) -> num::BigRational 
 
 #[cfg(test)]
 pub mod testing;
+
+#[cfg(test)]
+mod floating_robustness_tests {
+  use super::*;
+
+  // Helper to convert f64 to BigRational for ground truth comparison.
+  fn to_big(f: f64) -> num_rational::BigRational {
+    num_rational::BigRational::from_float(f).unwrap()
+  }
+
+  // Test that cmp_edge_normals_cross is robust for nearly-parallel edges.
+  //
+  // The naive floating-point implementation computes:
+  //   cross = ref_nx * edge_ny - ref_ny * edge_nx
+  //
+  // For edges from origin, this simplifies to:
+  //   cross = ref_end[0] * edge_end[1] - ref_end[1] * edge_end[0]
+  //
+  // At 1e15 scale, the products are at 1e30 scale where the ULP is ~1.4e14.
+  // This means differences smaller than 1.4e14 get rounded away!
+  //
+  // This test uses coordinates where:
+  // - All inputs are exactly representable f64 values
+  // - The true cross product is -2 (mathematically exact, computable by BigRational)
+  // - The naive f64 computation gives 0 due to precision loss in the products
+  #[test]
+  fn cmp_edge_normals_cross_f64_robustness() {
+    // Edges from origin for simplicity:
+    // ref_edge: (0,0) -> (1e15, 1e15+1)
+    // edge: (0,0) -> (1e15+2, 1e15+3)
+    //
+    // cross = ref[0]*edge[1] - ref[1]*edge[0]
+    //       = 1e15 * (1e15+3) - (1e15+1) * (1e15+2)
+    //       = 1e30 + 3e15 - (1e30 + 2e15 + 1e15 + 2)
+    //       = 1e30 + 3e15 - 1e30 - 3e15 - 2
+    //       = -2
+    //
+    // But in f64:
+    // - 1e15 * (1e15+3) = 1e30 + 3e15, rounded to nearest at 1e30 scale
+    // - (1e15+1) * (1e15+2) = 1e30 + 3e15 + 2, rounded to same value
+    // - Both products round to the same f64 value, so cross = 0
+    //
+    // ULP at 1e30 scale is ~1.4e14, so the difference of 2 is completely lost.
+    let big = 1e15f64;
+
+    let ref_start = [0.0f64, 0.0];
+    let ref_end = [big, big + 1.0];
+    let edge_start = [0.0f64, 0.0];
+    let edge_end = [big + 2.0, big + 3.0];
+
+    // Ground truth using BigRational
+    let ref_start_big = [to_big(ref_start[0]), to_big(ref_start[1])];
+    let ref_end_big = [to_big(ref_end[0]), to_big(ref_end[1])];
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let expected = num_rational::BigRational::cmp_edge_normals_cross(
+      &ref_start_big,
+      &ref_end_big,
+      &edge_start_big,
+      &edge_end_big,
+    );
+
+    // The mathematically correct answer is Less (cross = -2)
+    assert_eq!(
+      expected,
+      Ordering::Less,
+      "BigRational should give Less (cross = -2)"
+    );
+
+    // The f64 implementation should match BigRational
+    let result = f64::cmp_edge_normals_cross(&ref_start, &ref_end, &edge_start, &edge_end);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_edge_normals_cross gave {:?} but BigRational gave {:?}. \
+       This demonstrates precision loss: true cross is -2, but naive f64 gives 0.",
+      result, expected
+    );
+  }
+
+  // Test that cmp_edge_normals_dot is robust for nearly-perpendicular edges.
+  //
+  // The dot product of edge vectors suffers similar precision loss.
+  // dot = (ref_end[0] - ref_start[0]) * (edge_end[0] - edge_start[0])
+  //     + (ref_end[1] - ref_start[1]) * (edge_end[1] - edge_start[1])
+  //
+  // For edges from origin:
+  #[test]
+  fn cmp_edge_normals_dot_f64_robustness() {
+    let big = 1e15f64;
+
+    let ref_start = [0.0f64, 0.0];
+    let ref_end = [big, 1.0];
+    let edge_start = [0.0f64, 0.0];
+    let edge_end = [-1.0, big + 0.5];
+
+    let ref_start_big = [to_big(ref_start[0]), to_big(ref_start[1])];
+    let ref_end_big = [to_big(ref_end[0]), to_big(ref_end[1])];
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let expected = num_rational::BigRational::cmp_edge_normals_dot(
+      &ref_start_big,
+      &ref_end_big,
+      &edge_start_big,
+      &edge_end_big,
+    );
+
+    assert_eq!(expected, Ordering::Greater);
+
+    let result = f64::cmp_edge_normals_dot(&ref_start, &ref_end, &edge_start, &edge_end);
+    assert_eq!(result, expected);
+  }
+
+  // Test that cmp_edge_normal_cross_direction is robust.
+  //
+  // This computes edge_vec · direction, which has the same structure as dot product.
+  #[test]
+  fn cmp_edge_normal_cross_direction_f64_robustness() {
+    // edge: (0, 0) -> (1e15, 1)
+    // direction: (-1, 1e15 + 0.5)
+    //
+    // edge_vec · direction = 1e15 * (-1) + 1 * (1e15 + 0.5) = 0.5
+    let big = 1e15f64;
+
+    let edge_start = [0.0f64, 0.0];
+    let edge_end = [big, 1.0];
+    let direction = [-1.0f64, big + 0.5];
+
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let direction_big = [to_big(direction[0]), to_big(direction[1])];
+    let expected = num_rational::BigRational::cmp_edge_normal_cross_direction(
+      &edge_start_big,
+      &edge_end_big,
+      &direction_big,
+    );
+
+    assert_eq!(
+      expected,
+      Ordering::Greater,
+      "BigRational should give Greater (result = 0.5)"
+    );
+
+    let result = f64::cmp_edge_normal_cross_direction(&edge_start, &edge_end, &direction);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_edge_normal_cross_direction gave {:?} but BigRational gave {:?}",
+      result, expected
+    );
+  }
+
+  // Regression: cmp_edge_normal_slope should still agree with BigRational even
+  // when a naive f64 implementation would lose precision while computing the
+  // edge normal.
+  #[test]
+  fn cmp_edge_normal_slope_f64_mismatch() {
+    // edge_start/end use decimal literals that are not exactly representable.
+    // The edge normal is computed via subtraction in f64, which rounds.
+    // With large p/q deltas, the rounding error changes the sign.
+    let edge_start = [0.1f64, 0.2];
+    let edge_end = [0.5f64, 0.1];
+    let p = [1125899906842624.0f64, 4503599627370496.0];
+    let q = [0.0f64, 0.0];
+
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let p_big = [to_big(p[0]), to_big(p[1])];
+    let q_big = [to_big(q[0]), to_big(q[1])];
+
+    let expected = num_rational::BigRational::cmp_edge_normal_slope(
+      &edge_start_big,
+      &edge_end_big,
+      &p_big,
+      &q_big,
+    );
+    assert_eq!(
+      expected,
+      Ordering::Greater,
+      "BigRational should give Greater for this configuration"
+    );
+
+    let result = f64::cmp_edge_normal_slope(&edge_start, &edge_end, &p, &q);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_edge_normal_slope gave {:?} but BigRational gave {:?}",
+      result, expected
+    );
+  }
+
+  // Regression: cmp_perp_edge_normal_slope should still agree with BigRational
+  // even when a naive f64 implementation would lose precision while computing
+  // the edge normal.
+  #[test]
+  fn cmp_perp_edge_normal_slope_f64_mismatch() {
+    let edge_start = [0.1f64, 0.1];
+    let edge_end = [0.2f64, 0.5];
+    let p = [1125899906842624.0f64, 4503599627370496.0];
+    let q = [0.0f64, 0.0];
+
+    let edge_start_big = [to_big(edge_start[0]), to_big(edge_start[1])];
+    let edge_end_big = [to_big(edge_end[0]), to_big(edge_end[1])];
+    let p_big = [to_big(p[0]), to_big(p[1])];
+    let q_big = [to_big(q[0]), to_big(q[1])];
+
+    let expected = num_rational::BigRational::cmp_perp_edge_normal_slope(
+      &edge_start_big,
+      &edge_end_big,
+      &p_big,
+      &q_big,
+    );
+    assert_eq!(
+      expected,
+      Ordering::Less,
+      "BigRational should give Less for this configuration"
+    );
+
+    let result = f64::cmp_perp_edge_normal_slope(&edge_start, &edge_end, &p, &q);
+    assert_eq!(
+      result, expected,
+      "f64 cmp_perp_edge_normal_slope gave {:?} but BigRational gave {:?}",
+      result, expected
+    );
+  }
+}

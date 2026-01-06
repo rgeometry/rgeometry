@@ -101,6 +101,68 @@ impl Orientation {
     }
   }
 
+  /// Locate `p2` in relation to the line defined by the outward normal of an edge.
+  ///
+  /// The edge goes from `edge_start` to `edge_end`. The outward normal (for a CCW polygon)
+  /// is the edge vector rotated 90° clockwise: `(dy, -dx)` where `(dx, dy) = edge_end - edge_start`.
+  ///
+  /// This is equivalent to `along_vector(p1, edge_normal, p2)` but avoids overflow
+  /// that would occur from computing the normal explicitly.
+  ///
+  /// For fixed-precision types (i8,i16,i32,i64,etc), this function is
+  /// guaranteed to work for any input and never cause any arithmetic overflows.
+  pub fn along_edge_normal<T>(
+    p1: &[T; 2],
+    edge_start: &[T; 2],
+    edge_end: &[T; 2],
+    p2: &[T; 2],
+  ) -> Orientation
+  where
+    T: PolygonScalar,
+  {
+    match T::cmp_edge_normal_slope(edge_start, edge_end, p1, p2) {
+      Ordering::Less => Orientation::ClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+      Ordering::Greater => Orientation::CounterClockWise,
+    }
+  }
+
+  /// Locate `p2` in relation to the line perpendicular to an edge's outward normal.
+  ///
+  /// This is equivalent to `along_perp_vector(p1, edge_normal, p2)` but avoids overflow.
+  pub fn along_perp_edge_normal<T>(
+    p1: &[T; 2],
+    edge_start: &[T; 2],
+    edge_end: &[T; 2],
+    p2: &[T; 2],
+  ) -> Orientation
+  where
+    T: PolygonScalar,
+  {
+    match T::cmp_perp_edge_normal_slope(edge_start, edge_end, p1, p2) {
+      Ordering::Less => Orientation::ClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+      Ordering::Greater => Orientation::CounterClockWise,
+    }
+  }
+
+  /// Check if an edge's normal is on the positive side of the perpendicular to a reference edge's normal.
+  fn along_perp_ref_edge_normal_edge<T>(
+    ref_edge_start: &[T; 2],
+    ref_edge_end: &[T; 2],
+    edge_start: &[T; 2],
+    edge_end: &[T; 2],
+  ) -> Orientation
+  where
+    T: PolygonScalar,
+  {
+    match T::cmp_edge_normals_dot(ref_edge_start, ref_edge_end, edge_start, edge_end) {
+      Ordering::Greater => Orientation::ClockWise,
+      Ordering::Less => Orientation::CounterClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+    }
+  }
+
   pub fn is_colinear(self) -> bool {
     matches!(self, Orientation::CoLinear)
   }
@@ -221,6 +283,268 @@ impl Orientation {
         (false, true) => Ordering::Greater,
       },
     }
+  }
+
+  /// Compare angles around an origin point, where the reference direction is an edge's outward normal.
+  ///
+  /// This is equivalent to `ccw_cmp_around_with(edge_normal, p1, p2, p3)` but avoids overflow
+  /// that would occur from computing the edge normal explicitly.
+  ///
+  /// The edge goes from `ref_edge_start` to `ref_edge_end`. The outward normal (for a CCW polygon)
+  /// is the edge vector rotated 90° clockwise: `(dy, -dx)` where `(dx, dy) = edge_end - edge_start`.
+  ///
+  /// For fixed-precision types (i8,i16,i32,i64,etc), this function is
+  /// guaranteed to work for any input and never cause any arithmetic overflows.
+  pub fn ccw_cmp_around_with_edge_normal<T>(
+    ref_edge_start: &[T; 2],
+    ref_edge_end: &[T; 2],
+    p1: &[T; 2],
+    p2: &[T; 2],
+    p3: &[T; 2],
+  ) -> Ordering
+  where
+    T: PolygonScalar,
+  {
+    let aq = Orientation::along_edge_normal(p1, ref_edge_start, ref_edge_end, p2);
+    let ar = Orientation::along_edge_normal(p1, ref_edge_start, ref_edge_end, p3);
+    let on_zero =
+      |d: &[T; 2]| match Orientation::along_perp_edge_normal(p1, ref_edge_start, ref_edge_end, d) {
+        CounterClockWise => false,
+        ClockWise => true,
+        CoLinear => true,
+      };
+    let cmp = || match Orientation::new(p1, p2, p3) {
+      CounterClockWise => Ordering::Less,
+      ClockWise => Ordering::Greater,
+      CoLinear => Ordering::Equal,
+    };
+    match (aq, ar) {
+      // Easy cases: Q and R are on either side of the line p->z:
+      (CounterClockWise, ClockWise) => Ordering::Less,
+      (ClockWise, CounterClockWise) => Ordering::Greater,
+      // A CoLinear point may be in front of p->z (0 degree angle) or behind
+      // it (180 degree angle). If the other point is clockwise, it must have an
+      // angle greater than 180 degrees and must therefore be greater than the
+      // colinear point.
+      (CoLinear, ClockWise) => Ordering::Less,
+      (ClockWise, CoLinear) => Ordering::Greater,
+
+      // if Q and R are on the same side of P->Z then the most clockwise point
+      // will have the smallest angle.
+      (CounterClockWise, CounterClockWise) => cmp(),
+      (ClockWise, ClockWise) => cmp(),
+
+      // CoLinear points have an angle of either 0 degrees or 180 degrees. on_zero
+      // can distinguish these two cases:
+      //    on_zero(p) => 0 degrees.
+      //   !on_zero(p) => 180 degrees.
+      (CounterClockWise, CoLinear) => {
+        if on_zero(p3) {
+          Ordering::Greater // angle(r) = 0 & 0 < angle(q) < 180. Thus: Q > R
+        } else {
+          Ordering::Less // angle(r) = 180 & 0 < angle(q) < 180. Thus: Q < R
+        }
+      }
+      (CoLinear, CounterClockWise) => {
+        if on_zero(p2) {
+          Ordering::Less
+        } else {
+          Ordering::Greater
+        }
+      }
+      (CoLinear, CoLinear) => match (on_zero(p2), on_zero(p3)) {
+        (true, true) => Ordering::Equal,
+        (false, false) => Ordering::Equal,
+        (true, false) => Ordering::Less,
+        (false, true) => Ordering::Greater,
+      },
+    }
+  }
+
+  /// Compare angles around an origin point where:
+  /// - The reference direction is an edge's outward normal (ref_edge_start → ref_edge_end)
+  /// - One comparison point is another edge's outward normal (edge_start → edge_end)
+  /// - The other comparison point is an explicit direction vector
+  ///
+  /// This is a specialized version of `ccw_cmp_around_with` designed for the
+  /// `extreme_in_direction` algorithm that avoids overflow when computing edge normals.
+  ///
+  /// Returns the ordering of the edge normal's angle compared to the direction's angle,
+  /// both measured from the reference normal as the zero angle.
+  ///
+  /// For fixed-precision types (i8,i16,i32,i64,etc), this function is
+  /// guaranteed to work for any input and never cause any arithmetic overflows.
+  pub fn ccw_cmp_around_with_edge_normal_vs_direction<T>(
+    ref_edge_start: &[T; 2],
+    ref_edge_end: &[T; 2],
+    p1: &[T; 2],
+    edge_start: &[T; 2],
+    edge_end: &[T; 2],
+    direction: &[T; 2],
+  ) -> Ordering
+  where
+    T: PolygonScalar,
+  {
+    // p2 = edge normal (implicitly defined by edge_start, edge_end)
+    // p3 = direction (explicit)
+
+    // aq = orientation of edge_normal relative to reference_normal line through p1
+    let aq =
+      Orientation::along_ref_edge_normal_edge(ref_edge_start, ref_edge_end, edge_start, edge_end);
+    // ar = orientation of direction relative to reference_normal line through p1
+    let ar = Orientation::along_edge_normal_point(p1, ref_edge_start, ref_edge_end, direction);
+
+    // on_zero_edge = is edge_normal at angle 0 (in front) or 180 (behind)?
+    let on_zero_edge = || match Orientation::along_perp_ref_edge_normal_edge(
+      ref_edge_start,
+      ref_edge_end,
+      edge_start,
+      edge_end,
+    ) {
+      CounterClockWise => false,
+      ClockWise => true,
+      CoLinear => true,
+    };
+
+    // on_zero_dir = is direction at angle 0 (in front) or 180 (behind)?
+    let on_zero_dir = || match Orientation::along_perp_edge_normal_point(
+      p1,
+      ref_edge_start,
+      ref_edge_end,
+      direction,
+    ) {
+      CounterClockWise => false,
+      ClockWise => true,
+      CoLinear => true,
+    };
+
+    // cmp = direct orientation comparison of edge_normal vs direction around p1
+    let cmp = || {
+      // We need Orientation::new(p1, edge_normal, direction)
+      // This returns CCW if direction is CCW (left) of p1→edge_normal,
+      // which means edge_normal has a smaller angle than direction.
+      //
+      // cmp_edge_normal_vs_direction returns sign(edge_normal × direction):
+      // - Greater (positive): direction is CCW from edge_normal → edge_normal < direction → Less
+      // - Less (negative): direction is CW from edge_normal → edge_normal > direction → Greater
+      // - Equal: collinear
+      //
+      // This mapping matches the original ccw_cmp_around_with logic where:
+      // - CCW → Less (q comes before r)
+      // - CW → Greater (q comes after r)
+      match Orientation::cmp_edge_normal_vs_direction(edge_start, edge_end, direction) {
+        Ordering::Greater => Ordering::Less, // edge_normal × direction > 0 → edge_normal < direction
+        Ordering::Less => Ordering::Greater, // edge_normal × direction < 0 → edge_normal > direction
+        Ordering::Equal => Ordering::Equal,
+      }
+    };
+
+    match (aq, ar) {
+      // Easy cases: Q and R are on either side of the line p->z:
+      (CounterClockWise, ClockWise) => Ordering::Less,
+      (ClockWise, CounterClockWise) => Ordering::Greater,
+      // A CoLinear point may be in front of p->z (0 degree angle) or behind
+      // it (180 degree angle). If the other point is clockwise, it must have an
+      // angle greater than 180 degrees and must therefore be greater than the
+      // colinear point.
+      (CoLinear, ClockWise) => Ordering::Less,
+      (ClockWise, CoLinear) => Ordering::Greater,
+
+      // if Q and R are on the same side of P->Z then the most clockwise point
+      // will have the smallest angle.
+      (CounterClockWise, CounterClockWise) => cmp(),
+      (ClockWise, ClockWise) => cmp(),
+
+      // CoLinear points have an angle of either 0 degrees or 180 degrees.
+      (CounterClockWise, CoLinear) => {
+        if on_zero_dir() {
+          Ordering::Greater
+        } else {
+          Ordering::Less
+        }
+      }
+      (CoLinear, CounterClockWise) => {
+        if on_zero_edge() {
+          Ordering::Less
+        } else {
+          Ordering::Greater
+        }
+      }
+      (CoLinear, CoLinear) => match (on_zero_edge(), on_zero_dir()) {
+        (true, true) => Ordering::Equal,
+        (false, false) => Ordering::Equal,
+        (true, false) => Ordering::Less,
+        (false, true) => Ordering::Greater,
+      },
+    }
+  }
+
+  /// Orientation of a point relative to a line defined by an edge's outward normal.
+  /// This is `along_edge_normal` but for an explicit point instead of another edge.
+  fn along_edge_normal_point<T>(
+    p1: &[T; 2],
+    ref_edge_start: &[T; 2],
+    ref_edge_end: &[T; 2],
+    point: &[T; 2],
+  ) -> Orientation
+  where
+    T: PolygonScalar,
+  {
+    // The edge normal is (ref_edge_end[1] - ref_edge_start[1], ref_edge_start[0] - ref_edge_end[0])
+    // along_vector(p1, normal, point) computes orientation of point relative to line p1→(p1+normal)
+    // This is: sign((p1 - point) × normal) = sign((p1.x - point.x) * normal.y - (p1.y - point.y) * normal.x)
+    // = sign((p1.x - point.x) * (ref_edge_start[0] - ref_edge_end[0]) - (p1.y - point.y) * (ref_edge_end[1] - ref_edge_start[1]))
+    match T::cmp_edge_normal_slope(ref_edge_start, ref_edge_end, p1, point) {
+      Ordering::Less => Orientation::ClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+      Ordering::Greater => Orientation::CounterClockWise,
+    }
+  }
+
+  /// Orientation of a point relative to a line perpendicular to an edge's outward normal.
+  fn along_perp_edge_normal_point<T>(
+    p1: &[T; 2],
+    ref_edge_start: &[T; 2],
+    ref_edge_end: &[T; 2],
+    point: &[T; 2],
+  ) -> Orientation
+  where
+    T: PolygonScalar,
+  {
+    match T::cmp_perp_edge_normal_slope(ref_edge_start, ref_edge_end, p1, point) {
+      Ordering::Less => Orientation::ClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+      Ordering::Greater => Orientation::CounterClockWise,
+    }
+  }
+
+  /// Orientation of an edge's outward normal relative to another edge's normal line.
+  fn along_ref_edge_normal_edge<T>(
+    ref_edge_start: &[T; 2],
+    ref_edge_end: &[T; 2],
+    edge_start: &[T; 2],
+    edge_end: &[T; 2],
+  ) -> Orientation
+  where
+    T: PolygonScalar,
+  {
+    match T::cmp_edge_normals_cross(ref_edge_start, ref_edge_end, edge_start, edge_end) {
+      Ordering::Greater => Orientation::CounterClockWise,
+      Ordering::Less => Orientation::ClockWise,
+      Ordering::Equal => Orientation::CoLinear,
+    }
+  }
+
+  /// Compare an edge normal against a direction vector.
+  fn cmp_edge_normal_vs_direction<T>(
+    edge_start: &[T; 2],
+    edge_end: &[T; 2],
+    direction: &[T; 2],
+  ) -> Ordering
+  where
+    T: PolygonScalar,
+  {
+    T::cmp_edge_normal_cross_direction(edge_start, edge_end, direction)
   }
 }
 
