@@ -147,10 +147,7 @@ impl Orientation {
   }
 
   /// Check if an edge's normal is on the positive side of the perpendicular to a reference edge's normal.
-  /// This is used to determine if an edge_normal has angle 0° (in front) or 180° (behind) relative
-  /// to the reference normal.
   fn along_perp_ref_edge_normal_edge<T>(
-    _p1: &[T; 2],
     ref_edge_start: &[T; 2],
     ref_edge_end: &[T; 2],
     edge_start: &[T; 2],
@@ -159,20 +156,10 @@ impl Orientation {
   where
     T: PolygonScalar,
   {
-    // We need to determine if edge_normal is at angle 0° (same direction as ref_normal)
-    // or at angle 180° (opposite direction).
-    //
-    // This is equivalent to checking if edge_normal · ref_normal > 0:
-    // - Positive: same direction (0°) → on_zero = true
-    // - Negative: opposite direction (180°) → on_zero = false
-    // - Zero: perpendicular (90° or 270°) → treat as on_zero = true (consistent with original)
-    //
-    // Since normal1 · normal2 = edge1 · edge2 (dot product of normals equals dot product of edges),
-    // we use cmp_edge_normals_dot which computes this without overflow.
     match T::cmp_edge_normals_dot(ref_edge_start, ref_edge_end, edge_start, edge_end) {
-      Ordering::Greater => Orientation::ClockWise, // Same direction → on_zero = true
-      Ordering::Less => Orientation::CounterClockWise, // Opposite direction → on_zero = false
-      Ordering::Equal => Orientation::CoLinear,    // Perpendicular → on_zero = true
+      Ordering::Greater => Orientation::ClockWise,
+      Ordering::Less => Orientation::CounterClockWise,
+      Ordering::Equal => Orientation::CoLinear,
     }
   }
 
@@ -403,7 +390,6 @@ impl Orientation {
 
     // aq = orientation of edge_normal relative to reference_normal line through p1
     let aq = Orientation::along_ref_edge_normal_edge(
-      p1,
       ref_edge_start,
       ref_edge_end,
       edge_start,
@@ -414,7 +400,6 @@ impl Orientation {
 
     // on_zero_edge = is edge_normal at angle 0 (in front) or 180 (behind)?
     let on_zero_edge = || match Orientation::along_perp_ref_edge_normal_edge(
-      p1,
       ref_edge_start,
       ref_edge_end,
       edge_start,
@@ -538,9 +523,7 @@ impl Orientation {
   }
 
   /// Orientation of an edge's outward normal relative to another edge's normal line.
-  /// This computes whether edge_normal is CCW/CW from the line through p1 in direction ref_normal.
   fn along_ref_edge_normal_edge<T>(
-    _p1: &[T; 2],
     ref_edge_start: &[T; 2],
     ref_edge_end: &[T; 2],
     edge_start: &[T; 2],
@@ -549,89 +532,6 @@ impl Orientation {
   where
     T: PolygonScalar,
   {
-    // We want: sign((p1 - edge_normal) × ref_normal)
-    // where edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
-    // and ref_normal = (ref_edge_end[1] - ref_edge_start[1], ref_edge_start[0] - ref_edge_end[0])
-    //
-    // But p1 is the origin, so p1 - edge_normal = -edge_normal.
-    // So we need: sign(-edge_normal × ref_normal) = -sign(edge_normal × ref_normal)
-    //
-    // edge_normal × ref_normal = edge_normal.x * ref_normal.y - edge_normal.y * ref_normal.x
-    // = (edge_end[1] - edge_start[1]) * (ref_edge_start[0] - ref_edge_end[0])
-    //   - (edge_start[0] - edge_end[0]) * (ref_edge_end[1] - ref_edge_start[1])
-
-    // Let's use the cmp_edge_normal_slope formulation:
-    // cmp_edge_normal_slope(ref_start, ref_end, p1, q) computes orientation relative to ref's normal
-    // But here we need to compare edge_normal as a point (vector from origin).
-    // edge_normal as a "point" from origin is just the normal itself.
-
-    // Actually, we need to think about this differently.
-    // along_vector(p1, v, point) computes whether point is CCW/CW from line p1→(p1+v).
-    // Here p1 = origin = [0,0], v = ref_normal, point = edge_normal.
-    //
-    // The computation is: sign((p1 - point) × v) = sign(-point × v) = sign(v × point)
-    // = sign(ref_normal × edge_normal)
-    // = sign(ref_normal.x * edge_normal.y - ref_normal.y * edge_normal.x)
-
-    // ref_normal = (ref_edge_end[1] - ref_edge_start[1], ref_edge_start[0] - ref_edge_end[0])
-    // edge_normal = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
-
-    // ref_normal × edge_normal
-    // = (ref_edge_end[1] - ref_edge_start[1]) * (edge_start[0] - edge_end[0])
-    //   - (ref_edge_start[0] - ref_edge_end[0]) * (edge_end[1] - edge_start[1])
-
-    // This needs a new primitive. For now, let me use a workaround using existing primitives.
-    // We can use cmp_edge_normal_slope which computes:
-    // sign((p[0] - q[0]) * (e0 - f0) - (p[1] - q[1]) * (f1 - e1))
-    // where (e0,e1) = edge_start, (f0,f1) = edge_end
-
-    // If p = edge_normal and q = origin = [0,0]:
-    // We'd get: sign(edge_normal.x * (ref_start[0] - ref_end[0]) - edge_normal.y * (ref_end[1] - ref_start[1]))
-    // But we can't compute edge_normal explicitly!
-
-    // Alternative approach: use cmp_slope with carefully constructed points.
-    // cmp_slope(p, q, r) computes sign((r[1] - q[1]) * (q[0] - p[0]) - (q[1] - p[1]) * (r[0] - q[0]))
-
-    // Let me try a different formulation. The cross product of two edge normals:
-    // n1 = (dy1, -dx1) where (dx1, dy1) = ref_edge_end - ref_edge_start
-    // n2 = (dy2, -dx2) where (dx2, dy2) = edge_end - edge_start
-    //
-    // n1 × n2 = dy1 * (-dx2) - (-dx1) * dy2 = -dy1*dx2 + dx1*dy2 = dx1*dy2 - dy1*dx2
-    //
-    // This is the negative of the cross product of the edge vectors!
-    // edge1 × edge2 = dx1*dy2 - dy1*dx2 (same!)
-    //
-    // Wait, that's wrong. Let me redo:
-    // n1 × n2 = n1.x * n2.y - n1.y * n2.x
-    //         = dy1 * (-dx2) - (-dx1) * dy2
-    //         = -dy1*dx2 + dx1*dy2
-    //         = dx1*dy2 - dy1*dx2
-
-    // Meanwhile, edge1 × edge2 = dx1*dy2 - dy1*dx2 (same!)
-
-    // So the cross product of two normals equals the cross product of the corresponding edges!
-    // This means we can use orient2d on the edge endpoints.
-
-    // Specifically: sign(n1 × n2) = sign(edge1 × edge2)
-    // = sign((ref_edge_end - ref_edge_start) × (edge_end - edge_start))
-    // = sign(orient2d(ref_edge_start, ref_edge_end, edge_end) - orient2d(ref_edge_start, ref_edge_end, edge_start))
-    // ... this is getting complicated.
-
-    // Actually, for edge1 × edge2 with edge_i = end_i - start_i:
-    // This equals orient2d(start1, end1, end2) scaled somehow... but it's not quite right because
-    // the edges don't share a point.
-
-    // Let me use a different approach. We have:
-    // sign(ref_normal × edge_normal) where both are at origin.
-    // = sign(ref_normal.x * edge_normal.y - ref_normal.y * edge_normal.x)
-    // = sign((ref_end[1] - ref_start[1]) * (edge_start[0] - edge_end[0])
-    //        - (ref_start[0] - ref_end[0]) * (edge_end[1] - edge_start[1]))
-    //
-    // Expanding:
-    // = sign((ref_end[1] - ref_start[1]) * (edge_start[0] - edge_end[0])
-    //        + (ref_end[0] - ref_start[0]) * (edge_end[1] - edge_start[1]))
-
-    // This needs a new primitive. Let me add it.
     match T::cmp_edge_normals_cross(ref_edge_start, ref_edge_end, edge_start, edge_end) {
       Ordering::Greater => Orientation::CounterClockWise,
       Ordering::Less => Orientation::ClockWise,
