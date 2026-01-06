@@ -774,15 +774,19 @@ macro_rules! floating_precision {
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // Use apfp's adaptive precision for robust computation.
-        // cross = ref_nx * edge_ny - ref_ny * edge_nx
-        // where ref_n = (ref_end[1] - ref_start[1], ref_start[0] - ref_end[0])
-        //       edge_n = (edge_end[1] - edge_start[1], edge_start[0] - edge_end[0])
-        let ref_nx = (ref_edge_end[1] - ref_edge_start[1]) as f64;
-        let ref_ny = (ref_edge_start[0] - ref_edge_end[0]) as f64;
-        let edge_nx = (edge_end[1] - edge_start[1]) as f64;
-        let edge_ny = (edge_start[0] - edge_end[0]) as f64;
-        match apfp::apfp_signum!(ref_nx * edge_ny - ref_ny * edge_nx) {
+        // Use apfp's adaptive precision for robust computation and keep the
+        // subtraction inside the expression to avoid rounding the edge normals.
+        let ref_sx = ref_edge_start[0] as f64;
+        let ref_sy = ref_edge_start[1] as f64;
+        let ref_ex = ref_edge_end[0] as f64;
+        let ref_ey = ref_edge_end[1] as f64;
+        let edge_sx = edge_start[0] as f64;
+        let edge_sy = edge_start[1] as f64;
+        let edge_ex = edge_end[0] as f64;
+        let edge_ey = edge_end[1] as f64;
+        match apfp::apfp_signum!(
+          (ref_ey - ref_sy) * (edge_sx - edge_ex) - (ref_sx - ref_ex) * (edge_ey - edge_sy)
+        ) {
           1 => Ordering::Greater,
           -1 => Ordering::Less,
           _ => Ordering::Equal,
@@ -794,13 +798,19 @@ macro_rules! floating_precision {
         edge_start: &[Self; 2],
         edge_end: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // Use apfp's adaptive precision for robust computation.
-        // dot = ref_vec · edge_vec
-        let ref_dx = (ref_edge_end[0] - ref_edge_start[0]) as f64;
-        let ref_dy = (ref_edge_end[1] - ref_edge_start[1]) as f64;
-        let edge_dx = (edge_end[0] - edge_start[0]) as f64;
-        let edge_dy = (edge_end[1] - edge_start[1]) as f64;
-        match apfp::apfp_signum!(ref_dx * edge_dx + ref_dy * edge_dy) {
+        // Use apfp's adaptive precision for robust computation and avoid
+        // rounding the edge vectors before evaluation.
+        let ref_sx = ref_edge_start[0] as f64;
+        let ref_sy = ref_edge_start[1] as f64;
+        let ref_ex = ref_edge_end[0] as f64;
+        let ref_ey = ref_edge_end[1] as f64;
+        let edge_sx = edge_start[0] as f64;
+        let edge_sy = edge_start[1] as f64;
+        let edge_ex = edge_end[0] as f64;
+        let edge_ey = edge_end[1] as f64;
+        match apfp::apfp_signum!(
+          (ref_ex - ref_sx) * (edge_ex - edge_sx) + (ref_ey - ref_sy) * (edge_ey - edge_sy)
+        ) {
           1 => Ordering::Greater,
           -1 => Ordering::Less,
           _ => Ordering::Equal,
@@ -811,13 +821,17 @@ macro_rules! floating_precision {
         edge_end: &[Self; 2],
         direction: &[Self; 2],
       ) -> std::cmp::Ordering {
-        // Use apfp's adaptive precision for robust computation.
-        // edge_normal × direction = edge_vec · direction
-        let edge_dx = (edge_end[0] - edge_start[0]) as f64;
-        let edge_dy = (edge_end[1] - edge_start[1]) as f64;
+        // Use apfp's adaptive precision for robust computation and avoid
+        // rounding the edge vector before evaluation.
+        let edge_sx = edge_start[0] as f64;
+        let edge_sy = edge_start[1] as f64;
+        let edge_ex = edge_end[0] as f64;
+        let edge_ey = edge_end[1] as f64;
         let dir_x = direction[0] as f64;
         let dir_y = direction[1] as f64;
-        match apfp::apfp_signum!(edge_dx * dir_x + edge_dy * dir_y) {
+        match apfp::apfp_signum!(
+          (edge_ex - edge_sx) * dir_x + (edge_ey - edge_sy) * dir_y
+        ) {
           1 => Ordering::Greater,
           -1 => Ordering::Less,
           _ => Ordering::Equal,
@@ -1332,8 +1346,9 @@ mod floating_robustness_tests {
     );
   }
 
-  // Demonstrate that cmp_edge_normal_slope can disagree with BigRational when the
-  // edge normal is computed via lossy f64 subtraction.
+  // Regression: cmp_edge_normal_slope should still agree with BigRational even
+  // when a naive f64 implementation would lose precision while computing the
+  // edge normal.
   #[test]
   fn cmp_edge_normal_slope_f64_mismatch() {
     // edge_start/end use decimal literals that are not exactly representable.
@@ -1369,8 +1384,9 @@ mod floating_robustness_tests {
     );
   }
 
-  // Demonstrate that cmp_perp_edge_normal_slope can disagree with BigRational when
-  // the edge normal is computed via lossy f64 subtraction.
+  // Regression: cmp_perp_edge_normal_slope should still agree with BigRational
+  // even when a naive f64 implementation would lose precision while computing
+  // the edge normal.
   #[test]
   fn cmp_perp_edge_normal_slope_f64_mismatch() {
     let edge_start = [0.1f64, 0.1];

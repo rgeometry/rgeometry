@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- [#177](https://github.com/rgeometry/rgeometry/pull/177) Add convex extreme vertex query for `PolygonConvex`
+
 ### Changed
 - [#180](https://github.com/rgeometry/rgeometry/pull/180) Removed unused ordered-float dependency
 - [#181](https://github.com/rgeometry/rgeometry/pull/181) Use cargo-nextest for faster test execution in Nix flake (~13% faster)
