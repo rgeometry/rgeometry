@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Bentley–Ottmann sweep-line intersection detection."><title>rgeometry::algorithms::intersection::bentley_ottmann - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-e56847b5.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="rgeometry" data-themes="" data-resource-suffix="" data-rustdoc-version="1.91.0 (f8297e351 2025-10-28)" data-channel="1.91.0" data-search-js="search-e256b49e.js" data-stringdex-js="stringdex-c3e638e9.js" data-settings-js="settings-c38705f0.js" ><script src="../../../../static.files/storage-e2aeef58.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../../static.files/main-6dc2a7f3.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js"                  integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js"    integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "\\(", right: "\\)", display: false},
+                {left: "$", right: "$", display: false},
+                {left: "\\[", right: "\\]", display: true}
+            ]
+        });
+    });
+</script>
+<style type="text/css">
+  iframe {
+    border: 1px dashed black;
+  }
+</style>
+
+</head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module bentley_ottmann</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../rgeometry/index.html">rgeometry</a><span class="version">0.12.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module bentley_<wbr>ottmann</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#high-level-workflow" title="High-level workflow">High-level workflow</a></li><li><a href="#testing-guidance" title="Testing guidance">Testing guidance</a></li></ul><h3><a href="#functions">Module Items</a></h3><ul class="block"><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In rgeometry::<wbr>algorithms::<wbr>intersection</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../../index.html">rgeometry</a>::<wbr><a href="../../index.html">algorithms</a>::<wbr><a href="../index.html">intersection</a></div><h1>Module <span>bentley_<wbr>ottmann</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../../src/rgeometry/algorithms/intersection/bentley_ottmann.rs.html#1-656">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Bentley–Ottmann sweep-line intersection detection.</p>
+<p>This module implements the classic Bentley–Ottmann algorithm for finding all
+pairwise intersections among a set of line segments. The sweep line advances
+from left to right across the event queue, which is populated by the segment
+endpoints and dynamically enriched with discovered intersection points. A
+balanced search structure maintains the vertical ordering of the active
+segments, making it possible to report every intersecting pair while
+performing only logarithmic work per structural update.</p>
+<h2 id="high-level-workflow"><a class="doc-anchor" href="#high-level-workflow">§</a>High-level workflow</h2>
+<ol>
+<li><strong>Event queue</strong> – A priority queue ordered lexicographically on the
+<code>num::BigRational</code> x/y coordinates, seeded with every segment endpoint.</li>
+<li><strong>Status structure</strong> – An order-statistics tree storing the segments that
+currently intersect the sweep line. The ordering uses the current sweep
+position to evaluate each segment at the event’s x-coordinate.</li>
+<li><strong>Processing</strong> – For each event, active segments entering or leaving the
+sweep line are inserted or removed, neighbouring segments are checked for
+intersections, and any newly discovered intersection events are injected
+back into the queue.</li>
+<li><strong>Reporting</strong> – Every time two segments are found to intersect, the pair
+is yielded to the caller. Degenerate overlaps are deduplicated so that
+each unordered pair is emitted at most once.</li>
+</ol>
+<p>The algorithm runs in <code>O((n + k) log n)</code> time where <code>n</code> is the number of
+segments and <code>k</code> is the number of intersections that exist. Memory usage is
+<code>O(n)</code> for the queue and status structure. The implementation is specialised
+to <code>num::BigRational</code> coordinates in order to guarantee exact arithmetic and
+to avoid robustness issues when computing intersection points.</p>
+<h2 id="testing-guidance"><a class="doc-anchor" href="#testing-guidance">§</a>Testing guidance</h2>
+<ul>
+<li><strong>Common cases</strong> – Axes-aligned and random segments where crossings are
+easy to count by hand or compare against the <code>naive::segment_intersections</code>
+baseline. Include scenarios with multiple crossings sharing a common
+vertex.</li>
+<li><strong>Special cases</strong> – Overlapping colinear segments, shared endpoints,
+vertical segments, and events where more than two segments meet at the
+same coordinate. These cases stress the tie-breaking in the event queue
+and the deduplication logic.</li>
+<li><strong>Tricky cases</strong> – Intersections that occur to the left of their triggering
+event (caused by neighbouring swaps), segments that barely touch (e.g.
+one endpoint sitting precisely on another segment), and configurations that
+cause cascades of intersection events. These help validate that the sweep
+status stays consistent after local reordering.</li>
+<li><strong>Property checks</strong> – Fuzz or proptest-style generators that compare the
+sweep output against the quadratic baseline for small input sizes, and
+invariants such as “all reported pairs are unique”, “the iterator never
+reports non-intersecting segments”, and “every true intersection eventually
+appears”. Running both algorithms on randomly generated segment sets with
+BigRational coordinates is particularly effective because deviations can be
+spotted exactly.</li>
+</ul>
+</div></details><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.segment_intersections.html" title="fn rgeometry::algorithms::intersection::bentley_ottmann::segment_intersections">segment_<wbr>intersections</a></dt><dd>Find all line segment intersections using a Bentley–Ottmann sweep.</dd></dl></section></div></main></body></html>
