@@ -816,9 +816,9 @@ dependencies = [
 
 [[package]]
 name = "rug"
-version = "1.28.0"
+version = "1.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58ad2e973fe3c3214251a840a621812a4f40468da814b1a3d6947d433c2af11f"
+checksum = "de190ec858987c79cad4da30e19e546139b3339331282832af004d0ea7829639"
 dependencies = [
  "az",
  "gmp-mpfr-sys",
@@ -970,9 +970,9 @@ dependencies = [
 
 [[package]]
 name = "test-strategy"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43b12f9683de37f9980e485167ee624bfaa0b6b04da661e98e25ef9c2669bc1b"
+checksum = "c572af0dd6da9b0b5c1c2393c0be69f8e3b96302b20e4444c3fcf627efc31067"
 dependencies = [
  "derive-ex",
  "proc-macro2",

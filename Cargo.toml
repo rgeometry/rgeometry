@@ -42,7 +42,7 @@ rug = { version = "1.28", optional = true }
 [dev-dependencies]
 criterion = "0.8.1"
 proptest = "1.9.0"
-test-strategy = "0.4.0"
+test-strategy = "0.4.4"
 
 [[bench]]
 harness = false
