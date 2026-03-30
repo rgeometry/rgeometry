@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["gift_wrapping","graham_scan","melkman"]};
