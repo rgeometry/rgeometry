@@ -1,9 +1,0 @@
-(function() {
-    var implementors = Object.fromEntries([["rgeometry",[["impl&lt;'a, T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"rgeometry/data/polygon/struct.CursorIter.html\" title=\"struct rgeometry::data::polygon::CursorIter\">CursorIter</a>&lt;'a, T&gt;"],["impl&lt;'a, T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"rgeometry/data/polygon/struct.Iter.html\" title=\"struct rgeometry::data::polygon::Iter\">Iter</a>&lt;'a, T&gt;"],["impl&lt;'a, T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"rgeometry/data/polygon/struct.IterMut.html\" title=\"struct rgeometry::data::polygon::IterMut\">IterMut</a>&lt;'a, T&gt;"],["impl&lt;'a, T: <a class=\"trait\" href=\"rgeometry/trait.TotalOrd.html\" title=\"trait rgeometry::TotalOrd\">TotalOrd</a> + <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.0/core/clone/trait.Clone.html\" title=\"trait core::clone::Clone\">Clone</a>&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"rgeometry/data/polygon/struct.EdgeIter.html\" title=\"struct rgeometry::data::polygon::EdgeIter\">EdgeIter</a>&lt;'a, T&gt;"]]]]);
-    if (window.register_implementors) {
-        window.register_implementors(implementors);
-    } else {
-        window.pending_implementors = implementors;
-    }
-})()
-//{"start":57,"fragment_lengths":[1658]}
