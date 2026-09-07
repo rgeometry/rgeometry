@@ -6,9 +6,6 @@
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
-    alejandra.url = "github:kamadorueda/alejandra";
-    statix.url = "github:oppiliappan/statix";
-    deadnix.url = "github:astro/deadnix";
   };
 
   outputs = {
@@ -17,9 +14,6 @@
     flake-utils,
     rust-overlay,
     crane,
-    alejandra,
-    statix,
-    deadnix,
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
@@ -141,7 +135,7 @@
            '';
 
          wasmBindgenCli = let
-           version = pkgs.wasm-bindgen-cli.version;
+           inherit (pkgs.wasm-bindgen-cli) version;
          in
            if version == "0.2.100"
            then pkgs.wasm-bindgen-cli
@@ -238,7 +232,7 @@
             default = self.packages.${system}.all-demos;
           };
 
-        formatter = alejandra.defaultPackage.${system};
+        formatter = pkgs.alejandra;
 
         checks = {
           # Run the library tests
@@ -264,19 +258,19 @@
 
           # Check Nix formatting
           alejandra-check = pkgs.runCommand "alejandra-check" {} ''
-            ${alejandra.defaultPackage.${system}}/bin/alejandra --check ${src}
+            ${pkgs.alejandra}/bin/alejandra --check ${src}
             touch $out
           '';
 
           # Check Nix code with statix
           statix-check = pkgs.runCommand "statix-check" {} ''
-            ${statix.packages.${system}.default}/bin/statix check ${./.}
+            ${pkgs.statix}/bin/statix check ${./.}
             touch $out
           '';
 
           # Check for dead Nix code with deadnix
           deadnix-check = pkgs.runCommand "deadnix-check" {} ''
-            ${deadnix.packages.${system}.default}/bin/deadnix --fail ${./.}
+            ${pkgs.deadnix}/bin/deadnix --fail ${./.}
             touch $out
           '';
 
