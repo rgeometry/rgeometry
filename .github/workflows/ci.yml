@@ -45,6 +45,15 @@ jobs:
           use-flakehub: false
       - run: nix develop -c cargo publish --dry-run
 
+  cargo-docs:
+    name: Cargo rustdoc Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix develop -c cargo +nightly rustdoc --lib
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
