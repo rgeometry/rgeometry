@@ -58,7 +58,12 @@ jobs:
         with:
           # Fork PRs cannot use OIDC, so FlakeHub auth always fails there.
           use-flakehub: false
-      - run: nix develop -c cargo +nightly rustdoc --lib
+      # docs.rs builds with nightly rustdoc, which rejects doc attributes that
+      # stable still silently accepts. -D warnings turns the future-compat
+      # lints into failures so they are caught before they break docs.rs.
+      - run: nix develop .#nightly -c cargo rustdoc --lib
+        env:
+          RUSTDOCFLAGS: "-D warnings"
 
   coverage:
     name: Coverage

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- [#238](https://github.com/rgeometry/rgeometry/pull/238) Remove duplicate `doc` attribute key that broke docs.rs builds
+
 ## [0.12.0] 2026-01-06
 
 ### Added
