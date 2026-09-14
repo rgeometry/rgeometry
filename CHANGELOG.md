@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- [#243](https://github.com/rgeometry/rgeometry/pull/243) `new_monotone_polygon` no longer returns `SelfIntersections` when points lie on the line between the extreme points
+
 ## [0.12.0] 2026-01-06
 
 ### Added
