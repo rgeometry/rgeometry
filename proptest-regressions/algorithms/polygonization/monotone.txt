@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 166ff92cc042f2b123d976bed1324b0e4c3784c8665dd0497a4d50251d7180b4 # shrinks to input = _ValidMonotoneArgs { points: [Point { array: [111, -5] }, Point { array: [23, 127] }, Point { array: [0, 0] }, Point { array: [113, -8] }], direction: Vector([0, 1]) }
