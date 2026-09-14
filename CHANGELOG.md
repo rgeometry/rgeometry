@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- [#239](https://github.com/rgeometry/rgeometry/pull/239) Chan's convex hull algorithm
+
 ### Fixed
 - [#238](https://github.com/rgeometry/rgeometry/pull/238) Remove duplicate `doc` attribute key that broke docs.rs builds
 - [#243](https://github.com/rgeometry/rgeometry/pull/243) `new_monotone_polygon` no longer returns `SelfIntersections` when points lie on the line between the extreme points
