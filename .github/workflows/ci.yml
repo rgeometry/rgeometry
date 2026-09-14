@@ -52,6 +52,9 @@ jobs:
       - uses: actions/checkout@v7
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # Fork PRs cannot use OIDC, so FlakeHub auth always fails there.
+          use-flakehub: false
       - run: nix develop -c cargo +nightly rustdoc --lib
 
   coverage:
