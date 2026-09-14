@@ -8,6 +8,9 @@ on:
 
 name: Tests
 
+permissions:
+  contents: read
+
 jobs:
   nix-flake-check:
     name: Nix Flake Check

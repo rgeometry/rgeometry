@@ -19,9 +19,17 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      # Needed to push the built documentation to the gh-pages branch.
+      contents: write
+      # Needed by pr-preview-action to post/update the preview comment.
+      pull-requests: write
 
     steps:
     - uses: actions/checkout@v7
@@ -31,6 +39,9 @@ jobs:
       run: git fetch origin gh-pages:gh-pages || true
     - uses: DeterminateSystems/nix-installer-action@main
     - uses: DeterminateSystems/magic-nix-cache-action@main
+      with:
+        # Fork PRs cannot use OIDC, so FlakeHub auth always fails there.
+        use-flakehub: false
 
     - run: nix build .#documentation
     
@@ -40,7 +51,7 @@ jobs:
       run: |
         # Fetch the current checksum from gh-pages branch if it exists
         CURRENT=$(git show origin/gh-pages:rgeometry.checksum 2>/dev/null || echo "")
-        echo "value=$CURRENT" >> $GITHUB_OUTPUT
+        echo "value=$CURRENT" >> "$GITHUB_OUTPUT"
         echo "Current deployed checksum: $CURRENT"
     
     - name: Check if documentation has changed
@@ -51,10 +62,10 @@ jobs:
         CURRENT_CHECKSUM="${{ steps.current_checksum.outputs.value }}"
         if [ "$NEW_CHECKSUM" = "$CURRENT_CHECKSUM" ] && [ -n "$CURRENT_CHECKSUM" ]; then
           echo "Documentation unchanged, skipping preview deployment"
-          echo "skip=true" >> $GITHUB_OUTPUT
+          echo "skip=true" >> "$GITHUB_OUTPUT"
         else
           echo "Documentation changed or is new"
-          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "skip=false" >> "$GITHUB_OUTPUT"
         fi
     
     - name: Deploy to main 🚀
@@ -68,7 +79,7 @@ jobs:
     
     - name: Deploy PR preview
       uses: rossjrw/pr-preview-action@v1
-      if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && (github.event.action != 'closed' && steps.changed.outputs.skip == 'false' || github.event.action == 'closed')
+      if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' && (github.event.action != 'closed' && steps.changed.outputs.skip == 'false' || github.event.action == 'closed')
       with:
         source-dir: result/
         preview-branch: gh-pages
