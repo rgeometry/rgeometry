@@ -618,7 +618,7 @@ dependencies = [
  "bit-vec",
  "bitflags",
  "num-traits",
- "rand 0.9.3",
+ "rand 0.9.5",
  "rand_chacha",
  "rand_xorshift",
  "regex-syntax",
@@ -659,9 +659,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.9.3"
+version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ec095654a25171c2124e9e3393a930bddbffdc939556c914957a4c3e0a87166"
+checksum = "b9ef1d0d795eb7d84685bca4f72f3649f064e6641543d3a8c415898726a57b41"
 dependencies = [
  "rand_chacha",
  "rand_core 0.9.3",
@@ -708,7 +708,7 @@ dependencies = [
  "gloo-events",
  "num-rational",
  "once_cell",
- "rand 0.9.3",
+ "rand 0.9.5",
  "rgeometry",
  "rgeometry-wasm",
  "wasm-bindgen",
@@ -722,7 +722,7 @@ dependencies = [
  "gloo-events",
  "num-rational",
  "once_cell",
- "rand 0.9.3",
+ "rand 0.9.5",
  "rgeometry",
  "rgeometry-wasm",
  "wasm-bindgen",
@@ -791,7 +791,7 @@ dependencies = [
  "num-rational",
  "num-traits",
  "proptest",
- "rand 0.9.3",
+ "rand 0.9.5",
  "rug",
  "test-strategy",
 ]
@@ -808,7 +808,7 @@ dependencies = [
  "num",
  "once_cell",
  "ordered-float",
- "rand 0.9.3",
+ "rand 0.9.5",
  "rgeometry",
  "wasm-bindgen",
  "web-sys",
@@ -996,7 +996,7 @@ name = "two_opt"
 version = "0.0.0"
 dependencies = [
  "once_cell",
- "rand 0.9.3",
+ "rand 0.9.5",
  "rgeometry",
  "rgeometry-wasm",
  "wasm-bindgen",

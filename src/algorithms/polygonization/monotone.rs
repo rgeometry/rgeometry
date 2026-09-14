@@ -75,10 +75,32 @@ where
     points.last().unwrap().clone(),
   );
 
+  // The polygon is made up of two chains running from 'min_point' to
+  // 'max_point': One on the clockwise side of the line between them and one on
+  // the counter-clockwise side. Points that lie exactly on that line may go on
+  // either chain with one caveat: A chain without any points of its own is just
+  // the straight line from 'min_point' to 'max_point', and a co-linear point on
+  // the other chain would then sit on top of that line, making the polygon
+  // self-intersecting. So, co-linear points are always placed on the chain that
+  // has no points of its own.
+  let last = points.len() - 1;
+  let colinear_side = if points[1..last]
+    .iter()
+    .any(|pt| Orientation::new(&min_point, &max_point, pt) == Orientation::CounterClockWise)
+  {
+    Orientation::ClockWise
+  } else {
+    Orientation::CounterClockWise
+  };
+
   let mut polygon_points: VecDeque<Point<T, 2>> = VecDeque::new();
 
   while let Some(curr) = points.pop() {
-    match Orientation::new(&min_point, &max_point, &curr) {
+    let side = match Orientation::new(&min_point, &max_point, &curr) {
+      Orientation::CoLinear => colinear_side,
+      side => side,
+    };
+    match side {
       Orientation::ClockWise => polygon_points.push_front(curr),
       _ => polygon_points.push_back(curr),
     }
@@ -128,6 +150,23 @@ mod monotone_testing {
     ])
     .unwrap();
     assert!(is_monotone(&polygon, &Vector::from(Point::new([0, 1]))));
+  }
+
+  // Regression test: Points that lie on the line between the extreme points
+  // used to be placed on the same chain as (0,0), leaving the other chain as a
+  // bare line from (113,-8) to (23,127) with (111,-5) sitting on top of it.
+  #[test]
+  fn colinear_points_on_empty_chain() {
+    let points = vec![
+      Point::new([111, -5]),
+      Point::new([23, 127]),
+      Point::new([0, 0]),
+      Point::new([113, -8]),
+    ];
+    let direction = Vector([0, 1]);
+    let polygon = new_monotone_polygon(points, &direction).unwrap();
+    assert!(is_monotone(&polygon, &direction));
+    assert_eq!(polygon.validate().err(), None);
   }
 
   #[proptest]

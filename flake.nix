@@ -392,6 +392,23 @@
           };
         };
 
+        # Nightly toolchain used only to reproduce docs.rs' rustdoc, which
+        # runs nightly and rejects doc attributes that stable still accepts.
+        # Pinned through flake.lock via the rust-overlay input.
+        devShells.nightly = pkgs.mkShell {
+          inputsFrom = [
+            (craneLib.buildPackage commonArgs)
+          ];
+          packages = with pkgs; [
+            rust-bin.nightly.latest.default
+            pkg-config
+            m4
+            gmp
+            mpfr
+          ];
+          GMP_MPFR_SYS_CACHE = "no-test";
+        };
+
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             (craneLib.buildPackage commonArgs)

@@ -8,6 +8,9 @@ on:
 
 name: Tests
 
+permissions:
+  contents: read
+
 jobs:
   nix-flake-check:
     name: Nix Flake Check
@@ -44,6 +47,23 @@ jobs:
           # Fork PRs cannot use OIDC, so FlakeHub auth always fails there.
           use-flakehub: false
       - run: nix develop -c cargo publish --dry-run
+
+  cargo-docs:
+    name: Cargo rustdoc Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # Fork PRs cannot use OIDC, so FlakeHub auth always fails there.
+          use-flakehub: false
+      # docs.rs builds with nightly rustdoc, which rejects doc attributes that
+      # stable still silently accepts. -D warnings turns the future-compat
+      # lints into failures so they are caught before they break docs.rs.
+      - run: nix develop .#nightly -c cargo rustdoc --lib
+        env:
+          RUSTDOCFLAGS: "-D warnings"
 
   coverage:
     name: Coverage
