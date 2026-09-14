@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["new_monotone_polygon","new_star_polygon","resolve_self_intersections","two_opt_moves"]};
