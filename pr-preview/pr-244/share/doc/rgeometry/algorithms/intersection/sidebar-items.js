@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["bentley_ottmann","naive"]};
