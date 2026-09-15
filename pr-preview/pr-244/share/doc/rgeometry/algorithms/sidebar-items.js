@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["convex_hull","segment_intersections"],"mod":["convex_hull","intersection","kernel","polygonization","triangulation","visibility","zhash"]};
