@@ -220,9 +220,9 @@ mod tests {
     p1: Point<T, 2>,
     p2: Point<T, 2>,
   ) where
-    T: Clone + Into<num_bigint::BigInt>,
+    T: Clone + Into<num::BigInt>,
   {
-    use num_bigint::BigInt;
+    use num::BigInt;
 
     // Convert to BigRational
     let direction_br = Vector([
