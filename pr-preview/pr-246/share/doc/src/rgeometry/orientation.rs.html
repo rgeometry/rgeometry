@@ -634,7 +634,7 @@
 <a href=#613 id=613 data-nosnippet>613</a>  <span class="kw">use super</span>::<span class="kw-2">*</span>;
 <a href=#614 id=614 data-nosnippet>614</a>
 <a href=#615 id=615 data-nosnippet>615</a>  <span class="kw">use </span><span class="kw">crate</span>::data::Point;
-<a href=#616 id=616 data-nosnippet>616</a>  <span class="kw">use </span>num::BigInt;
+<a href=#616 id=616 data-nosnippet>616</a>  <span class="kw">use </span>num_bigint::BigInt;
 <a href=#617 id=617 data-nosnippet>617</a>  <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
 <a href=#618 id=618 data-nosnippet>618</a>  <span class="kw">use </span>test_strategy::proptest;
 <a href=#619 id=619 data-nosnippet>619</a>
@@ -673,56 +673,55 @@
 <a href=#652 id=652 data-nosnippet>652</a>
 <a href=#653 id=653 data-nosnippet>653</a>  <span class="attr">#[test]
 <a href=#654 id=654 data-nosnippet>654</a>  </span><span class="kw">fn </span>cmp_around_1() {
-<a href=#655 id=655 data-nosnippet>655</a>    <span class="kw">use </span>num_bigint::<span class="kw-2">*</span>;
-<a href=#656 id=656 data-nosnippet>656</a>    <span class="kw">let </span>pt1 = [BigInt::from(<span class="number">0</span>), BigInt::from(<span class="number">0</span>)];
-<a href=#657 id=657 data-nosnippet>657</a>    <span class="kw">let </span>pt2 = [BigInt::from(-<span class="number">1</span>), BigInt::from(<span class="number">1</span>)];
-<a href=#658 id=658 data-nosnippet>658</a>    <span class="comment">// let pt2 = [BigInt::from(-717193444810564826_i64), BigInt::from(1)];
-<a href=#659 id=659 data-nosnippet>659</a>    </span><span class="kw">let </span>vector = Vector([BigInt::from(<span class="number">1</span>), BigInt::from(<span class="number">0</span>)]);
-<a href=#660 id=660 data-nosnippet>660</a>
-<a href=#661 id=661 data-nosnippet>661</a>    <span class="macro">assert_eq!</span>(
-<a href=#662 id=662 data-nosnippet>662</a>      Orientation::ccw_cmp_around_with(<span class="kw-2">&amp;</span>vector, <span class="kw-2">&amp;</span>pt1, <span class="kw-2">&amp;</span>pt2, <span class="kw-2">&amp;</span>pt1),
-<a href=#663 id=663 data-nosnippet>663</a>      Ordering::Greater
-<a href=#664 id=664 data-nosnippet>664</a>    );
-<a href=#665 id=665 data-nosnippet>665</a>  }
-<a href=#666 id=666 data-nosnippet>666</a>
-<a href=#667 id=667 data-nosnippet>667</a>  <span class="attr">#[test]
-<a href=#668 id=668 data-nosnippet>668</a>  </span><span class="kw">fn </span>sos_unit1() {
-<a href=#669 id=669 data-nosnippet>669</a>    <span class="macro">assert_eq!</span>(SoS::new(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>), SoS::CounterClockWise)
-<a href=#670 id=670 data-nosnippet>670</a>  }
-<a href=#671 id=671 data-nosnippet>671</a>
-<a href=#672 id=672 data-nosnippet>672</a>  <span class="attr">#[test]
-<a href=#673 id=673 data-nosnippet>673</a>  #[should_panic]
-<a href=#674 id=674 data-nosnippet>674</a>  </span><span class="kw">fn </span>sos_unit2() {
-<a href=#675 id=675 data-nosnippet>675</a>    SoS::new(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
-<a href=#676 id=676 data-nosnippet>676</a>  }
-<a href=#677 id=677 data-nosnippet>677</a>
-<a href=#678 id=678 data-nosnippet>678</a>  <span class="attr">#[test]
-<a href=#679 id=679 data-nosnippet>679</a>  </span><span class="kw">fn </span>sos_unit3() {
-<a href=#680 id=680 data-nosnippet>680</a>    <span class="macro">assert_eq!</span>(SoS::new(<span class="number">99</span>, <span class="number">0</span>, <span class="number">1</span>), SoS::CounterClockWise);
-<a href=#681 id=681 data-nosnippet>681</a>  }
-<a href=#682 id=682 data-nosnippet>682</a>
-<a href=#683 id=683 data-nosnippet>683</a>  <span class="attr">#[proptest]
-<a href=#684 id=684 data-nosnippet>684</a>  </span><span class="kw">fn </span>sos_eq_prop(a: u8, b: u8, c: u8) {
-<a href=#685 id=685 data-nosnippet>685</a>    <span class="kw">if </span>a != b &amp;&amp; b != c &amp;&amp; c != a {
-<a href=#686 id=686 data-nosnippet>686</a>      <span class="kw">let </span>(a, b, c) = (a <span class="kw">as </span>u32, b <span class="kw">as </span>u32, c <span class="kw">as </span>u32);
-<a href=#687 id=687 data-nosnippet>687</a>      <span class="kw">let </span>one = <span class="kw-2">&amp;</span>BigInt::from(<span class="number">1</span>);
-<a href=#688 id=688 data-nosnippet>688</a>      <span class="kw">let </span>big_a = BigInt::from(a);
-<a href=#689 id=689 data-nosnippet>689</a>      <span class="kw">let </span>big_b = BigInt::from(b);
-<a href=#690 id=690 data-nosnippet>690</a>      <span class="kw">let </span>big_c = BigInt::from(c);
-<a href=#691 id=691 data-nosnippet>691</a>      <span class="kw">let </span>p = Point::new([big_a, one &lt;&lt; a]);
-<a href=#692 id=692 data-nosnippet>692</a>      <span class="kw">let </span>q = Point::new([big_b, one &lt;&lt; b]);
-<a href=#693 id=693 data-nosnippet>693</a>      <span class="kw">let </span>r = Point::new([big_c, one &lt;&lt; c]);
-<a href=#694 id=694 data-nosnippet>694</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c).orient(), Orientation::new(<span class="kw-2">&amp;</span>p, <span class="kw-2">&amp;</span>q, <span class="kw-2">&amp;</span>r));
-<a href=#695 id=695 data-nosnippet>695</a>    }
-<a href=#696 id=696 data-nosnippet>696</a>  }
-<a href=#697 id=697 data-nosnippet>697</a>
-<a href=#698 id=698 data-nosnippet>698</a>  <span class="attr">#[proptest]
-<a href=#699 id=699 data-nosnippet>699</a>  </span><span class="kw">fn </span>sos_rev_prop(a: u32, b: u32, c: u32) {
-<a href=#700 id=700 data-nosnippet>700</a>    <span class="kw">if </span>a != b &amp;&amp; b != c &amp;&amp; c != a {
-<a href=#701 id=701 data-nosnippet>701</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(c, b, a).reverse());
-<a href=#702 id=702 data-nosnippet>702</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(a, c, b).reverse());
-<a href=#703 id=703 data-nosnippet>703</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(b, a, c).reverse());
-<a href=#704 id=704 data-nosnippet>704</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(b, c, a));
-<a href=#705 id=705 data-nosnippet>705</a>    }
-<a href=#706 id=706 data-nosnippet>706</a>  }
-<a href=#707 id=707 data-nosnippet>707</a>}</code></pre></div></section></main></body></html>
+<a href=#655 id=655 data-nosnippet>655</a>    <span class="kw">let </span>pt1 = [BigInt::from(<span class="number">0</span>), BigInt::from(<span class="number">0</span>)];
+<a href=#656 id=656 data-nosnippet>656</a>    <span class="kw">let </span>pt2 = [BigInt::from(-<span class="number">1</span>), BigInt::from(<span class="number">1</span>)];
+<a href=#657 id=657 data-nosnippet>657</a>    <span class="comment">// let pt2 = [BigInt::from(-717193444810564826_i64), BigInt::from(1)];
+<a href=#658 id=658 data-nosnippet>658</a>    </span><span class="kw">let </span>vector = Vector([BigInt::from(<span class="number">1</span>), BigInt::from(<span class="number">0</span>)]);
+<a href=#659 id=659 data-nosnippet>659</a>
+<a href=#660 id=660 data-nosnippet>660</a>    <span class="macro">assert_eq!</span>(
+<a href=#661 id=661 data-nosnippet>661</a>      Orientation::ccw_cmp_around_with(<span class="kw-2">&amp;</span>vector, <span class="kw-2">&amp;</span>pt1, <span class="kw-2">&amp;</span>pt2, <span class="kw-2">&amp;</span>pt1),
+<a href=#662 id=662 data-nosnippet>662</a>      Ordering::Greater
+<a href=#663 id=663 data-nosnippet>663</a>    );
+<a href=#664 id=664 data-nosnippet>664</a>  }
+<a href=#665 id=665 data-nosnippet>665</a>
+<a href=#666 id=666 data-nosnippet>666</a>  <span class="attr">#[test]
+<a href=#667 id=667 data-nosnippet>667</a>  </span><span class="kw">fn </span>sos_unit1() {
+<a href=#668 id=668 data-nosnippet>668</a>    <span class="macro">assert_eq!</span>(SoS::new(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>), SoS::CounterClockWise)
+<a href=#669 id=669 data-nosnippet>669</a>  }
+<a href=#670 id=670 data-nosnippet>670</a>
+<a href=#671 id=671 data-nosnippet>671</a>  <span class="attr">#[test]
+<a href=#672 id=672 data-nosnippet>672</a>  #[should_panic]
+<a href=#673 id=673 data-nosnippet>673</a>  </span><span class="kw">fn </span>sos_unit2() {
+<a href=#674 id=674 data-nosnippet>674</a>    SoS::new(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+<a href=#675 id=675 data-nosnippet>675</a>  }
+<a href=#676 id=676 data-nosnippet>676</a>
+<a href=#677 id=677 data-nosnippet>677</a>  <span class="attr">#[test]
+<a href=#678 id=678 data-nosnippet>678</a>  </span><span class="kw">fn </span>sos_unit3() {
+<a href=#679 id=679 data-nosnippet>679</a>    <span class="macro">assert_eq!</span>(SoS::new(<span class="number">99</span>, <span class="number">0</span>, <span class="number">1</span>), SoS::CounterClockWise);
+<a href=#680 id=680 data-nosnippet>680</a>  }
+<a href=#681 id=681 data-nosnippet>681</a>
+<a href=#682 id=682 data-nosnippet>682</a>  <span class="attr">#[proptest]
+<a href=#683 id=683 data-nosnippet>683</a>  </span><span class="kw">fn </span>sos_eq_prop(a: u8, b: u8, c: u8) {
+<a href=#684 id=684 data-nosnippet>684</a>    <span class="kw">if </span>a != b &amp;&amp; b != c &amp;&amp; c != a {
+<a href=#685 id=685 data-nosnippet>685</a>      <span class="kw">let </span>(a, b, c) = (a <span class="kw">as </span>u32, b <span class="kw">as </span>u32, c <span class="kw">as </span>u32);
+<a href=#686 id=686 data-nosnippet>686</a>      <span class="kw">let </span>one = <span class="kw-2">&amp;</span>BigInt::from(<span class="number">1</span>);
+<a href=#687 id=687 data-nosnippet>687</a>      <span class="kw">let </span>big_a = BigInt::from(a);
+<a href=#688 id=688 data-nosnippet>688</a>      <span class="kw">let </span>big_b = BigInt::from(b);
+<a href=#689 id=689 data-nosnippet>689</a>      <span class="kw">let </span>big_c = BigInt::from(c);
+<a href=#690 id=690 data-nosnippet>690</a>      <span class="kw">let </span>p = Point::new([big_a, one &lt;&lt; a]);
+<a href=#691 id=691 data-nosnippet>691</a>      <span class="kw">let </span>q = Point::new([big_b, one &lt;&lt; b]);
+<a href=#692 id=692 data-nosnippet>692</a>      <span class="kw">let </span>r = Point::new([big_c, one &lt;&lt; c]);
+<a href=#693 id=693 data-nosnippet>693</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c).orient(), Orientation::new(<span class="kw-2">&amp;</span>p, <span class="kw-2">&amp;</span>q, <span class="kw-2">&amp;</span>r));
+<a href=#694 id=694 data-nosnippet>694</a>    }
+<a href=#695 id=695 data-nosnippet>695</a>  }
+<a href=#696 id=696 data-nosnippet>696</a>
+<a href=#697 id=697 data-nosnippet>697</a>  <span class="attr">#[proptest]
+<a href=#698 id=698 data-nosnippet>698</a>  </span><span class="kw">fn </span>sos_rev_prop(a: u32, b: u32, c: u32) {
+<a href=#699 id=699 data-nosnippet>699</a>    <span class="kw">if </span>a != b &amp;&amp; b != c &amp;&amp; c != a {
+<a href=#700 id=700 data-nosnippet>700</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(c, b, a).reverse());
+<a href=#701 id=701 data-nosnippet>701</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(a, c, b).reverse());
+<a href=#702 id=702 data-nosnippet>702</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(b, a, c).reverse());
+<a href=#703 id=703 data-nosnippet>703</a>      <span class="macro">prop_assert_eq!</span>(SoS::new(a, b, c), SoS::new(b, c, a));
+<a href=#704 id=704 data-nosnippet>704</a>    }
+<a href=#705 id=705 data-nosnippet>705</a>  }
+<a href=#706 id=706 data-nosnippet>706</a>}</code></pre></div></section></main></body></html>
