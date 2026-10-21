@@ -613,7 +613,7 @@ mod tests {
   use super::*;
 
   use crate::data::Point;
-  use num::BigInt;
+  use num_bigint::BigInt;
   use proptest::prelude::*;
   use test_strategy::proptest;
 
@@ -652,7 +652,6 @@ mod tests {
 
   #[test]
   fn cmp_around_1() {
-    use num_bigint::*;
     let pt1 = [BigInt::from(0), BigInt::from(0)];
     let pt2 = [BigInt::from(-1), BigInt::from(1)];
     // let pt2 = [BigInt::from(-717193444810564826_i64), BigInt::from(1)];
